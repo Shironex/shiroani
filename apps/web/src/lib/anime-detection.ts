@@ -59,7 +59,7 @@ export function detectAnimeFromUrl(url: string, pageTitle: string): AnimeDetecti
 function detectOgladajAnime(parsed: URL, pageTitle: string): AnimeDetection | null {
   const path = parsed.pathname;
 
-  // /anime/{slug}/player/{id} → watching
+  // /anime/{slug}/player/{id} → watching (no episode number in URL)
   const playerMatch = path.match(/^\/anime\/([^/]+)\/player\/\d+/);
   if (playerMatch) {
     return { animeTitle: slugToTitle(playerMatch[1]) };
@@ -71,6 +71,7 @@ function detectOgladajAnime(parsed: URL, pageTitle: string): AnimeDetection | nu
     return {
       animeTitle: slugToTitle(episodeMatch[1]),
       episodeInfo: `Odcinek ${episodeMatch[2]}`,
+      episodeNumber: parseInt(episodeMatch[2], 10),
     };
   }
 

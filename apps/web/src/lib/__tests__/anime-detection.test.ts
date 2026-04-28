@@ -53,6 +53,7 @@ describe('detectAnimeFromUrl', () => {
       expect(result).toEqual({
         animeTitle: 'Attack On Titan',
         episodeInfo: 'Odcinek 5',
+        episodeNumber: 5,
       });
     });
 
