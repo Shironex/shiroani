@@ -41,6 +41,12 @@ interface SettingsState {
   displayName: string;
   /** Developer mode — surfaces DevTools, diagnostics copy, and the log viewer. */
   devModeEnabled: boolean;
+  /** Master toggle: show the OP/ED skip button/toast on recognised player hosts. */
+  opEdSkipEnabled: boolean;
+  /** Sub-toggle: auto-seek at OP/ED start without requiring a click. Only active when opEdSkipEnabled is on. */
+  autoSkipEnabled: boolean;
+  /** Stable UUID for this install, generated once and persisted. Reserved for V2 AniSkip contribution UX. */
+  submitterUuid: string;
 }
 
 /**
@@ -59,6 +65,10 @@ interface SettingsActions {
   setDisplayName: (name: string) => void;
   /** Toggle developer mode — persisted across sessions. */
   setDevModeEnabled: (enabled: boolean) => void;
+  /** Toggle OP/ED skip button visibility — persisted across sessions. */
+  setOpEdSkipEnabled: (enabled: boolean) => void;
+  /** Toggle auto-skip mode — persisted across sessions. */
+  setAutoSkipEnabled: (enabled: boolean) => void;
   /** Initialize persisted visual settings */
   initSettings: () => Promise<void>;
 }
@@ -66,6 +76,12 @@ interface SettingsActions {
 const DISPLAY_NAME_STORAGE_KEY = 'shiroani:displayName';
 const DEV_MODE_STORAGE_KEY = 'shiroani:devMode';
 const DEV_MODE_SETTING_KEY = 'settings.devMode';
+const OP_ED_SKIP_STORAGE_KEY = 'shiroani:opEdSkip';
+const OP_ED_SKIP_SETTING_KEY = 'settings.opEdSkipEnabled';
+const AUTO_SKIP_STORAGE_KEY = 'shiroani:autoSkip';
+const AUTO_SKIP_SETTING_KEY = 'settings.autoSkipEnabled';
+const SUBMITTER_UUID_STORAGE_KEY = 'shiroani:submitterUuid';
+const SUBMITTER_UUID_SETTING_KEY = 'settings.submitterUuid';
 
 // Stored as the string `'true'`; any other value (including missing keys left
 // over from the old removeItem-on-disable shape) reads as disabled.
@@ -75,11 +91,51 @@ const devModeStorage = createLocalStorageAccessor<boolean>(DEV_MODE_STORAGE_KEY,
   fallback: false,
 });
 
+// opEdSkipEnabled defaults ON — stored as `'false'` when off, anything else = on.
+const opEdSkipStorage = createLocalStorageAccessor<boolean>(OP_ED_SKIP_STORAGE_KEY, {
+  parse: raw => raw !== 'false',
+  serialize: enabled => (enabled ? 'true' : 'false'),
+  fallback: true,
+});
+
+// autoSkipEnabled defaults OFF.
+const autoSkipStorage = createLocalStorageAccessor<boolean>(AUTO_SKIP_STORAGE_KEY, {
+  parse: raw => raw === 'true',
+  serialize: enabled => (enabled ? 'true' : ''),
+  fallback: false,
+});
+
+const submitterUuidStorage = createLocalStorageAccessor<string>(SUBMITTER_UUID_STORAGE_KEY, {
+  parse: raw => raw,
+  serialize: value => value,
+  fallback: '',
+});
+
 const displayNameStorage = createLocalStorageAccessor<string>(DISPLAY_NAME_STORAGE_KEY, {
   parse: raw => raw,
   serialize: value => value,
   fallback: '',
 });
+
+function generateUuid(): string {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
+  // Minimal RFC 4122 v4 fallback for environments without crypto.randomUUID.
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+    const r = (Math.random() * 16) | 0;
+    const v = c === 'x' ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+}
+
+function getOrCreateSubmitterUuid(): string {
+  const stored = submitterUuidStorage.get();
+  if (stored) return stored;
+  const uuid = generateUuid();
+  submitterUuidStorage.set(uuid);
+  return uuid;
+}
 
 function getPersistedDevMode(): boolean {
   return devModeStorage.get();
@@ -87,6 +143,22 @@ function getPersistedDevMode(): boolean {
 
 function persistDevModeLocally(enabled: boolean) {
   devModeStorage.set(enabled);
+}
+
+function getPersistedOpEdSkip(): boolean {
+  return opEdSkipStorage.get();
+}
+
+function persistOpEdSkipLocally(enabled: boolean) {
+  opEdSkipStorage.set(enabled);
+}
+
+function getPersistedAutoSkip(): boolean {
+  return autoSkipStorage.get();
+}
+
+function persistAutoSkipLocally(enabled: boolean) {
+  autoSkipStorage.set(enabled);
 }
 
 function getPersistedDisplayName(): string {
@@ -207,6 +279,9 @@ export const useSettingsStore = create<SettingsStore>()(
 
       const initialDisplayName = typeof window !== 'undefined' ? getPersistedDisplayName() : '';
       const initialDevMode = typeof window !== 'undefined' ? getPersistedDevMode() : false;
+      const initialOpEdSkip = typeof window !== 'undefined' ? getPersistedOpEdSkip() : true;
+      const initialAutoSkip = typeof window !== 'undefined' ? getPersistedAutoSkip() : false;
+      const initialSubmitterUuid = typeof window !== 'undefined' ? getOrCreateSubmitterUuid() : '';
 
       return {
         // Initial state
@@ -216,6 +291,9 @@ export const useSettingsStore = create<SettingsStore>()(
         preferredLanguage: 'romaji',
         displayName: initialDisplayName,
         devModeEnabled: initialDevMode,
+        opEdSkipEnabled: initialOpEdSkip,
+        autoSkipEnabled: initialAutoSkip,
+        submitterUuid: initialSubmitterUuid,
 
         // Actions
         setTheme: (theme: Theme) => {
@@ -274,6 +352,26 @@ export const useSettingsStore = create<SettingsStore>()(
           });
         },
 
+        setOpEdSkipEnabled: (enabled: boolean) => {
+          if (get().opEdSkipEnabled === enabled) return;
+          logger.debug('setOpEdSkipEnabled', enabled);
+          set({ opEdSkipEnabled: enabled }, undefined, 'settings/setOpEdSkipEnabled');
+          persistOpEdSkipLocally(enabled);
+          void electronStoreSet(OP_ED_SKIP_SETTING_KEY, enabled).catch(error => {
+            logger.warn('Failed to persist opEdSkipEnabled:', error);
+          });
+        },
+
+        setAutoSkipEnabled: (enabled: boolean) => {
+          if (get().autoSkipEnabled === enabled) return;
+          logger.debug('setAutoSkipEnabled', enabled);
+          set({ autoSkipEnabled: enabled }, undefined, 'settings/setAutoSkipEnabled');
+          persistAutoSkipLocally(enabled);
+          void electronStoreSet(AUTO_SKIP_SETTING_KEY, enabled).catch(error => {
+            logger.warn('Failed to persist autoSkipEnabled:', error);
+          });
+        },
+
         initSettings: async () => {
           logger.debug('initSettings');
           if (settingsInitPromise) {
@@ -323,6 +421,53 @@ export const useSettingsStore = create<SettingsStore>()(
               }
             } catch (error) {
               logger.warn('Failed to restore dev mode:', error);
+            }
+
+            try {
+              const persistedOpEdSkip = await electronStoreGet<boolean>(OP_ED_SKIP_SETTING_KEY);
+              if (
+                typeof persistedOpEdSkip === 'boolean' &&
+                persistedOpEdSkip !== get().opEdSkipEnabled
+              ) {
+                set({ opEdSkipEnabled: persistedOpEdSkip }, undefined, 'settings/initOpEdSkip');
+                persistOpEdSkipLocally(persistedOpEdSkip);
+              }
+            } catch (error) {
+              logger.warn('Failed to restore opEdSkipEnabled:', error);
+            }
+
+            try {
+              const persistedAutoSkip = await electronStoreGet<boolean>(AUTO_SKIP_SETTING_KEY);
+              if (
+                typeof persistedAutoSkip === 'boolean' &&
+                persistedAutoSkip !== get().autoSkipEnabled
+              ) {
+                set({ autoSkipEnabled: persistedAutoSkip }, undefined, 'settings/initAutoSkip');
+                persistAutoSkipLocally(persistedAutoSkip);
+              }
+            } catch (error) {
+              logger.warn('Failed to restore autoSkipEnabled:', error);
+            }
+
+            try {
+              const persistedUuid = await electronStoreGet<string>(SUBMITTER_UUID_SETTING_KEY);
+              if (typeof persistedUuid === 'string' && persistedUuid) {
+                // Electron-store is authoritative for UUID; sync back to localStorage if needed.
+                if (persistedUuid !== get().submitterUuid) {
+                  set({ submitterUuid: persistedUuid }, undefined, 'settings/initSubmitterUuid');
+                  submitterUuidStorage.set(persistedUuid);
+                }
+              } else {
+                // First run or missing — persist the UUID we already generated to electron-store.
+                const currentUuid = get().submitterUuid;
+                if (currentUuid) {
+                  void electronStoreSet(SUBMITTER_UUID_SETTING_KEY, currentUuid).catch(err => {
+                    logger.warn('Failed to persist submitterUuid:', err);
+                  });
+                }
+              }
+            } catch (error) {
+              logger.warn('Failed to restore submitterUuid:', error);
             }
           })().catch(error => {
             settingsInitPromise = null;
