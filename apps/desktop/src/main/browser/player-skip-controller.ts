@@ -159,11 +159,17 @@ export class PlayerSkipController {
     };
 
     const onMediaStartedPlaying = () => {
-      // The user pressed play. `findPlayingVideoFrame`'s filter requires
-      // `videoWidth > 0 && currentTime > 0 && !paused` — at attach time on a
-      // freshly-loaded page, the video is paused and the filter returns null,
-      // so the initial fetchAndInject silently no-ops. This listener catches
-      // the moment playback starts and re-runs the inject path.
+      // Two cases to handle here:
+      //   1. The user just pressed play on the initial player iframe — the
+      //      attach-time fetchAndInject no-op'd because the filter requires
+      //      `videoWidth > 0 && currentTime > 0 && !paused`.
+      //   2. The user switched players (Zmień player on ogladajanime) — the
+      //      cached frame might still be reachable (old iframe lingering in
+      //      the DOM) but is no longer the playing frame. We must re-walk.
+      // Invalidate the frame cache before re-running inject so case 2 doesn't
+      // re-inject into the stale frame.
+      const s = this.states.get(webContentsId);
+      if (s) s.cachedFrame = null;
       logger.info(`media-started-playing(wc=${webContentsId}) — re-running inject`);
       void this.fetchAndInject(webContentsId);
     };
