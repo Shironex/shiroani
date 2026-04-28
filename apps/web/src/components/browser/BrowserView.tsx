@@ -15,6 +15,7 @@ import { BrowserTabBar } from '@/components/browser/BrowserTabBar';
 import { BrowserToolbar } from '@/components/browser/BrowserToolbar';
 import { BrowserWebview } from '@/components/browser/BrowserWebview';
 import { NewTabPage } from '@/components/browser/NewTabPage';
+import { PlayerDock } from '@/components/browser/PlayerDock';
 import { useBrowserInit } from '@/components/browser/useBrowserInit';
 import { unregisterWebview } from '@/components/browser/webviewRefs';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
@@ -548,6 +549,13 @@ export function BrowserView() {
               aria-hidden="true"
               className="absolute inset-0 pointer-events-none"
             />
+            {/*
+             * POC OP/ED skip dock — only renders when the active pane is on
+             * a recognized anime player host. Targets the globally-active
+             * tab (split-view limitation noted in the POC writeup). Sits
+             * above the webview layer; pointer-events-auto on its own.
+             */}
+            <PlayerDock />
           </>
         )}
       </div>
