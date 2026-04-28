@@ -41,6 +41,9 @@ export { registerDiscordRpcHandlers, cleanupDiscordRpcHandlers } from './discord
 // App stats handlers
 export { registerAppStatsHandlers, cleanupAppStatsHandlers } from './app-stats';
 
+// Player skip handlers (POC)
+export { registerPlayerSkipHandlers, cleanupPlayerSkipHandlers } from './player-skip';
+
 // IPC infrastructure
 export { handle, handleWithFallback, on } from './with-ipc-handler';
 export {

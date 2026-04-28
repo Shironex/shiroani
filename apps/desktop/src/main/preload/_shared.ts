@@ -70,6 +70,10 @@ export const ALLOWED_IPC_CHANNELS: ReadonlySet<string> = new Set([
   'app-stats:get-snapshot',
   'app-stats:set-watching-anime',
   'app-stats:reset',
+  // player skip (POC)
+  'player:seek-relative',
+  'player:probe',
+  'player:inject-button',
   // overlay
   'overlay:show',
   'overlay:hide',

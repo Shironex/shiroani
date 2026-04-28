@@ -180,5 +180,56 @@ export interface ElectronAPI {
       ...args: unknown[]
     ) => { promise: Promise<T>; cancel: () => void };
   };
+  /**
+   * Player-skip POC bridge — reach into cross-origin video iframes from
+   * the main process and seek the playing `<video>` element. Returns rich
+   * diagnostic info for the POC dock. See feasibility doc dated 2026-04-28.
+   */
+  playerSkip: {
+    /** Seek the active playing video by `deltaSeconds` (positive or negative). */
+    seekRelative: (
+      webContentsId: number,
+      deltaSeconds: number
+    ) => Promise<{
+      ok: boolean;
+      reason?: string;
+      before?: number;
+      after?: number;
+      frameUrl?: string;
+    }>;
+    /** Walk the entire frame tree of the webContents and report every `<video>`. */
+    probe: (webContentsId: number) => Promise<{
+      webContentsId: number;
+      topUrl: string;
+      frames: Array<{
+        url: string;
+        origin: string;
+        processId: number;
+        routingId: number;
+        detached: boolean;
+        videos: Array<{
+          width: number;
+          height: number;
+          currentTime: number;
+          duration: number;
+          paused: boolean;
+          src: string;
+          playing: boolean;
+        }>;
+        error?: string;
+      }>;
+      playingFrameIndices: number[];
+      startedAt: number;
+      durationMs: number;
+    }>;
+    /**
+     * Stretch goal: inject a "Skip +N" button into the playing-video frame's DOM.
+     * Returns the frame URL on success. Diagnostic — POC only.
+     */
+    injectButton: (
+      webContentsId: number,
+      deltaSeconds: number
+    ) => Promise<{ ok: boolean; reason?: string; frameUrl?: string }>;
+  };
   platform: NodeJS.Platform;
 }

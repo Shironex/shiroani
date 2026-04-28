@@ -26,6 +26,8 @@ export type WebviewElement = HTMLElement & {
   setAudioMuted: (muted: boolean) => void;
   isAudioMuted: () => boolean;
   openDevTools: () => void;
+  /** WebContents id of the guest page — used by main-process IPC to target this tab. */
+  getWebContentsId: () => number;
 };
 
 const webviewRefs = new Map<string, WebviewElement>();

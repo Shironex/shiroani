@@ -14,6 +14,7 @@ import { discordRpcApi } from './discord';
 import { overlayApi } from './overlay';
 import { ipcApi } from './ipc';
 import { appStatsApi } from './app-stats';
+import { playerSkipApi } from './player-skip';
 
 /**
  * The single object passed to `contextBridge.exposeInMainWorld('electronAPI')`.
@@ -36,5 +37,6 @@ export const electronAPI: ElectronAPI = {
   overlay: overlayApi,
   ipc: ipcApi,
   appStats: appStatsApi,
+  playerSkip: playerSkipApi,
   platform: process.platform,
 };

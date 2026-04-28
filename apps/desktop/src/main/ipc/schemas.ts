@@ -240,6 +240,34 @@ export const appStatsGetSnapshotSchema = z.tuple([]);
 export const appStatsSetWatchingAnimeSchema = z.tuple([z.boolean()]);
 export const appStatsResetSchema = z.tuple([]);
 
+// ============================================================================
+// Player skip channels (POC)
+// ============================================================================
+
+/**
+ * Renderer passes the webview's `getWebContentsId()` so main-process can
+ * walk that webContents' frame tree. Delta is clamped at the handler.
+ */
+export const playerSeekRelativeSchema = z.tuple([
+  z.object({
+    webContentsId: z.number().int().positive(),
+    deltaSeconds: z.number().finite(),
+  }),
+]);
+
+export const playerProbeSchema = z.tuple([
+  z.object({
+    webContentsId: z.number().int().positive(),
+  }),
+]);
+
+export const playerInjectButtonSchema = z.tuple([
+  z.object({
+    webContentsId: z.number().int().positive(),
+    deltaSeconds: z.number().finite(),
+  }),
+]);
+
 // Re-export shared-type schemas for handlers that compose them elsewhere.
 export {
   messageDialogOptionsSchema,
