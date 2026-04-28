@@ -8,6 +8,7 @@ import { DiaryModule } from './diary';
 import { ImportExportModule } from './import-export';
 import { FeedModule } from './feed';
 import { NotificationsModule } from './notifications';
+import { AniSkipModule } from './aniskip';
 
 @Module({})
 export class AppModule {
@@ -42,6 +43,7 @@ export class AppModule {
           hostProvider: options.notificationHostProvider,
           storeProvider: options.notificationStoreProvider,
         }),
+        AniSkipModule,
       ],
     };
   }
