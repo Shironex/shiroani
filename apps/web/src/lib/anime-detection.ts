@@ -9,6 +9,7 @@ import type { BrowserNode, DiscordPresenceActivity } from '@shiroani/shared';
 export interface AnimeDetection {
   animeTitle: string;
   episodeInfo?: string;
+  episodeNumber?: number;
 }
 
 // ── Pure utilities ────────────────────────────────────────────────
