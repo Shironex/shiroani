@@ -140,6 +140,62 @@ export const screen = {
   })),
 };
 
+// ── webContents / webFrameMain mocks ─────────────────────────────────
+// Tests can register fake WebContents instances via `webContents.__set(id, fake)`.
+
+interface FakeWebContents {
+  isDestroyed?: () => boolean;
+  on: jest.Mock;
+  off: jest.Mock;
+  mainFrame?: {
+    framesInSubtree?: Array<{
+      detached: boolean;
+      processId: number;
+      routingId: number;
+      url: string;
+      executeJavaScript: jest.Mock;
+    }>;
+  };
+}
+
+const webContentsRegistry = new Map<number, FakeWebContents>();
+export const webContents = {
+  fromId: jest.fn((id: number) => webContentsRegistry.get(id) ?? null),
+  __set: (id: number, fake: FakeWebContents) => {
+    webContentsRegistry.set(id, fake);
+  },
+  __delete: (id: number) => {
+    webContentsRegistry.delete(id);
+  },
+  __reset: () => {
+    webContentsRegistry.clear();
+  },
+};
+
+interface FakeFrame {
+  detached: boolean;
+  processId: number;
+  routingId: number;
+  url: string;
+  executeJavaScript: jest.Mock;
+}
+
+const frameRegistry = new Map<string, FakeFrame>();
+export const webFrameMain = {
+  fromId: jest.fn((processId: number, routingId: number) => {
+    return frameRegistry.get(`${processId}:${routingId}`) ?? null;
+  }),
+  __set: (processId: number, routingId: number, frame: FakeFrame) => {
+    frameRegistry.set(`${processId}:${routingId}`, frame);
+  },
+  __delete: (processId: number, routingId: number) => {
+    frameRegistry.delete(`${processId}:${routingId}`);
+  },
+  __reset: () => {
+    frameRegistry.clear();
+  },
+};
+
 const powerMonitorListeners = new Map<string, Array<() => void>>();
 export const powerMonitor = {
   getSystemIdleState: jest.fn((_idleThresholdSeconds: number) => 'active' as const),

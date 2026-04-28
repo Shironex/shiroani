@@ -47,6 +47,8 @@ import { isMascotEnabled } from './mascot/overlay-state';
 import { createTray, destroyTray } from './tray';
 import { safeCleanup } from './cleanup-utils';
 import { appStatsTracker } from './stats/app-stats-tracker';
+import { playerSkipController } from './browser/player-skip-controller';
+import { AniSkipClient } from '../modules/aniskip';
 
 // Override Electron's default User-Agent so "Electron/<version>" and the app
 // name never leak in request headers — some subframe/worker requests bypass
@@ -286,6 +288,19 @@ async function bootstrap(): Promise<void> {
   registerBackgroundProtocol();
 
   await bootstrapNestApp();
+
+  // Hook the OP/ED skip controller's AniSkip dependency now that Nest is up.
+  // The controller itself is owned by the main process, but the HTTP client
+  // lives inside Nest (so future server-side consumers can DI it too).
+  if (nestApp) {
+    try {
+      const aniSkipClient = nestApp.get(AniSkipClient);
+      playerSkipController.setAniSkipClient(aniSkipClient);
+    } catch (error) {
+      logger.warn('Failed to resolve AniSkipClient from Nest container:', error);
+    }
+  }
+
   browserManager.init();
   mainWindow = await createMainWindow(browserManager);
   setMascotMainWindow(mainWindow);
@@ -528,6 +543,14 @@ app.on('before-quit', event => {
       () => {
         unregisterAppStatsPowerListeners();
         appStatsTracker.stop();
+      },
+      logger
+    );
+    await safeCleanup(
+      'player skip controller',
+      () => {
+        playerSkipController.detachAll();
+        playerSkipController.setAniSkipClient(null);
       },
       logger
     );
