@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { Search, SkipBack, SkipForward, Sparkles } from 'lucide-react';
 import { findLeafById, useBrowserStore } from '@/stores/useBrowserStore';
+import { useSettingsStore } from '@/stores/useSettingsStore';
 import { detectAnimeFromUrl } from '@/lib/anime-detection';
 import { getWebview } from '@/components/browser/webviewRefs';
 import { Button } from '@/components/ui/button';
@@ -29,17 +30,20 @@ type DockMessage =
   | { kind: 'error'; message: string };
 
 /**
- * POC floating dock for OP/ED skip — visible only on recognized anime player
- * hosts (ogladajanime.pl / shinden.pl). Three buttons:
- *   - "⏭ Pomiń +120s" — seekRelative(+120)
+ * Developer-only floating dock for OP/ED skip POC. Surfaces four debug
+ * actions on recognized anime player hosts:
  *   - "⏪ Cofnij -10s" — seekRelative(-10)
+ *   - "⏭ Pomiń +120s" — seekRelative(+120)
  *   - "🔍 Sprawdź" — probe the frame tree, dump result inline
+ *   - "💉 Wstrzyknij" — inject a DOM skip button into the player iframe
  *
- * Renderer overlay positioned outside the webview (it's outside the
- * `.pointer-events-none` layer in BrowserView). Disappears when the active
- * tab leaves an anime page or when no Electron API is present (web build).
+ * Gated on `devModeEnabled` so default users never see the POC scaffolding —
+ * the real user-facing skip UX (Netflix-style toast inside the iframe) lives
+ * elsewhere. This dock stays as a debug surface for verifying frame trees on
+ * new player hosts.
  */
 export function PlayerDock() {
+  const devModeEnabled = useSettingsStore(s => s.devModeEnabled);
   const tabs = useBrowserStore(useShallow(s => s.tabs));
   const activePaneId = useBrowserStore(s => s.activePaneId);
   const isFullScreen = useBrowserStore(s => s.isFullScreen);
@@ -147,9 +151,10 @@ export function PlayerDock() {
     }
   }, [resolveWebContentsId]);
 
-  // Visibility gate: only show on recognized anime hosts and only when the
-  // browser isn't in HTML5 fullscreen (the renderer overlay is hidden by the
-  // browser chrome anyway, but the dock should still get out of the way).
+  // Visibility gate: dev-mode only (POC scaffolding), recognized anime host,
+  // not in HTML5 fullscreen (renderer overlay would be hidden anyway), and
+  // the playerSkip preload bridge has to be present (web build skips it).
+  if (!devModeEnabled) return null;
   if (!detection || isFullScreen) return null;
   if (!window.electronAPI?.playerSkip) return null;
 
