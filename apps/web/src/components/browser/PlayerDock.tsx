@@ -166,7 +166,8 @@ export function PlayerDock() {
       {message.kind !== 'idle' && (
         <div
           className={cn(
-            'max-w-[420px] rounded-[10px] border border-border-glass bg-card/90 backdrop-blur',
+            'w-[min(560px,calc(100vw-3rem))] max-h-[min(480px,55vh)] overflow-y-auto',
+            'rounded-[10px] border border-border-glass bg-card/90 backdrop-blur',
             'px-3 py-2 text-[11.5px] leading-relaxed text-foreground shadow-lg',
             'whitespace-pre-wrap break-words'
           )}
@@ -211,6 +212,18 @@ export function PlayerDock() {
       </div>
     </div>
   );
+}
+
+function shortenUrl(url: string | null | undefined): string {
+  if (!url) return '<about:blank>';
+  try {
+    const u = new URL(url);
+    const path = u.pathname.length > 60 ? u.pathname.slice(0, 57) + '…' : u.pathname;
+    const hasQuery = u.search.length > 0;
+    return `${u.origin}${path}${hasQuery ? '?…' : ''}`;
+  } catch {
+    return url.length > 80 ? url.slice(0, 77) + '…' : url;
+  }
 }
 
 function renderMessage(message: DockMessage): React.ReactNode {
@@ -269,20 +282,21 @@ function renderMessage(message: DockMessage): React.ReactNode {
 
     case 'probe': {
       const v = message.value;
-      const lines: string[] = [];
-      lines.push(`Top: ${v.topUrl}`);
-      lines.push(
-        `Ramki: ${v.frames.length} | Z odtwarzanym wideo: ${v.playingFrameIndices.length}`
-      );
-      lines.push(`Czas: ${v.durationMs}ms`);
-      lines.push('—');
+      const interesting: number[] = [];
+      const noise: number[] = [];
       v.frames.forEach((f, i) => {
+        const isInteresting = f.videos.length > 0 || f.detached || Boolean(f.error);
+        (isInteresting ? interesting : noise).push(i);
+      });
+
+      const renderFrame = (i: number): string[] => {
+        const f = v.frames[i];
         const marker = v.playingFrameIndices.includes(i) ? '▶' : f.detached ? '✗' : '·';
         const videoCount = f.videos.length;
         const playing = f.videos.filter(x => x.playing).length;
-        const url = f.url || '<about:blank>';
-        const truncated = url.length > 80 ? url.slice(0, 77) + '…' : url;
-        lines.push(`${marker} [${i}] vids=${videoCount} (playing=${playing}) ${truncated}`);
+        const lines: string[] = [
+          `${marker} [${i}] vids=${videoCount} (playing=${playing}) ${shortenUrl(f.url)}`,
+        ];
         if (f.error) lines.push(`    error: ${f.error}`);
         f.videos.forEach((video, vi) => {
           if (video.playing || video.width > 0) {
@@ -291,8 +305,26 @@ function renderMessage(message: DockMessage): React.ReactNode {
             );
           }
         });
-      });
-      return <pre className="font-mono text-[10.5px] leading-snug">{lines.join('\n')}</pre>;
+        return lines;
+      };
+
+      const lines: string[] = [];
+      lines.push(`Top: ${shortenUrl(v.topUrl)}`);
+      lines.push(
+        `Ramki: ${v.frames.length} | Z wideo: ${v.playingFrameIndices.length} | Trackery: ${noise.length}`
+      );
+      lines.push(`Czas: ${v.durationMs}ms`);
+      lines.push('—');
+      interesting.forEach(i => lines.push(...renderFrame(i)));
+      if (noise.length > 0) {
+        lines.push('— trackery / about:blank —');
+        noise.forEach(i => lines.push(...renderFrame(i)));
+      }
+      return (
+        <pre className="font-mono text-[10.5px] leading-snug whitespace-pre-wrap break-all">
+          {lines.join('\n')}
+        </pre>
+      );
     }
 
     case 'error':
