@@ -1,10 +1,11 @@
 import { useCallback, useState, type KeyboardEvent } from 'react';
-import { Globe, Shield, X, AppWindow, Copy } from 'lucide-react';
+import { Globe, Shield, X, AppWindow, Copy, SkipForward } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { PillTag } from '@/components/ui/pill-tag';
 import { useBrowserStore } from '@/stores/useBrowserStore';
 import { useQuickAccessStore } from '@/stores/useQuickAccessStore';
+import { useSettingsStore } from '@/stores/useSettingsStore';
 import { SettingsCard, SettingsToggleRow } from '@/components/settings/SettingsCard';
 import { cn } from '@/lib/utils';
 
@@ -28,6 +29,10 @@ export function BrowserSection() {
   const setSplitTabsEnabled = useBrowserStore(state => state.setSplitTabsEnabled);
   const trackFrequentSites = useQuickAccessStore(state => state.trackFrequentSites);
   const setTrackFrequentSites = useQuickAccessStore(state => state.setTrackFrequentSites);
+  const opEdSkipEnabled = useSettingsStore(state => state.opEdSkipEnabled);
+  const setOpEdSkipEnabled = useSettingsStore(state => state.setOpEdSkipEnabled);
+  const autoSkipEnabled = useSettingsStore(state => state.autoSkipEnabled);
+  const setAutoSkipEnabled = useSettingsStore(state => state.setAutoSkipEnabled);
 
   const [whitelistInput, setWhitelistInput] = useState('');
 
@@ -188,6 +193,36 @@ export function BrowserSection() {
           checked={trackFrequentSites}
           onCheckedChange={setTrackFrequentSites}
         />
+      </SettingsCard>
+
+      <SettingsCard
+        icon={SkipForward}
+        title="Pomijanie odcinków"
+        subtitle="Automatyczne pomijanie czołówek i zakończeń na stronach anime."
+        tone="gold"
+      >
+        <SettingsToggleRow
+          id="op-ed-skip-label"
+          title="Automatycznie pokazuj przycisk pomijania"
+          description="Pokazuje przycisk Pomiń intro/outro na stronach anime z obsługiwanym odtwarzaczem."
+          checked={opEdSkipEnabled}
+          onCheckedChange={setOpEdSkipEnabled}
+        />
+
+        <SettingsToggleRow
+          id="auto-skip-label"
+          title="Automatyczne pomijanie"
+          description="Pomija OP/ED bez kliknięcia. Wymaga włączonego pokazywania przycisku."
+          checked={autoSkipEnabled}
+          onCheckedChange={setAutoSkipEnabled}
+          disabled={!opEdSkipEnabled}
+          divider
+        />
+
+        <p className="text-[11.5px] text-muted-foreground/85 leading-relaxed border-t border-border-glass/50 pt-3.5">
+          Korzysta z bazy AniSkip (MIT). Działa na ogladajanime.pl, shinden.pl i obsługiwanych
+          odtwarzaczach.
+        </p>
       </SettingsCard>
 
       <SettingsCard
