@@ -158,6 +158,16 @@ export class PlayerSkipController {
       }
     };
 
+    const onMediaStartedPlaying = () => {
+      // The user pressed play. `findPlayingVideoFrame`'s filter requires
+      // `videoWidth > 0 && currentTime > 0 && !paused` — at attach time on a
+      // freshly-loaded page, the video is paused and the filter returns null,
+      // so the initial fetchAndInject silently no-ops. This listener catches
+      // the moment playback starts and re-runs the inject path.
+      logger.info(`media-started-playing(wc=${webContentsId}) — re-running inject`);
+      void this.fetchAndInject(webContentsId);
+    };
+
     const onDestroyed = () => {
       this.detach(webContentsId);
     };
@@ -166,6 +176,7 @@ export class PlayerSkipController {
     wc.on('did-navigate', onDidNavigate);
     wc.on('did-navigate-in-page', onDidNavigateInPage);
     wc.on('did-frame-navigate', onDidFrameNavigate);
+    wc.on('media-started-playing', onMediaStartedPlaying);
     wc.on('destroyed', onDestroyed);
 
     state.cleanupListeners = () => {
@@ -174,6 +185,7 @@ export class PlayerSkipController {
         wc.off('did-navigate', onDidNavigate);
         wc.off('did-navigate-in-page', onDidNavigateInPage);
         wc.off('did-frame-navigate', onDidFrameNavigate);
+        wc.off('media-started-playing', onMediaStartedPlaying);
         wc.off('destroyed', onDestroyed);
       } catch (err) {
         logger.debug(
@@ -340,11 +352,14 @@ export class PlayerSkipController {
           return;
         }
         if (results.length === 0) {
-          logger.debug(
+          logger.info(
             `AniSkip resolve(wc=${webContentsId}): no windows for malId=${malId} ep=${episode} — staying on fallback`
           );
           return;
         }
+        logger.info(
+          `AniSkip resolve(wc=${webContentsId}): malId=${malId} ep=${episode} → ${results.length} windows ${results.map(r => `${r.skipType}(${r.interval.startTime.toFixed(0)}-${r.interval.endTime.toFixed(0)}s)`).join(', ')}`
+        );
 
         const liveFrame = await this.findAndCacheVideoFrame(current);
         if (!liveFrame) {
@@ -388,7 +403,7 @@ export class PlayerSkipController {
     try {
       await frame.executeJavaScript(script);
       state.lastMode = 'fallback';
-      logger.debug(`injectFallback(wc=${state.webContentsId}) → ${frameInfo.url}`);
+      logger.info(`injectFallback(wc=${state.webContentsId}) → ${frameInfo.url}`);
     } catch (err) {
       logger.warn(
         `injectFallback(wc=${state.webContentsId}): executeJavaScript failed — ${err instanceof Error ? err.message : String(err)}`
