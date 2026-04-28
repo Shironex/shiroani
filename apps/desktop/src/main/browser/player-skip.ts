@@ -1,5 +1,12 @@
 import { webContents as electronWebContents, webFrameMain, type WebContents } from 'electron';
 import { createMainLogger } from '../logging/logger';
+import {
+  COLLECT_VIDEOS_FN_SOURCE,
+  PROBE_VIDEOS_SOURCE,
+  buildFallbackButtonScript,
+} from './player-skip-injection';
+
+export { COLLECT_VIDEOS_FN_SOURCE, PROBE_VIDEOS_SOURCE };
 
 const logger = createMainLogger('PlayerSkip');
 
@@ -58,60 +65,6 @@ export interface SeekResult {
   frameProcessId?: number;
   frameRoutingId?: number;
 }
-
-/**
- * Shared helper injected into every executeJavaScript call. Walks the document
- * AND every shadow root recursively to collect `<video>` elements — modern
- * players (VK, JWPlayer, video.js, plyr, custom web components) commonly wrap
- * their `<video>` in a closed/open shadow root, which `document.querySelectorAll`
- * does NOT pierce. Without this, frames like vk.com/video_ext.php report vids=0
- * even when a video is clearly playing.
- *
- * Closed shadow roots remain inaccessible — but most player libs use open ones.
- */
-const COLLECT_VIDEOS_FN_SOURCE = `
-function shiroaniCollectVideos(root) {
-  const found = new Set();
-  const queue = [root || document];
-  while (queue.length) {
-    const node = queue.shift();
-    if (!node) continue;
-    if (node.querySelectorAll) {
-      for (const v of node.querySelectorAll('video')) found.add(v);
-      for (const el of node.querySelectorAll('*')) {
-        if (el.shadowRoot) queue.push(el.shadowRoot);
-      }
-    }
-  }
-  return Array.from(found);
-}
-`;
-
-/**
- * IIFE source that returns the basic state of every `<video>` element in the
- * frame's document AND its shadow roots. Serialised return value is shipped
- * back across the IPC boundary so any non-primitive properties are normalised
- * here.
- *
- * Filters that distinguish a "real" playing video from anti-adblock decoy
- * elements (see feasibility doc § Risks): videoWidth > 0 AND currentTime > 0
- * AND !paused.
- */
-const PROBE_VIDEOS_SOURCE = `
-(() => {
-  ${COLLECT_VIDEOS_FN_SOURCE}
-  const videos = shiroaniCollectVideos(document);
-  return videos.map(v => ({
-    width: v.videoWidth | 0,
-    height: v.videoHeight | 0,
-    currentTime: typeof v.currentTime === 'number' ? v.currentTime : 0,
-    duration: typeof v.duration === 'number' && isFinite(v.duration) ? v.duration : 0,
-    paused: !!v.paused,
-    src: v.currentSrc || v.src || '',
-    playing: (v.videoWidth | 0) > 0 && (typeof v.currentTime === 'number' && v.currentTime > 0) && !v.paused,
-  }));
-})()
-`;
 
 /**
  * Resolve the WebContents instance for a given id. Returns null if the
@@ -398,97 +351,7 @@ export async function injectSkipButtonIntoFrame(
   const live = safeResolveFrame(found.processId, found.routingId);
   if (!live) return { ok: false, reason: 'frame-detached', frameUrl: found.url };
 
-  const deltaLiteral = Number.isFinite(deltaSeconds) ? deltaSeconds : 0;
-  // Standalone IIFE that drops a fixed-position button into the iframe DOM.
-  // Idempotent: replaces any existing button with the same data attribute on
-  // re-injection so spamming the button doesn't pile up duplicates.
-  //
-  // Fullscreen handling: HTML5 fullscreen only renders the fullscreen element
-  // and its descendants — a button at <body> level becomes invisible. We watch
-  // for `fullscreenchange` (+ vendor prefix) and reparent our wrap into the
-  // current fullscreen element, then back to body when exiting. The listener
-  // is bound once per iframe `window` (idempotent across re-injections) via a
-  // sentinel flag so re-clicking the dock button doesn't pile up handlers.
-  //
-  // Position: `bottom: 72px` sits just above the typical 50-60px player
-  // control bar (timeline + transport buttons) — verified across VK, rumble,
-  // ogladajanime native player.
-  const injectSource = `
-    (() => {
-      const SHIROANI_ATTR = 'data-shiroani-skip-poc';
-      document.querySelectorAll('[' + SHIROANI_ATTR + ']').forEach(n => n.remove());
-
-      const wrap = document.createElement('div');
-      wrap.setAttribute(SHIROANI_ATTR, 'wrap');
-      wrap.style.cssText = [
-        'all: initial',
-        'position: fixed',
-        'right: 24px',
-        'bottom: 72px',
-        'z-index: 2147483647',
-        'font-family: system-ui, -apple-system, "Segoe UI", sans-serif',
-        'font-size: 13px',
-        'pointer-events: auto',
-      ].join(';');
-
-      const btn = document.createElement('button');
-      btn.setAttribute(SHIROANI_ATTR, 'btn');
-      btn.textContent = '⏭ Pomiń +' + (${JSON.stringify(deltaLiteral)}) + 's';
-      btn.style.cssText = [
-        'all: initial',
-        'cursor: pointer',
-        'padding: 10px 14px',
-        'border-radius: 9px',
-        'background: rgba(20, 14, 24, 0.85)',
-        'color: white',
-        'font-weight: 600',
-        'font-size: 13px',
-        'box-shadow: 0 6px 20px rgba(0,0,0,0.45)',
-        'border: 1px solid rgba(255,255,255,0.15)',
-        'font-family: inherit',
-      ].join(';');
-
-      btn.addEventListener('click', () => {
-        ${COLLECT_VIDEOS_FN_SOURCE}
-        const videos = shiroaniCollectVideos(document)
-          .filter(v => (v.videoWidth | 0) > 0 && v.currentTime > 0);
-        videos.sort((a, b) => (b.videoWidth * b.videoHeight) - (a.videoWidth * a.videoHeight));
-        if (videos[0]) {
-          videos[0].currentTime = videos[0].currentTime + (${JSON.stringify(deltaLiteral)});
-        }
-      });
-
-      wrap.appendChild(btn);
-      (document.body || document.documentElement).appendChild(wrap);
-
-      // Reparent into the fullscreen element so the button stays visible when
-      // the user fullscreens the player. Reparent back to <body> on exit.
-      const reparentForFullscreen = () => {
-        const fs = document.fullscreenElement || document.webkitFullscreenElement;
-        const wrapEl = document.querySelector('[' + SHIROANI_ATTR + '="wrap"]');
-        if (!wrapEl) return;
-        if (fs && !fs.contains(wrapEl)) {
-          fs.appendChild(wrapEl);
-        } else if (!fs && wrapEl.parentElement !== document.body && document.body) {
-          document.body.appendChild(wrapEl);
-        }
-      };
-      if (!window.__shiroaniSkipFsBound) {
-        window.__shiroaniSkipFsBound = true;
-        document.addEventListener('fullscreenchange', reparentForFullscreen);
-        document.addEventListener('webkitfullscreenchange', reparentForFullscreen);
-      }
-      // Run once on inject in case user clicked Wstrzyknij while already fullscreen.
-      reparentForFullscreen();
-
-      return {
-        ok: true,
-        host: location.host,
-        hasBody: !!document.body,
-        wasFullscreen: !!(document.fullscreenElement || document.webkitFullscreenElement),
-      };
-    })()
-  `;
+  const injectSource = buildFallbackButtonScript(deltaSeconds);
 
   try {
     const raw = (await live.executeJavaScript(injectSource)) as {
