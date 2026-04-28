@@ -22,6 +22,10 @@ const ALLOWED_STORE_KEYS = new Set([
   'settings.uiFontScale',
   'settings.displayName',
   'settings.devMode',
+  // OP/ED skip
+  'settings.opEdSkipEnabled',
+  'settings.autoSkipEnabled',
+  'settings.submitterUuid',
   // Library bookmarks
   'library-bookmarks',
   // Update channel
