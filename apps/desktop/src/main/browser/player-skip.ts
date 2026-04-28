@@ -410,8 +410,9 @@ export async function injectSkipButtonIntoFrame(
   // is bound once per iframe `window` (idempotent across re-injections) via a
   // sentinel flag so re-clicking the dock button doesn't pile up handlers.
   //
-  // Position: `bottom: 96px` clears the typical 60-80px player control bar
-  // (timeline + transport buttons) on VK / mp4upload / streamtape.
+  // Position: `bottom: 72px` sits just above the typical 50-60px player
+  // control bar (timeline + transport buttons) — verified across VK, rumble,
+  // ogladajanime native player.
   const injectSource = `
     (() => {
       const SHIROANI_ATTR = 'data-shiroani-skip-poc';
@@ -423,7 +424,7 @@ export async function injectSkipButtonIntoFrame(
         'all: initial',
         'position: fixed',
         'right: 24px',
-        'bottom: 96px',
+        'bottom: 72px',
         'z-index: 2147483647',
         'font-family: system-ui, -apple-system, "Segoe UI", sans-serif',
         'font-size: 13px',
