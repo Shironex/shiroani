@@ -60,9 +60,38 @@ export interface SeekResult {
 }
 
 /**
+ * Shared helper injected into every executeJavaScript call. Walks the document
+ * AND every shadow root recursively to collect `<video>` elements — modern
+ * players (VK, JWPlayer, video.js, plyr, custom web components) commonly wrap
+ * their `<video>` in a closed/open shadow root, which `document.querySelectorAll`
+ * does NOT pierce. Without this, frames like vk.com/video_ext.php report vids=0
+ * even when a video is clearly playing.
+ *
+ * Closed shadow roots remain inaccessible — but most player libs use open ones.
+ */
+const COLLECT_VIDEOS_FN_SOURCE = `
+function shiroaniCollectVideos(root) {
+  const found = new Set();
+  const queue = [root || document];
+  while (queue.length) {
+    const node = queue.shift();
+    if (!node) continue;
+    if (node.querySelectorAll) {
+      for (const v of node.querySelectorAll('video')) found.add(v);
+      for (const el of node.querySelectorAll('*')) {
+        if (el.shadowRoot) queue.push(el.shadowRoot);
+      }
+    }
+  }
+  return Array.from(found);
+}
+`;
+
+/**
  * IIFE source that returns the basic state of every `<video>` element in the
- * frame's document. The serialised return value is shipped back across the
- * IPC boundary so any non-primitive properties have to be normalised here.
+ * frame's document AND its shadow roots. Serialised return value is shipped
+ * back across the IPC boundary so any non-primitive properties are normalised
+ * here.
  *
  * Filters that distinguish a "real" playing video from anti-adblock decoy
  * elements (see feasibility doc § Risks): videoWidth > 0 AND currentTime > 0
@@ -70,7 +99,8 @@ export interface SeekResult {
  */
 const PROBE_VIDEOS_SOURCE = `
 (() => {
-  const videos = Array.from(document.querySelectorAll('video'));
+  ${COLLECT_VIDEOS_FN_SOURCE}
+  const videos = shiroaniCollectVideos(document);
   return videos.map(v => ({
     width: v.videoWidth | 0,
     height: v.videoHeight | 0,
@@ -238,10 +268,12 @@ export async function findPlayingVideoFrame(
     if (!live) continue;
 
     try {
-      // Quick `boolean` query — cheaper than the full probe payload.
+      // Quick `boolean` query — cheaper than the full probe payload. Pierces
+      // shadow DOM via shiroaniCollectVideos so VK / shadow-root players match.
       const hasPlaying = (await live.executeJavaScript(`
         (() => {
-          const videos = Array.from(document.querySelectorAll('video'));
+          ${COLLECT_VIDEOS_FN_SOURCE}
+          const videos = shiroaniCollectVideos(document);
           return videos.some(v => (v.videoWidth | 0) > 0 && v.currentTime > 0 && !v.paused);
         })()
       `)) as boolean;
@@ -291,7 +323,8 @@ export async function seekActiveVideo(
   const deltaLiteral = Number.isFinite(deltaSeconds) ? deltaSeconds : 0;
   const seekSource = `
     (() => {
-      const videos = Array.from(document.querySelectorAll('video'))
+      ${COLLECT_VIDEOS_FN_SOURCE}
+      const videos = shiroaniCollectVideos(document)
         .filter(v => (v.videoWidth | 0) > 0 && v.currentTime > 0 && !v.paused);
       if (videos.length === 0) return { ok: false, reason: 'no-playing-video' };
       videos.sort((a, b) => (b.videoWidth * b.videoHeight) - (a.videoWidth * a.videoHeight));
@@ -369,6 +402,16 @@ export async function injectSkipButtonIntoFrame(
   // Standalone IIFE that drops a fixed-position button into the iframe DOM.
   // Idempotent: replaces any existing button with the same data attribute on
   // re-injection so spamming the button doesn't pile up duplicates.
+  //
+  // Fullscreen handling: HTML5 fullscreen only renders the fullscreen element
+  // and its descendants — a button at <body> level becomes invisible. We watch
+  // for `fullscreenchange` (+ vendor prefix) and reparent our wrap into the
+  // current fullscreen element, then back to body when exiting. The listener
+  // is bound once per iframe `window` (idempotent across re-injections) via a
+  // sentinel flag so re-clicking the dock button doesn't pile up handlers.
+  //
+  // Position: `bottom: 96px` clears the typical 60-80px player control bar
+  // (timeline + transport buttons) on VK / mp4upload / streamtape.
   const injectSource = `
     (() => {
       const SHIROANI_ATTR = 'data-shiroani-skip-poc';
@@ -380,7 +423,7 @@ export async function injectSkipButtonIntoFrame(
         'all: initial',
         'position: fixed',
         'right: 24px',
-        'bottom: 24px',
+        'bottom: 96px',
         'z-index: 2147483647',
         'font-family: system-ui, -apple-system, "Segoe UI", sans-serif',
         'font-size: 13px',
@@ -405,7 +448,8 @@ export async function injectSkipButtonIntoFrame(
       ].join(';');
 
       btn.addEventListener('click', () => {
-        const videos = Array.from(document.querySelectorAll('video'))
+        ${COLLECT_VIDEOS_FN_SOURCE}
+        const videos = shiroaniCollectVideos(document)
           .filter(v => (v.videoWidth | 0) > 0 && v.currentTime > 0);
         videos.sort((a, b) => (b.videoWidth * b.videoHeight) - (a.videoWidth * a.videoHeight));
         if (videos[0]) {
@@ -415,7 +459,33 @@ export async function injectSkipButtonIntoFrame(
 
       wrap.appendChild(btn);
       (document.body || document.documentElement).appendChild(wrap);
-      return { ok: true, host: location.host, hasBody: !!document.body };
+
+      // Reparent into the fullscreen element so the button stays visible when
+      // the user fullscreens the player. Reparent back to <body> on exit.
+      const reparentForFullscreen = () => {
+        const fs = document.fullscreenElement || document.webkitFullscreenElement;
+        const wrapEl = document.querySelector('[' + SHIROANI_ATTR + '="wrap"]');
+        if (!wrapEl) return;
+        if (fs && !fs.contains(wrapEl)) {
+          fs.appendChild(wrapEl);
+        } else if (!fs && wrapEl.parentElement !== document.body && document.body) {
+          document.body.appendChild(wrapEl);
+        }
+      };
+      if (!window.__shiroaniSkipFsBound) {
+        window.__shiroaniSkipFsBound = true;
+        document.addEventListener('fullscreenchange', reparentForFullscreen);
+        document.addEventListener('webkitfullscreenchange', reparentForFullscreen);
+      }
+      // Run once on inject in case user clicked Wstrzyknij while already fullscreen.
+      reparentForFullscreen();
+
+      return {
+        ok: true,
+        host: location.host,
+        hasBody: !!document.body,
+        wasFullscreen: !!(document.fullscreenElement || document.webkitFullscreenElement),
+      };
     })()
   `;
 
@@ -424,6 +494,7 @@ export async function injectSkipButtonIntoFrame(
       ok: true;
       host: string;
       hasBody: boolean;
+      wasFullscreen: boolean;
     } | null;
     if (!raw) return { ok: false, reason: 'empty-result', frameUrl: found.url };
     logger.info(
