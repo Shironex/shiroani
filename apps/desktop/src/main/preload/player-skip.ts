@@ -50,4 +50,19 @@ export const playerSkipApi: ElectronAPI['playerSkip'] = {
       reason?: string;
       frameUrl?: string;
     }>,
+
+  attachController: params =>
+    ipcRenderer.invoke('player-skip:attach-controller', params) as Promise<{
+      ok: boolean;
+      mode: 'aniskip' | 'fallback' | 'none';
+    }>,
+
+  detachController: params =>
+    ipcRenderer.invoke('player-skip:detach-controller', params) as Promise<{ ok: boolean }>,
+
+  updateController: params =>
+    ipcRenderer.invoke('player-skip:update-controller', params) as Promise<{
+      ok: boolean;
+      mode: 'aniskip' | 'fallback' | 'none';
+    }>,
 };

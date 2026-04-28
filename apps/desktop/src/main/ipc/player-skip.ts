@@ -8,8 +8,16 @@ import {
   type ProbeResult,
   type SeekResult,
 } from '../browser/player-skip';
+import { playerSkipController, type AttachMode } from '../browser/player-skip-controller';
 import { handle } from './with-ipc-handler';
-import { playerInjectButtonSchema, playerProbeSchema, playerSeekRelativeSchema } from './schemas';
+import {
+  playerAttachControllerSchema,
+  playerDetachControllerSchema,
+  playerInjectButtonSchema,
+  playerProbeSchema,
+  playerSeekRelativeSchema,
+  playerUpdateControllerSchema,
+} from './schemas';
 
 const logger = createMainLogger('IPC:PlayerSkip');
 
@@ -69,6 +77,59 @@ export function registerPlayerSkipHandlers(): void {
     if (typeof wcId !== 'number') return null;
     return findPlayingVideoFrame(wcId);
   });
+
+  // ── MVP: attach/update/detach the per-webContents skip controller ─────
+  handle<
+    [
+      {
+        webContentsId: number;
+        malId: number | null;
+        episode: number | null;
+        autoSkipEnabled: boolean;
+      },
+    ],
+    { ok: boolean; mode: AttachMode }
+  >(
+    'player-skip:attach-controller',
+    async (_event, params) => {
+      logger.info(
+        `player-skip:attach-controller wc=${params.webContentsId} mal=${params.malId ?? 'null'} ep=${params.episode ?? 'null'} auto=${params.autoSkipEnabled}`
+      );
+      const mode = await playerSkipController.attach(params);
+      return { ok: true, mode };
+    },
+    { schema: playerAttachControllerSchema }
+  );
+
+  handle<[{ webContentsId: number }], { ok: boolean }>(
+    'player-skip:detach-controller',
+    async (_event, { webContentsId }) => {
+      logger.info(`player-skip:detach-controller wc=${webContentsId}`);
+      playerSkipController.detach(webContentsId);
+      return { ok: true };
+    },
+    { schema: playerDetachControllerSchema }
+  );
+
+  handle<
+    [
+      {
+        webContentsId: number;
+        partial: { malId?: number | null; episode?: number | null; autoSkipEnabled?: boolean };
+      },
+    ],
+    { ok: boolean; mode: AttachMode }
+  >(
+    'player-skip:update-controller',
+    async (_event, { webContentsId, partial }) => {
+      logger.info(
+        `player-skip:update-controller wc=${webContentsId} partial=${JSON.stringify(partial)}`
+      );
+      const mode = await playerSkipController.update(webContentsId, partial);
+      return { ok: true, mode };
+    },
+    { schema: playerUpdateControllerSchema }
+  );
 }
 
 export function cleanupPlayerSkipHandlers(): void {
@@ -76,4 +137,7 @@ export function cleanupPlayerSkipHandlers(): void {
   ipcMain.removeHandler('player:probe');
   ipcMain.removeHandler('player:inject-button');
   ipcMain.removeHandler('player:find-playing-frame');
+  ipcMain.removeHandler('player-skip:attach-controller');
+  ipcMain.removeHandler('player-skip:detach-controller');
+  ipcMain.removeHandler('player-skip:update-controller');
 }

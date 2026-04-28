@@ -74,6 +74,10 @@ export const ALLOWED_IPC_CHANNELS: ReadonlySet<string> = new Set([
   'player:seek-relative',
   'player:probe',
   'player:inject-button',
+  // player skip controller (MVP)
+  'player-skip:attach-controller',
+  'player-skip:detach-controller',
+  'player-skip:update-controller',
   // overlay
   'overlay:show',
   'overlay:hide',

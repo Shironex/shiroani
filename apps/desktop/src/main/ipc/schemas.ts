@@ -268,6 +268,48 @@ export const playerInjectButtonSchema = z.tuple([
   }),
 ]);
 
+// ============================================================================
+// Player skip controller channels (MVP)
+// ============================================================================
+
+/**
+ * Attach the OP/ED skip controller to a webContents. Renderer passes the
+ * resolved MAL id and episode number when known; null values cause the
+ * controller to inject the generic fallback button instead of fetching
+ * AniSkip data.
+ */
+export const playerAttachControllerSchema = z.tuple([
+  z.object({
+    webContentsId: z.number().int().positive(),
+    malId: z.number().int().positive().nullable(),
+    episode: z.number().int().positive().nullable(),
+    autoSkipEnabled: z.boolean(),
+  }),
+]);
+
+export const playerDetachControllerSchema = z.tuple([
+  z.object({
+    webContentsId: z.number().int().positive(),
+  }),
+]);
+
+/**
+ * Patch the controller state (e.g. when navigating between episodes of the
+ * same anime). Any field can be omitted; nullable fields explicitly clear.
+ */
+export const playerUpdateControllerSchema = z.tuple([
+  z.object({
+    webContentsId: z.number().int().positive(),
+    partial: z
+      .object({
+        malId: z.number().int().positive().nullable().optional(),
+        episode: z.number().int().positive().nullable().optional(),
+        autoSkipEnabled: z.boolean().optional(),
+      })
+      .strict(),
+  }),
+]);
+
 // Re-export shared-type schemas for handlers that compose them elsewhere.
 export {
   messageDialogOptionsSchema,

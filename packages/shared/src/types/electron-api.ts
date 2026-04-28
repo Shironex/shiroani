@@ -230,6 +230,33 @@ export interface ElectronAPI {
       webContentsId: number,
       deltaSeconds: number
     ) => Promise<{ ok: boolean; reason?: string; frameUrl?: string }>;
+
+    /**
+     * Attach the OP/ED skip controller for the given webContents. Renderer
+     * passes the resolved MAL id and episode (nulls allowed — controller
+     * falls back to the generic "+120s" button when either is missing).
+     * The returned `mode` reflects the *initial* injection — the controller
+     * may upgrade to `aniskip` asynchronously when AniSkip data arrives.
+     */
+    attachController: (params: {
+      webContentsId: number;
+      malId: number | null;
+      episode: number | null;
+      autoSkipEnabled: boolean;
+    }) => Promise<{ ok: boolean; mode: 'aniskip' | 'fallback' | 'none' }>;
+
+    /** Tear down a previously-attached controller. */
+    detachController: (params: { webContentsId: number }) => Promise<{ ok: boolean }>;
+
+    /**
+     * Patch a subset of the controller's state in place — used when the
+     * URL changes within the same anime, so listeners and frame cache
+     * survive across the navigation.
+     */
+    updateController: (params: {
+      webContentsId: number;
+      partial: { malId?: number | null; episode?: number | null; autoSkipEnabled?: boolean };
+    }) => Promise<{ ok: boolean; mode: 'aniskip' | 'fallback' | 'none' }>;
   };
   platform: NodeJS.Platform;
 }
