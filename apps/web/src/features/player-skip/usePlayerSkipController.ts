@@ -184,6 +184,9 @@ export function usePlayerSkipController(paneId: string): void {
     }
 
     const episode = extractEpisodeNumber(url, title);
+    logger.info(
+      `processing url=${url} title="${title}" animeTitle="${detection.animeTitle}" episode=${episode}`
+    );
     const webContentsId = safeGetWebContentsId(paneId);
     if (webContentsId === null) {
       // Webview not ready yet — bail without changing attached state.

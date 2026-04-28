@@ -117,7 +117,7 @@ async function resolveInternal(
       >(AnimeEvents.GET_DETAILS, { anilistId: libraryMatch.anilistId });
       const malId = details.anime?.idMal;
       if (malId) {
-        logger.debug(
+        logger.info(
           `Tier 1 hit: "${normalizedQuery}" → anilistId=${libraryMatch.anilistId} malId=${malId}`
         );
         return {
@@ -140,7 +140,7 @@ async function resolveInternal(
       const results = await fetchSearchResults(normalizedQuery);
       const match = bestMatch(results, normalizedQuery);
       if (match && match.similarity > CONFIDENCE_THRESHOLD && match.result.idMal) {
-        logger.debug(
+        logger.info(
           `Tier 2 hit: "${normalizedQuery}" → anilistId=${match.result.anilistId} malId=${match.result.idMal} (sim=${match.similarity.toFixed(3)})`
         );
         onAnilistIdResolved?.(libraryMatch.id, match.result.anilistId);
@@ -151,8 +151,8 @@ async function resolveInternal(
           confidence: match.similarity,
         };
       }
-      logger.debug(
-        `Tier 2 below threshold: "${normalizedQuery}" best sim=${match?.similarity?.toFixed(3) ?? 'none'}`
+      logger.info(
+        `Tier 2 below threshold: query="${normalizedQuery}" results=${results.length} bestTitle="${match?.result.title.romaji ?? match?.result.title.english ?? 'none'}" sim=${match?.similarity?.toFixed(3) ?? 'none'}`
       );
     } catch (err) {
       logger.warn(
@@ -167,7 +167,7 @@ async function resolveInternal(
     const results = await fetchSearchResults(normalizedQuery);
     const match = bestMatch(results, normalizedQuery);
     if (match && match.similarity > CONFIDENCE_THRESHOLD && match.result.idMal) {
-      logger.debug(
+      logger.info(
         `Tier 3 hit: "${normalizedQuery}" → anilistId=${match.result.anilistId} malId=${match.result.idMal} (sim=${match.similarity.toFixed(3)})`
       );
       return {
@@ -177,8 +177,8 @@ async function resolveInternal(
         confidence: match.similarity,
       };
     }
-    logger.debug(
-      `Tier 3 below threshold: "${normalizedQuery}" best sim=${match?.similarity?.toFixed(3) ?? 'none'}`
+    logger.info(
+      `Tier 3 below threshold: query="${normalizedQuery}" results=${results.length} bestTitle="${match?.result.title.romaji ?? match?.result.title.english ?? 'none'}" sim=${match?.similarity?.toFixed(3) ?? 'none'}`
     );
   } catch (err) {
     logger.warn(
