@@ -1,3 +1,11 @@
+/**
+ * Developer-only debug surface for the iframe-driving infra.
+ *
+ * Permanent — gated behind `devModeEnabled`. Used to probe new player hosts
+ * and diagnose injection issues. The user-facing OP/ED skip UX is delivered
+ * by `player-skip-controller.ts` directly into the player iframe — see
+ * docs/research/2026-04-28-op-ed-skip-mvp-plan.md.
+ */
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { Search, SkipBack, SkipForward, Sparkles } from 'lucide-react';
