@@ -13,6 +13,7 @@
 export const AnimeEvents = {
   // Client -> Server (requests)
   SEARCH: 'anime:search',
+  SEARCH_BY_TITLE: 'anime:search-by-title',
   GET_DETAILS: 'anime:get-details',
   GET_AIRING: 'anime:get-airing',
 

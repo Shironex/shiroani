@@ -120,6 +120,18 @@ query AnimeDetails($id: Int!) {
 }
 `;
 
+export const SEARCH_BY_TITLE_QUERY = `
+query SearchByTitle($search: String!, $perPage: Int) {
+  Page(page: 1, perPage: $perPage) {
+    media(search: $search, type: ANIME, sort: SEARCH_MATCH) {
+      id
+      idMal
+      title { romaji english native }
+    }
+  }
+}
+`;
+
 export const AIRING_SCHEDULE_QUERY = `
 query AiringSchedule($airingAt_greater: Int, $airingAt_lesser: Int, $page: Int, $perPage: Int) {
   Page(page: $page, perPage: $perPage) {

@@ -4,6 +4,7 @@ import {
   AnimeEvents,
   createLogger,
   animeSearchPayloadSchema,
+  animeSearchByTitlePayloadSchema,
   animeGetDetailsPayloadSchema,
   animeGetAiringPayloadSchema,
   animeGetTrendingPayloadSchema,
@@ -39,6 +40,21 @@ export class AnimeGateway {
       handler: async parsed => {
         const result = await this.animeService.searchAnime(parsed.query, parsed.page);
         return { results: result.media, pageInfo: result.pageInfo };
+      },
+    });
+  }
+
+  @SubscribeMessage(AnimeEvents.SEARCH_BY_TITLE)
+  async handleSearchByTitle(@MessageBody() payload: unknown) {
+    return handleGatewayRequest({
+      logger,
+      action: 'anime:search-by-title',
+      defaultResult: { results: [] },
+      schema: animeSearchByTitlePayloadSchema,
+      payload,
+      handler: async parsed => {
+        const results = await this.animeService.searchByTitle(parsed.title);
+        return { results };
       },
     });
   }

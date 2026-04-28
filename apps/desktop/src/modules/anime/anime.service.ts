@@ -4,6 +4,7 @@ import type { UserProfile } from '@shiroani/shared';
 import { AniListClient } from './anilist-client';
 import {
   SEARCH_ANIME_QUERY,
+  SEARCH_BY_TITLE_QUERY,
   ANIME_DETAILS_QUERY,
   AIRING_SCHEDULE_QUERY,
   TRENDING_ANIME_QUERY,
@@ -33,6 +34,12 @@ export interface PaginatedMediaResult {
   pageInfo: AniListPageInfo;
 }
 
+export interface TitleSearchResult {
+  anilistId: number;
+  idMal: number | undefined;
+  title: { romaji?: string; english?: string; native?: string };
+}
+
 export interface PaginatedAiringResult {
   airingSchedules: AniListAiringSchedule[];
   pageInfo: AniListPageInfo;
@@ -57,6 +64,30 @@ export class AnimeService {
       page,
       perPage,
     });
+  }
+
+  /**
+   * Search anime by title and return minimal results including MAL ID.
+   * Used by the OP/ED skip resolver to map an anime title to a MAL ID.
+   */
+  async searchByTitle(title: string, perPage = 5): Promise<TitleSearchResult[]> {
+    logger.debug(`searchByTitle: "${title}"`);
+    type Response = { Page: { media: AniListMedia[] } };
+    try {
+      const cacheKey = `search-by-title:${title.toLowerCase()}`;
+      const data = await this.anilistClient.cachedQuery<Response>(cacheKey, SEARCH_BY_TITLE_QUERY, {
+        search: title,
+        perPage,
+      });
+      return (data.Page.media ?? []).map(m => ({
+        anilistId: m.id,
+        idMal: m.idMal,
+        title: m.title,
+      }));
+    } catch (error) {
+      logger.error(`searchByTitle failed for "${title}": ${extractErrorMessage(error)}`);
+      throw error;
+    }
   }
 
   /**

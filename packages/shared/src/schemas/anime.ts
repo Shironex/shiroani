@@ -24,6 +24,10 @@ export const animeSearchPayloadSchema = z.object({
   page: z.number().int().positive().max(500).optional(),
 });
 
+export const animeSearchByTitlePayloadSchema = z.object({
+  title: z.string().trim().min(1).max(200),
+});
+
 export const animeGetDetailsPayloadSchema = z.object({
   anilistId: z.number().int().positive(),
 });
