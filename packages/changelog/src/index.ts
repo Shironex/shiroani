@@ -49,6 +49,54 @@ export interface Release {
 
 export const RELEASES: readonly Release[] = [
   {
+    version: '0.9.0',
+    date: '2 maja 2026',
+    shortDate: '02.05.2026',
+    title: 'Własna maskotka i przełącznik animacji bujania',
+    description:
+      'Maskotka na pulpicie może teraz nosić własny obrazek — wystarczy wskazać PNG, JPG, GIF albo WEBP w Ustawieniach → Maskotka i Shiro-chan zamieni się w cokolwiek innego. Do tego nowy przełącznik wyłącza delikatne bujanie maskotki, gdy przeszkadza, a podgląd pozycji docka w ustawieniach pokazuje teraz prawdziwe ikony i maskotkę zamiast samych kropek.',
+    type: 'minor',
+    latest: true,
+    categories: [
+      {
+        kind: 'feature',
+        label: 'Własna maskotka',
+        entries: [
+          'Nowa opcja w Ustawieniach → Maskotka pozwala wybrać własny obrazek — obsługiwane formaty PNG, JPG, GIF i WEBP, do 10 MB i 2048×2048 px',
+          'Trzy tryby skalowania (zmieść, wypełnij, rozciągnij), dzięki którym niekwadratowe obrazki nie są rozciągane na siłę',
+          'Animowane GIFy pokazują pierwszą klatkę — sama animacja ramki nie jest odtwarzana',
+          'Plik zapisuje się lokalnie i wraca po restarcie aplikacji, a przycisk „Przywróć domyślną" cofa do Shiro-chan',
+        ],
+      },
+      {
+        kind: 'feature',
+        label: 'Przełącznik animacji bujania',
+        entries: [
+          'Nowy przełącznik w Ustawieniach → Maskotka wyłącza delikatne bujanie maskotki',
+          'Po wyłączeniu maskotka renderuje jedną statyczną klatkę i zwalnia odświeżanie 60 razy na sekundę — zero zużycia procesora w spoczynku',
+          'Po ponownym włączeniu animacja startuje płynnie od początku, zamiast skakać w środku cyklu',
+        ],
+      },
+      {
+        kind: 'polish',
+        label: 'Drobne dopracowania',
+        entries: [
+          'Podgląd pozycji docka w Ustawieniach pokazuje teraz prawdziwe ikony widoków i maskotkę zamiast szarych kropek',
+          'Większy odstęp pod kartą profilu, żeby treść poniżej nie sklejała się z nagłówkiem',
+          'Zaostrzona walidacja krawędzi natywnego skalera maskotki — drobne, ale eliminuje nietypowe artefakty graficzne',
+        ],
+      },
+      {
+        kind: 'polish',
+        label: 'Stabilność i porządki',
+        entries: [
+          'Wewnętrzne porządki w module nakładki maskotki — usunięty nieużywany kod backendu macOS (sama maskotka na macOS była wyłączona już wcześniej; aplikacja na macOS dalej jest dostępna)',
+          'Aktualizacje zależności w grupach produkcyjnej i deweloperskiej',
+        ],
+      },
+    ],
+  },
+  {
     version: '0.8.0',
     date: '28 kwietnia 2026',
     shortDate: '28.04.2026',
@@ -56,7 +104,6 @@ export const RELEASES: readonly Release[] = [
     description:
       'Wbudowana przeglądarka uczy się nowej sztuczki: można teraz otworzyć dwie strony obok siebie w jednej karcie — wystarczy przeciągnąć kartę na bok, żeby utworzyć drugi panel. Idealne do oglądania odcinka i jednoczesnego sprawdzania AniList. Do tego ekrany Profilu, Harmonogramu i Odkrywaj nie pokazują już pustej strony, gdy AniList ma awarię — zamiast tego widać czytelny komunikat z powodem problemu.',
     type: 'minor',
-    latest: true,
     categories: [
       {
         kind: 'feature',
