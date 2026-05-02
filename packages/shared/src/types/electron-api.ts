@@ -8,7 +8,12 @@
  * bundle may also load in a plain-browser context during tests).
  */
 
-import type { UpdateInfo, UpdateDownloadProgress, UpdateChannel } from './updater';
+import type {
+  UpdateInfo,
+  UpdateDownloadProgress,
+  UpdateChannel,
+  UpdateAwaitingArtifactsInfo,
+} from './updater';
 import type {
   NotificationSettings,
   NotificationSubscription,
@@ -136,6 +141,14 @@ export interface ElectronAPI {
     onUpdateDownloaded: (callback: (info: UpdateInfo) => void) => () => void;
     onUpdateError: (callback: (message: string) => void) => () => void;
     onChannelChanged: (callback: (channel: UpdateChannel) => void) => () => void;
+    /**
+     * Fires when the GitHub release tag exists but its platform binaries
+     * (latest.yml, .exe, .dmg, .blockmap, etc.) are still being uploaded by
+     * CI. Renderer should switch to a non-destructive "still uploading" UI
+     * and wait — the main process will retry on an exponential backoff and
+     * emit `update-available` once the artifacts land.
+     */
+    onAwaitingArtifacts: (callback: (info: UpdateAwaitingArtifactsInfo) => void) => () => void;
   };
   notifications: {
     getSettings: () => Promise<NotificationSettings>;

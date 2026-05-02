@@ -4,6 +4,7 @@ import type {
   UpdateInfo,
   UpdateDownloadProgress,
   UpdateChannel,
+  UpdateAwaitingArtifactsInfo,
 } from '@shiroani/shared';
 import { createIpcListener } from './_shared';
 
@@ -26,4 +27,5 @@ export const updaterApi: ElectronAPI['updater'] = {
   onUpdateDownloaded: createIpcListener<UpdateInfo>('updater:update-downloaded'),
   onUpdateError: createIpcListener<string>('updater:error'),
   onChannelChanged: createIpcListener<UpdateChannel>('updater:channel-changed'),
+  onAwaitingArtifacts: createIpcListener<UpdateAwaitingArtifactsInfo>('updater:awaiting-artifacts'),
 };

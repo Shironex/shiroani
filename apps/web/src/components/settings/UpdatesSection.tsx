@@ -12,7 +12,7 @@ import { GITHUB_RELEASES_URL, UPDATE_ERROR_RELEASE_PENDING } from '@shiroani/sha
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { PillTag } from '@/components/ui/pill-tag';
-import { useUpdateStore } from '@/stores/useUpdateStore';
+import { useUpdateStore, isUpdateLocked } from '@/stores/useUpdateStore';
 import { useBrowserStore } from '@/stores/useBrowserStore';
 import { SettingsCard } from '@/components/settings/SettingsCard';
 import { ProgressBar } from '@/components/shared/ProgressBar';
@@ -102,6 +102,8 @@ export function UpdatesSection({ version }: UpdatesSectionProps) {
       }
       case 'ready':
         return 'Aktualizacja gotowa do instalacji';
+      case 'awaiting-artifacts':
+        return 'Wydanie się wgrywa — pobieranie zacznie się automatycznie.';
       case 'error': {
         if (error === UPDATE_ERROR_RELEASE_PENDING) {
           return 'Wydanie w toku — spróbuj za chwilę.';
@@ -116,9 +118,18 @@ export function UpdatesSection({ version }: UpdatesSectionProps) {
   const statusTone: 'green' | 'accent' | 'destructive' | 'muted' = (() => {
     if (status === 'error') return 'destructive';
     if (status === 'idle') return 'green';
-    if (status === 'available' || status === 'downloading' || status === 'ready') return 'accent';
+    if (
+      status === 'available' ||
+      status === 'downloading' ||
+      status === 'awaiting-artifacts' ||
+      status === 'ready'
+    ) {
+      return 'accent';
+    }
     return 'muted';
   })();
+
+  const updateLocked = isUpdateLocked(status);
 
   const lastCheckedLabel = formatRelativeTime(lastCheckedAt);
 
@@ -165,7 +176,7 @@ export function UpdatesSection({ version }: UpdatesSectionProps) {
             <div className="inline-flex items-center gap-1">
               <ChannelButton
                 active={channel === 'stable'}
-                disabled={isChannelSwitching}
+                disabled={isChannelSwitching || updateLocked}
                 onClick={() => setChannel('stable')}
               >
                 <span
@@ -178,7 +189,7 @@ export function UpdatesSection({ version }: UpdatesSectionProps) {
               </ChannelButton>
               <ChannelButton
                 active={channel === 'beta'}
-                disabled={isChannelSwitching}
+                disabled={isChannelSwitching || updateLocked}
                 onClick={() => setChannel('beta')}
               >
                 <span
@@ -190,10 +201,16 @@ export function UpdatesSection({ version }: UpdatesSectionProps) {
                 Beta
               </ChannelButton>
             </div>
-            <p className="mt-2 text-[11.5px] text-muted-foreground/80 leading-relaxed">
-              Kanał stabilny dostaje aktualizacje dopiero po przetestowaniu. Beta może zawierać
-              błędy.
-            </p>
+            {updateLocked && !isChannelSwitching ? (
+              <p className="mt-2 text-[11.5px] text-muted-foreground/80 leading-relaxed">
+                Nie można zmienić kanału w trakcie aktualizacji.
+              </p>
+            ) : (
+              <p className="mt-2 text-[11.5px] text-muted-foreground/80 leading-relaxed">
+                Kanał stabilny dostaje aktualizacje dopiero po przetestowaniu. Beta może zawierać
+                błędy.
+              </p>
+            )}
           </div>
         )}
 

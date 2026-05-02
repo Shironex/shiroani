@@ -6,7 +6,28 @@ import type {
   UpdateDownloadProgress,
   UpdateChannel,
 } from '@shiroani/shared';
-import { createLogger, DEFAULT_UPDATE_CHANNEL } from '@shiroani/shared';
+import {
+  createLogger,
+  DEFAULT_UPDATE_CHANNEL,
+  UPDATE_ERROR_RELEASE_PENDING,
+} from '@shiroani/shared';
+
+/**
+ * Statuses where an update is mid-flight and the user must NOT switch
+ * channels (would silently abandon a download or invalidate a pending
+ * install). Mirrors the lock the desktop main process enforces via the
+ * awaiting-artifacts retry timer.
+ */
+const UPDATE_LOCKED_STATUSES: ReadonlySet<UpdateStatus> = new Set([
+  'downloading',
+  'awaiting-artifacts',
+  'ready',
+]);
+
+/** True while an update is downloading, awaiting CI artifacts, or ready to install. */
+export function isUpdateLocked(status: UpdateStatus): boolean {
+  return UPDATE_LOCKED_STATUSES.has(status);
+}
 
 const logger = createLogger('UpdateStore');
 
@@ -107,6 +128,13 @@ export const useUpdateStore = create<UpdateStore>()(
       },
 
       installNow: () => {
+        // Only callable from a downloaded "ready" state. Anything earlier
+        // (downloading / awaiting-artifacts) means we don't have a valid
+        // installer on disk and quitAndInstall would no-op or crash.
+        if (get().status !== 'ready') {
+          logger.warn(`installNow ignored — status is '${get().status}', expected 'ready'`);
+          return;
+        }
         // Flip the splash trigger BEFORE the IPC call so the UI flips to
         // the updating variant while electron-updater is tearing down.
         // quitAndInstall is quick (usually <1s) — a dedicated "installing"
@@ -125,6 +153,15 @@ export const useUpdateStore = create<UpdateStore>()(
       },
 
       setChannel: (channel: UpdateChannel) => {
+        // Block the switch while an update is in flight — swapping
+        // `autoUpdater.channel` mid-download silently abandons the
+        // in-flight transfer and confuses the install handoff.
+        if (isUpdateLocked(get().status)) {
+          logger.warn(
+            `setChannel('${channel}') ignored — update is locked in status '${get().status}'`
+          );
+          return;
+        }
         set({ isChannelSwitching: true, channel }, undefined, 'update/setChannelStart');
         callUpdaterAPI('set update channel', u =>
           u.setChannel(channel).then(result => {
@@ -209,7 +246,23 @@ export const useUpdateStore = create<UpdateStore>()(
         });
 
         const unsubError = updater.onUpdateError(message => {
+          // Defensive fallback for older main-process builds that still emit
+          // the RELEASE_PENDING sentinel via `updater:error` instead of the
+          // dedicated `updater:awaiting-artifacts` event. Treat both as the
+          // same non-destructive UI state.
+          if (message === UPDATE_ERROR_RELEASE_PENDING) {
+            set(
+              { status: 'awaiting-artifacts', error: null },
+              undefined,
+              'update/awaitingArtifactsFromSentinel'
+            );
+            return;
+          }
           set({ status: 'error', error: message }, undefined, 'update/error');
+        });
+
+        const unsubAwaitingArtifacts = updater.onAwaitingArtifacts(() => {
+          set({ status: 'awaiting-artifacts', error: null }, undefined, 'update/awaitingArtifacts');
         });
 
         const unsubChannelChanged = updater.onChannelChanged(newChannel => {
@@ -241,6 +294,7 @@ export const useUpdateStore = create<UpdateStore>()(
           unsubProgress();
           unsubDownloaded();
           unsubError();
+          unsubAwaitingArtifacts();
           unsubChannelChanged();
         };
       },

@@ -174,18 +174,142 @@ describe('updater module', () => {
     );
   });
 
-  it('maps .yml 404 error to RELEASE_PENDING sentinel', async () => {
+  it('maps .yml 404 error to awaiting-artifacts broadcast (not the error channel)', async () => {
     setPlatform('linux');
     const updater = await import('..');
     const { autoUpdater } = getUpdaterMock();
     const { BrowserWindow } = getElectron();
     const win = new BrowserWindow();
+    (BrowserWindow.getAllWindows as jest.Mock).mockReturnValue([win]);
     updater.initializeAutoUpdater(win, false);
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (autoUpdater as any).emit('error', new Error('Cannot find latest.yml in the latest release'));
 
-    expect(win.webContents.send).toHaveBeenCalledWith('updater:error', 'RELEASE_PENDING');
+    expect(win.webContents.send).toHaveBeenCalledWith(
+      'updater:awaiting-artifacts',
+      expect.objectContaining({ since: expect.any(Number) })
+    );
+    expect(win.webContents.send).not.toHaveBeenCalledWith('updater:error', 'RELEASE_PENDING');
+  });
+
+  it('maps binary-asset 404 (.exe) error to awaiting-artifacts broadcast', async () => {
+    setPlatform('linux');
+    const updater = await import('..');
+    const { autoUpdater } = getUpdaterMock();
+    const { BrowserWindow } = getElectron();
+    const win = new BrowserWindow();
+    (BrowserWindow.getAllWindows as jest.Mock).mockReturnValue([win]);
+    updater.initializeAutoUpdater(win, false);
+
+    (autoUpdater as unknown as { emit: (e: string, p: unknown) => void }).emit(
+      'error',
+      new Error(
+        'Cannot download "https://github.com/Shironex/shiroani/releases/download/v2.0.0/ShiroAni-Setup-2.0.0.exe": HTTP 404'
+      )
+    );
+
+    expect(win.webContents.send).toHaveBeenCalledWith(
+      'updater:awaiting-artifacts',
+      expect.objectContaining({ since: expect.any(Number) })
+    );
+  });
+
+  it('schedules retry with exponential backoff after awaiting-artifacts', async () => {
+    setPlatform('linux');
+    const updater = await import('..');
+    const { autoUpdater } = getUpdaterMock();
+    const { BrowserWindow } = getElectron();
+    const win = new BrowserWindow();
+    (BrowserWindow.getAllWindows as jest.Mock).mockReturnValue([win]);
+    updater.initializeAutoUpdater(win, false);
+
+    // Drain the initial 5s startup check so its mock call doesn't pollute counts.
+    await jest.advanceTimersByTimeAsync(5000);
+    (autoUpdater.checkForUpdates as jest.Mock).mockClear();
+
+    (autoUpdater as unknown as { emit: (e: string, p: unknown) => void }).emit(
+      'error',
+      new Error('Cannot find latest.yml in the latest release')
+    );
+
+    // First retry @ 30s.
+    expect(autoUpdater.checkForUpdates).not.toHaveBeenCalled();
+    await jest.advanceTimersByTimeAsync(30_000);
+    expect(autoUpdater.checkForUpdates).toHaveBeenCalledTimes(1);
+
+    // Second 404 → next backoff is 60s.
+    (autoUpdater as unknown as { emit: (e: string, p: unknown) => void }).emit(
+      'error',
+      new Error('Cannot find latest.yml in the latest release')
+    );
+    await jest.advanceTimersByTimeAsync(60_000);
+    expect(autoUpdater.checkForUpdates).toHaveBeenCalledTimes(2);
+  });
+
+  it('clears retry timer when update-available fires', async () => {
+    setPlatform('linux');
+    const updater = await import('..');
+    const { autoUpdater } = getUpdaterMock();
+    const { BrowserWindow } = getElectron();
+    const win = new BrowserWindow();
+    (BrowserWindow.getAllWindows as jest.Mock).mockReturnValue([win]);
+    updater.initializeAutoUpdater(win, false);
+
+    await jest.advanceTimersByTimeAsync(5000);
+    (autoUpdater.checkForUpdates as jest.Mock).mockClear();
+
+    (autoUpdater as unknown as { emit: (e: string, p: unknown) => void }).emit(
+      'error',
+      new Error('Cannot find latest.yml')
+    );
+
+    // Recovery: artifacts landed.
+    (autoUpdater as unknown as { emit: (e: string, p: unknown) => void }).emit('update-available', {
+      version: '2.0.0',
+      releaseNotes: null,
+      releaseDate: '2026-01-01',
+    });
+
+    // Walk past the would-be retry deadline; the timer should have been cleared.
+    await jest.advanceTimersByTimeAsync(60_000);
+    expect(autoUpdater.checkForUpdates).not.toHaveBeenCalled();
+  });
+
+  it('falls back to update-not-available after the 30-min retry budget runs out', async () => {
+    setPlatform('linux');
+    const updater = await import('..');
+    const { autoUpdater } = getUpdaterMock();
+    const { BrowserWindow } = getElectron();
+    const win = new BrowserWindow();
+    (BrowserWindow.getAllWindows as jest.Mock).mockReturnValue([win]);
+    updater.initializeAutoUpdater(win, false);
+
+    await jest.advanceTimersByTimeAsync(5000);
+    (autoUpdater.checkForUpdates as jest.Mock).mockClear();
+    (win.webContents.send as jest.Mock).mockClear();
+
+    // Kick off awaiting-artifacts and keep failing every retry until the
+    // 30-min budget is exhausted. Backoff schedule is 30s, 60s, 120s, 300s,
+    // 600s, 600s, 600s ... — total > 30min after the 6th attempt.
+    const fail = () =>
+      (autoUpdater as unknown as { emit: (e: string, p: unknown) => void }).emit(
+        'error',
+        new Error('Cannot find latest.yml')
+      );
+    fail();
+    const delays = [30_000, 60_000, 120_000, 300_000, 600_000, 600_000, 600_000];
+    for (const d of delays) {
+      await jest.advanceTimersByTimeAsync(d);
+      fail();
+    }
+
+    // Once the budget is exhausted, the main process should emit a fallback
+    // `update-not-available` so the renderer drops back to idle.
+    expect(win.webContents.send).toHaveBeenCalledWith(
+      'updater:update-not-available',
+      expect.objectContaining({ version: expect.any(String) })
+    );
   });
 
   it('forwards generic error message to renderer', async () => {

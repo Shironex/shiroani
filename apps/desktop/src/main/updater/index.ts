@@ -1,7 +1,7 @@
 import { app, BrowserWindow } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import * as semver from 'semver';
-import { UPDATE_ERROR_RELEASE_PENDING, DEFAULT_UPDATE_CHANNEL } from '@shiroani/shared';
+import { DEFAULT_UPDATE_CHANNEL } from '@shiroani/shared';
 import type { UpdateChannel } from '@shiroani/shared';
 import type { UpdateInfo as ElectronUpdateInfo } from 'electron-updater';
 import type { ProgressInfo } from 'electron-updater';
@@ -24,6 +24,74 @@ let mainWindowRef: BrowserWindow | null = null;
 // Disable auto download — user controls when to download
 autoUpdater.autoDownload = false;
 autoUpdater.autoInstallOnAppQuit = true;
+
+// ── Awaiting-artifacts retry state ─────────────────────────────────────
+// When the release tag exists but its binaries are still being uploaded by
+// CI, electron-updater emits `error` with a 404. We surface that as the
+// `awaiting-artifacts` UI state and retry on an exponential backoff until
+// either the artifacts land (next event resets us) or the total budget
+// runs out (~30 min) and we fall back to idle.
+const RETRY_BACKOFF_MS: readonly number[] = [
+  30_000, // 30s
+  60_000, // 1m
+  120_000, // 2m
+  300_000, // 5m
+  600_000, // 10m  (cap; subsequent attempts also use 10m)
+];
+const RETRY_BUDGET_MS = 30 * 60 * 1000; // 30 minutes total
+let awaitingRetryTimer: NodeJS.Timeout | null = null;
+let awaitingRetryAttempt = 0;
+let awaitingStartedAt = 0;
+
+function clearAwaitingRetry(): void {
+  if (awaitingRetryTimer) {
+    clearTimeout(awaitingRetryTimer);
+    awaitingRetryTimer = null;
+  }
+  awaitingRetryAttempt = 0;
+  awaitingStartedAt = 0;
+}
+
+function scheduleAwaitingRetry(): void {
+  if (awaitingRetryTimer) clearTimeout(awaitingRetryTimer);
+  const elapsed = Date.now() - awaitingStartedAt;
+  if (elapsed >= RETRY_BUDGET_MS) {
+    logger.warn(
+      `Awaiting-artifacts retry budget exhausted (${Math.round(elapsed / 1000)}s) — giving up and resetting to idle`
+    );
+    clearAwaitingRetry();
+    // Tell the renderer to drop back to idle. We piggyback on
+    // `update-not-available` semantics rather than inventing yet another
+    // event — the renderer already maps this to status: 'idle'.
+    sendToMainWindow('updater:update-not-available', {
+      version: app.getVersion(),
+      releaseNotes: null,
+      releaseDate: new Date().toISOString(),
+    });
+    return;
+  }
+  const idx = Math.min(awaitingRetryAttempt, RETRY_BACKOFF_MS.length - 1);
+  const delay = RETRY_BACKOFF_MS[idx];
+  awaitingRetryAttempt += 1;
+  logger.info(
+    `Scheduling awaiting-artifacts retry #${awaitingRetryAttempt} in ${Math.round(delay / 1000)}s`
+  );
+  awaitingRetryTimer = setTimeout(() => {
+    awaitingRetryTimer = null;
+    if (!updaterEnabled) return;
+    void checkForUpdates();
+  }, delay);
+}
+
+/** Broadcast an IPC event to every open window. Used for the awaiting-artifacts
+ *  event to match the channel-changed broadcast pattern. */
+function broadcastToAllWindows(channel: string, ...args: unknown[]): void {
+  for (const win of BrowserWindow.getAllWindows()) {
+    if (!win.isDestroyed()) {
+      win.webContents.send(channel, ...args);
+    }
+  }
+}
 
 function parseReleaseNotes(releaseNotes: ElectronUpdateInfo['releaseNotes']): string | null {
   if (!releaseNotes) return null;
@@ -53,6 +121,9 @@ function applyChannel(channel: UpdateChannel): void {
   autoUpdater.channel = channel === 'beta' ? 'beta' : 'latest';
   autoUpdater.allowPrerelease = channel === 'beta';
   autoUpdater.allowDowngrade = true;
+  // Channel switch invalidates any in-flight awaiting-artifacts retry — the
+  // pending release we were watching belongs to the previous channel.
+  clearAwaitingRetry();
   logger.info(`Update channel set to '${channel}' (autoUpdater.channel='${autoUpdater.channel}')`);
 }
 
@@ -100,6 +171,9 @@ export function initializeAutoUpdater(mainWindow: BrowserWindow, isDev: boolean)
 
   autoUpdater.on('update-available', (info: ElectronUpdateInfo) => {
     logger.info('Update available:', info.version);
+    // Artifacts landed (or weren't missing in the first place) — drop any
+    // pending retry so we don't keep polling after the happy path resumes.
+    clearAwaitingRetry();
     let isDowngrade = false;
     try {
       isDowngrade = semver.lt(info.version, app.getVersion());
@@ -117,6 +191,7 @@ export function initializeAutoUpdater(mainWindow: BrowserWindow, isDev: boolean)
 
   autoUpdater.on('update-not-available', (info: ElectronUpdateInfo) => {
     logger.info('No update available. Current version is up to date:', info.version);
+    clearAwaitingRetry();
     sendToMainWindow('updater:update-not-available', {
       version: info.version,
       releaseNotes: parseReleaseNotes(info.releaseNotes),
@@ -138,6 +213,7 @@ export function initializeAutoUpdater(mainWindow: BrowserWindow, isDev: boolean)
 
   autoUpdater.on('update-downloaded', (info: ElectronUpdateInfo) => {
     logger.info('Update downloaded:', info.version);
+    clearAwaitingRetry();
     sendToMainWindow('updater:update-downloaded', {
       version: info.version,
       releaseNotes: parseReleaseNotes(info.releaseNotes),
@@ -146,21 +222,33 @@ export function initializeAutoUpdater(mainWindow: BrowserWindow, isDev: boolean)
   });
 
   autoUpdater.on('error', (error: Error) => {
-    // Detect 404 on any update yml file (latest.yml, beta.yml, alpha.yml, etc.)
-    // We check both filenames to handle race conditions when the channel changes
-    // mid-check, and also when stable checks hit a beta-only release tag.
-    const isReleasePending =
-      /Cannot find (latest|beta)\.yml/.test(error.message) ||
-      (error.message.includes('.yml') && error.message.includes('404'));
+    // Detect "release exists but artifacts aren't there yet" in two flavors:
+    //   1. The .yml manifest is missing (initial check after release-tag,
+    //      before CI uploads anything).
+    //   2. The .yml is present but a binary asset (.exe, .dmg, .zip, .blockmap)
+    //      404s — happens when CI finishes uploading the manifest first and
+    //      the renderer kicks off `startDownload` mid-upload.
+    // electron-updater error strings are not a stable contract, so we keep
+    // the regex permissive and ALWAYS log the raw message for drift visibility.
+    const message = error.message ?? '';
+    const isYmlPending =
+      /Cannot find (latest|beta)\.yml/.test(message) ||
+      (message.includes('.yml') && message.includes('404'));
+    const isAssetPending = /\b404\b[\s\S]*\.(exe|dmg|zip|blockmap|yml)/i.test(message);
+    const isReleasePending = isYmlPending || isAssetPending;
 
     if (isReleasePending) {
       logger.warn(
-        'Release artifacts not yet available (.yml 404) — build may still be in progress'
+        `Release artifacts not yet available — build may still be in progress. Raw: ${message}`
       );
-      sendToMainWindow('updater:error', UPDATE_ERROR_RELEASE_PENDING);
+      // Track when the awaiting state began so we can enforce the total
+      // retry budget across the backoff schedule.
+      if (awaitingStartedAt === 0) awaitingStartedAt = Date.now();
+      broadcastToAllWindows('updater:awaiting-artifacts', { since: awaitingStartedAt });
+      scheduleAwaitingRetry();
     } else {
-      logger.error('Auto-updater error:', error.message);
-      sendToMainWindow('updater:error', error.message);
+      logger.error('Auto-updater error:', message);
+      sendToMainWindow('updater:error', message);
     }
   });
 
