@@ -1,7 +1,7 @@
-// Components using background state should import from this store
+﻿// Components using background state should import from this store
 // (e.g., BackgroundOverlay.tsx, SettingsView.tsx, App.tsx)
 import { create } from 'zustand';
-import { devtools } from 'zustand/middleware';
+import { maybeDevtools } from '@/stores/utils/maybeDevtools';
 import { createLogger } from '@shiroani/shared';
 import { electronStoreGet, electronStoreSet, electronStoreDelete } from '@/lib/electron-store';
 
@@ -146,7 +146,7 @@ function applyBackgroundProperty(
  * Background store using Zustand
  */
 export const useBackgroundStore = create<BackgroundStore>()(
-  devtools(
+  maybeDevtools(
     (set, get) => ({
       // Initial state
       customBackground: null,

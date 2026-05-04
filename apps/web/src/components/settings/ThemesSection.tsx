@@ -29,7 +29,11 @@ import { UI_FONT_SCALE_PRESETS, type Theme } from '@shiroani/shared';
 
 export function ThemesSection() {
   const { t } = useTranslation('settings');
-  const { theme, setTheme, setPreviewTheme, uiFontScale, setUIFontScale } = useSettingsStore();
+  const theme = useSettingsStore(s => s.theme);
+  const uiFontScale = useSettingsStore(s => s.uiFontScale);
+  const setTheme = useSettingsStore(s => s.setTheme);
+  const setPreviewTheme = useSettingsStore(s => s.setPreviewTheme);
+  const setUIFontScale = useSettingsStore(s => s.setUIFontScale);
   const customThemes = useCustomThemeStore(s => s.customThemes);
   const deleteTheme = useCustomThemeStore(s => s.deleteTheme);
   const exportTheme = useCustomThemeStore(s => s.exportTheme);

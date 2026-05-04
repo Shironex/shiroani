@@ -27,25 +27,35 @@ interface WebviewFailLoadEvent extends Event {
 }
 
 // Script injected on dom-ready to patch iframe allow attributes for video player compatibility.
+// The MutationObserver self-disconnects after 30 s of no new iframe additions so it does not
+// run forever in long-lived guest pages.
 const IFRAME_PATCH_SCRIPT = `
 (function() {
-  const ALLOW_ATTR = 'autoplay; fullscreen; encrypted-media; picture-in-picture';
+  var ALLOW_ATTR = 'autoplay; fullscreen; encrypted-media; picture-in-picture';
+  var SETTLE_MS = 30000;
   function patchIframe(iframe) {
     if (!iframe.hasAttribute('allow') || !iframe.getAttribute('allow').includes('autoplay')) {
       iframe.setAttribute('allow', ALLOW_ATTR);
     }
   }
   document.querySelectorAll('iframe').forEach(patchIframe);
-  new MutationObserver(function(mutations) {
+  var observer = new MutationObserver(function(mutations) {
+    var patched = false;
     for (var m of mutations) {
       for (var node of m.addedNodes) {
-        if (node.nodeName === 'IFRAME') patchIframe(node);
+        if (node.nodeName === 'IFRAME') { patchIframe(node); patched = true; }
         else if (node.querySelectorAll) {
-          node.querySelectorAll('iframe').forEach(patchIframe);
+          node.querySelectorAll('iframe').forEach(function(el) { patchIframe(el); patched = true; });
         }
       }
     }
-  }).observe(document.documentElement, { childList: true, subtree: true });
+    if (patched) {
+      clearTimeout(settleTimer);
+      settleTimer = setTimeout(function() { observer.disconnect(); }, SETTLE_MS);
+    }
+  });
+  var settleTimer = setTimeout(function() { observer.disconnect(); }, SETTLE_MS);
+  observer.observe(document.documentElement, { childList: true, subtree: true });
 })();
 `;
 

@@ -1,5 +1,5 @@
-import { create } from 'zustand';
-import { devtools } from 'zustand/middleware';
+﻿import { create } from 'zustand';
+import { maybeDevtools } from '@/stores/utils/maybeDevtools';
 import {
   type SocketStoreSlice,
   initialSocketState,
@@ -54,7 +54,7 @@ function getWeekStartStr(dateStr: string): string {
 }
 
 export const useScheduleStore = create<ScheduleStore>()(
-  devtools(
+  maybeDevtools(
     (set, get) => {
       const socketActions = createSocketActions<ScheduleStore>(set, 'schedule');
 

@@ -1,5 +1,5 @@
-import { create } from 'zustand';
-import { devtools } from 'zustand/middleware';
+﻿import { create } from 'zustand';
+import { maybeDevtools } from '@/stores/utils/maybeDevtools';
 import { createLogger } from '@shiroani/shared';
 import { electronStoreGet, electronStoreSet, electronStoreDelete } from '@/lib/electron-store';
 
@@ -28,7 +28,7 @@ function getPersistedValue(): boolean {
 }
 
 export const useOnboardingStore = create<OnboardingState>()(
-  devtools(
+  maybeDevtools(
     set => ({
       completed: getPersistedValue(),
 

@@ -1,5 +1,5 @@
-import { create } from 'zustand';
-import { devtools } from 'zustand/middleware';
+﻿import { create } from 'zustand';
+import { maybeDevtools } from '@/stores/utils/maybeDevtools';
 import type {
   UpdateStatus,
   UpdateInfo,
@@ -88,7 +88,7 @@ interface UpdateActions {
 type UpdateStore = UpdateState & UpdateActions;
 
 export const useUpdateStore = create<UpdateStore>()(
-  devtools(
+  maybeDevtools(
     (set, get) => ({
       // Initial state
       status: 'idle',

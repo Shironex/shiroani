@@ -1,14 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { createLogger, extractErrorMessage } from '@shiroani/shared';
+import { LruTtlCache } from '../kernel/lru-ttl-cache';
 
 const logger = createLogger('AniListClient');
 
 const DEFAULT_CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
-
-interface CacheEntry<T> {
-  data: T;
-  expiresAt: number;
-}
 
 interface GraphQLError {
   message: string;
@@ -35,7 +31,7 @@ export class AniListClient {
   private readonly endpoint = 'https://graphql.anilist.co';
   private readonly maxRetries = 3;
   private readonly defaultRetryDelayMs = 2000;
-  private readonly cache = new Map<string, CacheEntry<unknown>>();
+  private readonly cache = new LruTtlCache<string, unknown>(200, DEFAULT_CACHE_TTL_MS);
 
   constructor() {
     logger.info('AniListClient initialized');
@@ -56,15 +52,15 @@ export class AniListClient {
     variables?: Record<string, unknown>,
     ttlMs = DEFAULT_CACHE_TTL_MS
   ): Promise<T> {
-    const cached = this.cache.get(cacheKey) as CacheEntry<T> | undefined;
-    if (cached && cached.expiresAt > Date.now()) {
+    const cached = this.cache.get(cacheKey);
+    if (cached !== undefined) {
       logger.debug(`Cache hit for key: ${cacheKey}`);
-      return cached.data;
+      return cached as T;
     }
 
     const data = await this.query<T>(query, variables);
 
-    this.cache.set(cacheKey, { data, expiresAt: Date.now() + ttlMs });
+    this.cache.set(cacheKey, data, ttlMs);
     return data;
   }
 

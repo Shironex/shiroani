@@ -1,5 +1,5 @@
-import { create } from 'zustand';
-import { devtools } from 'zustand/middleware';
+﻿import { create } from 'zustand';
+import { maybeDevtools } from '@/stores/utils/maybeDevtools';
 import { createLogger } from '@shiroani/shared';
 import { IS_ELECTRON } from '@/lib/platform';
 import { electronStoreGet } from '@/lib/electron-store';
@@ -88,7 +88,7 @@ function firstVisibleView(hidden: ActiveView[]): ActiveView {
 }
 
 export const useDockStore = create<DockStore>()(
-  devtools(
+  maybeDevtools(
     (set, get) => ({
       // State
       offset: DEFAULT_OFFSET,

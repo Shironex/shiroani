@@ -7,7 +7,7 @@ import { TooltipButton } from '@/components/ui/tooltip-button';
 import { KanjiWatermark } from '@/components/shared/KanjiWatermark';
 import { ViewHeader } from '@/components/shared/ViewHeader';
 import { AniListErrorState } from '@/components/shared/AniListErrorState';
-import { useProfileStore, startProfileRefresh } from '@/stores/useProfileStore';
+import { useProfileStore, startProfileRefresh, stopProfileRefresh } from '@/stores/useProfileStore';
 import { ProfileSetup } from './ProfileSetup';
 import { ProfileSkeleton } from './ProfileSkeleton';
 import { ProfileDashboard } from './ProfileDashboard';
@@ -50,6 +50,7 @@ export function ProfileView() {
   useEffect(() => {
     initFromStore();
     startProfileRefresh();
+    return () => stopProfileRefresh();
   }, [initFromStore]);
 
   const statsEmpty = profile && profile.statistics.count === 0;

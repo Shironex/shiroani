@@ -1,5 +1,5 @@
-import { create } from 'zustand';
-import { devtools } from 'zustand/middleware';
+﻿import { create } from 'zustand';
+import { maybeDevtools } from '@/stores/utils/maybeDevtools';
 import {
   type SocketStoreSlice,
   initialSocketState,
@@ -50,7 +50,7 @@ interface DiaryActions {
 type DiaryStore = DiaryState & DiaryActions;
 
 export const useDiaryStore = create<DiaryStore>()(
-  devtools(
+  maybeDevtools(
     (set, get) => {
       const socketActions = createSocketActions<DiaryStore>(set, 'diary');
 

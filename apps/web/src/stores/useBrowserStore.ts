@@ -1,5 +1,5 @@
-import { create } from 'zustand';
-import { devtools } from 'zustand/middleware';
+﻿import { create } from 'zustand';
+import { maybeDevtools } from '@/stores/utils/maybeDevtools';
 import { arrayMove } from '@dnd-kit/sortable';
 import type { BrowserLeafNode, BrowserNode, BrowserSplitNode, BrowserTab } from '@shiroani/shared';
 import { createLogger, NEW_TAB_URL } from '@shiroani/shared';
@@ -174,7 +174,7 @@ async function persistBrowserSettings(updates: {
 }
 
 export const useBrowserStore = create<BrowserStore>()(
-  devtools(
+  maybeDevtools(
     (set, get) => ({
       // State
       tabs: [],

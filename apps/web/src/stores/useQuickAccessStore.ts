@@ -1,5 +1,5 @@
-import { create } from 'zustand';
-import { devtools } from 'zustand/middleware';
+﻿import { create } from 'zustand';
+import { maybeDevtools } from '@/stores/utils/maybeDevtools';
 import { createLogger, isNewTabUrl } from '@shiroani/shared';
 import type { QuickAccessSite, FrequentSite } from '@shiroani/shared';
 import { PREDEFINED_SITES } from '@/lib/quick-access-defaults';
@@ -48,7 +48,7 @@ const debouncedPersistSites = createDebouncedPersist(SITES_STORE_KEY);
 const debouncedPersistFrequent = createDebouncedPersist(FREQUENT_STORE_KEY);
 
 export const useQuickAccessStore = create<QuickAccessStore>()(
-  devtools(
+  maybeDevtools(
     (set, get) => ({
       // State
       sites: [],

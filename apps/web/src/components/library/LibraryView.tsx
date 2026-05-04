@@ -73,7 +73,7 @@ export function LibraryView() {
   const [isExportOpen, setIsExportOpen] = useState(false);
   const [isImportOpen, setIsImportOpen] = useState(false);
 
-  const { openTab } = useBrowserStore();
+  const openTab = useBrowserStore(s => s.openTab);
   const navigateTo = useAppStore(s => s.navigateTo);
 
   const nextAiringMap = useNextAiringMap();

@@ -1,11 +1,11 @@
-/**
+﻿/**
  * Feed bookmarks store — user-saved feed articles with electron-store persistence
  * and localStorage fallback. Persists full item snapshots (not just IDs) so a
  * bookmarked article stays accessible even if the source is later disabled,
  * filtered out, or paged away from the loaded window.
  */
 import { create } from 'zustand';
-import { devtools } from 'zustand/middleware';
+import { maybeDevtools } from '@/stores/utils/maybeDevtools';
 import { createLogger } from '@shiroani/shared';
 import type { FeedItem } from '@shiroani/shared';
 import { electronStoreGet, electronStoreSet } from '@/lib/electron-store';
@@ -96,7 +96,7 @@ interface FeedBookmarksActions {
 type FeedBookmarksStore = FeedBookmarksState & FeedBookmarksActions;
 
 export const useFeedBookmarksStore = create<FeedBookmarksStore>()(
-  devtools(
+  maybeDevtools(
     (set, get) => ({
       // Initial state
       bookmarks: new Map(),

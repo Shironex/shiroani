@@ -1,5 +1,5 @@
-import { create } from 'zustand';
-import { devtools } from 'zustand/middleware';
+﻿import { create } from 'zustand';
+import { maybeDevtools } from '@/stores/utils/maybeDevtools';
 import { AnimeEvents } from '@shiroani/shared';
 import { createLogger } from '@shiroani/shared';
 import { emitWithErrorHandling } from '@/lib/socket';
@@ -119,7 +119,7 @@ function toUserError(err: Error): string {
 }
 
 export const useDiscoverStore = create<DiscoverStore>()(
-  devtools(
+  maybeDevtools(
     (set, get) => ({
       // State
       activeTab: 'trending',

@@ -1,5 +1,5 @@
-import { create } from 'zustand';
-import { devtools } from 'zustand/middleware';
+﻿import { create } from 'zustand';
+import { maybeDevtools } from '@/stores/utils/maybeDevtools';
 import { AnimeEvents, createLogger, type AnimeDetail } from '@shiroani/shared';
 import { emitWithErrorHandling } from '@/lib/socket';
 
@@ -30,7 +30,7 @@ interface AnimeDetailActions {
 type AnimeDetailStore = AnimeDetailState & AnimeDetailActions;
 
 export const useAnimeDetailStore = create<AnimeDetailStore>()(
-  devtools(
+  maybeDevtools(
     (set, get) => {
       const fetchOne = async (id: number) => {
         try {

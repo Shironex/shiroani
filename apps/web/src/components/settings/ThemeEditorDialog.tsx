@@ -143,7 +143,7 @@ export function ThemeEditorDialog({
   cloneFromTheme,
 }: ThemeEditorDialogProps) {
   const { t } = useTranslation('settings');
-  const { setTheme } = useSettingsStore();
+  const setTheme = useSettingsStore(s => s.setTheme);
 
   const makeDefaultName = useCallback(
     (cloneLabel?: string): string =>
