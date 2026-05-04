@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Feed bookmarks store — user-saved feed articles with electron-store persistence
  * and localStorage fallback. Persists full item snapshots (not just IDs) so a
  * bookmarked article stays accessible even if the source is later disabled,

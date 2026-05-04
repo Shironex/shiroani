@@ -1,4 +1,4 @@
-﻿import { create } from 'zustand';
+import { create } from 'zustand';
 import { maybeDevtools } from '@/stores/utils/maybeDevtools';
 import { IS_ELECTRON } from '@/lib/platform';
 import { updateAnimePresence } from '@/lib/anime-detection';

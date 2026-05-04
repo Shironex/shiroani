@@ -1,4 +1,4 @@
-﻿import { create } from 'zustand';
+import { create } from 'zustand';
 import { maybeDevtools } from '@/stores/utils/maybeDevtools';
 import type {
   UpdateStatus,

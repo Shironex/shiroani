@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Custom theme store — manages user-created themes with electron-store persistence
  * and localStorage fallback for web builds.
  */

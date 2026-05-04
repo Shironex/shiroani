@@ -19,7 +19,7 @@ export function maybeDevtools<
   impl: StateCreator<T, [...Mps, ['zustand/devtools', never]], Mcs>,
   options?: DevtoolsOptions
 ): StateCreator<T, Mps, [['zustand/devtools', never], ...Mcs]> {
-  if (process.env.NODE_ENV === 'production') {
+  if (import.meta.env.PROD) {
     return devtools(impl, { ...options, enabled: false });
   }
   return devtools(impl, options);

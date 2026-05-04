@@ -1,4 +1,4 @@
-﻿// Components using mascot sprite state should import from this store
+// Components using mascot sprite state should import from this store
 // (e.g., MascotPreview.tsx, MascotSection.tsx).
 import { create } from 'zustand';
 import { maybeDevtools } from '@/stores/utils/maybeDevtools';

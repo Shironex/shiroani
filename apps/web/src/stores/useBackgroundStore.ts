@@ -1,4 +1,4 @@
-﻿// Components using background state should import from this store
+// Components using background state should import from this store
 // (e.g., BackgroundOverlay.tsx, SettingsView.tsx, App.tsx)
 import { create } from 'zustand';
 import { maybeDevtools } from '@/stores/utils/maybeDevtools';
