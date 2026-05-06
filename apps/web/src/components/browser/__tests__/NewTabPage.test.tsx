@@ -192,4 +192,22 @@ describe('NewTabPage', () => {
 
     expect(onNavigate).toHaveBeenCalledWith('https://frequent.test');
   });
+
+  it('clicking the SVG inside the remove button fires onRemove and not onNavigate', async () => {
+    const onNavigate = vi.fn();
+    setupMock({
+      sites: [{ id: 'custom-svg', name: 'SVG Test', url: 'https://svg.test' }],
+    });
+
+    const { user } = render(<NewTabPage onNavigate={onNavigate} />);
+
+    const removeButtons = screen.getAllByLabelText('Usuń stronę');
+    const customRemoveBtn = removeButtons[removeButtons.length - 1];
+    const svg = customRemoveBtn.querySelector('svg');
+    expect(svg).not.toBeNull();
+    await user.click(svg!);
+
+    expect(mockRemoveSite).toHaveBeenCalledWith('custom-svg');
+    expect(onNavigate).not.toHaveBeenCalled();
+  });
 });

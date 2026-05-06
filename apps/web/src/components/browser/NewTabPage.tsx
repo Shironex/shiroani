@@ -842,7 +842,7 @@ function SiteCard({
           onRemove();
         }}
         aria-label="Usuń stronę"
-        className="absolute top-1.5 right-1.5 grid size-5 place-items-center rounded-full bg-black/50 text-white/80 opacity-0 transition-opacity hover:bg-destructive hover:text-destructive-foreground group-hover:opacity-100 group-focus-within:opacity-100 cursor-pointer"
+        className="absolute top-1.5 right-1.5 z-10 grid size-5 place-items-center rounded-full bg-black/50 text-white/80 opacity-0 transition-opacity hover:bg-destructive hover:text-destructive-foreground group-hover:opacity-100 group-focus-within:opacity-100 cursor-pointer"
       >
         <X className="w-3 h-3" />
       </button>
