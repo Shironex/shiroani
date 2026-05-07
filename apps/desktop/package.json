@@ -55,7 +55,7 @@
     "@nestjs/testing": "^11.1.19",
     "@types/better-sqlite3": "^7.6.13",
     "@types/jest": "^30.0.0",
-    "@types/node": "^25.6.0",
+    "@types/node": "^25.6.1",
     "@types/semver": "^7.7.1",
     "cross-env": "^10.1.0",
     "electron": "^41.3.0",
