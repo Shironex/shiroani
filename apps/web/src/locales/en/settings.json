@@ -1,0 +1,44 @@
+{
+  "app": {
+    "languageTitle": "Language",
+    "languageDesc": "Choose the display language for the app"
+  },
+  "notifications": {
+    "card": {
+      "title": "Notifications",
+      "subtitle": "Stay informed about new episodes and live airings."
+    },
+    "enabled": {
+      "title": "Episode notifications",
+      "description": "Send a notification when a new episode of a tracked anime airs."
+    },
+    "leadTime": {
+      "title": "Notify before airing",
+      "description": "How many minutes before airing to send the notification",
+      "options": {
+        "exact": "Exactly at airing time",
+        "min5": "5 minutes",
+        "min15": "15 minutes",
+        "min30": "30 minutes",
+        "h1": "1 hour"
+      }
+    },
+    "quietHours": {
+      "title": "Quiet hours",
+      "description": "Pause notifications during the selected hours",
+      "from": "From",
+      "to": "To"
+    },
+    "useSystemSound": {
+      "title": "System sound",
+      "description": "Play a sound when a new notification arrives."
+    },
+    "windowsInfo": "On Windows, when the app is closed, upcoming notifications are scheduled by a background PowerShell command. <1>You don't need to do anything.</1>",
+    "subscriptions": {
+      "title": "Subscriptions",
+      "subtitle": "Anime you want to receive notifications for.",
+      "empty": "No subscriptions. Add an anime from the schedule by clicking the bell icon.",
+      "remove": "Remove subscription"
+    }
+  }
+}

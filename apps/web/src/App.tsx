@@ -16,6 +16,7 @@ import { ProfileView } from '@/components/profile/ProfileView';
 import { ChangelogView } from '@/components/changelog/ChangelogView';
 import { SplashScreen } from '@/components/splash';
 import { OnboardingWizard } from '@/components/onboarding';
+import { hydrateLanguageFromStore } from '@/lib/i18n';
 import { useAppInitialization } from '@/hooks/useAppInitialization';
 import { useAppStore } from '@/stores/useAppStore';
 import { useBackgroundStore } from '@/stores/useBackgroundStore';
@@ -45,6 +46,14 @@ function App() {
   useEffect(() => {
     if (!onboardingCompleted) setOnboardingDone(false);
   }, [onboardingCompleted]);
+
+  // Reconcile renderer i18next with the durable electron-store value once on
+  // mount. The synchronous boot already seeded from localStorage in lib/i18n;
+  // this catches the case where another window changed the language after
+  // this window's last reload. Idempotent / StrictMode-safe.
+  useEffect(() => {
+    void hydrateLanguageFromStore();
+  }, []);
 
   const handleSplashDismissed = useCallback(() => setSplashDone(true), []);
   const handleOnboardingComplete = useCallback(() => setOnboardingDone(true), []);

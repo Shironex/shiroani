@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Settings, Sparkles, UserRound } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { Languages, Settings, Sparkles, UserRound } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import {
   SettingsCard,
@@ -11,10 +12,15 @@ import {
   DEFAULT_FEED_STARTUP_REFRESH,
   DISPLAY_NAME_MAX_LENGTH,
   FEED_STARTUP_REFRESH_SETTING_KEY,
+  SUPPORTED_LANGUAGES,
+  type SupportedLanguage,
 } from '@shiroani/shared';
 import { useSettingsStore } from '@/stores/useSettingsStore';
+import { persistLanguage } from '@/lib/i18n';
+import { cn } from '@/lib/utils';
 
 export function GeneralSection() {
+  const { t, i18n } = useTranslation('settings');
   const [autoLaunch, setAutoLaunch] = useState(false);
   const [feedRefreshOnStartup, setFeedRefreshOnStartup] = useState(DEFAULT_FEED_STARTUP_REFRESH);
   const [loaded, setLoaded] = useState(false);
@@ -50,10 +56,39 @@ export function GeneralSection() {
     await window.electronAPI?.store?.set(FEED_STARTUP_REFRESH_SETTING_KEY, enabled);
   };
 
+  async function handleLanguageChange(lang: SupportedLanguage) {
+    await i18n.changeLanguage(lang);
+    persistLanguage(lang);
+  }
+
   if (!loaded) return null;
 
   return (
     <div className="space-y-4">
+      <SettingsCard icon={Languages} title={t('app.languageTitle')}>
+        <div className="px-3">
+          <p className="text-xs text-muted-foreground mb-3">{t('app.languageDesc')}</p>
+          <div className="flex items-center gap-1.5">
+            {SUPPORTED_LANGUAGES.map(lang => (
+              <button
+                key={lang.code}
+                onClick={() => {
+                  void handleLanguageChange(lang.code);
+                }}
+                className={cn(
+                  'px-3 py-1.5 rounded-lg text-xs font-medium transition-colors',
+                  i18n.language === lang.code
+                    ? 'bg-primary/15 text-primary border border-primary/40'
+                    : 'text-muted-foreground hover:bg-accent/50 hover:text-foreground border border-transparent'
+                )}
+              >
+                {lang.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </SettingsCard>
+
       <SettingsCard
         icon={UserRound}
         title="Profil"

@@ -1,0 +1,44 @@
+{
+  "app": {
+    "languageTitle": "Język",
+    "languageDesc": "Wybierz język wyświetlania aplikacji"
+  },
+  "notifications": {
+    "card": {
+      "title": "Powiadomienia",
+      "subtitle": "Informacje o nowych odcinkach i emisjach na żywo."
+    },
+    "enabled": {
+      "title": "Powiadomienia o odcinkach",
+      "description": "Wysyłaj powiadomienie, gdy leci nowy odcinek śledzonego anime."
+    },
+    "leadTime": {
+      "title": "Powiadom przed emisją",
+      "description": "Ile minut przed emisją wysłać powiadomienie",
+      "options": {
+        "exact": "Dokładnie o godzinie emisji",
+        "min5": "5 minut",
+        "min15": "15 minut",
+        "min30": "30 minut",
+        "h1": "1 godzina"
+      }
+    },
+    "quietHours": {
+      "title": "Cisza nocna",
+      "description": "Wstrzymaj powiadomienia w wybranych godzinach",
+      "from": "Od",
+      "to": "Do"
+    },
+    "useSystemSound": {
+      "title": "Dźwięk systemowy",
+      "description": "Dźwięk przy nowym powiadomieniu."
+    },
+    "windowsInfo": "Na Windowsie po zamknięciu aplikacji nadchodzące powiadomienia planowane są przez polecenie PowerShell w tle. <1>Nic nie musisz robić.</1>",
+    "subscriptions": {
+      "title": "Subskrypcje",
+      "subtitle": "Anime, z których chcesz otrzymywać powiadomienia.",
+      "empty": "Brak subskrypcji. Dodaj anime z harmonogramu, klikając ikonę dzwonka.",
+      "remove": "Usuń subskrypcję"
+    }
+  }
+}

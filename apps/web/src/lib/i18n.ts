@@ -37,12 +37,14 @@ import { electronStoreGet, electronStoreSet } from '@/lib/electron-store';
 import commonEn from '@/locales/en/common.json';
 import statusEn from '@/locales/en/status.json';
 import anilistEn from '@/locales/en/anilist.json';
+import settingsEn from '@/locales/en/settings.json';
 
 import commonPl from '@/locales/pl/common.json';
 import statusPl from '@/locales/pl/status.json';
 import anilistPl from '@/locales/pl/anilist.json';
+import settingsPl from '@/locales/pl/settings.json';
 
-const namespaces = ['common', 'status', 'anilist'] as const;
+const namespaces = ['common', 'status', 'anilist', 'settings'] as const;
 
 /**
  * Read the language i18next should boot with. Synchronous on purpose:
@@ -87,11 +89,13 @@ i18n.use(initReactI18next).init({
       common: commonEn,
       status: statusEn,
       anilist: anilistEn,
+      settings: settingsEn,
     },
     pl: {
       common: commonPl,
       status: statusPl,
       anilist: anilistPl,
+      settings: settingsPl,
     },
   },
   lng: getInitialLanguage(),
