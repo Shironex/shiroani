@@ -22,16 +22,16 @@ const iconPaths: Record<CategorySlug, string> = {
 <header class="hdr">
   <div class="kanji-bg">記録</div>
   <span class="eyebrow"><span class="blip"></span>v{releases[0].version} · {releases[0].title.split(',')[0]}</span>
-  <h1>Co <em>nowego</em>?</h1>
-  <p class="sub">
+  <h1><span data-i18n="changelog.heading.lead">Co </span><em data-i18n="changelog.heading.em">nowego</em><span data-i18n="changelog.heading.tail">?</span></h1>
+  <p class="sub" data-i18n="changelog.sub">
     Historia zmian w ShiroAni: funkcja po funkcji, poprawka po poprawce. Od pierwszego buildu po
     ostatni wieczór w bibliotece.
   </p>
   <div class="filters" id="filters">
-    <b>Filtr</b>
-    <button class="chip on" data-f="all" aria-pressed="true">Wszystkie <span style="opacity:.6">{counts.all}</span></button>
-    <button class="chip" data-f="major" aria-pressed="false">Większe wydania <span style="opacity:.6">{counts.major}</span></button>
-    <button class="chip" data-f="minor" aria-pressed="false">Patche <span style="opacity:.6">{counts.minor}</span></button>
+    <b data-i18n="changelog.filter.label">Filtr</b>
+    <button class="chip on" data-f="all" aria-pressed="true"><span data-i18n="changelog.filter.all">Wszystkie</span> <span style="opacity:.6">{counts.all}</span></button>
+    <button class="chip" data-f="major" aria-pressed="false"><span data-i18n="changelog.filter.major">Większe wydania</span> <span style="opacity:.6">{counts.major}</span></button>
+    <button class="chip" data-f="minor" aria-pressed="false"><span data-i18n="changelog.filter.minor">Patche</span> <span style="opacity:.6">{counts.minor}</span></button>
   </div>
 </header>
 
@@ -41,7 +41,7 @@ const iconPaths: Record<CategorySlug, string> = {
       <div class="side"><b>v{r.version}</b>{r.dateShort}</div>
       <div class="rel-head">
         <span class="v-tag">v{r.version}</span>
-        {i === 0 && <span class="badge-new">Najnowsza</span>}
+        {i === 0 && <span class="badge-new" data-i18n="changelog.badge.latest">Najnowsza</span>}
         <span class="date">{r.date}</span>
       </div>
       <h2>{r.title}</h2>
@@ -67,8 +67,8 @@ const iconPaths: Record<CategorySlug, string> = {
   ))}
 
   <div class="end">
-    <span class="tag">Początek · 2026</span>
-    <p>„A co, gdyby śledzenie anime było wygodne?"</p>
+    <span class="tag" data-i18n="changelog.end.tag">Początek · 2026</span>
+    <p data-i18n="changelog.end.quote">„A co, gdyby śledzenie anime było wygodne?"</p>
   </div>
 </section>
 

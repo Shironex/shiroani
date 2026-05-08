@@ -1,46 +1,28 @@
 ---
 const faqs = [
-  {
-    q: 'Czy ShiroAni jest darmowe?',
-    a: 'Tak, całkowicie. Żadnego konta, reklam, ani subskrypcji. Kod jest otwarty do wglądu, ale nie wolno go redystrybuować.',
-  },
-  {
-    q: 'Na jakich systemach działa?',
-    a: 'Windows 10/11 (auto-update) i macOS 11+. Żadna z wersji nie jest podpisana: Windows pokaże ostrzeżenie SmartScreen (kliknij „Więcej informacji" → „Uruchom mimo to"), a na macOS po każdym pobraniu trzeba uruchomić <code>xattr -cr /Applications/ShiroAni.app</code>, bo macOS nakłada kwarantannę na każdy świeżo pobrany plik.',
-  },
-  {
-    q: 'Jak działa wbudowana przeglądarka?',
-    a: 'Pełna przeglądarka na Chromium z wbudowanym adblockiem Ghostery. Karty, sesje, zakładki, historia — działa jak zwykła przeglądarka, tylko bez reklam i w tym samym oknie co biblioteka.',
-  },
-  {
-    q: 'Skąd dane w harmonogramie?',
-    a: 'Harmonogram pobiera dane bezpośrednio z publicznego API AniList. Import biblioteki z MyAnimeList i AniList jest w planach.',
-  },
-  {
-    q: 'Czy moje dane są bezpieczne?',
-    a: 'Wszystkie dane (biblioteka, pamiętnik, ustawienia) są lokalne — SQLite na Twoim dysku. Nie wysyłamy niczego na serwer.',
-  },
-  {
-    q: 'Interfejs jest tylko po polsku?',
-    a: 'Na razie tak. Angielski dorabiamy — pojawi się w jednym z najbliższych wydań.',
-  },
+  { qKey: 'faq.q1', aKey: 'faq.a1', q: 'Czy ShiroAni jest darmowe?', a: 'Tak, całkowicie. Żadnego konta, reklam, ani subskrypcji. Kod jest otwarty do wglądu, ale nie wolno go redystrybuować.' },
+  { qKey: 'faq.q2', aKey: 'faq.a2', q: 'Na jakich systemach działa?', a: 'Windows 10/11 (auto-update) i macOS 11+. Żadna z wersji nie jest podpisana: Windows pokaże ostrzeżenie SmartScreen (kliknij „Więcej informacji" → „Uruchom mimo to"), a na macOS po każdym pobraniu trzeba uruchomić <code>xattr -cr /Applications/ShiroAni.app</code>, bo macOS nakłada kwarantannę na każdy świeżo pobrany plik.' },
+  { qKey: 'faq.q3', aKey: 'faq.a3', q: 'Jak działa wbudowana przeglądarka?', a: 'Pełna przeglądarka na Chromium z wbudowanym adblockiem Ghostery. Karty, sesje, zakładki, historia — działa jak zwykła przeglądarka, tylko bez reklam i w tym samym oknie co biblioteka.' },
+  { qKey: 'faq.q4', aKey: 'faq.a4', q: 'Skąd dane w harmonogramie?', a: 'Harmonogram pobiera dane bezpośrednio z publicznego API AniList. Import biblioteki z MyAnimeList i AniList jest w planach.' },
+  { qKey: 'faq.q5', aKey: 'faq.a5', q: 'Czy moje dane są bezpieczne?', a: 'Wszystkie dane (biblioteka, pamiętnik, ustawienia) są lokalne — SQLite na Twoim dysku. Nie wysyłamy niczego na serwer.' },
+  { qKey: 'faq.q6', aKey: 'faq.a6', q: 'Interfejs jest tylko po polsku?', a: 'Polski i angielski. Przełącznik języka jest w prawym górnym rogu strony.' },
 ];
 ---
 
 <section class="faq-wrap">
   <div class="hd">
-    <h2>Najczęstsze <em>pytania</em>.</h2>
-    <p>Masz inne pytanie? Zajrzyj na Discorda.</p>
+    <h2><span data-i18n="faq.heading.lead">Najczęstsze </span><em data-i18n="faq.heading.em">pytania</em><span data-i18n="faq.heading.tail">.</span></h2>
+    <p data-i18n="faq.sub">Masz inne pytanie? Zajrzyj na Discorda.</p>
   </div>
   <div class="faq-list">
     {faqs.map((f, i) => (
       <details class="faq" open={i === 0}>
         <summary>
           <span class="n">{`Q.${String(i + 1).padStart(2, '0')}`}</span>
-          <span>{f.q}</span>
+          <span data-i18n={f.qKey}>{f.q}</span>
           <span class="plus">+</span>
         </summary>
-        <p set:html={f.a}></p>
+        <p data-i18n-html={f.aKey} set:html={f.a}></p>
       </details>
     ))}
   </div>

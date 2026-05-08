@@ -4,11 +4,17 @@ import '../styles/global.css';
 interface Props {
   title: string;
   description?: string;
+  titleKey?: string;
+  descriptionKey?: string;
+  ogTitleKey?: string;
 }
 
 const {
   title,
   description = 'ShiroAni to aplikacja na komputer: przeglądarka bez reklam, biblioteka, harmonogram emisji i pamiętnik.',
+  titleKey,
+  descriptionKey,
+  ogTitleKey = 'meta.home.ogTitle',
 } = Astro.props;
 
 const ogImage = new URL('/og-default.png', Astro.site);
@@ -36,18 +42,18 @@ const ogImage = new URL('/og-default.png', Astro.site);
   />
 </noscript>
 
-<title>{title}</title>
-<meta name="description" content={description} />
+<title data-i18n-text={titleKey}>{title}</title>
+<meta name="description" content={description} data-i18n-content={descriptionKey} />
 
 <!-- Open Graph -->
 <meta property="og:type" content="website" />
 <meta property="og:url" content={Astro.url} />
-<meta property="og:title" content="ShiroAni · przeglądarka i tracker anime" />
-<meta property="og:description" content={description} />
+<meta property="og:title" content="ShiroAni · przeglądarka i tracker anime" data-i18n-content={ogTitleKey} />
+<meta property="og:description" content={description} data-i18n-content={descriptionKey} />
 <meta property="og:image" content={ogImage} />
 
 <!-- Twitter -->
 <meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:title" content="ShiroAni · przeglądarka i tracker anime" />
-<meta name="twitter:description" content={description} />
+<meta name="twitter:title" content="ShiroAni · przeglądarka i tracker anime" data-i18n-content={ogTitleKey} />
+<meta name="twitter:description" content={description} data-i18n-content={descriptionKey} />
 <meta name="twitter:image" content={ogImage} />

@@ -3,13 +3,18 @@ import { BUILT_IN_THEME_METADATA, type BuiltInThemeMeta } from '@shiroani/shared
 
 type Feature = {
   cls: string;
-  no: string;
-  tag?: string;
+  noKey: string;
+  noFallback: string;
+  tagKey?: string;
+  tagFallback?: string;
   tagOn?: boolean;
-  title: string;
-  desc: string;
+  titleKey: string;
+  titleFallback: string;
+  descKey: string;
+  descFallback: string;
   img?: string;
-  alt?: string;
+  altKey?: string;
+  altFallback?: string;
   w?: number;
   h?: number;
   themes?: readonly BuiltInThemeMeta[];
@@ -21,83 +26,129 @@ const RPC = { w: 1116, h: 378 };
 const features: Feature[] = [
   {
     cls: 'col-7 hl',
-    no: '№ 01 · BROWSER',
-    tag: 'AD-BLOCK · GHOSTERY',
+    noKey: 'features.01.no',
+    noFallback: '№ 01 · BROWSER',
+    tagKey: 'features.01.tag',
+    tagFallback: 'AD-BLOCK · GHOSTERY',
     tagOn: true,
-    title: 'Wbudowana przeglądarka bez reklam.',
-    desc: 'Karty, sesje, zakładki i blokada reklam Ghostery — wszystko w tym samym oknie, w którym oglądasz. Żadnych pop-upów ani przekierowań.',
+    titleKey: 'features.01.title',
+    titleFallback: 'Wbudowana przeglądarka bez reklam.',
+    descKey: 'features.01.desc',
+    descFallback:
+      'Karty, sesje, zakładki i blokada reklam Ghostery — wszystko w tym samym oknie, w którym oglądasz. Żadnych pop-upów ani przekierowań.',
     img: '/assets/browser_view.webp',
-    alt: 'Wbudowana przeglądarka',
+    altKey: 'features.01.alt',
+    altFallback: 'Wbudowana przeglądarka',
     ...SHOT,
   },
   {
     cls: 'col-5 hl',
-    no: '№ 02 · LIBRARY',
-    tag: '5 STATUSÓW',
-    title: 'Biblioteka po Twojemu.',
-    desc: 'Oglądane, ukończone, planowane, wstrzymane, porzucone. Filtry, notatki, odcinki.',
+    noKey: 'features.02.no',
+    noFallback: '№ 02 · LIBRARY',
+    tagKey: 'features.02.tag',
+    tagFallback: '5 STATUSÓW',
+    titleKey: 'features.02.title',
+    titleFallback: 'Biblioteka po Twojemu.',
+    descKey: 'features.02.desc',
+    descFallback:
+      'Oglądane, ukończone, planowane, wstrzymane, porzucone. Filtry, notatki, odcinki.',
     img: '/assets/library_view.webp',
-    alt: 'Biblioteka anime',
+    altKey: 'features.02.alt',
+    altFallback: 'Biblioteka anime',
     ...SHOT,
   },
   {
     cls: 'col-8 hl',
-    no: '№ 03 · SCHEDULE',
-    tag: 'ANILIST · LIVE',
+    noKey: 'features.03.no',
+    noFallback: '№ 03 · SCHEDULE',
+    tagKey: 'features.03.tag',
+    tagFallback: 'ANILIST · LIVE',
     tagOn: true,
-    title: 'Harmonogram emisji z odliczaniem do premiery.',
-    desc: 'Widok tygodniowy, dzienny i tabelaryczny. Dane prosto z AniList. Powiadomienie, gdy wchodzi nowy odcinek.',
+    titleKey: 'features.03.title',
+    titleFallback: 'Harmonogram emisji z odliczaniem do premiery.',
+    descKey: 'features.03.desc',
+    descFallback:
+      'Widok tygodniowy, dzienny i tabelaryczny. Dane prosto z AniList. Powiadomienie, gdy wchodzi nowy odcinek.',
     img: '/assets/schedule_view.webp',
-    alt: 'Harmonogram emisji',
+    altKey: 'features.03.alt',
+    altFallback: 'Harmonogram emisji',
     ...SHOT,
   },
   {
     cls: 'col-4',
-    no: '№ 04 · DIARY',
-    tag: 'TIPTAP',
-    title: 'Pamiętnik z formatowaniem.',
-    desc: 'Zapisuj wrażenia po każdym odcinku: tekst z formatowaniem, obrazki, nagłówki — wszystko lokalnie.',
+    noKey: 'features.04.no',
+    noFallback: '№ 04 · DIARY',
+    tagKey: 'features.04.tag',
+    tagFallback: 'TIPTAP',
+    titleKey: 'features.04.title',
+    titleFallback: 'Pamiętnik z formatowaniem.',
+    descKey: 'features.04.desc',
+    descFallback:
+      'Zapisuj wrażenia po każdym odcinku: tekst z formatowaniem, obrazki, nagłówki — wszystko lokalnie.',
     img: '/assets/diary_view.webp',
-    alt: 'Pamiętnik',
+    altKey: 'features.04.alt',
+    altFallback: 'Pamiętnik',
     ...SHOT,
   },
   {
     cls: 'col-4',
-    no: '№ 05 · DISCORD RPC',
-    tag: 'TEMPLATE EDITOR',
-    title: 'Pokaż znajomym, co oglądasz.',
-    desc: 'Rich Presence z własnym szablonem. Podgląd na żywo w ustawieniach. Edytujesz tekst, obrazki, akcje.',
+    noKey: 'features.05.no',
+    noFallback: '№ 05 · DISCORD RPC',
+    tagKey: 'features.05.tag',
+    tagFallback: 'TEMPLATE EDITOR',
+    titleKey: 'features.05.title',
+    titleFallback: 'Pokaż znajomym, co oglądasz.',
+    descKey: 'features.05.desc',
+    descFallback:
+      'Rich Presence z własnym szablonem. Podgląd na żywo w ustawieniach. Edytujesz tekst, obrazki, akcje.',
     img: '/assets/discord_rpc.webp',
-    alt: 'Discord Rich Presence',
+    altKey: 'features.05.alt',
+    altFallback: 'Discord Rich Presence',
     ...RPC,
   },
   {
     cls: 'col-4',
-    no: '№ 06 · NEW TAB',
-    title: 'Ulubione strony pod jednym kliknięciem.',
-    desc: 'Kafelki szybkiego dostępu. Raz skonfigurujesz, masz na zawsze.',
+    noKey: 'features.06.no',
+    noFallback: '№ 06 · NEW TAB',
+    titleKey: 'features.06.title',
+    titleFallback: 'Ulubione strony pod jednym kliknięciem.',
+    descKey: 'features.06.desc',
+    descFallback: 'Kafelki szybkiego dostępu. Raz skonfigurujesz, masz na zawsze.',
     img: '/assets/onboarding.webp',
-    alt: 'Nowa karta',
+    altKey: 'features.06.alt',
+    altFallback: 'Nowa karta',
     ...SHOT,
   },
   {
     cls: 'col-4 ft-themes',
-    no: '№ 07 · THEMES',
-    title: '17 motywów plus edytor własnych.',
-    desc: '15 ciemnych, 2 jasne, większość inspirowana anime. Wizualny edytor palety, czcionek i tła.',
+    noKey: 'features.07.no',
+    noFallback: '№ 07 · THEMES',
+    titleKey: 'features.07.title',
+    titleFallback: '17 motywów plus edytor własnych.',
+    descKey: 'features.07.desc',
+    descFallback:
+      '15 ciemnych, 2 jasne, większość inspirowana anime. Wizualny edytor palety, czcionek i tła.',
     themes: BUILT_IN_THEME_METADATA,
   },
   {
     cls: 'col-4',
-    no: '№ 08 · NOTIFICATIONS',
-    title: 'Nowy odcinek? Jesteś pierwszy.',
-    desc: 'Powiadomienia systemowe, gdy tylko któraś seria z biblioteki dostaje nowy odcinek.',
+    noKey: 'features.08.no',
+    noFallback: '№ 08 · NOTIFICATIONS',
+    titleKey: 'features.08.title',
+    titleFallback: 'Nowy odcinek? Jesteś pierwszy.',
+    descKey: 'features.08.desc',
+    descFallback:
+      'Powiadomienia systemowe, gdy tylko któraś seria z biblioteki dostaje nowy odcinek.',
   },
   {
     cls: 'col-4',
-    no: '№ 09 · IMPORT / EXPORT',
-    title: 'Twoje dane należą do Ciebie.',
-    desc: 'Lokalne SQLite. Import i eksport biblioteki i pamiętnika jednym kliknięciem. Bez chmury, bez konta.',
+    noKey: 'features.09.no',
+    noFallback: '№ 09 · IMPORT / EXPORT',
+    titleKey: 'features.09.title',
+    titleFallback: 'Twoje dane należą do Ciebie.',
+    descKey: 'features.09.desc',
+    descFallback:
+      'Lokalne SQLite. Import i eksport biblioteki i pamiętnika jednym kliknięciem. Bez chmury, bez konta.',
   },
 ];
 ---
@@ -107,16 +158,17 @@ const features: Feature[] = [
     {features.map((f) => (
       <article class={`fc ${f.cls}`}>
         <div class="fc-head">
-          <span class="no">{f.no}</span>
-          {f.tag && <span class={`tag ${f.tagOn ? 'on' : ''}`}>{f.tag}</span>}
+          <span class="no" data-i18n={f.noKey}>{f.noFallback}</span>
+          {f.tagFallback && <span class={`tag ${f.tagOn ? 'on' : ''}`} data-i18n={f.tagKey}>{f.tagFallback}</span>}
         </div>
-        <h3>{f.title}</h3>
-        <p>{f.desc}</p>
+        <h3 data-i18n={f.titleKey}>{f.titleFallback}</h3>
+        <p data-i18n={f.descKey}>{f.descFallback}</p>
         {f.img && (
           <div class="fimg">
             <img
               src={f.img}
-              alt={f.alt}
+              alt={f.altFallback}
+              data-i18n-alt={f.altKey}
               loading="lazy"
               decoding="async"
               width={f.w}

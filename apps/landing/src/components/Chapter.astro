@@ -7,18 +7,36 @@ interface Props {
   em?: string;
   titleSuffix?: string;
   meta: string;
+  eyebrowKey?: string;
+  titleKey?: string;
+  emKey?: string;
+  titleSuffixKey?: string;
+  metaKey?: string;
 }
 
-const { id, num, eyebrow, title, em, titleSuffix, meta } = Astro.props;
+const {
+  id,
+  num,
+  eyebrow,
+  title,
+  em,
+  titleSuffix,
+  meta,
+  eyebrowKey,
+  titleKey,
+  emKey,
+  titleSuffixKey,
+  metaKey,
+} = Astro.props;
 ---
 
 <div class="divider" id={id}>
   <div class="n">{num}</div>
   <div class="t">
-    <small>{eyebrow}</small>
-    {title}
-    {em && <em>{em}</em>}
-    {titleSuffix}
+    <small data-i18n={eyebrowKey}>{eyebrow}</small>
+    <span data-i18n={titleKey}>{title}</span>
+    {em && <em data-i18n={emKey}>{em}</em>}
+    {titleSuffix && <span data-i18n={titleSuffixKey}>{titleSuffix}</span>}
   </div>
-  <div class="meta" set:html={meta}></div>
+  <div class="meta" data-i18n-html={metaKey} set:html={meta}></div>
 </div>

@@ -1,7 +1,10 @@
 import { currentVersion } from '../lib/releases';
+import { useT } from '../lib/useLandingLang';
 
 export function Footer() {
   const version = currentVersion();
+  const t = useT();
+  const year = new Date().getFullYear();
   return (
     <footer className="ft">
       <div className="ft-inner">
@@ -22,10 +25,7 @@ export function Footer() {
               <small>SHIRO·ANI · v{version}</small>
             </div>
           </div>
-          <p>
-            Shiro-chan wciąż rośnie. Apka jest na wczesnym etapie, ale z każdym wydaniem robi się
-            przytulniej.
-          </p>
+          <p>{t('footer.blurb')}</p>
           <div className="s">
             <a
               href="https://github.com/Shironex/shiroani"
@@ -50,24 +50,24 @@ export function Footer() {
           </div>
         </div>
         <div className="ft-col">
-          <h4>Produkt</h4>
-          <a href="/#funkcje">Funkcje</a>
-          <a href="/#podglad">Podgląd</a>
-          <a href="/#pobierz">Pobierz</a>
+          <h4>{t('footer.col.product')}</h4>
+          <a href="/#funkcje">{t('footer.link.features')}</a>
+          <a href="/#podglad">{t('footer.link.preview')}</a>
+          <a href="/#pobierz">{t('footer.link.download')}</a>
         </div>
         <div className="ft-col">
-          <h4>Zasoby</h4>
-          <a href="/changelog">Lista zmian</a>
-          <a href="/#faq">FAQ</a>
+          <h4>{t('footer.col.resources')}</h4>
+          <a href="/changelog">{t('footer.link.changelog')}</a>
+          <a href="/#faq">{t('footer.link.faq')}</a>
           <a href="https://github.com/Shironex/shiroani" target="_blank" rel="noopener noreferrer">
-            GitHub
+            {t('footer.link.github')}
           </a>
           <a href="https://discord.gg/M3ujRdUJpn" target="_blank" rel="noopener noreferrer">
-            Discord
+            {t('footer.link.discord')}
           </a>
         </div>
         <div className="ft-col">
-          <h4>Rodzina</h4>
+          <h4>{t('footer.col.suite')}</h4>
           <a href="/#suite">ShiroAni</a>
           <a href="https://shiranami.app" target="_blank" rel="noopener noreferrer">
             Shiranami ↗
@@ -78,8 +78,10 @@ export function Footer() {
         </div>
       </div>
       <div className="ft-btm">
-        <div>© {new Date().getFullYear()} Shironex · Wszelkie prawa zastrzeżone</div>
-        <div>白 · アニ · Made with ♥ in Poland</div>
+        <div>
+          © {year} Shironex · {t('footer.copyright')}
+        </div>
+        <div>{t('footer.tagline')}</div>
       </div>
     </footer>
   );

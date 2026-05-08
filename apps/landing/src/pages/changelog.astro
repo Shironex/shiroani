@@ -5,7 +5,12 @@ import ChangelogPage from '../components/ChangelogPage.astro';
 import { Footer } from '../components/Footer';
 ---
 
-<BaseLayout title="Lista zmian · ShiroAni" description="Historia zmian w ShiroAni — funkcja po funkcji, poprawka po poprawce.">
+<BaseLayout
+  title="Lista zmian · ShiroAni"
+  description="Historia zmian w ShiroAni — funkcja po funkcji, poprawka po poprawce."
+  titleKey="meta.changelog.title"
+  descriptionKey="meta.changelog.description"
+>
   <Navbar activeHref="/changelog" />
   <main id="main">
     <ChangelogPage />
