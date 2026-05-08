@@ -1,4 +1,10 @@
 {
+  "episodeProgress": "Ep. {{current}}/{{total}}",
+  "episodeProgressNoTotal": "Ep. {{current}}",
+  "countdown": {
+    "soon": "Soon!",
+    "episodeBadge": "Ep. {{episode}} in {{countdown}}"
+  },
   "day": {
     "short": {
       "mon": "Mon",

@@ -85,7 +85,7 @@ interface AnimeInfoDialogProps {
 export function AnimeInfoDialog({ anime, open, onOpenChange }: AnimeInfoDialogProps) {
   // Subscribe to language changes so the imperative anilist label getters
   // re-evaluate on the next render when the user switches language.
-  useTranslation('anilist');
+  const { i18n } = useTranslation('anilist');
   const [details, setDetails] = useState<AnimeDetail | null>(null);
   const [loading, setLoading] = useState(false);
   const [descExpanded, setDescExpanded] = useState(false);
@@ -385,22 +385,28 @@ export function AnimeInfoDialog({ anime, open, onOpenChange }: AnimeInfoDialogPr
           ) : null}
 
           {/* Dates */}
-          {details && (formatFuzzyDate(details.startDate) || formatFuzzyDate(details.endDate)) && (
-            <div className="flex gap-6">
-              {formatFuzzyDate(details.startDate) && (
-                <div>
-                  <h3 className="text-xs font-medium text-muted-foreground mb-0.5">Start</h3>
-                  <p className="text-sm tabular-nums">{formatFuzzyDate(details.startDate)}</p>
-                </div>
-              )}
-              {formatFuzzyDate(details.endDate) && (
-                <div>
-                  <h3 className="text-xs font-medium text-muted-foreground mb-0.5">Koniec</h3>
-                  <p className="text-sm tabular-nums">{formatFuzzyDate(details.endDate)}</p>
-                </div>
-              )}
-            </div>
-          )}
+          {details &&
+            (formatFuzzyDate(details.startDate, i18n.language) ||
+              formatFuzzyDate(details.endDate, i18n.language)) && (
+              <div className="flex gap-6">
+                {formatFuzzyDate(details.startDate, i18n.language) && (
+                  <div>
+                    <h3 className="text-xs font-medium text-muted-foreground mb-0.5">Start</h3>
+                    <p className="text-sm tabular-nums">
+                      {formatFuzzyDate(details.startDate, i18n.language)}
+                    </p>
+                  </div>
+                )}
+                {formatFuzzyDate(details.endDate, i18n.language) && (
+                  <div>
+                    <h3 className="text-xs font-medium text-muted-foreground mb-0.5">Koniec</h3>
+                    <p className="text-sm tabular-nums">
+                      {formatFuzzyDate(details.endDate, i18n.language)}
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
 
           {/* Characters */}
           {details?.characters?.edges && details.characters.edges.length > 0 && (

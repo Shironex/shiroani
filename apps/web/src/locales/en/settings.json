@@ -3,6 +3,10 @@
     "languageTitle": "Language",
     "languageDesc": "Choose the display language for the app"
   },
+  "updates": {
+    "justNow": "just now",
+    "today": "today {{time}}"
+  },
   "notifications": {
     "card": {
       "title": "Notifications",

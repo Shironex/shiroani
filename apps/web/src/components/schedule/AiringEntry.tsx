@@ -1,4 +1,5 @@
 import { memo, type CSSProperties } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Play, Tv } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { PillTag } from '@/components/ui/pill-tag';
@@ -43,6 +44,7 @@ const AiringEntry = memo(function AiringEntry({
   style,
   onClick,
 }: AiringEntryProps) {
+  const { t } = useTranslation('common');
   const title = getAnimeTitle(anime.media);
   const coverUrl = getCoverUrl(anime.media);
   const airing = new Date(anime.airingAt * 1000);
@@ -137,7 +139,7 @@ const AiringEntry = memo(function AiringEntry({
           </span>
           <span className="text-muted-foreground/50">·</span>
           <span className="truncate">
-            {formatEpisodeProgress(anime.episode, anime.media.episodes)}
+            {formatEpisodeProgress(t, anime.episode, anime.media.episodes)}
           </span>
         </div>
       </div>

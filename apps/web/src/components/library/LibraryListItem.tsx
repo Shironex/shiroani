@@ -32,6 +32,7 @@ const LibraryListItem = memo(function LibraryListItem({
   onClick,
 }: LibraryListItemProps) {
   const { t } = useTranslation('status');
+  const { t: tc } = useTranslation('common');
   const progressPercent = entry.episodes
     ? Math.min(100, Math.round((entry.currentEpisode / entry.episodes) * 100))
     : 0;
@@ -77,7 +78,7 @@ const LibraryListItem = memo(function LibraryListItem({
           {entry.title}
         </h3>
         <p className="text-[11px] text-muted-foreground mt-0.5 font-mono tracking-[0.04em]">
-          {formatEpisodeProgress(entry.currentEpisode, entry.episodes)}
+          {formatEpisodeProgress(tc, entry.currentEpisode, entry.episodes)}
         </p>
       </div>
 

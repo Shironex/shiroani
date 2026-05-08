@@ -3,6 +3,10 @@
     "languageTitle": "Język",
     "languageDesc": "Wybierz język wyświetlania aplikacji"
   },
+  "updates": {
+    "justNow": "przed chwilą",
+    "today": "dziś {{time}}"
+  },
   "notifications": {
     "card": {
       "title": "Powiadomienia",

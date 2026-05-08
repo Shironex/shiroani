@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Badge } from '@/components/ui/badge';
 
 interface CountdownBadgeProps {
@@ -7,8 +8,6 @@ interface CountdownBadgeProps {
 }
 
 function formatCountdown(secondsLeft: number): string {
-  if (secondsLeft < 15 * 60) return 'Wkrótce!';
-
   const minutes = Math.floor(secondsLeft / 60) % 60;
   const hours = Math.floor(secondsLeft / 3600) % 24;
   const days = Math.floor(secondsLeft / 86400);
@@ -39,14 +38,16 @@ function useSharedTimestamp() {
 }
 
 export function CountdownBadge({ airingAt, episode }: CountdownBadgeProps) {
+  const { t } = useTranslation('common');
   const now = useSharedTimestamp();
 
   const secondsLeft = airingAt - now;
   if (secondsLeft <= 0) return null;
 
-  return (
-    <Badge className="text-2xs bg-primary/80 text-primary-foreground border-0">
-      Odc. {episode} za {formatCountdown(secondsLeft)}
-    </Badge>
-  );
+  const label =
+    secondsLeft < 15 * 60
+      ? t('countdown.soon')
+      : t('countdown.episodeBadge', { episode, countdown: formatCountdown(secondsLeft) });
+
+  return <Badge className="text-2xs bg-primary/80 text-primary-foreground border-0">{label}</Badge>;
 }

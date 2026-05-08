@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   AlertTriangle,
   Download,
@@ -24,37 +25,54 @@ interface UpdatesSectionProps {
 
 const BYTES_PER_MB = 1024 * 1024;
 
-/** Format bytes as `X.Y MB` with 1 decimal. */
-function formatMB(bytes: number): string {
-  if (!Number.isFinite(bytes) || bytes <= 0) return '0.0 MB';
-  return `${(bytes / BYTES_PER_MB).toFixed(1)} MB`;
+/** Format bytes as `X.Y MB` with 1 decimal, using a locale-aware decimal separator. */
+function formatMB(bytes: number, locale: string): string {
+  if (!Number.isFinite(bytes) || bytes <= 0) {
+    return (
+      new Intl.NumberFormat(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(
+        0
+      ) + ' MB'
+    );
+  }
+  const value = bytes / BYTES_PER_MB;
+  return (
+    new Intl.NumberFormat(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(
+      value
+    ) + ' MB'
+  );
 }
 
 /**
- * Lightweight relative-time formatter for recent events. We keep it inline
- * rather than pulling in date-fns — all we need is "przed chwilą", "X min",
- * "X godz.", or a raw clock time. Intl handles locale-aware clock formatting.
+ * Lightweight relative-time formatter for recent events using Intl APIs.
+ * Falls back to a locale-aware clock/date for events older than ~6 hours.
  */
-function formatRelativeTime(epochMs: number | null): string | null {
+function formatRelativeTime(
+  epochMs: number | null,
+  locale: string,
+  justNow: string,
+  todayTemplate: (time: string) => string
+): string | null {
   if (!epochMs) return null;
   const now = Date.now();
   const diff = now - epochMs;
   if (diff < 0) return null;
   const sec = Math.floor(diff / 1000);
-  if (sec < 30) return 'przed chwilą';
+  if (sec < 30) return justNow;
   const min = Math.floor(sec / 60);
-  if (min < 1) return 'przed chwilą';
-  if (min < 60) return `${min} min temu`;
+  if (min < 1) return justNow;
+  const rtf = new Intl.RelativeTimeFormat(locale, { numeric: 'always', style: 'short' });
+  if (min < 60) return rtf.format(-min, 'minute');
   const hrs = Math.floor(min / 60);
-  if (hrs < 6) return `${hrs} godz. temu`;
-  // Older than ~6h — fall back to a clock time, prefixed with "dziś" when same day.
+  if (hrs < 6) return rtf.format(-hrs, 'hour');
+  // Older than ~6h — fall back to a clock time, prefixed with locale-aware "today" when same day.
   const then = new Date(epochMs);
   const sameDay = new Date(now).toDateString() === then.toDateString();
-  const clock = then.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' });
-  return sameDay ? `dziś ${clock}` : then.toLocaleDateString('pl-PL');
+  const clock = then.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' });
+  return sameDay ? todayTemplate(clock) : then.toLocaleDateString(locale);
 }
 
 export function UpdatesSection({ version }: UpdatesSectionProps) {
+  const { t, i18n } = useTranslation('settings');
   const {
     status,
     updateInfo,
@@ -84,6 +102,10 @@ export function UpdatesSection({ version }: UpdatesSectionProps) {
     return () => clearInterval(id);
   }, [lastCheckedAt]);
 
+  const locale = i18n.language;
+  const justNow = t('updates.justNow');
+  const todayTemplate = useMemo(() => (time: string) => t('updates.today', { time }), [t]);
+
   const isMac = window.electronAPI?.platform === 'darwin';
 
   const statusText = (() => {
@@ -96,7 +118,7 @@ export function UpdatesSection({ version }: UpdatesSectionProps) {
         return `Dostępna aktualizacja: ${updateInfo?.version ?? ''}`;
       case 'downloading': {
         if (progress && progress.total > 0) {
-          return `Pobieranie · ${formatMB(progress.transferred)}/${formatMB(progress.total)}`;
+          return `Pobieranie · ${formatMB(progress.transferred, locale)}/${formatMB(progress.total, locale)}`;
         }
         return progress ? `Pobieranie · ${Math.round(progress.percent)}%` : 'Pobieranie...';
       }
@@ -131,7 +153,7 @@ export function UpdatesSection({ version }: UpdatesSectionProps) {
 
   const updateLocked = isUpdateLocked(status);
 
-  const lastCheckedLabel = formatRelativeTime(lastCheckedAt);
+  const lastCheckedLabel = formatRelativeTime(lastCheckedAt, locale, justNow, todayTemplate);
 
   const openReleasesPage = () => {
     if (window.electronAPI?.browser) {
