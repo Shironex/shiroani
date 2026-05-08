@@ -88,7 +88,26 @@
     "horizontalRule": "Horizontal rule"
   },
   "gradient": {
-    "clear": "Clear"
+    "clear": "Clear",
+    "sakura": "Sakura",
+    "twilight": "Twilight",
+    "ocean": "Ocean",
+    "matcha": "Matcha",
+    "amber": "Amber",
+    "coral": "Coral",
+    "mist": "Mist",
+    "lavender": "Lavender",
+    "mint": "Mint",
+    "cyber": "Cyber",
+    "starlight": "Starlight",
+    "peach": "Peach"
+  },
+  "mood": {
+    "great": "Great",
+    "good": "Good",
+    "neutral": "Neutral",
+    "bad": "Bad",
+    "terrible": "Terrible"
   },
   "sidebar": {
     "currentStreak": "Current streak",

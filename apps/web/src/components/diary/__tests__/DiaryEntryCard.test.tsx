@@ -30,9 +30,9 @@ describe('DiaryEntryCard', () => {
     expect(screen.getByText('Mój wpis')).toBeInTheDocument();
   });
 
-  it('shows "Bez tytułu" when title is empty', () => {
+  it('shows "Untitled" when title is empty', () => {
     render(<DiaryEntryCard entry={createEntry({ title: '' })} {...handlers()} />);
-    expect(screen.getByText('Bez tytułu')).toBeInTheDocument();
+    expect(screen.getByText('Untitled')).toBeInTheDocument();
   });
 
   it('shows anime title when entry.animeTitle exists', () => {
@@ -126,8 +126,9 @@ describe('DiaryEntryCard', () => {
 
   it('renders formatted date', () => {
     render(<DiaryEntryCard entry={createEntry({ createdAt: '2025-06-15' })} {...handlers()} />);
-    // formatDate('2025-06-15', 'short') -> Polish short format
-    const formatted = new Date('2025-06-15').toLocaleDateString('pl-PL', {
+    // formatDate('2025-06-15') now follows the active i18n.language; tests
+    // boot in EN (default), so the locale-aware format must match.
+    const formatted = new Date('2025-06-15').toLocaleDateString('en', {
       day: 'numeric',
       month: 'short',
       year: 'numeric',

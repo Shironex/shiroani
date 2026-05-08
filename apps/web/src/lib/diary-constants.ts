@@ -1,38 +1,60 @@
 import { Sparkles, Heart, Minus, ThumbsDown, Frown } from 'lucide-react';
 import type { DiaryMood } from '@shiroani/shared';
+import i18n from '@/lib/i18n';
 
-export const DIARY_GRADIENTS: Record<string, { label: string; css: string }> = {
+/**
+ * Diary cover gradient definitions. The display label lives behind a
+ * `labelKey` (in the `diary` namespace, `gradient.<id>`) so the picker
+ * tooltip swaps with the active language. Consumers should resolve the
+ * label via `t(g.labelKey)`.
+ */
+export const DIARY_GRADIENTS: Record<string, { labelKey: string; css: string }> = {
   sakura: {
-    label: 'Sakura',
+    labelKey: 'gradient.sakura',
     css: 'linear-gradient(135deg, #FF92A8 0%, #FFB7C5 50%, #FFC8D6 100%)',
   },
   twilight: {
-    label: 'Zmierzch',
+    labelKey: 'gradient.twilight',
     css: 'linear-gradient(135deg, #7C3AED 0%, #A78BFA 50%, #C4B5FD 100%)',
   },
-  ocean: { label: 'Ocean', css: 'linear-gradient(135deg, #0284C7 0%, #38BDF8 50%, #7DD3FC 100%)' },
+  ocean: {
+    labelKey: 'gradient.ocean',
+    css: 'linear-gradient(135deg, #0284C7 0%, #38BDF8 50%, #7DD3FC 100%)',
+  },
   matcha: {
-    label: 'Matcha',
+    labelKey: 'gradient.matcha',
     css: 'linear-gradient(135deg, #15803D 0%, #4ADE80 50%, #86EFAC 100%)',
   },
   amber: {
-    label: 'Bursztyn',
+    labelKey: 'gradient.amber',
     css: 'linear-gradient(135deg, #B45309 0%, #F59E0B 50%, #FCD34D 100%)',
   },
-  coral: { label: 'Koral', css: 'linear-gradient(135deg, #DC2626 0%, #FB7185 50%, #FECDD3 100%)' },
-  mist: { label: 'Mgła', css: 'linear-gradient(135deg, #475569 0%, #94A3B8 50%, #CBD5E1 100%)' },
+  coral: {
+    labelKey: 'gradient.coral',
+    css: 'linear-gradient(135deg, #DC2626 0%, #FB7185 50%, #FECDD3 100%)',
+  },
+  mist: {
+    labelKey: 'gradient.mist',
+    css: 'linear-gradient(135deg, #475569 0%, #94A3B8 50%, #CBD5E1 100%)',
+  },
   lavender: {
-    label: 'Lawenda',
+    labelKey: 'gradient.lavender',
     css: 'linear-gradient(135deg, #8B5CF6 0%, #C084FC 50%, #E9D5FF 100%)',
   },
-  mint: { label: 'Mięta', css: 'linear-gradient(135deg, #0D9488 0%, #5EEAD4 50%, #99F6E4 100%)' },
-  cyber: { label: 'Cyber', css: 'linear-gradient(135deg, #EC4899 0%, #8B5CF6 50%, #6366F1 100%)' },
+  mint: {
+    labelKey: 'gradient.mint',
+    css: 'linear-gradient(135deg, #0D9488 0%, #5EEAD4 50%, #99F6E4 100%)',
+  },
+  cyber: {
+    labelKey: 'gradient.cyber',
+    css: 'linear-gradient(135deg, #EC4899 0%, #8B5CF6 50%, #6366F1 100%)',
+  },
   starlight: {
-    label: 'Gwiazdy',
+    labelKey: 'gradient.starlight',
     css: 'linear-gradient(135deg, #1E1B4B 0%, #4338CA 50%, #818CF8 100%)',
   },
   peach: {
-    label: 'Brzoskwinia',
+    labelKey: 'gradient.peach',
     css: 'linear-gradient(135deg, #FB923C 0%, #FDBA74 50%, #FED7AA 100%)',
   },
 };
@@ -53,20 +75,33 @@ export const MOOD_EMOJI: Record<DiaryMood, string> = {
   terrible: '😡',
 };
 
+/**
+ * Mood pill descriptors. `labelKey` resolves under the `diary` namespace
+ * (`mood.<value>`); use `t(opt.labelKey)` to render.
+ */
 export const MOOD_OPTIONS: {
   value: DiaryMood;
-  label: string;
+  labelKey: string;
   Icon: typeof Sparkles;
   color: string;
 }[] = [
-  { value: 'great', label: 'Świetnie', Icon: Sparkles, color: 'text-yellow-400' },
-  { value: 'good', label: 'Dobrze', Icon: Heart, color: 'text-pink-400' },
-  { value: 'neutral', label: 'Neutralnie', Icon: Minus, color: 'text-muted-foreground' },
-  { value: 'bad', label: 'Słabo', Icon: ThumbsDown, color: 'text-orange-400' },
-  { value: 'terrible', label: 'Okropnie', Icon: Frown, color: 'text-red-400' },
+  { value: 'great', labelKey: 'mood.great', Icon: Sparkles, color: 'text-yellow-400' },
+  { value: 'good', labelKey: 'mood.good', Icon: Heart, color: 'text-pink-400' },
+  { value: 'neutral', labelKey: 'mood.neutral', Icon: Minus, color: 'text-muted-foreground' },
+  { value: 'bad', labelKey: 'mood.bad', Icon: ThumbsDown, color: 'text-orange-400' },
+  { value: 'terrible', labelKey: 'mood.terrible', Icon: Frown, color: 'text-red-400' },
 ];
 
-import { formatDate as sharedFormatDate } from '@shiroani/shared';
-
-/** Format date in short Polish format for diary entries (e.g. "15 sty 2024") */
-export const formatDate = (dateStr: string): string => sharedFormatDate(dateStr, 'short');
+/**
+ * Format a date in the active UI locale's short style (e.g. "15 sty 2024"
+ * for PL, "Jun 15, 2025" for EN). Uses `Intl.DateTimeFormat` directly so
+ * the output tracks `i18n.language` instead of being pinned to PL.
+ */
+export const formatDate = (dateStr: string): string => {
+  const locale = i18n.language || 'en';
+  return new Date(dateStr).toLocaleDateString(locale, {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  });
+};

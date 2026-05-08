@@ -53,10 +53,10 @@ beforeEach(() => {
 });
 
 describe('NewTabPage', () => {
-  it('renders "Szybki dostęp" section heading', () => {
+  it('renders "Quick access" section heading', () => {
     render(<NewTabPage onNavigate={vi.fn()} />);
 
-    expect(screen.getByText('Szybki dostęp')).toBeInTheDocument();
+    expect(screen.getByText('Quick access')).toBeInTheDocument();
   });
 
   it('renders all predefined site cards', () => {
@@ -76,38 +76,38 @@ describe('NewTabPage', () => {
     expect(onNavigate).toHaveBeenCalledWith('https://shinden.pl');
   });
 
-  it('shows "Dodaj" button that opens the add dialog', async () => {
+  it('shows "Add" button that opens the add dialog', async () => {
     const { user } = render(<NewTabPage onNavigate={vi.fn()} />);
 
-    await user.click(screen.getByText('Dodaj'));
+    await user.click(screen.getByText('Add'));
 
     const dialog = screen.getByRole('dialog');
-    expect(within(dialog).getByText('Dodaj stronę')).toBeInTheDocument();
+    expect(within(dialog).getByText('Add site')).toBeInTheDocument();
   });
 
   it('has submit button disabled when inputs are empty', async () => {
     const { user } = render(<NewTabPage onNavigate={vi.fn()} />);
 
-    await user.click(screen.getByText('Dodaj'));
+    await user.click(screen.getByText('Add'));
 
     const dialog = screen.getByRole('dialog');
-    const submitButton = within(dialog).getByRole('button', { name: 'Dodaj' });
+    const submitButton = within(dialog).getByRole('button', { name: 'Add' });
     expect(submitButton).toBeDisabled();
   });
 
   it('calls addSite when filling name and URL and submitting', async () => {
     const { user } = render(<NewTabPage onNavigate={vi.fn()} />);
 
-    await user.click(screen.getByText('Dodaj'));
+    await user.click(screen.getByText('Add'));
 
     const dialog = screen.getByRole('dialog');
-    const nameInput = within(dialog).getByPlaceholderText('Nazwa');
+    const nameInput = within(dialog).getByPlaceholderText('Name');
     const urlInput = within(dialog).getByPlaceholderText('https://example.com');
 
     await user.type(nameInput, 'Test Site');
     await user.type(urlInput, 'https://test.com');
 
-    const submitButton = within(dialog).getByRole('button', { name: 'Dodaj' });
+    const submitButton = within(dialog).getByRole('button', { name: 'Add' });
     expect(submitButton).toBeEnabled();
     await user.click(submitButton);
 
@@ -121,12 +121,12 @@ describe('NewTabPage', () => {
   it('prepends https:// when URL lacks a protocol', async () => {
     const { user } = render(<NewTabPage onNavigate={vi.fn()} />);
 
-    await user.click(screen.getByText('Dodaj'));
+    await user.click(screen.getByText('Add'));
 
     const dialog = screen.getByRole('dialog');
-    await user.type(within(dialog).getByPlaceholderText('Nazwa'), 'No Proto');
+    await user.type(within(dialog).getByPlaceholderText('Name'), 'No Proto');
     await user.type(within(dialog).getByPlaceholderText('https://example.com'), 'example.org');
-    await user.click(within(dialog).getByRole('button', { name: 'Dodaj' }));
+    await user.click(within(dialog).getByRole('button', { name: 'Add' }));
 
     expect(mockAddSite).toHaveBeenCalledWith(
       expect.objectContaining({ url: 'https://example.org' })
@@ -136,7 +136,7 @@ describe('NewTabPage', () => {
   it('calls hidePredefined when removing a predefined site card', async () => {
     const { user } = render(<NewTabPage onNavigate={vi.fn()} />);
 
-    const removeButtons = screen.getAllByLabelText('Usuń stronę');
+    const removeButtons = screen.getAllByLabelText('Remove site');
     // The first remove button corresponds to the first predefined site
     await user.click(removeButtons[0]);
 
@@ -151,14 +151,14 @@ describe('NewTabPage', () => {
     const { user } = render(<NewTabPage onNavigate={vi.fn()} />);
 
     // Custom site is after predefined sites, so its remove button is last
-    const removeButtons = screen.getAllByLabelText('Usuń stronę');
+    const removeButtons = screen.getAllByLabelText('Remove site');
     const lastRemoveButton = removeButtons[removeButtons.length - 1];
     await user.click(lastRemoveButton);
 
     expect(mockRemoveSite).toHaveBeenCalledWith('custom-1');
   });
 
-  it('renders "Ostatnio odwiedzone" section when frequentSites is non-empty', () => {
+  it('renders "Recently visited" section when frequentSites is non-empty', () => {
     setupMock({
       frequentSites: [
         { url: 'https://example.com', title: 'Example', visitCount: 5, lastVisited: Date.now() },
@@ -167,15 +167,15 @@ describe('NewTabPage', () => {
 
     render(<NewTabPage onNavigate={vi.fn()} />);
 
-    expect(screen.getByText('Ostatnio odwiedzone')).toBeInTheDocument();
+    expect(screen.getByText('Recently visited')).toBeInTheDocument();
     expect(screen.getByText('Example')).toBeInTheDocument();
   });
 
-  it('shows empty state in "Ostatnio odwiedzone" when frequentSites is empty', () => {
+  it('shows empty state in "Recently visited" when frequentSites is empty', () => {
     render(<NewTabPage onNavigate={vi.fn()} />);
 
-    expect(screen.getByText('Ostatnio odwiedzone')).toBeInTheDocument();
-    expect(screen.getByText('Brak historii')).toBeInTheDocument();
+    expect(screen.getByText('Recently visited')).toBeInTheDocument();
+    expect(screen.getByText('No history yet')).toBeInTheDocument();
   });
 
   it('navigates when clicking a frequent site', async () => {
@@ -201,7 +201,7 @@ describe('NewTabPage', () => {
 
     const { user } = render(<NewTabPage onNavigate={onNavigate} />);
 
-    const removeButtons = screen.getAllByLabelText('Usuń stronę');
+    const removeButtons = screen.getAllByLabelText('Remove site');
     const customRemoveBtn = removeButtons[removeButtons.length - 1];
     const svg = customRemoveBtn.querySelector('svg');
     expect(svg).not.toBeNull();

@@ -88,7 +88,26 @@
     "horizontalRule": "Linia pozioma"
   },
   "gradient": {
-    "clear": "wyczyść"
+    "clear": "wyczyść",
+    "sakura": "Sakura",
+    "twilight": "Zmierzch",
+    "ocean": "Ocean",
+    "matcha": "Matcha",
+    "amber": "Bursztyn",
+    "coral": "Koral",
+    "mist": "Mgła",
+    "lavender": "Lawenda",
+    "mint": "Mięta",
+    "cyber": "Cyber",
+    "starlight": "Gwiazdy",
+    "peach": "Brzoskwinia"
+  },
+  "mood": {
+    "great": "Świetnie",
+    "good": "Dobrze",
+    "neutral": "Neutralnie",
+    "bad": "Słabo",
+    "terrible": "Okropnie"
   },
   "sidebar": {
     "currentStreak": "Aktualny streak",

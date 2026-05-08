@@ -20,22 +20,3 @@ export function formatDuration(seconds: number): string {
   if (seconds < 86400) return `${Math.floor(seconds / 3600)}h`;
   return `${Math.floor(seconds / 86400)}d`;
 }
-
-/**
- * Format a date string as a Polish relative time string (e.g., "2 godz. temu").
- * Falls back to a localized date for timestamps older than 7 days.
- */
-export function timeAgo(dateString: string): string {
-  const now = Date.now();
-  const date = new Date(dateString).getTime();
-  const diff = now - date;
-  const minutes = Math.floor(diff / 60000);
-  const hours = Math.floor(diff / 3600000);
-  const days = Math.floor(diff / 86400000);
-
-  if (minutes < 1) return 'teraz';
-  if (minutes < 60) return `${minutes} min temu`;
-  if (hours < 24) return `${hours} godz. temu`;
-  if (days < 7) return `${days} dn. temu`;
-  return new Date(dateString).toLocaleDateString('pl-PL');
-}

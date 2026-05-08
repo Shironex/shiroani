@@ -43,7 +43,7 @@ describe('ViewHeader', () => {
       <ViewHeader {...baseProps} searchQuery="test" onSearchChange={onSearchChange} />
     );
 
-    const input = screen.getByPlaceholderText('Szukaj...');
+    const input = screen.getByPlaceholderText('Search...');
     expect(input).toHaveValue('test');
 
     await user.type(input, 'a');
@@ -191,18 +191,18 @@ describe('ConfirmDialog', () => {
     expect(screen.getByText('Czy na pewno chcesz usunąć?')).toBeInTheDocument();
   });
 
-  it('uses default Polish labels "Usuń" and "Anuluj"', () => {
+  it('uses default labels "Delete" and "Cancel"', () => {
     render(<ConfirmDialog {...baseProps} />);
 
-    expect(screen.getByRole('button', { name: 'Usuń' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Anuluj' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Delete' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Cancel' })).toBeInTheDocument();
   });
 
   it('calls onConfirm when confirm button is clicked', async () => {
     const onConfirm = vi.fn();
     const { user } = render(<ConfirmDialog {...baseProps} onConfirm={onConfirm} />);
 
-    await user.click(screen.getByRole('button', { name: 'Usuń' }));
+    await user.click(screen.getByRole('button', { name: 'Delete' }));
     expect(onConfirm).toHaveBeenCalledTimes(1);
   });
 
@@ -210,7 +210,7 @@ describe('ConfirmDialog', () => {
     const onOpenChange = vi.fn();
     const { user } = render(<ConfirmDialog {...baseProps} onOpenChange={onOpenChange} />);
 
-    await user.click(screen.getByRole('button', { name: 'Anuluj' }));
+    await user.click(screen.getByRole('button', { name: 'Cancel' }));
     expect(onOpenChange).toHaveBeenCalledWith(false);
   });
 

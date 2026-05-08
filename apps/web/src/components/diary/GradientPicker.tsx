@@ -36,8 +36,9 @@ export function GradientPicker({
         {t('editor.cover')}
       </span>
       <div className={cn('flex flex-wrap gap-1.5', stacked && 'w-full')}>
-        {Object.entries(DIARY_GRADIENTS).map(([key, { label, css }]) => {
+        {Object.entries(DIARY_GRADIENTS).map(([key, { labelKey, css }]) => {
           const active = value === key;
+          const label = t(labelKey);
           return (
             <button
               key={key}

@@ -6,13 +6,15 @@ import { NavigationDock } from '../NavigationDock';
 
 vi.mock('@/lib/platform', () => ({ IS_ELECTRON: false }));
 
+// Tests boot i18n in EN (DEFAULT_LANGUAGE) — labels mirror the resolved
+// `nav:link.<id>` keys from `apps/web/src/locales/en/nav.json`.
 const NAV_ITEMS = [
-  { id: 'browser', label: 'Przeglądarka' },
-  { id: 'library', label: 'Biblioteka' },
-  { id: 'diary', label: 'Dziennik' },
-  { id: 'schedule', label: 'Harmonogram' },
-  { id: 'feed', label: 'Aktualności' },
-  { id: 'settings', label: 'Ustawienia' },
+  { id: 'browser', label: 'Browser' },
+  { id: 'library', label: 'Library' },
+  { id: 'diary', label: 'Diary' },
+  { id: 'schedule', label: 'Schedule' },
+  { id: 'feed', label: 'News' },
+  { id: 'settings', label: 'Settings' },
 ] as const;
 
 beforeEach(() => {
@@ -52,12 +54,12 @@ describe('NavigationDock', () => {
     useAppStore.setState({ activeView: 'library' });
     render(<NavigationDock hasBg={false} />);
 
-    const activeButton = screen.getByRole('button', { name: 'Biblioteka' });
+    const activeButton = screen.getByRole('button', { name: 'Library' });
     expect(activeButton).toHaveAttribute('aria-current', 'page');
 
     // Other buttons should not have aria-current
     for (const { label } of NAV_ITEMS) {
-      if (label === 'Biblioteka') continue;
+      if (label === 'Library') continue;
       const button = screen.getByRole('button', { name: label });
       expect(button).not.toHaveAttribute('aria-current');
     }
@@ -69,20 +71,20 @@ describe('NavigationDock', () => {
 
     const { user } = render(<NavigationDock hasBg={false} />);
 
-    await user.click(screen.getByRole('button', { name: 'Dziennik' }));
+    await user.click(screen.getByRole('button', { name: 'Diary' }));
     expect(navigateTo).toHaveBeenCalledWith('diary');
 
-    await user.click(screen.getByRole('button', { name: 'Harmonogram' }));
+    await user.click(screen.getByRole('button', { name: 'Schedule' }));
     expect(navigateTo).toHaveBeenCalledWith('schedule');
 
-    await user.click(screen.getByRole('button', { name: 'Ustawienia' }));
+    await user.click(screen.getByRole('button', { name: 'Settings' }));
     expect(navigateTo).toHaveBeenCalledWith('settings');
   });
 
   it('has a nav landmark with the correct accessible name', () => {
     render(<NavigationDock hasBg={false} />);
 
-    const nav = screen.getByRole('navigation', { name: 'Nawigacja główna' });
+    const nav = screen.getByRole('navigation', { name: 'Main navigation' });
     expect(nav).toBeInTheDocument();
   });
 
@@ -90,23 +92,18 @@ describe('NavigationDock', () => {
     render(<NavigationDock hasBg={false} />);
 
     // Default: browser is active
-    expect(screen.getByRole('button', { name: 'Przeglądarka' })).toHaveAttribute(
-      'aria-current',
-      'page'
-    );
+    expect(screen.getByRole('button', { name: 'Browser' })).toHaveAttribute('aria-current', 'page');
 
     // Change to settings
     act(() => {
       useAppStore.setState({ activeView: 'settings' });
     });
 
-    expect(screen.getByRole('button', { name: 'Ustawienia' })).toHaveAttribute(
+    expect(screen.getByRole('button', { name: 'Settings' })).toHaveAttribute(
       'aria-current',
       'page'
     );
-    expect(screen.getByRole('button', { name: 'Przeglądarka' })).not.toHaveAttribute(
-      'aria-current'
-    );
+    expect(screen.getByRole('button', { name: 'Browser' })).not.toHaveAttribute('aria-current');
   });
 
   it('shows collapsed logo when autoHide is enabled', () => {
@@ -115,7 +112,7 @@ describe('NavigationDock', () => {
 
     // Should show the logo image but not nav buttons
     expect(screen.getByAltText('ShiroAni')).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Przeglądarka' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Browser' })).not.toBeInTheDocument();
   });
 
   it('renders vertically when edge is left or right', () => {
@@ -143,7 +140,7 @@ describe('NavigationDock', () => {
     useDockStore.setState({ draggable: true });
     render(<NavigationDock hasBg={false} />);
 
-    const handle = screen.getByRole('button', { name: 'Przesuń dock' });
+    const handle = screen.getByRole('button', { name: 'Move dock' });
     expect(handle).toBeInTheDocument();
   });
 
@@ -151,14 +148,14 @@ describe('NavigationDock', () => {
     useDockStore.setState({ draggable: false });
     render(<NavigationDock hasBg={false} />);
 
-    expect(screen.queryByRole('button', { name: 'Przesuń dock' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Move dock' })).not.toBeInTheDocument();
   });
 
   it('clicking a nav item does not set isDragging', async () => {
     useDockStore.setState({ draggable: true, isDragging: false });
     const { user } = render(<NavigationDock hasBg={false} />);
 
-    await user.click(screen.getByRole('button', { name: 'Dziennik' }));
+    await user.click(screen.getByRole('button', { name: 'Diary' }));
 
     expect(useDockStore.getState().isDragging).toBe(false);
   });
@@ -168,7 +165,7 @@ describe('NavigationDock', () => {
     useDockStore.setState({ autoHide: true, isExpanded: false, setExpanded } as any);
     const { user } = render(<NavigationDock hasBg={false} />);
 
-    const logoButton = screen.getByRole('button', { name: 'Rozwiń nawigację' });
+    const logoButton = screen.getByRole('button', { name: 'Expand navigation' });
     expect(logoButton).toBeInTheDocument();
 
     await user.click(logoButton);
