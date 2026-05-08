@@ -228,7 +228,7 @@ export function SettingsView() {
       <div className="flex-1 flex min-h-0">
         {/* Sidebar navigation */}
         <aside
-          className="w-[220px] shrink-0 border-r border-border-glass overflow-y-auto pt-4 pb-20 px-3"
+          className="min-w-[220px] max-w-[280px] w-fit shrink-0 border-r border-border-glass overflow-y-auto pt-4 pb-20 px-3"
           role="tablist"
           aria-label="Sekcje ustawień"
         >

@@ -150,7 +150,7 @@ export function DiaryView() {
         actions={
           <>
             <Select value={sortBy} onValueChange={handleSortChange}>
-              <SelectTrigger className="w-[170px] h-8 text-xs bg-background/40 border-border-glass focus:bg-background/60 transition-colors">
+              <SelectTrigger className="min-w-[170px] max-w-full h-8 text-xs bg-background/40 border-border-glass focus:bg-background/60 transition-colors">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>

@@ -97,8 +97,11 @@ const AnimeCard = memo(function AnimeCard({
         />
 
         {/* Status pill — top-left */}
-        <div className="absolute top-2 left-2 z-[2]">
-          <PillTag variant={statusVariant} className="shadow-[0_1px_4px_oklch(0_0_0/0.5)]">
+        <div className="absolute top-2 left-2 z-[2] max-w-[calc(100%-52px)] overflow-hidden">
+          <PillTag
+            variant={statusVariant}
+            className="shadow-[0_1px_4px_oklch(0_0_0/0.5)] truncate max-w-full"
+          >
             {statusLabel}
           </PillTag>
         </div>
