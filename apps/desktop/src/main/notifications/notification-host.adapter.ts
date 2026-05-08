@@ -3,7 +3,7 @@ import { Notification, BrowserWindow, nativeImage } from 'electron';
 import https from 'https';
 import type { AiringAnime, NotificationSettings } from '@shiroani/shared';
 import { NotificationHostPort } from '../../modules/notifications/notification-host.port';
-import { getTitle, buildNotificationBody } from '../../modules/notifications/notification-logic';
+import { resolveAnimeTitle, buildLocalizedNotificationBody } from './notification-strings';
 import {
   scheduleToastsOnQuit,
   clearScheduledToasts,
@@ -27,9 +27,9 @@ export class ElectronNotificationHost extends NotificationHostPort {
   }
 
   async showAiringNotification(airing: AiringAnime, settings: NotificationSettings): Promise<void> {
-    const title = getTitle(airing.media);
+    const title = resolveAnimeTitle(airing.media);
     const minutesLeft = Math.round((airing.airingAt - Date.now() / 1000) / 60);
-    const body = buildNotificationBody(airing.episode, minutesLeft);
+    const body = buildLocalizedNotificationBody(airing.episode, minutesLeft);
 
     let icon: Electron.NativeImage | undefined;
     const coverUrl = airing.media.coverImage.large || airing.media.coverImage.medium;

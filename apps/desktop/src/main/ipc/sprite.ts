@@ -6,6 +6,7 @@ import { join, extname, resolve, sep } from 'path';
 import { pathToFileURL } from 'url';
 import { randomUUID } from 'crypto';
 import { createMainLogger } from '../logging/logger';
+import { t } from '../i18n-strings';
 import { handle, handleWithFallback } from './with-ipc-handler';
 import {
   spritePickSchema,
@@ -337,10 +338,10 @@ export function registerSpriteHandlers(mainWindow: BrowserWindow): void {
       logger.debug('overlay:pick-sprite invoked');
 
       const result = await dialog.showOpenDialog(mainWindow, {
-        title: 'Wybierz sprite maskotki',
+        title: t('dialog.selectSprite'),
         filters: [
           {
-            name: 'Obrazy',
+            name: t('dialog.imagesFilter'),
             extensions: ['png', 'jpg', 'jpeg', 'gif', 'webp'],
           },
         ],

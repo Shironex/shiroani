@@ -1,6 +1,8 @@
 import { ipcMain } from 'electron';
+import { UI_LANGUAGE_SETTING_KEY } from '@shiroani/shared';
 import { createMainLogger } from '../logging/logger';
 import { store } from '../store';
+import { rebuildTrayMenu } from '../tray';
 import { handle, handleWithFallback } from './with-ipc-handler';
 import { storeGetSchema, storeSetSchema, storeDeleteSchema } from './schemas';
 
@@ -59,6 +61,8 @@ const ALLOWED_STORE_KEYS = new Set([
   'onboarding-completed',
   // AniList profile username
   'anilist-username',
+  // UI language (mirrored from renderer for main-process tray/notifications/Discord)
+  UI_LANGUAGE_SETTING_KEY,
   // Feed bookmarks and read state (mirrored from renderer for cross-window access)
   'shiroani:feed-bookmarks',
   'shiroani:feedReadIds',
@@ -128,6 +132,19 @@ export function registerStoreHandlers(): void {
         throw new Error('Value too large');
       }
       store.set(key, value);
+
+      // The tray context menu is built once and cached by Electron, so
+      // changing the UI language at runtime does NOT relabel its entries
+      // until we explicitly rebuild it. Other main-process surfaces
+      // (notifications, Discord presence) read the language fresh on every
+      // emit and need no extra hook.
+      if (key === UI_LANGUAGE_SETTING_KEY) {
+        try {
+          rebuildTrayMenu();
+        } catch (err) {
+          logger.warn('Failed to rebuild tray menu after language change:', err);
+        }
+      }
     },
     { schema: storeSetSchema }
   );
