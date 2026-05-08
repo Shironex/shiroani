@@ -24,5 +24,41 @@
       "sat": "Saturday",
       "sun": "Sunday"
     }
+  },
+  "actions": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "close": "Close",
+    "delete": "Delete",
+    "remove": "Remove",
+    "add": "Add",
+    "edit": "Edit",
+    "back": "Back",
+    "next": "Next",
+    "retry": "Retry",
+    "search": "Search",
+    "filter": "Filter",
+    "sort": "Sort",
+    "refresh": "Refresh",
+    "open": "Open",
+    "select": "Select",
+    "copy": "Copy",
+    "viewMore": "Show more",
+    "viewLess": "Show less"
+  },
+  "state": {
+    "loading": "Loading...",
+    "saving": "Saving...",
+    "error": "Error",
+    "empty": "No results",
+    "ok": "OK",
+    "yes": "Yes",
+    "no": "No",
+    "success": "Success"
+  },
+  "dialog": {
+    "areYouSure": "Are you sure?",
+    "thisCannotBeUndone": "This cannot be undone."
   }
 }

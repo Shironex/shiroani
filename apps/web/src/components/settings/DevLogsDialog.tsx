@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Copy,
   Trash2,
@@ -73,6 +74,7 @@ const SEARCH_DEBOUNCE_MS = 150;
 const LEVEL_CHANGE_TOAST_MS = 2000;
 
 export function DevLogsDialog({ open, onOpenChange }: DevLogsDialogProps) {
+  const { t } = useTranslation('settings');
   // Source / data state
   const [source, setSource] = useState<SourceMode>('buffer');
   const [bufferEntries, setBufferEntries] = useState<readonly LogEntry[]>(() => getLogBuffer());
@@ -150,7 +152,7 @@ export function DevLogsDialog({ open, onOpenChange }: DevLogsDialogProps) {
 
     const api = window.electronAPI?.app;
     if (!api?.listLogFiles || !api?.readLogFile) {
-      setFileError('Dostęp do plików logów jest niedostępny w tym środowisku.');
+      setFileError(t('logs.logsUnavailable'));
       setFileList([]);
       setFileEntries([]);
       return;
@@ -166,7 +168,7 @@ export function DevLogsDialog({ open, onOpenChange }: DevLogsDialogProps) {
         if (source === 'today') {
           const latest = sorted[0];
           if (!latest) {
-            setFileError('Brak plików logów na dysku.');
+            setFileError(t('logs.noFilesError'));
             setFileEntries([]);
             setFileTotalCount(0);
             return;
@@ -183,38 +185,41 @@ export function DevLogsDialog({ open, onOpenChange }: DevLogsDialogProps) {
         }
       })
       .catch((err: unknown) => {
-        setFileError(describeError(err));
+        setFileError(describeError(err, t));
         setFileList([]);
         setFileEntries([]);
       })
       .finally(() => setFileLoading(false));
-  }, [open, source]);
+  }, [open, source, t]);
 
-  const loadFileContents = useCallback(async (fileName: string) => {
-    const api = window.electronAPI?.app;
-    if (!api?.readLogFile) {
-      setFileError('Dostęp do plików logów jest niedostępny w tym środowisku.');
-      return;
-    }
-    setFileLoading(true);
-    setFileError(null);
-    try {
-      const contents = await api.readLogFile(fileName);
-      const parsed = parseJsonlLogEntries(contents);
-      setFileTotalCount(parsed.length);
-      if (parsed.length > FILE_ENTRY_LIMIT) {
-        setFileEntries(parsed.slice(parsed.length - FILE_ENTRY_LIMIT));
-      } else {
-        setFileEntries(parsed);
+  const loadFileContents = useCallback(
+    async (fileName: string) => {
+      const api = window.electronAPI?.app;
+      if (!api?.readLogFile) {
+        setFileError(t('logs.logsUnavailable'));
+        return;
       }
-    } catch (err) {
-      setFileError(describeError(err));
-      setFileEntries([]);
-      setFileTotalCount(0);
-    } finally {
-      setFileLoading(false);
-    }
-  }, []);
+      setFileLoading(true);
+      setFileError(null);
+      try {
+        const contents = await api.readLogFile(fileName);
+        const parsed = parseJsonlLogEntries(contents);
+        setFileTotalCount(parsed.length);
+        if (parsed.length > FILE_ENTRY_LIMIT) {
+          setFileEntries(parsed.slice(parsed.length - FILE_ENTRY_LIMIT));
+        } else {
+          setFileEntries(parsed);
+        }
+      } catch (err) {
+        setFileError(describeError(err, t));
+        setFileEntries([]);
+        setFileTotalCount(0);
+      } finally {
+        setFileLoading(false);
+      }
+    },
+    [t]
+  );
 
   // ── Active entries (pre-filter) ─────────────────────────────────────
   const activeEntries = source === 'buffer' ? bufferEntries : fileEntries;
@@ -392,13 +397,22 @@ export function DevLogsDialog({ open, onOpenChange }: DevLogsDialogProps) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl gap-3">
         <DialogHeader>
-          <DialogTitle>Podgląd logów</DialogTitle>
+          <DialogTitle>{t('logs.title')}</DialogTitle>
           <DialogDescription>
             {source === 'buffer'
-              ? `Ostatnie ${totalCountForHeader} ${pluralEntries(totalCountForHeader)} z bufora aplikacji. Zapisywane tylko w pamięci, nie są nigdzie wysyłane.`
+              ? t('logs.descriptionBuffer', {
+                  count: totalCountForHeader,
+                  entries: t('logs.entries', { count: totalCountForHeader }),
+                })
               : showTruncationNote
-                ? `Pokazano ostatnie ${FILE_ENTRY_LIMIT} z ${fileTotalCount} wpisów z pliku.`
-                : `${totalCountForHeader} ${pluralEntries(totalCountForHeader)} z pliku logów.`}
+                ? t('logs.descriptionTruncated', {
+                    limit: FILE_ENTRY_LIMIT,
+                    total: fileTotalCount,
+                  })
+                : t('logs.descriptionFile', {
+                    count: totalCountForHeader,
+                    entries: t('logs.entries', { count: totalCountForHeader }),
+                  })}
           </DialogDescription>
         </DialogHeader>
 
@@ -407,24 +421,26 @@ export function DevLogsDialog({ open, onOpenChange }: DevLogsDialogProps) {
           <SourceButton
             active={source === 'buffer'}
             onClick={() => handleSourceChange('buffer')}
-            label="Bufor"
+            label={t('logs.source.buffer')}
           />
           <SourceButton
             active={source === 'today'}
             onClick={() => handleSourceChange('today')}
-            label="Plik dzisiejszy"
+            label={t('logs.source.today')}
           />
           <SourceButton
             active={source === 'archive'}
             onClick={() => handleSourceChange('archive')}
-            label="Archiwum"
+            label={t('logs.source.archive')}
           />
         </div>
 
         {/* Archive dropdown (only in archive mode) */}
         {source === 'archive' && (
           <div className="flex items-center gap-2">
-            <label className="text-[11.5px] text-muted-foreground shrink-0">Plik:</label>
+            <label className="text-[11.5px] text-muted-foreground shrink-0">
+              {t('logs.filePicker.label')}
+            </label>
             <Select
               value={selectedArchive ?? undefined}
               onValueChange={handleArchiveSelect}
@@ -432,7 +448,11 @@ export function DevLogsDialog({ open, onOpenChange }: DevLogsDialogProps) {
             >
               <SelectTrigger className="h-8 text-[12px] max-w-md">
                 <SelectValue
-                  placeholder={fileList.length === 0 ? 'Brak plików' : 'Wybierz plik logów'}
+                  placeholder={
+                    fileList.length === 0
+                      ? t('logs.filePicker.noFiles')
+                      : t('logs.filePicker.placeholder')
+                  }
                 />
               </SelectTrigger>
               <SelectContent>
@@ -455,15 +475,15 @@ export function DevLogsDialog({ open, onOpenChange }: DevLogsDialogProps) {
         <div className="flex flex-wrap items-center gap-2">
           {/* Level filter */}
           <Select value={levelFilter} onValueChange={v => setLevelFilter(v as LevelFilter)}>
-            <SelectTrigger className="h-8 w-[130px] text-[12px]" aria-label="Filtr poziomu">
+            <SelectTrigger className="h-8 w-[130px] text-[12px]" aria-label={t('logs.filterAria')}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Wszystkie</SelectItem>
-              <SelectItem value="error">Error</SelectItem>
-              <SelectItem value="warn">Warn</SelectItem>
-              <SelectItem value="info">Info</SelectItem>
-              <SelectItem value="debug">Debug</SelectItem>
+              <SelectItem value="all">{t('logs.level.all')}</SelectItem>
+              <SelectItem value="error">{t('logs.level.error')}</SelectItem>
+              <SelectItem value="warn">{t('logs.level.warn')}</SelectItem>
+              <SelectItem value="info">{t('logs.level.info')}</SelectItem>
+              <SelectItem value="debug">{t('logs.level.debug')}</SelectItem>
             </SelectContent>
           </Select>
 
@@ -472,23 +492,26 @@ export function DevLogsDialog({ open, onOpenChange }: DevLogsDialogProps) {
             type="search"
             value={searchInput}
             onChange={e => setSearchInput(e.target.value)}
-            placeholder="Szukaj w logach…"
+            placeholder={t('logs.searchPlaceholder')}
             className="h-8 max-w-xs"
-            aria-label="Szukaj w logach"
+            aria-label={t('logs.searchAria')}
           />
 
           {/* Runtime log level */}
           <div className="flex items-center gap-1.5 ml-auto">
-            <span className="text-[11.5px] text-muted-foreground">Poziom:</span>
+            <span className="text-[11.5px] text-muted-foreground">{t('logs.levelLabel')}</span>
             <Select value={runtimeLevel} onValueChange={handleRuntimeLevelChange}>
-              <SelectTrigger className="h-8 w-[100px] text-[12px]" aria-label="Poziom logowania">
+              <SelectTrigger
+                className="h-8 w-[100px] text-[12px]"
+                aria-label={t('logs.runtimeLevelAria')}
+              >
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="error">Error</SelectItem>
-                <SelectItem value="warn">Warn</SelectItem>
-                <SelectItem value="info">Info</SelectItem>
-                <SelectItem value="debug">Debug</SelectItem>
+                <SelectItem value="error">{t('logs.level.error')}</SelectItem>
+                <SelectItem value="warn">{t('logs.level.warn')}</SelectItem>
+                <SelectItem value="info">{t('logs.level.info')}</SelectItem>
+                <SelectItem value="debug">{t('logs.level.debug')}</SelectItem>
               </SelectContent>
             </Select>
             {levelChangedAt !== null && (
@@ -497,7 +520,7 @@ export function DevLogsDialog({ open, onOpenChange }: DevLogsDialogProps) {
                 role="status"
               >
                 <Check className="w-3 h-3" />
-                zmieniono
+                {t('logs.levelChanged')}
               </span>
             )}
           </div>
@@ -510,36 +533,36 @@ export function DevLogsDialog({ open, onOpenChange }: DevLogsDialogProps) {
             variant="outline"
             onClick={handleTogglePause}
             disabled={source !== 'buffer'}
-            aria-label={paused ? 'Wznów' : 'Pauza'}
+            aria-label={paused ? t('logs.resume') : t('logs.pause')}
           >
             {paused ? (
               <>
                 <Play className="w-3.5 h-3.5" />
-                Wznów
+                {t('logs.resume')}
                 {pendingCount > 0 && (
                   <span className="ml-1 rounded-full bg-primary/20 text-primary px-1.5 py-0.5 text-[10px] font-semibold">
-                    +{pendingCount} {pendingCount === 1 ? 'nowy' : 'nowych'}
+                    {t('logs.newCount', { count: pendingCount })}
                   </span>
                 )}
               </>
             ) : (
               <>
                 <Pause className="w-3.5 h-3.5" />
-                Pauza
+                {t('logs.pause')}
               </>
             )}
           </Button>
           <Button size="sm" variant="outline" onClick={handleCopy} disabled={!hasFilteredEntries}>
             {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-            {copied ? 'Skopiowano' : 'Kopiuj wszystko'}
+            {copied ? t('logs.copied') : t('logs.copyAll')}
           </Button>
           <Button size="sm" variant="outline" onClick={handleExport} disabled={!hasFilteredEntries}>
             <Download className="w-3.5 h-3.5" />
-            Eksportuj
+            {t('logs.export')}
           </Button>
           <Button size="sm" variant="outline" onClick={handleClear} disabled={!hasAnyEntries}>
             <Trash2 className="w-3.5 h-3.5" />
-            Wyczyść
+            {t('logs.clear')}
           </Button>
         </div>
 
@@ -555,7 +578,7 @@ export function DevLogsDialog({ open, onOpenChange }: DevLogsDialogProps) {
           >
             {fileLoading && source !== 'buffer' ? (
               <div className="p-6 text-center text-muted-foreground text-[12px]">
-                Wczytywanie pliku…
+                {t('logs.loading')}
               </div>
             ) : fileError && source !== 'buffer' ? (
               <div className="p-6 text-center text-destructive text-[12px]">
@@ -565,11 +588,11 @@ export function DevLogsDialog({ open, onOpenChange }: DevLogsDialogProps) {
             ) : !hasAnyEntries ? (
               <div className="p-6 text-center text-muted-foreground text-[12px]">
                 <X className="w-4 h-4 mx-auto mb-2 opacity-50" />
-                {source === 'buffer' ? 'Bufor jest pusty.' : 'Plik nie zawiera wpisów.'}
+                {source === 'buffer' ? t('logs.emptyBuffer') : t('logs.emptyFile')}
               </div>
             ) : !hasFilteredEntries ? (
               <div className="p-6 text-center text-muted-foreground text-[12px]">
-                Brak wpisów pasujących do filtra.
+                {t('logs.noFilterMatches')}
               </div>
             ) : (
               <ul className="divide-y divide-border-glass/50">
@@ -602,7 +625,7 @@ export function DevLogsDialog({ open, onOpenChange }: DevLogsDialogProps) {
                               onClick={() => toggleExpand(i)}
                               className="ml-2 inline-flex items-center gap-0.5 rounded border border-border-glass px-1 text-[10px] text-muted-foreground hover:text-foreground"
                               aria-expanded={isOpen}
-                              aria-label={isOpen ? 'Zwiń dane' : 'Rozwiń dane'}
+                              aria-label={isOpen ? t('logs.showLessData') : t('logs.showMoreData')}
                             >
                               <ChevronRight
                                 className={cn(
@@ -634,7 +657,7 @@ export function DevLogsDialog({ open, onOpenChange }: DevLogsDialogProps) {
               className="absolute bottom-2 left-1/2 -translate-x-1/2 inline-flex items-center gap-1 rounded-full border border-border-glass bg-background/90 px-3 py-1 text-[11px] text-foreground shadow-md hover:bg-background"
             >
               <ArrowDown className="w-3 h-3" />
-              Nowe wpisy
+              {t('logs.newEntries')}
             </button>
           )}
         </div>
@@ -734,14 +757,6 @@ function isValidLevel(value: string): value is LogLevelName {
   return value === 'error' || value === 'warn' || value === 'info' || value === 'debug';
 }
 
-function pluralEntries(count: number): string {
-  if (count === 1) return 'wpis';
-  const mod10 = count % 10;
-  const mod100 = count % 100;
-  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) return 'wpisy';
-  return 'wpisów';
-}
-
 function formatBytes(bytes: number): string {
   if (!Number.isFinite(bytes) || bytes < 0) return '—';
   if (bytes < 1024) return `${bytes} B`;
@@ -769,8 +784,8 @@ function formatDownloadStamp(d: Date): string {
   return `${yyyy}-${mm}-${dd}-${hh}${mi}`;
 }
 
-function describeError(err: unknown): string {
-  if (err instanceof Error) return err.message || 'Nieznany błąd.';
+function describeError(err: unknown, t: (key: string) => string): string {
+  if (err instanceof Error) return err.message || t('logs.unknownError');
   if (typeof err === 'string') return err;
-  return 'Nie udało się wczytać pliku logów.';
+  return t('logs.fileError');
 }

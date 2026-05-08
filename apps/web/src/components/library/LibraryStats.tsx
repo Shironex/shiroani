@@ -7,7 +7,7 @@ import { STATUS_CONFIG, STATUS_LABEL_KEY, STATUS_ORDER } from '@/lib/constants';
 import type { AnimeStatus } from '@shiroani/shared';
 
 export function LibraryStats() {
-  const { t } = useTranslation('status');
+  const { t } = useTranslation(['library', 'status']);
   const entries = useLibraryStore(s => s.entries);
 
   const stats = useMemo(() => {
@@ -41,26 +41,30 @@ export function LibraryStats() {
       <div className="grid grid-cols-2 gap-2.5">
         <StatCard
           icon={<Tv className="w-3.5 h-3.5" />}
-          label="Razem"
+          label={t('library:stats.total')}
           value={stats.totalEntries}
           accent="primary"
         />
         <StatCard
           icon={<Eye className="w-3.5 h-3.5" />}
-          label="Odcinki"
+          label={t('library:stats.episodes')}
           value={stats.totalEpisodes}
           accent="info"
         />
         <StatCard
           icon={<Star className="w-3.5 h-3.5" />}
-          label="Średnia ocena"
+          label={t('library:stats.avgScore')}
           value={stats.avgScore > 0 ? stats.avgScore.toFixed(1) : '-'}
-          subtitle={stats.scoredCount > 0 ? `z ${stats.scoredCount} ocen` : undefined}
+          subtitle={
+            stats.scoredCount > 0
+              ? t('library:stats.fromScored', { count: stats.scoredCount })
+              : undefined
+          }
           accent="warning"
         />
         <StatCard
           icon={<TrendingUp className="w-3.5 h-3.5" />}
-          label="Oglądam"
+          label={t('library:stats.watching')}
           value={stats.breakdown.watching}
           accent="success"
         />
@@ -71,9 +75,11 @@ export function LibraryStats() {
         <div className="space-y-2.5">
           <div className="flex items-center justify-between">
             <p className="text-2xs font-medium text-muted-foreground uppercase tracking-wider">
-              Rozkład statusów
+              {t('library:stats.distribution')}
             </p>
-            <p className="text-2xs text-muted-foreground/60">{stats.totalEntries} pozycji</p>
+            <p className="text-2xs text-muted-foreground/60">
+              {t('library:stats.entriesCount', { count: stats.totalEntries })}
+            </p>
           </div>
 
           {/* Segmented bar with rounded segments */}
@@ -91,7 +97,11 @@ export function LibraryStats() {
                     backgroundColor: STATUS_CONFIG[status].cssColor,
                     minWidth: count > 0 ? '6px' : 0,
                   }}
-                  title={`${t(STATUS_LABEL_KEY[status])}: ${count} (${Math.round(percent)}%)`}
+                  title={t('library:stats.tooltip', {
+                    label: t(`status:${STATUS_LABEL_KEY[status]}`),
+                    count,
+                    percent: Math.round(percent),
+                  })}
                 />
               );
             })}
@@ -114,7 +124,7 @@ export function LibraryStats() {
                     style={{ backgroundColor: STATUS_CONFIG[status].cssColor }}
                   />
                   <span className="text-2xs text-foreground/80 whitespace-nowrap">
-                    {t(STATUS_LABEL_KEY[status])}
+                    {t(`status:${STATUS_LABEL_KEY[status]}`)}
                   </span>
                   <span
                     className="text-2xs font-semibold"

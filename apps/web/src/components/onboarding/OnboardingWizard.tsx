@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ArrowRight, ArrowLeft, PartyPopper } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { IS_ELECTRON } from '@/lib/platform';
@@ -21,8 +22,8 @@ interface OnboardingWizardProps {
 
 type StepDef = {
   id: string;
-  /** Top-of-left-pane label ("Witaj · krok 1 z 7" / "Krok 2 z 7" / "Gotowe · 7 z 7") */
-  chip: string;
+  /** i18n key suffix under `wizard.chip.*` — `welcome` for the welcome step, `step` for numbered, `summary` for the closer. */
+  chipKind: 'welcome' | 'step' | 'summary';
   /** Step component */
   Component: () => ReactNode;
   /** Whether this slot counts as a numbered step (true) or a summary slot (false) */
@@ -30,19 +31,22 @@ type StepDef = {
 };
 
 const STEPS: StepDef[] = [
-  { id: 'language', chip: 'Witaj · Krok 1 z 7', Component: LanguageStep, numbered: true },
-  { id: 'name', chip: 'Krok 2 z 7', Component: NameStep, numbered: true },
-  { id: 'theme', chip: 'Krok 3 z 7', Component: ThemeStep, numbered: true },
-  { id: 'background', chip: 'Krok 4 z 7', Component: BackgroundStep, numbered: true },
-  { id: 'dock', chip: 'Krok 5 z 7', Component: DockStep, numbered: true },
-  { id: 'discord', chip: 'Krok 6 z 7', Component: DiscordStep, numbered: true },
-  { id: 'adblock', chip: 'Krok 7 z 7', Component: AdblockStep, numbered: true },
-  { id: 'summary', chip: 'Podsumowanie · 7 z 7', Component: SummaryStep, numbered: false },
+  { id: 'language', chipKind: 'welcome', Component: LanguageStep, numbered: true },
+  { id: 'name', chipKind: 'step', Component: NameStep, numbered: true },
+  { id: 'theme', chipKind: 'step', Component: ThemeStep, numbered: true },
+  { id: 'background', chipKind: 'step', Component: BackgroundStep, numbered: true },
+  { id: 'dock', chipKind: 'step', Component: DockStep, numbered: true },
+  { id: 'discord', chipKind: 'step', Component: DiscordStep, numbered: true },
+  { id: 'adblock', chipKind: 'step', Component: AdblockStep, numbered: true },
+  { id: 'summary', chipKind: 'summary', Component: SummaryStep, numbered: false },
 ];
 
 const TOTAL_SLOTS = STEPS.length;
+// Numbered step count (excludes the summary slot) — used in chip labels.
+const TOTAL_NUMBERED = STEPS.filter(s => s.numbered).length;
 
 export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
+  const { t } = useTranslation('onboarding');
   const [step, setStep] = useState(0);
   const [direction, setDirection] = useState<'forward' | 'backward'>('forward');
   const [isExiting, setIsExiting] = useState(false);
@@ -51,6 +55,19 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
   const current = STEPS[step];
   const isFirst = step === 0;
   const isLast = step === TOTAL_SLOTS - 1;
+
+  // Chip label: numbered steps render "Step N of TOTAL_NUMBERED" (i18n CLDR plural),
+  // welcome reuses the same template with the welcome prefix, summary uses its own key.
+  const chipLabel = useMemo(() => {
+    const stepNumber = STEPS.slice(0, step + 1).filter(s => s.numbered).length;
+    if (current.chipKind === 'summary') {
+      return t('wizard.chip.summary', { count: stepNumber, total: TOTAL_NUMBERED });
+    }
+    return t(`wizard.chip.${current.chipKind}`, {
+      count: stepNumber,
+      total: TOTAL_NUMBERED,
+    });
+  }, [step, current.chipKind, t]);
 
   const next = useCallback(() => {
     if (step < TOTAL_SLOTS - 1) {
@@ -112,7 +129,7 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
       )}
       role="dialog"
       aria-modal="true"
-      aria-label="Kreator pierwszego uruchomienia"
+      aria-label={t('wizard.ariaLabel')}
     >
       {/* Real window chrome — native traffic lights on macOS, drag handle elsewhere */}
       {IS_ELECTRON && <TitleBar />}
@@ -136,7 +153,7 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
           )}
         >
           <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-          <span>{current.chip}</span>
+          <span>{chipLabel}</span>
         </div>
 
         {/* Step body — block wrapper so StepLayout's grid fills the viewport width */}
@@ -160,24 +177,28 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
                 onClick={finish}
                 className="text-[12.5px] text-muted-foreground transition-colors hover:text-foreground"
               >
-                Pomiń konfigurację
+                {t('wizard.skip')}
               </button>
             ) : (
               <Button variant="outline" size="sm" onClick={prev} className="gap-1.5">
                 <ArrowLeft className="h-3.5 w-3.5" />
-                Wstecz
+                {t('wizard.back')}
               </Button>
             )}
           </div>
 
           {/* Progress dots */}
-          <div className="flex items-center gap-1.5" role="group" aria-label="Postęp konfiguracji">
+          <div
+            className="flex items-center gap-1.5"
+            role="group"
+            aria-label={t('wizard.progressAria')}
+          >
             {STEPS.map((s, i) => {
               const state = i === step ? 'on' : i < step ? 'done' : 'pending';
               return (
                 <button
                   key={s.id}
-                  aria-label={`Krok ${i + 1}: ${s.id}`}
+                  aria-label={t('wizard.stepDotAria', { number: i + 1, id: s.id })}
                   aria-current={state === 'on' ? 'step' : undefined}
                   onClick={() => {
                     setDirection(i > step ? 'forward' : 'backward');
@@ -201,11 +222,11 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
           {isLast ? (
             <Button size="sm" onClick={finish} className="gap-1.5">
               <PartyPopper className="h-3.5 w-3.5" />
-              Otwórz bibliotekę
+              {t('wizard.finish')}
             </Button>
           ) : (
             <Button size="sm" onClick={next} className="gap-1.5">
-              Dalej
+              {t('wizard.next')}
               <ArrowRight className="h-3.5 w-3.5" />
             </Button>
           )}

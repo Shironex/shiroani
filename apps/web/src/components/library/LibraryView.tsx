@@ -36,14 +36,13 @@ import { useAppStore } from '@/stores/useAppStore';
 import { useTranslation } from 'react-i18next';
 import { getStatusFilterOptions } from '@/lib/constants';
 import { useNextAiringMap } from '@/hooks/useNextAiringMap';
-import { pluralize } from '@shiroani/shared';
 import type { AnimeEntry, AnimeStatus } from '@shiroani/shared';
 
 const SORT_OPTIONS = [
-  { value: 'title', label: 'Tytuł' },
-  { value: 'score', label: 'Ocena' },
-  { value: 'progress', label: 'Postęp' },
-  { value: 'updatedAt', label: 'Ostatnia aktualizacja' },
+  { value: 'title', labelKey: 'library:sort.title' },
+  { value: 'score', labelKey: 'library:sort.score' },
+  { value: 'progress', labelKey: 'library:sort.progress' },
+  { value: 'updatedAt', labelKey: 'library:sort.updatedAt' },
 ] as const;
 
 const {
@@ -57,7 +56,7 @@ const {
 } = useLibraryStore.getState();
 
 export function LibraryView() {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation('library');
   const entries = useLibraryStore(s => s.entries);
   const activeFilter = useLibraryStore(s => s.activeFilter);
   const searchQuery = useLibraryStore(s => s.searchQuery);
@@ -132,21 +131,18 @@ export function LibraryView() {
     [statusCounts, i18n.language]
   );
 
-  const subtitle =
-    entries.length > 0
-      ? `${entries.length} ${pluralize(entries.length, 'pozycja', 'pozycje', 'pozycji')}`
-      : undefined;
+  const subtitle = entries.length > 0 ? t('subtitle', { count: entries.length }) : undefined;
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden animate-fade-in relative">
       {/* Header */}
       <ViewHeader
         icon={LibraryIcon}
-        title="Biblioteka"
+        title={t('title')}
         subtitle={subtitle}
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
-        searchPlaceholder="Szukaj tytułów..."
+        searchPlaceholder={t('searchPlaceholder')}
         filters={filtersWithCounts}
         activeFilter={activeFilter}
         onFilterChange={setFilter}
@@ -161,7 +157,7 @@ export function LibraryView() {
               <SelectContent>
                 {SORT_OPTIONS.map(option => (
                   <SelectItem key={option.value} value={option.value} className="text-xs">
-                    {option.label}
+                    {t(option.labelKey)}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -171,7 +167,7 @@ export function LibraryView() {
               size="icon"
               className="w-8 h-8"
               onClick={toggleSortOrder}
-              tooltip={sortOrder === 'asc' ? 'Rosnąco' : 'Malejąco'}
+              tooltip={sortOrder === 'asc' ? t('sort.ascending') : t('sort.descending')}
             >
               <ArrowUpDown
                 className={cn('w-4 h-4 transition-transform', sortOrder === 'asc' && 'rotate-180')}
@@ -183,7 +179,7 @@ export function LibraryView() {
               size="icon"
               className="w-8 h-8"
               onClick={() => setIsExportOpen(true)}
-              tooltip="Eksportuj"
+              tooltip={t('actions.export')}
             >
               <Download className="w-4 h-4" />
             </TooltipButton>
@@ -192,7 +188,7 @@ export function LibraryView() {
               size="icon"
               className="w-8 h-8"
               onClick={() => setIsImportOpen(true)}
-              tooltip="Importuj"
+              tooltip={t('actions.import')}
             >
               <Upload className="w-4 h-4" />
             </TooltipButton>
@@ -203,7 +199,7 @@ export function LibraryView() {
               className="w-8 h-8"
               disabled={!entries.some(e => e.status === 'plan_to_watch')}
               onClick={handleRandomPick}
-              tooltip="Losowe anime"
+              tooltip={t('actions.randomPick')}
             >
               <Dices className="w-4 h-4" />
             </TooltipButton>
@@ -215,7 +211,7 @@ export function LibraryView() {
                 showStats && 'bg-primary/10 text-primary hover:bg-primary/15'
               )}
               onClick={() => setShowStats(v => !v)}
-              tooltip="Statystyki"
+              tooltip={t('actions.stats')}
             >
               <BarChart3 className="w-4 h-4" />
             </TooltipButton>
@@ -246,19 +242,19 @@ export function LibraryView() {
                     <SearchX className="w-7 h-7 opacity-40" />
                   </div>
                   <div className="text-center space-y-1.5">
-                    <p className="text-sm font-medium text-foreground/70">Brak wyników</p>
+                    <p className="text-sm font-medium text-foreground/70">{t('empty.noResults')}</p>
                     <p className="text-xs text-muted-foreground/60 max-w-[240px]">
-                      Spróbuj innej frazy lub zmień filtr
+                      {t('empty.noResultsHint')}
                     </p>
                   </div>
                 </div>
               ) : (
                 <EmptyState
                   icon={BookOpen}
-                  title="Biblioteka jest pusta"
-                  subtitle="Otwórz przeglądarkę, żeby dodać pierwsze anime"
+                  title={t('empty.title')}
+                  subtitle={t('empty.subtitle')}
                   action={{
-                    label: 'Otwórz przeglądarkę',
+                    label: t('actions.openBrowser'),
                     icon: Globe,
                     onClick: () => navigateTo('browser'),
                   }}
@@ -316,8 +312,8 @@ export function LibraryView() {
         onOpenChange={open => {
           if (!open) setEntryToRemove(null);
         }}
-        title="Usuń z biblioteki"
-        description={`Czy na pewno chcesz usunąć "${entryToRemove?.title}" z biblioteki?`}
+        title={t('remove.title')}
+        description={t('remove.descriptionWithTitle', { title: entryToRemove?.title ?? '' })}
         onConfirm={() => {
           if (entryToRemove) {
             removeFromLibrary(entryToRemove.id);

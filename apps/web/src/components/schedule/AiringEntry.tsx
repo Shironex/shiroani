@@ -25,7 +25,7 @@ export interface AiringEntryProps {
   onClick?: (anime: AiringAnime) => void;
 }
 
-const DOW_SHORT = ['nd', 'pn', 'wt', 'śr', 'cz', 'pt', 'so'];
+const DOW_KEYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'] as const;
 
 /**
  * A single airing slot rendered as a horizontal pill-shaped card.
@@ -44,11 +44,12 @@ const AiringEntry = memo(function AiringEntry({
   style,
   onClick,
 }: AiringEntryProps) {
-  const { t } = useTranslation('common');
+  const { t } = useTranslation('schedule');
+  const { t: tCommon } = useTranslation('common');
   const title = getAnimeTitle(anime.media);
   const coverUrl = getCoverUrl(anime.media);
   const airing = new Date(anime.airingAt * 1000);
-  const dow = DOW_SHORT[airing.getDay()];
+  const dow = t(`dayShort.${DOW_KEYS[airing.getDay()]}`);
 
   const isLive = status === 'live';
   const isDone = status === 'done';
@@ -58,13 +59,13 @@ const AiringEntry = memo(function AiringEntry({
   let statusLabel: string;
   if (isLive) {
     statusVariant = 'accent';
-    statusLabel = 'Na żywo';
+    statusLabel = t('entry.live');
   } else if (isDone) {
     statusVariant = 'muted';
-    statusLabel = 'Obejrzano';
+    statusLabel = t('entry.watched');
   } else {
     const countdown = formatCountdown(anime.airingAt, now);
-    statusLabel = countdown || 'Wkrótce';
+    statusLabel = countdown || t('entry.soon');
   }
 
   // Mark (left stripe) colour
@@ -78,7 +79,7 @@ const AiringEntry = memo(function AiringEntry({
     <div
       role={onClick ? 'button' : undefined}
       tabIndex={onClick ? 0 : undefined}
-      aria-label={`${title}, ${formatTime(anime.airingAt)}`}
+      aria-label={t('entry.ariaLabel', { title, time: formatTime(anime.airingAt) })}
       onClick={onClick ? () => onClick(anime) : undefined}
       onKeyDown={
         onClick
@@ -113,7 +114,7 @@ const AiringEntry = memo(function AiringEntry({
           {formatTime(anime.airingAt)}
         </span>
         <span className="mt-[3px] font-mono text-[9.5px] uppercase tracking-[0.12em] font-medium text-muted-foreground">
-          {isLive ? `${dow} · TERAZ` : dow}
+          {isLive ? t('entry.todayMarker', { day: dow }) : dow}
         </span>
       </div>
 
@@ -135,11 +136,11 @@ const AiringEntry = memo(function AiringEntry({
         <div className="mt-[3px] flex items-center gap-2 text-[11px] text-muted-foreground truncate">
           <Tv className={cn('w-3 h-3 shrink-0', isLive && 'text-primary')} />
           <span className={cn('truncate', isLive && 'text-primary font-semibold')}>
-            {isLive ? 'NA ŻYWO' : anime.media.format || 'TV'}
+            {isLive ? t('entry.liveBadge') : anime.media.format || 'TV'}
           </span>
           <span className="text-muted-foreground/50">·</span>
           <span className="truncate">
-            {formatEpisodeProgress(t, anime.episode, anime.media.episodes)}
+            {formatEpisodeProgress(tCommon, anime.episode, anime.media.episodes)}
           </span>
         </div>
       </div>
@@ -153,7 +154,7 @@ const AiringEntry = memo(function AiringEntry({
             className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-primary text-primary-foreground text-[11px] font-bold"
           >
             <Play className="w-3 h-3 fill-current" strokeWidth={0} />
-            Oglądaj
+            {t('entry.watch')}
           </span>
         )}
         <SubscribeBellButton anime={anime} className="w-7 h-7" tooltipSide="left" />

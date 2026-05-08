@@ -1,0 +1,90 @@
+{
+  "title": "Library",
+  "subtitle_one": "{{count}} entry",
+  "subtitle_few": "{{count}} entries",
+  "subtitle_many": "{{count}} entries",
+  "subtitle_other": "{{count}} entries",
+  "searchPlaceholder": "Search titles...",
+  "sort": {
+    "title": "Title",
+    "score": "Score",
+    "progress": "Progress",
+    "updatedAt": "Last updated",
+    "ascending": "Ascending",
+    "descending": "Descending"
+  },
+  "actions": {
+    "export": "Export",
+    "import": "Import",
+    "randomPick": "Random anime",
+    "stats": "Stats",
+    "openBrowser": "Open browser"
+  },
+  "card": {
+    "noCover": "No cover",
+    "continue": "Continue",
+    "edit": "Edit",
+    "remove": "Remove",
+    "ariaLabel": "{{title}}, {{status}}"
+  },
+  "list": {
+    "progressAriaLabel": "Progress: {{percent}}%"
+  },
+  "empty": {
+    "noResults": "No results",
+    "noResultsHint": "Try a different phrase or change the filter",
+    "title": "Your library is empty",
+    "subtitle": "Open the browser to add your first anime"
+  },
+  "stats": {
+    "total": "Total",
+    "episodes": "Episodes",
+    "avgScore": "Average score",
+    "watching": "Watching",
+    "fromScored_one": "from {{count}} rating",
+    "fromScored_few": "from {{count}} ratings",
+    "fromScored_many": "from {{count}} ratings",
+    "fromScored_other": "from {{count}} ratings",
+    "distribution": "Status distribution",
+    "entriesCount_one": "{{count}} entry",
+    "entriesCount_few": "{{count}} entries",
+    "entriesCount_many": "{{count}} entries",
+    "entriesCount_other": "{{count}} entries",
+    "tooltip": "{{label}}: {{count}} ({{percent}}%)"
+  },
+  "detail": {
+    "close": "Close",
+    "episodesShort": "EP",
+    "anilist": "ANILIST",
+    "score": "Score",
+    "progress": "Progress",
+    "status": "Status",
+    "addedAt": "Added",
+    "updatedAt": "Updated",
+    "statusField": "Status",
+    "progressField": "Progress: {{current}} / {{total}} episodes",
+    "progressFieldUnknown": "Progress: {{current}} / ? episodes",
+    "scoreField": "Score: {{score}}/10",
+    "scoreFieldNone": "Score: None",
+    "notes": "Notes",
+    "notesPlaceholder": "Add notes...",
+    "resumeUrl": "Continue watching link",
+    "fetchUrlFromBrowser": "Get link from browser",
+    "resumeUrlPlaceholder": "https://...",
+    "anilistId": "AniList ID",
+    "anilistIdHint": "Required for notifications and episode airing countdowns",
+    "anilistIdPlaceholder": "e.g. 21",
+    "save": "Save",
+    "openInBrowser": "Open",
+    "delete": "Delete"
+  },
+  "toast": {
+    "noBrowserTab": "No tab is open in the browser",
+    "linkUpdated": "Link updated"
+  },
+  "remove": {
+    "title": "Remove from library",
+    "description": "Are you sure you want to remove this anime from your library?",
+    "descriptionWithTitle": "Are you sure you want to remove \"{{title}}\" from your library?"
+  }
+}

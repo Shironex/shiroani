@@ -31,13 +31,13 @@ const LibraryListItem = memo(function LibraryListItem({
   nextAiring,
   onClick,
 }: LibraryListItemProps) {
-  const { t } = useTranslation('status');
+  const { t } = useTranslation(['library', 'status', 'common']);
   const { t: tc } = useTranslation('common');
   const progressPercent = entry.episodes
     ? Math.min(100, Math.round((entry.currentEpisode / entry.episodes) * 100))
     : 0;
 
-  const statusLabel = t(STATUS_LABEL_KEY[entry.status]);
+  const statusLabel = t(`status:${STATUS_LABEL_KEY[entry.status]}`);
   const hasScore = entry.score != null && entry.score > 0;
 
   return (
@@ -96,7 +96,7 @@ const LibraryListItem = memo(function LibraryListItem({
           value={progressPercent}
           thickness={4}
           className="flex-1 min-w-0"
-          aria-label={`Postęp: ${progressPercent}%`}
+          aria-label={t('library:list.progressAriaLabel', { percent: progressPercent })}
         />
         <span className="text-[10.5px] font-mono text-muted-foreground whitespace-nowrap tabular-nums shrink-0">
           {entry.episodes ? `${entry.currentEpisode}/${entry.episodes}` : entry.currentEpisode}

@@ -1,20 +1,20 @@
 import { ArrowUpRight, Boxes } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { PillTag } from '@/components/ui/pill-tag';
 import { SettingsCard } from '@/components/settings/SettingsCard';
 
+type SuiteAppId = 'shiranami' | 'kireimanga';
+
 interface SiblingApp {
-  id: string;
+  id: SuiteAppId;
   kanji: string;
   romaji: string;
-  tagline: string;
-  description: string;
   url: string;
   hostname: string;
   iconSrc: string;
   previewSrc: string;
-  previewAlt: string;
   /** Per-app accent colour expressed as an oklch tuple ("L C H") so we can compose it inline. */
   accent: string;
 }
@@ -26,39 +26,32 @@ const APPS: SiblingApp[] = [
     id: 'shiranami',
     kanji: '白波',
     romaji: 'Shiranami',
-    tagline: 'Przystań dla muzyki',
-    description:
-      'Spokojny odtwarzacz na lokalną bibliotekę: playlisty, radio internetowe, synchronizowane teksty i pobieranie z YouTube. Idealny w tle, gdy oglądasz odcinek albo nadrabiasz mangę.',
     url: 'https://shiranami.app',
     hostname: 'shiranami.app',
     iconSrc: `${SUITE_ASSET_BASE}shiranami-icon.png`,
     previewSrc: `${SUITE_ASSET_BASE}shiranami-preview.png`,
-    previewAlt: 'Widok biblioteki w aplikacji Shiranami',
     accent: '0.68 0.15 295',
   },
   {
     id: 'kireimanga',
     kanji: '綺麗漫画',
     romaji: 'KireiManga',
-    tagline: 'Czytnik mangi',
-    description:
-      'Wygodny czytnik z biblioteką rozdziałów, zakładkami, importem i trybem nocnym. Twoje serie czekają w jednym, cichym miejscu.',
     url: 'https://kireimanga.app',
     hostname: 'kireimanga.app',
     iconSrc: `${SUITE_ASSET_BASE}kireimanga-icon.png`,
     previewSrc: `${SUITE_ASSET_BASE}kireimanga-preview.png`,
-    previewAlt: 'Widok biblioteki w aplikacji KireiManga',
     accent: '0.62 0.2 25',
   },
 ];
 
 export function SuiteSection() {
+  const { t } = useTranslation('settings');
   return (
     <div className="space-y-4">
       <SettingsCard
         icon={Boxes}
-        title="Rodzina aplikacji"
-        subtitle="Inne małe aplikacje, które tworzę. Może coś Ci się przyda. Wszystkie są darmowe."
+        title={t('suite.card.title')}
+        subtitle={t('suite.card.subtitle')}
       />
 
       <div className="space-y-4">
@@ -71,6 +64,10 @@ export function SuiteSection() {
 }
 
 function SiblingAppCard({ app }: { app: SiblingApp }) {
+  const { t } = useTranslation('settings');
+  const tagline = t(`suite.${app.id}.tagline`);
+  const description = t(`suite.${app.id}.description`);
+  const previewAlt = t(`suite.${app.id}.previewAlt`);
   const accentSurface = `oklch(${app.accent} / 0.10)`;
   const accentBorder = `oklch(${app.accent} / 0.32)`;
   const accentGlow = `oklch(${app.accent} / 0.55)`;
@@ -132,7 +129,7 @@ function SiblingAppCard({ app }: { app: SiblingApp }) {
         />
         <img
           src={app.previewSrc}
-          alt={app.previewAlt}
+          alt={previewAlt}
           loading="lazy"
           draggable={false}
           className={cn(
@@ -186,16 +183,16 @@ function SiblingAppCard({ app }: { app: SiblingApp }) {
                 color: accentSolid,
               }}
             >
-              Dostępne
+              {t('suite.available')}
             </PillTag>
           </span>
         </div>
 
         <p className="mt-1 font-mono text-[10.5px] uppercase tracking-[0.18em] text-muted-foreground/75">
-          {app.tagline}
+          {tagline}
         </p>
 
-        <p className="mt-3 text-[13px] leading-[1.65] text-foreground/85">{app.description}</p>
+        <p className="mt-3 text-[13px] leading-[1.65] text-foreground/85">{description}</p>
 
         <div className="mt-4 flex items-center justify-between">
           <span className="font-mono text-[11px] tracking-[0.04em] text-muted-foreground/70">
@@ -211,7 +208,7 @@ function SiblingAppCard({ app }: { app: SiblingApp }) {
               boxShadow: `0 6px 16px -6px ${accentGlow}`,
             }}
           >
-            Sprawdź {app.romaji}
+            {t('suite.openCta', { name: app.romaji })}
             <ArrowUpRight
               className={cn(
                 'size-3.5 transition-transform duration-300',

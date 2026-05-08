@@ -1,4 +1,5 @@
 import { useEffect, useRef, useCallback, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Compass, SearchX, X, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -16,13 +17,6 @@ import type { AiringAnime } from '@shiroani/shared';
 
 type Tab = 'trending' | 'popular' | 'seasonal' | 'random';
 
-const TABS: { value: Tab; label: string }[] = [
-  { value: 'trending', label: 'Na czasie' },
-  { value: 'popular', label: 'Popularne' },
-  { value: 'seasonal', label: 'Sezonowe' },
-  { value: 'random', label: 'Losowe' },
-];
-
 /** Set of anilistIds present in the user's library */
 function useLibraryAnilistIds(): Set<number> {
   const entries = useLibraryStore(s => s.entries);
@@ -37,6 +31,16 @@ function getDiscoverTitle(media: DiscoverMedia): string {
 }
 
 export function DiscoverView() {
+  const { t } = useTranslation('discover');
+  const TABS = useMemo<{ value: Tab; label: string }[]>(
+    () => [
+      { value: 'trending', label: t('tabs.trending') },
+      { value: 'popular', label: t('tabs.popular') },
+      { value: 'seasonal', label: t('tabs.seasonal') },
+      { value: 'random', label: t('tabs.random') },
+    ],
+    [t]
+  );
   const activeTab = useDiscoverStore(s => s.activeTab);
   const searchQuery = useDiscoverStore(s => s.searchQuery);
   const isLoading = useDiscoverStore(s => s.isLoading);
@@ -80,32 +84,35 @@ export function DiscoverView() {
     setDialogOpen(true);
   }, []);
 
-  const handleAddToLibrary = useCallback((media: DiscoverMedia) => {
-    const title = getDiscoverTitle(media);
-    const entries = useLibraryStore.getState().entries;
-    const alreadyByAnilist = entries.some(e => e.anilistId === media.id);
-    const alreadyByTitle = entries.some(e => e.title.toLowerCase() === title.toLowerCase());
-    if (alreadyByAnilist || alreadyByTitle) {
-      toast.error('To anime jest już w bibliotece');
-      return;
-    }
+  const handleAddToLibrary = useCallback(
+    (media: DiscoverMedia) => {
+      const title = getDiscoverTitle(media);
+      const entries = useLibraryStore.getState().entries;
+      const alreadyByAnilist = entries.some(e => e.anilistId === media.id);
+      const alreadyByTitle = entries.some(e => e.title.toLowerCase() === title.toLowerCase());
+      if (alreadyByAnilist || alreadyByTitle) {
+        toast.error(t('toast.alreadyInLibrary'));
+        return;
+      }
 
-    try {
-      useLibraryStore.getState().addToLibrary({
-        anilistId: media.id,
-        title,
-        titleRomaji: media.title.romaji,
-        titleNative: media.title.native,
-        coverImage:
-          media.coverImage.large || media.coverImage.extraLarge || media.coverImage.medium,
-        episodes: media.episodes,
-        status: 'plan_to_watch',
-      });
-      toast.success('Dodano do biblioteki', { description: title });
-    } catch {
-      toast.error('Nie udało się dodać do biblioteki');
-    }
-  }, []);
+      try {
+        useLibraryStore.getState().addToLibrary({
+          anilistId: media.id,
+          title,
+          titleRomaji: media.title.romaji,
+          titleNative: media.title.native,
+          coverImage:
+            media.coverImage.large || media.coverImage.extraLarge || media.coverImage.medium,
+          episodes: media.episodes,
+          status: 'plan_to_watch',
+        });
+        toast.success(t('toast.addedToLibrary'), { description: title });
+      } catch {
+        toast.error(t('toast.addFailed'));
+      }
+    },
+    [t]
+  );
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const initialFetchDone = useRef(false);
@@ -222,11 +229,11 @@ export function DiscoverView() {
     <div className="flex-1 flex flex-col overflow-hidden animate-fade-in relative">
       <ViewHeader<Tab>
         icon={Compass}
-        title="Przeglądaj"
-        subtitle="Popularne, sezonowe i losowe"
+        title={t('title')}
+        subtitle={t('subtitle')}
         searchQuery={searchQuery}
         onSearchChange={handleSearchChange}
-        searchPlaceholder="Szukaj anime..."
+        searchPlaceholder={t('searchPlaceholder')}
         filters={isSearchMode ? undefined : TABS}
         activeFilter={activeTab}
         onFilterChange={handleTabChange}
@@ -238,14 +245,14 @@ export function DiscoverView() {
         <div className="px-7 pb-3 border-b border-border-glass shrink-0">
           <div className="flex items-center gap-2">
             <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-primary/90 font-semibold">
-              Wyniki wyszukiwania
+              {t('search.resultsLabel')}
             </span>
             <button
               onClick={handleClearSearch}
               className="flex items-center gap-1 text-2xs text-muted-foreground hover:text-foreground/70 transition-colors"
             >
               <X className="w-3 h-3" />
-              Wyczyść
+              {t('search.clear')}
             </button>
           </div>
         </div>
@@ -283,8 +290,8 @@ export function DiscoverView() {
             {showEmpty && !error && (
               <EmptyState
                 icon={isSearchMode ? SearchX : Compass}
-                title={isSearchMode ? 'Brak wyników' : 'Brak anime'}
-                subtitle={isSearchMode ? 'Spróbuj innej frazy' : 'Nie udało się pobrać anime.'}
+                title={isSearchMode ? t('empty.noResultsTitle') : t('empty.noAnimeTitle')}
+                subtitle={isSearchMode ? t('empty.noResultsSubtitle') : t('empty.noAnimeSubtitle')}
               />
             )}
 

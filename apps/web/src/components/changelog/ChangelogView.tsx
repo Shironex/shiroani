@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { Trans, useTranslation } from 'react-i18next';
 import { Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { PillTag } from '@/components/ui/pill-tag';
@@ -43,17 +44,18 @@ interface ChangelogViewProps {
  * 'changelog'`) and reachable from the dock or from Settings → About.
  */
 export function ChangelogView({ compact = false, className }: ChangelogViewProps) {
+  const { t } = useTranslation('changelog');
   const [filter, setFilter] = useState<FilterValue>('all');
 
   const filters: FilterChip[] = useMemo(() => {
     const majorCount = CHANGELOG_RELEASES.filter(r => r.type === 'major').length;
     const minorCount = CHANGELOG_RELEASES.filter(r => r.type === 'minor').length;
     return [
-      { value: 'all', label: 'Wszystkie', count: CHANGELOG_RELEASES.length },
-      { value: 'major', label: 'Większe wydania', count: majorCount },
-      { value: 'minor', label: 'Patche', count: minorCount },
+      { value: 'all', label: t('filter.all'), count: CHANGELOG_RELEASES.length },
+      { value: 'major', label: t('filter.major'), count: majorCount },
+      { value: 'minor', label: t('filter.minor'), count: minorCount },
     ];
-  }, []);
+  }, [t]);
 
   const visible = useMemo(
     () =>
@@ -120,7 +122,9 @@ interface HeaderProps {
 }
 
 function Header({ filter, onFilterChange, filters, jumpTargets, compact }: HeaderProps) {
+  const { t } = useTranslation('changelog');
   const latest = CHANGELOG_RELEASES.find(r => r.latest) ?? CHANGELOG_RELEASES[0];
+  const emPrimary = <em className="font-serif italic font-extrabold text-primary" />;
 
   return (
     <header className={cn('relative', compact ? 'pt-6 pb-6' : 'pt-14 pb-10')}>
@@ -131,7 +135,7 @@ function Header({ filter, onFilterChange, filters, jumpTargets, compact }: Heade
             boxShadow: '0 0 8px oklch(from var(--primary) l c h / 0.6)',
           }}
         />
-        v{latest.version} · najnowsza
+        {t('latestBadge', { version: latest.version })}
       </div>
 
       <h1
@@ -140,16 +144,16 @@ function Header({ filter, onFilterChange, filters, jumpTargets, compact }: Heade
           compact ? 'text-4xl' : 'text-5xl sm:text-6xl'
         )}
       >
-        Co <em className="font-serif italic font-extrabold text-primary">nowego</em>?
+        <Trans ns="changelog" i18nKey="headline" components={{ 1: emPrimary }} />
       </h1>
       <p className="mt-5 max-w-[54ch] text-[17px] leading-relaxed text-muted-foreground">
-        Historia zmian w ShiroAni: funkcja po funkcji, poprawka po poprawce.
+        {t('subtitle')}
       </p>
 
       {/* Filter chips */}
       <div className="mt-8 flex flex-wrap items-center gap-2 border-t border-border-glass pt-5">
         <b className="mr-2 font-mono text-[10.5px] font-medium uppercase tracking-[0.2em] text-muted-foreground">
-          Filtr
+          {t('filter.label')}
         </b>
         {filters.map(chip => {
           const active = filter === chip.value;
@@ -175,11 +179,11 @@ function Header({ filter, onFilterChange, filters, jumpTargets, compact }: Heade
       {/* Jump nav — major releases only */}
       {jumpTargets.length > 0 && (
         <nav
-          aria-label="Przeskocz do wersji"
+          aria-label={t('jump.ariaLabel')}
           className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs"
         >
           <span className="font-mono text-[10.5px] uppercase tracking-[0.2em] text-muted-foreground/70">
-            Skocz do
+            {t('jump.label')}
           </span>
           {jumpTargets.map(r => (
             <a
@@ -201,6 +205,7 @@ interface ReleaseCardProps {
 }
 
 function ReleaseCard({ release }: ReleaseCardProps) {
+  const { t } = useTranslation('changelog');
   return (
     <article>
       {/* Top row: version pill + optional "Najnowsza" badge + human date */}
@@ -218,7 +223,7 @@ function ReleaseCard({ release }: ReleaseCardProps) {
         </span>
         {release.latest && (
           <span className="rounded-[4px] bg-primary px-2 py-[3px] font-mono text-[9.5px] font-bold uppercase tracking-[0.18em] text-primary-foreground">
-            Najnowsza
+            {t('release.latest')}
           </span>
         )}
         <span className="font-mono text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
@@ -265,14 +270,15 @@ function ReleaseCard({ release }: ReleaseCardProps) {
 }
 
 function OriginMarker() {
+  const { t } = useTranslation('changelog');
   return (
     <div className="flex flex-col items-start">
       <span className="inline-flex items-center gap-2 rounded-full border border-border-glass bg-card/40 px-3 py-1 font-mono text-[10.5px] uppercase tracking-[0.15em] text-muted-foreground">
         <Sparkles className="size-3" />
-        Początek · 2026
+        {t('origin.label')}
       </span>
       <p className="mt-3 max-w-[40ch] font-serif text-[20px] italic leading-snug text-muted-foreground">
-        „a co, gdyby śledzenie anime było wygodne?"
+        {t('origin.tagline')}
       </p>
     </div>
   );

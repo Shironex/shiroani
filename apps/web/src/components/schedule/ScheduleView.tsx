@@ -1,4 +1,5 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Calendar,
   CalendarDays,
@@ -38,13 +39,31 @@ interface ModeDef {
   Icon: typeof Rows3;
 }
 
-const MODES: ModeDef[] = [
-  { id: 'daily', label: 'Dzień', tooltip: 'Dzień: oś czasu', Icon: Rows3 },
-  { id: 'weekly', label: 'Tydzień', tooltip: 'Tydzień: siatka', Icon: LayoutGrid },
-  { id: 'timetable', label: 'Plakaty', tooltip: 'Plakaty: tablica', Icon: Images },
-];
-
 export function ScheduleView() {
+  const { t } = useTranslation('schedule');
+  const MODES = useMemo<ModeDef[]>(
+    () => [
+      {
+        id: 'daily',
+        label: t('modes.daily.label'),
+        tooltip: t('modes.daily.tooltip'),
+        Icon: Rows3,
+      },
+      {
+        id: 'weekly',
+        label: t('modes.weekly.label'),
+        tooltip: t('modes.weekly.tooltip'),
+        Icon: LayoutGrid,
+      },
+      {
+        id: 'timetable',
+        label: t('modes.timetable.label'),
+        tooltip: t('modes.timetable.tooltip'),
+        Icon: Images,
+      },
+    ],
+    [t]
+  );
   const [selectedAnime, setSelectedAnime] = useState<AiringAnime | null>(null);
   const [infoDialogOpen, setInfoDialogOpen] = useState(false);
 
@@ -79,17 +98,18 @@ export function ScheduleView() {
 
   const weekDays = useMemo(() => getWeekDays(), [selectedDay]);
 
-  // Summary counts for the subtitle line
+  // Summary counts for the subtitle line — relies on i18next CLDR plural rules.
   const summary = useMemo(() => {
     if (viewMode === 'daily') {
       const count = todayEntries.length;
-      if (count === 0) return 'Brak emisji';
-      return `${count} ${count === 1 ? 'odcinek' : count < 5 ? 'odcinki' : 'odcinków'}`;
+      if (count === 0) return t('summary.noAirings');
+      return t('summary.episodes', { count });
     }
     let total = 0;
     for (const d of weekDays) total += (schedule[d] ?? []).length;
-    return `${total} ${total === 1 ? 'odcinek' : total < 5 && total > 1 ? 'odcinki' : 'odcinków'}`;
-  }, [viewMode, todayEntries, weekDays, schedule]);
+    if (total === 0) return t('summary.noAirings');
+    return t('summary.episodes', { count: total });
+  }, [viewMode, todayEntries, weekDays, schedule, t]);
 
   const handleRetry = useCallback(() => {
     if (viewMode === 'daily') {
@@ -124,13 +144,14 @@ export function ScheduleView() {
       ? formatDayHeading(selectedDay)
       : formatWeekRange(weekDays[0] ?? selectedDay, weekDays[6] ?? selectedDay);
 
-  const navAriaLabel = viewMode === 'daily' ? 'Dzień' : 'Tydzień';
+  const previousAria = viewMode === 'daily' ? t('nav.previousDay') : t('nav.previousWeek');
+  const nextAria = viewMode === 'daily' ? t('nav.nextDay') : t('nav.nextWeek');
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden animate-fade-in relative">
       <ViewHeader
         icon={Calendar}
-        title="Harmonogram"
+        title={t('title')}
         subtitle={summary}
         actions={
           <>
@@ -140,7 +161,7 @@ export function ScheduleView() {
               size="icon"
               className="w-8 h-8"
               onClick={navigatePrevious}
-              aria-label={`Poprzedni ${navAriaLabel === 'Dzień' ? 'dzień' : 'tydzień'}`}
+              aria-label={previousAria}
             >
               <ChevronLeft className="w-4 h-4" />
             </Button>
@@ -149,7 +170,7 @@ export function ScheduleView() {
               size="icon"
               className="w-8 h-8"
               onClick={navigateNext}
-              aria-label={`Następny ${navAriaLabel === 'Dzień' ? 'dzień' : 'tydzień'}`}
+              aria-label={nextAria}
             >
               <ChevronRight className="w-4 h-4" />
             </Button>
@@ -161,7 +182,7 @@ export function ScheduleView() {
                 onClick={navigateToday}
               >
                 <CalendarDays className="w-3.5 h-3.5" />
-                Dziś
+                {t('nav.today')}
               </Button>
             )}
 
@@ -171,7 +192,7 @@ export function ScheduleView() {
                 TooltipButton because FilterTabBar renders its label text. */}
             <div
               role="tablist"
-              aria-label="Tryb widoku harmonogramu"
+              aria-label={t('modes.ariaLabel')}
               className="flex items-center gap-1"
             >
               {MODES.map(m => {
@@ -209,14 +230,14 @@ export function ScheduleView() {
           {headingTitle}
         </div>
         <div className="flex items-center gap-4 font-mono text-[10.5px] text-muted-foreground/80">
-          <LegendSwatch className="bg-primary" label="Na żywo" />
-          <LegendSwatch className="bg-[oklch(0.5_0.15_280)]" label="Nadchodzące" />
-          <LegendSwatch className="bg-muted-foreground/30" label="Obejrzane" />
+          <LegendSwatch className="bg-primary" label={t('legend.live')} />
+          <LegendSwatch className="bg-[oklch(0.5_0.15_280)]" label={t('legend.upcoming')} />
+          <LegendSwatch className="bg-muted-foreground/30" label={t('legend.watched')} />
         </div>
       </div>
 
       {/* ── Body: kanji watermark in a clipped layer, content on top ─── */}
-      <div role="region" aria-label="Harmonogram anime" className="flex-1 relative overflow-hidden">
+      <div role="region" aria-label={t('regionLabel')} className="flex-1 relative overflow-hidden">
         {/* Decorative kanji watermark — 時 (toki: time).
             Lives outside any scroll container so the glyph's negative offsets
             don't produce scrollbars on either axis. */}

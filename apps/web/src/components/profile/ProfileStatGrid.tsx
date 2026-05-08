@@ -1,6 +1,7 @@
+import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import type { UserProfile } from '@shiroani/shared';
-import { STATUS_LABELS, formatScore } from './profile-constants';
+import { formatScore } from './profile-constants';
 
 interface ProfileStatGridProps {
   profile: UserProfile;
@@ -12,6 +13,7 @@ interface ProfileStatGridProps {
  * mock's `.stats-row`.
  */
 export function ProfileStatGrid({ profile }: ProfileStatGridProps) {
+  const { t } = useTranslation('profile');
   const { statistics: stats } = profile;
 
   const byStatus = new Map(stats.statuses.map(s => [s.name, s.count]));
@@ -22,21 +24,17 @@ export function ProfileStatGrid({ profile }: ProfileStatGridProps) {
   return (
     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
       <StatCard
-        label={STATUS_LABELS.COMPLETED ?? 'Ukończone'}
+        label={t('stats.completed')}
         value={completed}
-        sub="obejrzane w całości"
+        sub={t('stats.completedSub')}
         tone="accent"
       />
-      <StatCard label={STATUS_LABELS.CURRENT ?? 'Oglądam'} value={current} sub="w trakcie" />
+      <StatCard label={t('stats.current')} value={current} sub={t('stats.currentSub')} />
+      <StatCard label={t('stats.planning')} value={planning} sub={t('stats.planningSub')} />
       <StatCard
-        label={STATUS_LABELS.PLANNING ?? 'Planowane'}
-        value={planning}
-        sub="w kolejce do obejrzenia"
-      />
-      <StatCard
-        label="Śr. ocena"
+        label={t('stats.meanScore')}
         value={formatScore(stats.meanScore)}
-        sub="ze wszystkich ocenionych"
+        sub={t('stats.meanScoreSub')}
         tone="gold"
       />
     </div>

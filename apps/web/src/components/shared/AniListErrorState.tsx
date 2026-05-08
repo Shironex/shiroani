@@ -1,4 +1,5 @@
 import { CloudOff, RefreshCw } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { classifyAniListError } from '@shiroani/shared';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -9,33 +10,21 @@ interface AniListErrorStateProps {
   className?: string;
 }
 
-const MESSAGES: Record<
-  ReturnType<typeof classifyAniListError>,
-  { title: string; subtitle: string }
-> = {
-  'api-disabled': {
-    title: 'AniList API jest tymczasowo wyłączony',
-    subtitle: 'AniList wyłączył API z powodu problemów ze stabilnością. Spróbuj ponownie później.',
-  },
-  'rate-limit': {
-    title: 'Zbyt wiele zapytań',
-    subtitle: 'Przekroczono limit zapytań do AniList. Odczekaj chwilę i spróbuj ponownie.',
-  },
-  network: {
-    title: 'Błąd połączenia',
-    subtitle: 'Nie udało się połączyć z AniList. Sprawdź połączenie z internetem.',
-  },
-  unknown: {
-    title: 'Nie udało się pobrać danych',
-    subtitle: '',
-  },
+const KIND_KEY: Record<ReturnType<typeof classifyAniListError>, string> = {
+  'api-disabled': 'apiDisabled',
+  'rate-limit': 'rateLimit',
+  network: 'network',
+  unknown: 'unknown',
 };
 
 export function AniListErrorState({ error, onRetry, className }: AniListErrorStateProps) {
+  const { t } = useTranslation('nav');
   if (!error) return null;
 
   const kind = classifyAniListError(error);
-  const { title, subtitle } = MESSAGES[kind];
+  const groupKey = KIND_KEY[kind];
+  const title = t(`anilistError.${groupKey}.title`);
+  const subtitle = t(`anilistError.${groupKey}.subtitle`);
   const body = kind === 'unknown' ? error : subtitle;
 
   return (
@@ -54,7 +43,7 @@ export function AniListErrorState({ error, onRetry, className }: AniListErrorSta
           {onRetry && (
             <Button variant="outline" size="sm" className="gap-1.5 text-xs h-8" onClick={onRetry}>
               <RefreshCw className="w-3.5 h-3.5" />
-              Spróbuj ponownie
+              {t('anilistError.retry')}
             </Button>
           )}
         </div>

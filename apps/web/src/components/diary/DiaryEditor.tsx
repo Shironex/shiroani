@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useEditor, EditorContent } from '@tiptap/react';
 import { BubbleMenu } from '@tiptap/react/menus';
 import StarterKit from '@tiptap/starter-kit';
@@ -42,6 +43,7 @@ interface DiaryEditorProps {
  * editor engine.
  */
 export function DiaryEditor({ entry, onClose, onCreate, onUpdate }: DiaryEditorProps) {
+  const { t, i18n } = useTranslation('diary');
   const isEditing = !!entry;
   const [title, setTitle] = useState(entry?.title ?? '');
   const [coverGradient, setCoverGradient] = useState<DiaryGradient | undefined>(
@@ -67,7 +69,7 @@ export function DiaryEditor({ entry, onClose, onCreate, onUpdate }: DiaryEditorP
         heading: { levels: [1, 2, 3] },
       }),
       Placeholder.configure({
-        placeholder: 'Zacznij pisać…',
+        placeholder: t('editor.placeholder'),
       }),
     ],
     content: initialContent,
@@ -100,7 +102,7 @@ export function DiaryEditor({ entry, onClose, onCreate, onUpdate }: DiaryEditorP
       });
     } else {
       onCreate({
-        title: title || 'Bez tytułu',
+        title: title || t('editor.defaultTitle'),
         contentJson,
         coverGradient,
         mood,
@@ -166,7 +168,7 @@ export function DiaryEditor({ entry, onClose, onCreate, onUpdate }: DiaryEditorP
   return (
     <div
       role="region"
-      aria-label={isEditing ? 'Edytor wpisu dziennika' : 'Nowy wpis dziennika'}
+      aria-label={isEditing ? t('editor.regionEdit') : t('editor.regionNew')}
       className="flex h-full w-full overflow-hidden animate-fade-in"
     >
       {/* ── Left rail ────────────────────────────────── */}
@@ -179,7 +181,7 @@ export function DiaryEditor({ entry, onClose, onCreate, onUpdate }: DiaryEditorP
         {/* Cover preview */}
         <div className="flex flex-col gap-3">
           <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-            Okładka
+            {t('editor.cover')}
           </span>
           <div
             className={cn(
@@ -207,7 +209,7 @@ export function DiaryEditor({ entry, onClose, onCreate, onUpdate }: DiaryEditorP
               type="button"
               onClick={() => setIsPinned(p => !p)}
               aria-pressed={isPinned}
-              aria-label={isPinned ? 'Odepnij wpis' : 'Przypnij wpis'}
+              aria-label={isPinned ? t('editor.unpinEntry') : t('editor.pinEntry')}
               className={cn(
                 'absolute right-2 top-2 grid size-7 place-items-center rounded-[7px]',
                 'transition-colors',
@@ -226,7 +228,7 @@ export function DiaryEditor({ entry, onClose, onCreate, onUpdate }: DiaryEditorP
         {entry?.animeTitle && (
           <div className="flex flex-col gap-1.5">
             <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-              Powiązane anime
+              {t('editor.linkedAnime')}
             </span>
             <div className="flex items-center gap-2 rounded-[8px] border border-border-glass bg-foreground/[0.03] px-3 py-2 text-[12px] text-foreground/85">
               <LinkIcon className="w-3.5 h-3.5 shrink-0 text-primary" />
@@ -238,7 +240,7 @@ export function DiaryEditor({ entry, onClose, onCreate, onUpdate }: DiaryEditorP
         {/* Mood picker */}
         <div className="flex flex-col gap-2">
           <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-            Nastrój
+            {t('editor.mood')}
           </span>
           <MoodPickerPills value={mood} onChange={setMood} size="sm" />
         </div>
@@ -246,7 +248,7 @@ export function DiaryEditor({ entry, onClose, onCreate, onUpdate }: DiaryEditorP
         {/* Tags */}
         <div className="flex flex-col gap-2">
           <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-            Tagi
+            {t('editor.tags')}
           </span>
           <div className="flex flex-wrap gap-1.5">
             {tags.map(tag => (
@@ -261,7 +263,7 @@ export function DiaryEditor({ entry, onClose, onCreate, onUpdate }: DiaryEditorP
                 <button
                   type="button"
                   onClick={() => handleTagRemove(tag)}
-                  aria-label={`Usuń tag ${tag}`}
+                  aria-label={t('editor.removeTagAriaLabel', { tag })}
                   className="text-primary/70 hover:text-primary"
                 >
                   <X className="w-3 h-3" />
@@ -279,8 +281,8 @@ export function DiaryEditor({ entry, onClose, onCreate, onUpdate }: DiaryEditorP
               }
             }}
             onBlur={handleTagAdd}
-            placeholder="+ Dodaj tag"
-            aria-label="Dodaj tag"
+            placeholder={t('editor.addTag')}
+            aria-label={t('editor.addTagAriaLabel')}
             className={cn(
               'w-full rounded-[6px] border border-dashed border-border-glass bg-transparent',
               'px-2.5 py-1.5 text-[11px] text-foreground',
@@ -303,7 +305,7 @@ export function DiaryEditor({ entry, onClose, onCreate, onUpdate }: DiaryEditorP
           <button
             type="button"
             onClick={onClose}
-            aria-label="Powrót do dziennika"
+            aria-label={t('editor.back')}
             className={cn(
               'flex shrink-0 items-center gap-1.5 rounded-[8px] border border-border-glass',
               'bg-foreground/[0.03] px-2.5 py-1.5 font-mono text-[10px] uppercase tracking-[0.18em]',
@@ -311,19 +313,19 @@ export function DiaryEditor({ entry, onClose, onCreate, onUpdate }: DiaryEditorP
             )}
           >
             <ArrowLeft className="w-3.5 h-3.5" />
-            <span className="hidden md:inline">Powrót do dziennika</span>
-            <span className="md:hidden">Wstecz</span>
+            <span className="hidden md:inline">{t('editor.back')}</span>
+            <span className="md:hidden">{t('editor.backShort')}</span>
           </button>
 
           <div className="flex-1 min-w-0">
             <div className="mb-1 flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
               {isEditing ? (
                 <>
-                  <span className="text-primary">● edycja</span>
+                  <span className="text-primary">{t('editor.editingBadge')}</span>
                   {entry?.createdAt && (
                     <span>
                       ·{' '}
-                      {new Date(entry.createdAt).toLocaleDateString('pl-PL', {
+                      {new Date(entry.createdAt).toLocaleDateString(i18n.language, {
                         day: 'numeric',
                         month: 'long',
                         year: 'numeric',
@@ -332,15 +334,15 @@ export function DiaryEditor({ entry, onClose, onCreate, onUpdate }: DiaryEditorP
                   )}
                 </>
               ) : (
-                <span className="text-primary">● nowy wpis</span>
+                <span className="text-primary">{t('editor.newBadge')}</span>
               )}
             </div>
             <input
               id="diary-editor-title"
               value={title}
               onChange={e => setTitle(e.target.value)}
-              placeholder="Tytuł wpisu…"
-              aria-label="Tytuł wpisu"
+              placeholder={t('editor.titlePlaceholder')}
+              aria-label={t('editor.titleAriaLabel')}
               autoFocus
               className={cn(
                 'w-full bg-transparent font-serif text-[22px] font-extrabold leading-tight tracking-[-0.02em]',
@@ -350,11 +352,11 @@ export function DiaryEditor({ entry, onClose, onCreate, onUpdate }: DiaryEditorP
           </div>
           <div className="flex items-center gap-2">
             <Button variant="ghost" size="sm" onClick={onClose} className="h-8 gap-1.5 text-xs">
-              Anuluj
+              {t('editor.cancel')}
             </Button>
             <Button size="sm" onClick={handleSave} className="h-8 gap-1.5 text-xs">
               <Check className="w-3.5 h-3.5" />
-              {isEditing ? 'Zapisz' : 'Dodaj wpis'}
+              {isEditing ? t('editor.save') : t('editor.create')}
             </Button>
           </div>
         </header>
@@ -366,7 +368,7 @@ export function DiaryEditor({ entry, onClose, onCreate, onUpdate }: DiaryEditorP
             <div className="flex items-center gap-2 pl-2">
               <Smile className="w-3.5 h-3.5 text-muted-foreground/80" aria-hidden="true" />
               <span className="font-mono text-[9.5px] uppercase tracking-[0.15em] text-muted-foreground">
-                Nastrój
+                {t('editor.moodLabel')}
               </span>
               <MoodPickerPills value={mood} onChange={setMood} size="xs" />
             </div>
@@ -392,17 +394,19 @@ export function DiaryEditor({ entry, onClose, onCreate, onUpdate }: DiaryEditorP
         >
           <PillTag variant="muted" className="flex items-center gap-1.5">
             <FileText className="w-3 h-3" />
-            Markdown
+            {t('editor.footerMarkdown')}
           </PillTag>
           {isPinned && (
             <PillTag variant="accent" className="flex items-center gap-1.5">
               <Pin className="w-3 h-3 rotate-45 fill-current" />
-              Przypięte
+              {t('editor.footerPinned')}
             </PillTag>
           )}
           <span className="ml-auto font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
-            {textLength.toLocaleString('pl-PL')} / {MAX_CONTENT_LENGTH.toLocaleString('pl-PL')}{' '}
-            znaków
+            {t('editor.footerCount', {
+              count: textLength,
+              max: MAX_CONTENT_LENGTH,
+            })}
           </span>
         </footer>
       </section>

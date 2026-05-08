@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useTranslation, Trans } from 'react-i18next';
 import { Languages, Settings, Sparkles, UserRound } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import {
@@ -91,21 +91,21 @@ export function GeneralSection() {
 
       <SettingsCard
         icon={UserRound}
-        title="Profil"
-        subtitle="Imię używane w powitaniu na nowej karcie. Zostaje na tym urządzeniu."
+        title={t('general.profileCard.title')}
+        subtitle={t('general.profileCard.subtitle')}
       >
         <SettingsRow stacked>
           <SettingsRowLabel
             id="display-name-label"
-            title="Twoje imię"
-            description="Zostaw puste, a Shiro użyje nicku z AniList (jeśli masz połączone konto)."
+            title={t('general.displayName.title')}
+            description={t('general.displayName.description')}
           />
           <Input
             id="display-name-input"
             aria-labelledby="display-name-label"
             value={displayName}
             onChange={e => setDisplayName(e.target.value)}
-            placeholder="np. Aleks"
+            placeholder={t('general.displayName.placeholder')}
             maxLength={DISPLAY_NAME_MAX_LENGTH}
             className="h-9 text-[13.5px]"
           />
@@ -114,13 +114,13 @@ export function GeneralSection() {
 
       <SettingsCard
         icon={Settings}
-        title="Ogólne ustawienia aplikacji"
-        subtitle="Zachowanie aplikacji przy starcie systemu i odświeżaniu danych."
+        title={t('general.appCard.title')}
+        subtitle={t('general.appCard.subtitle')}
       >
         <SettingsToggleRow
           id="auto-launch-label"
-          title="Uruchamiaj przy starcie systemu"
-          description="Automatycznie otwiera ShiroAni po zalogowaniu do systemu"
+          title={t('general.autoLaunch.title')}
+          description={t('general.autoLaunch.description')}
           checked={autoLaunch}
           onCheckedChange={handleAutoLaunchChange}
         />
@@ -128,8 +128,8 @@ export function GeneralSection() {
         <SettingsToggleRow
           divider
           id="feed-startup-refresh-label"
-          title="Odświeżaj RSS przy starcie aplikacji"
-          description="Gdy wyłączone, aktualności pobiorą się dopiero po wejściu do widoku Aktualności lub po ręcznym odświeżeniu. Zmiana zadziała od następnego uruchomienia."
+          title={t('general.feedRefreshOnStartup.title')}
+          description={t('general.feedRefreshOnStartup.description')}
           checked={feedRefreshOnStartup}
           onCheckedChange={handleFeedRefreshOnStartupChange}
         />
@@ -139,8 +139,11 @@ export function GeneralSection() {
       <div className="flex items-center gap-3 rounded-xl border border-border-glass bg-background/40 px-4 py-3 text-[11.5px] leading-relaxed text-muted-foreground">
         <Sparkles className="w-[18px] h-[18px] flex-shrink-0 text-[oklch(0.8_0.14_70)]" />
         <span>
-          Niektóre zmiany systemowe wymagają ponownego uruchomienia aplikacji.{' '}
-          <b className="font-semibold text-foreground">Twoje dane są bezpieczne.</b>
+          <Trans
+            i18nKey="general.restartCallout"
+            t={t}
+            components={{ 1: <b className="font-semibold text-foreground" /> }}
+          />
         </span>
       </div>
     </div>

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { MessageCircle, Check, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
@@ -10,6 +11,7 @@ import type { DiscordRpcSettings, DiscordActivityType } from '@shiroani/shared';
 import { DEFAULT_DISCORD_TEMPLATES } from '@shiroani/shared';
 
 export function DiscordSection() {
+  const { t } = useTranslation('settings');
   const [settings, setSettings] = useState<DiscordRpcSettings | null>(null);
   const [saved, setSaved] = useState(false);
   const [selectedActivity, setSelectedActivity] = useState<DiscordActivityType>('watching');
@@ -95,11 +97,11 @@ export function DiscordSection() {
   const mainCard = (
     <SettingsCard
       icon={MessageCircle}
-      title="Discord Rich Presence"
-      subtitle="Połącz z Discordem i pokaż swoją aktywność znajomym."
+      title={t('discord.main.title')}
+      subtitle={t('discord.main.subtitle')}
       headerAccessory={
         <Switch
-          aria-label="Włącz Discord Rich Presence"
+          aria-label={t('discord.main.enableAria')}
           checked={settings.enabled}
           onCheckedChange={v => updateField('enabled', v)}
         />
@@ -109,8 +111,8 @@ export function DiscordSection() {
         <>
           <SettingsToggleRow
             id="discord-details-label"
-            title="Pokaż tytuły anime"
-            description="Wyświetlaj tytuł oglądanego anime na Discordzie"
+            title={t('discord.main.showDetailsTitle')}
+            description={t('discord.main.showDetailsDescription')}
             checked={settings.showAnimeDetails}
             onCheckedChange={v => updateField('showAnimeDetails', v)}
             disabled={!settings.enabled}
@@ -119,8 +121,8 @@ export function DiscordSection() {
           <SettingsToggleRow
             divider
             id="discord-time-label"
-            title="Pokaż czas"
-            description="Pokazuj, od ilu minut coś oglądasz."
+            title={t('discord.main.showTimeTitle')}
+            description={t('discord.main.showTimeDescription')}
             checked={settings.showElapsedTime}
             onCheckedChange={v => updateField('showElapsedTime', v)}
             disabled={!settings.enabled}
@@ -131,8 +133,8 @@ export function DiscordSection() {
       <SettingsToggleRow
         divider={!settings.useCustomTemplates}
         id="discord-templates-label"
-        title="Własne szablony"
-        description="Dostosuj tekst statusu dla każdej aktywności"
+        title={t('discord.main.useTemplatesTitle')}
+        description={t('discord.main.useTemplatesDescription')}
         checked={settings.useCustomTemplates}
         onCheckedChange={v => updateField('useCustomTemplates', v)}
         disabled={!settings.enabled}
@@ -141,7 +143,7 @@ export function DiscordSection() {
       <div>
         <Button size="sm" onClick={handleSave}>
           {saved ? <Check className="h-4 w-4" /> : null}
-          {saved ? 'Zapisano' : 'Zapisz'}
+          {saved ? t('discord.main.saved') : t('discord.main.save')}
         </Button>
       </div>
     </SettingsCard>
@@ -150,8 +152,8 @@ export function DiscordSection() {
   const previewCard = (
     <SettingsCard
       icon={MessageCircle}
-      title="Podgląd"
-      subtitle="Tak będzie wyglądał Twój status na Discordzie."
+      title={t('discord.preview.title')}
+      subtitle={t('discord.preview.subtitle')}
       tone="blue"
     >
       <DiscordPreview
@@ -178,10 +180,7 @@ export function DiscordSection() {
   const infoCallout = (
     <div className="flex items-start gap-3 rounded-xl border border-border-glass bg-background/40 px-4 py-3 text-[11.5px] leading-relaxed text-muted-foreground">
       <Info className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground/80" />
-      <p>
-        Status na Discordzie działa tylko, gdy klient Discord jest uruchomiony na komputerze. Na
-        Twoim profilu Discord znajomi zobaczą, co robisz w ShiroAni.
-      </p>
+      <p>{t('discord.info')}</p>
     </div>
   );
 

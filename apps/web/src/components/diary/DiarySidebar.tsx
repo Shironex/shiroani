@@ -1,4 +1,5 @@
 import { useEffect, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Flame,
   CalendarDays,
@@ -17,7 +18,7 @@ import { StudioBreakdown } from '@/components/profile/StudioBreakdown';
 import { useDiaryBreakdowns } from '@/hooks/useDiaryBreakdowns';
 import { useLibraryStore } from '@/stores/useLibraryStore';
 import { useAnimeDetailStore } from '@/stores/useAnimeDetailStore';
-import { pluralize, type DiaryEntry } from '@shiroani/shared';
+import { type DiaryEntry } from '@shiroani/shared';
 
 interface DiarySidebarProps {
   entries: DiaryEntry[];
@@ -150,6 +151,7 @@ function nextStreakMilestone(streak: number): { target: number; progress: number
  * entries (no network calls).
  */
 export function DiarySidebar({ entries }: DiarySidebarProps) {
+  const { t } = useTranslation('diary');
   const stats = useMemo(() => computeStats(entries), [entries]);
   const milestone = nextStreakMilestone(stats.currentStreak);
 
@@ -197,14 +199,22 @@ export function DiarySidebar({ entries }: DiarySidebarProps) {
 
       <SidebarSection>
         <div className="grid grid-cols-2 gap-2">
-          <StatTile label="wpisów łącznie" value={stats.total} />
-          <StatTile label="w tym miesiącu" value={stats.thisMonth} sub="wpisów" />
+          <StatTile label={t('sidebar.stats.totalEntries')} value={stats.total} />
           <StatTile
-            label="rekord streak"
-            value={stats.longestStreak}
-            sub={stats.longestStreak === 1 ? 'dzień' : 'dni'}
+            label={t('sidebar.stats.thisMonth')}
+            value={stats.thisMonth}
+            sub={t('sidebar.stats.thisMonthSub', { count: stats.thisMonth })}
           />
-          <StatTile label="z anime" value={stats.linkedToAnime} sub="połączeń" />
+          <StatTile
+            label={t('sidebar.stats.longestStreak')}
+            value={stats.longestStreak}
+            sub={t('sidebar.stats.longestStreakSub', { count: stats.longestStreak })}
+          />
+          <StatTile
+            label={t('sidebar.stats.linkedToAnime')}
+            value={stats.linkedToAnime}
+            sub={t('sidebar.stats.linkedToAnimeSub', { count: stats.linkedToAnime })}
+          />
         </div>
       </SidebarSection>
 
@@ -217,12 +227,12 @@ export function DiarySidebar({ entries }: DiarySidebarProps) {
       <TopTagsBlock tags={stats.topTags} />
 
       <SidebarSection>
-        <SidebarLabel icon={Clapperboard}>Gatunki</SidebarLabel>
+        <SidebarLabel icon={Clapperboard}>{t('sidebar.genres')}</SidebarLabel>
         <GenreBreakdown genres={genres} />
       </SidebarSection>
 
       <SidebarSection>
-        <SidebarLabel icon={Building2}>Studia</SidebarLabel>
+        <SidebarLabel icon={Building2}>{t('sidebar.studios')}</SidebarLabel>
         <StudioBreakdown studios={studios} />
       </SidebarSection>
     </aside>
@@ -255,15 +265,22 @@ interface StreakCardProps {
 }
 
 function StreakCard({ current, longest, milestone }: StreakCardProps) {
+  const { t } = useTranslation('diary');
   const dotsCount = Math.min(current, 23);
   const dots = Array.from({ length: 23 }, (_, i) => i < dotsCount);
   const remaining = Math.max(0, milestone.target - current);
   const note =
     current === 0
-      ? 'Dodaj dziś wpis, a ruszysz ze streakiem.'
+      ? t('sidebar.streakNoteEmpty')
       : current >= longest
-        ? `Rekord osobisty! Nie zatrzymuj się. Kolejny cel to ${milestone.target} dni.`
-        : `Twój rekord: ${longest} ${pluralize(longest, 'dzień', 'dni', 'dni')}. Do celu (${milestone.target}) brakuje ${remaining} ${pluralize(remaining, 'dnia', 'dni', 'dni')}.`;
+        ? t('sidebar.streakNoteRecord', { target: milestone.target })
+        : t('sidebar.streakNoteProgress', {
+            longest,
+            longestUnit: t('sidebar.dayUnit', { count: longest }),
+            target: milestone.target,
+            remaining,
+            remainingUnit: t('sidebar.dayUnit', { count: remaining }),
+          });
 
   return (
     <div
@@ -274,12 +291,12 @@ function StreakCard({ current, longest, milestone }: StreakCardProps) {
     >
       <div className="mb-1.5 flex items-center gap-2 font-mono text-[10px] font-semibold uppercase tracking-[0.2em] text-[oklch(0.8_0.14_70)]">
         <Flame className="w-3.5 h-3.5" aria-hidden="true" />
-        Aktualny streak
+        {t('sidebar.currentStreak')}
       </div>
       <div className="flex items-baseline gap-2 font-serif text-[38px] font-extrabold leading-none text-[oklch(0.8_0.14_70)]">
         {current}
         <small className="font-mono text-[11px] font-medium tracking-[0.12em] text-muted-foreground">
-          {current === 1 ? 'dzień z rzędu' : 'dni z rzędu'}
+          {t('sidebar.dayInRow', { count: current })}
         </small>
       </div>
       <p className="mt-2 text-[11.5px] leading-[1.4] text-foreground/80">{note}</p>
@@ -299,7 +316,7 @@ function StreakCard({ current, longest, milestone }: StreakCardProps) {
       <div className="mt-3">
         <ProgressBar value={milestone.progress} thickness={3} glow tone="primary" />
         <div className="mt-1 flex justify-between font-mono text-[9.5px] uppercase tracking-[0.12em] text-muted-foreground/70">
-          <span>cel · {milestone.target} dni</span>
+          <span>{t('sidebar.goalLabel', { target: milestone.target })}</span>
           <span>{Math.round(milestone.progress)}%</span>
         </div>
       </div>
@@ -324,15 +341,16 @@ interface ActivityHeatmapProps {
 }
 
 function ActivityHeatmap({ weeks, maxCount, total }: ActivityHeatmapProps) {
+  const { t } = useTranslation('diary');
   if (total === 0) {
     return (
       <SidebarSection>
-        <SidebarLabel icon={CalendarDays}>Aktywność</SidebarLabel>
+        <SidebarLabel icon={CalendarDays}>{t('sidebar.activity.label')}</SidebarLabel>
         <ComingSoonPlaceholder
           icon={Sparkles}
-          tag="PUSTO"
-          title="Brak aktywności"
-          description="Napisz pierwszy wpis, żeby zobaczyć heatmapę."
+          tag={t('sidebar.activity.emptyTag')}
+          title={t('sidebar.activity.emptyTitle')}
+          description={t('sidebar.activity.emptyDescription')}
           className="min-h-[160px] p-5"
         />
       </SidebarSection>
@@ -341,7 +359,7 @@ function ActivityHeatmap({ weeks, maxCount, total }: ActivityHeatmapProps) {
 
   return (
     <SidebarSection>
-      <SidebarLabel icon={CalendarDays}>Aktywność · 52 tyg.</SidebarLabel>
+      <SidebarLabel icon={CalendarDays}>{t('sidebar.activity.label52w')}</SidebarLabel>
       <div
         className="grid gap-[3px]"
         style={{ gridTemplateColumns: 'repeat(13, 1fr)' }}
@@ -360,13 +378,13 @@ function ActivityHeatmap({ weeks, maxCount, total }: ActivityHeatmapProps) {
         })}
       </div>
       <div className="mt-2 flex items-center justify-between font-mono text-[9px] uppercase tracking-[0.1em] text-muted-foreground/70">
-        <span>mniej</span>
+        <span>{t('sidebar.activity.less')}</span>
         <div className="flex gap-[2px]">
           {HEATMAP_LEVELS.map((bg, i) => (
             <span key={i} className="h-[10px] w-[10px] rounded-[2px]" style={{ background: bg }} />
           ))}
         </div>
-        <span>więcej</span>
+        <span>{t('sidebar.activity.more')}</span>
       </div>
     </SidebarSection>
   );
@@ -390,19 +408,18 @@ function bucketLevel(count: number, max: number): 0 | 1 | 2 | 3 | 4 {
 }
 
 function TopTagsBlock({ tags }: { tags: { tag: string; count: number }[] }) {
+  const { t } = useTranslation('diary');
   if (tags.length === 0) {
     return (
       <SidebarSection>
-        <SidebarLabel icon={TagIcon}>Popularne tagi</SidebarLabel>
-        <p className="text-[11.5px] text-muted-foreground/70">
-          Dodaj tagi do wpisów, żeby śledzić tematy.
-        </p>
+        <SidebarLabel icon={TagIcon}>{t('sidebar.topTags')}</SidebarLabel>
+        <p className="text-[11.5px] text-muted-foreground/70">{t('sidebar.topTagsHint')}</p>
       </SidebarSection>
     );
   }
   return (
     <SidebarSection>
-      <SidebarLabel icon={TagIcon}>Popularne tagi</SidebarLabel>
+      <SidebarLabel icon={TagIcon}>{t('sidebar.topTags')}</SidebarLabel>
       <div className="flex flex-wrap gap-1.5">
         {tags.map((t, i) => (
           <PillTag key={t.tag} variant={i === 0 ? 'accent' : 'muted'}>

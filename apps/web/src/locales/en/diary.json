@@ -1,0 +1,139 @@
+{
+  "title": "Diary",
+  "subtitle_one": "{{count}} entry",
+  "subtitle_few": "{{count}} entries",
+  "subtitle_many": "{{count}} entries",
+  "subtitle_other": "{{count}} entries",
+  "searchPlaceholder": "Search the diary...",
+  "filter": {
+    "all": "All",
+    "pinned": "Pinned",
+    "withAnime": "With anime"
+  },
+  "sort": {
+    "createdAt": "Created at",
+    "updatedAt": "Edited at",
+    "title": "Title",
+    "ascending": "Ascending",
+    "descending": "Descending"
+  },
+  "actions": {
+    "newEntry": "New entry",
+    "export": "Export",
+    "import": "Import"
+  },
+  "untitled": "Untitled",
+  "empty": {
+    "noResults": "No results",
+    "noResultsHint": "Try different words or change the filter",
+    "title": "Your diary is still empty",
+    "subtitle": "Save your impressions of episodes, reviews and notes",
+    "action": "Write your first entry"
+  },
+  "card": {
+    "pin": "Pin",
+    "unpin": "Unpin",
+    "remove": "Remove",
+    "pinned": "Pinned"
+  },
+  "timeline": {
+    "today": "Today",
+    "yesterday": "Yesterday"
+  },
+  "remove": {
+    "title": "Delete entry",
+    "description": "Are you sure you want to delete \"{{title}}\" from your diary?"
+  },
+  "editor": {
+    "regionEdit": "Diary entry editor",
+    "regionNew": "New diary entry",
+    "cover": "Cover",
+    "linkedAnime": "Linked anime",
+    "mood": "Mood",
+    "tags": "Tags",
+    "addTag": "+ Add tag",
+    "addTagAriaLabel": "Add tag",
+    "removeTagAriaLabel": "Remove tag {{tag}}",
+    "back": "Back to diary",
+    "backShort": "Back",
+    "editingBadge": "● editing",
+    "newBadge": "● new entry",
+    "titlePlaceholder": "Entry title…",
+    "titleAriaLabel": "Entry title",
+    "cancel": "Cancel",
+    "save": "Save",
+    "create": "Add entry",
+    "pinEntry": "Pin entry",
+    "unpinEntry": "Unpin entry",
+    "moodLabel": "Mood",
+    "footerMarkdown": "Markdown",
+    "footerPinned": "Pinned",
+    "footerCount": "{{count}} / {{max}} characters",
+    "placeholder": "Start writing…",
+    "defaultTitle": "Untitled"
+  },
+  "toolbar": {
+    "undo": "Undo",
+    "redo": "Redo",
+    "heading1": "Heading 1",
+    "heading2": "Heading 2",
+    "heading3": "Heading 3",
+    "bold": "Bold",
+    "italic": "Italic",
+    "strike": "Strikethrough",
+    "bulletList": "Bullet list",
+    "orderedList": "Numbered list",
+    "blockquote": "Blockquote",
+    "codeBlock": "Code block",
+    "horizontalRule": "Horizontal rule"
+  },
+  "gradient": {
+    "clear": "Clear"
+  },
+  "sidebar": {
+    "currentStreak": "Current streak",
+    "dayInRow_one": "day in a row",
+    "dayInRow_few": "days in a row",
+    "dayInRow_many": "days in a row",
+    "dayInRow_other": "days in a row",
+    "streakNoteEmpty": "Add an entry today to start a streak.",
+    "streakNoteRecord": "Personal record! Don't stop. The next goal is {{target}} days.",
+    "streakNoteProgress": "Your record: {{longest}} {{longestUnit}}. {{remaining}} {{remainingUnit}} to go to the goal of {{target}}.",
+    "dayUnit_one": "day",
+    "dayUnit_few": "days",
+    "dayUnit_many": "days",
+    "dayUnit_other": "days",
+    "goalLabel": "goal · {{target}} days",
+    "stats": {
+      "totalEntries": "total entries",
+      "thisMonth": "this month",
+      "thisMonthSub_one": "entry",
+      "thisMonthSub_few": "entries",
+      "thisMonthSub_many": "entries",
+      "thisMonthSub_other": "entries",
+      "longestStreak": "streak record",
+      "longestStreakSub_one": "day",
+      "longestStreakSub_few": "days",
+      "longestStreakSub_many": "days",
+      "longestStreakSub_other": "days",
+      "linkedToAnime": "with anime",
+      "linkedToAnimeSub_one": "link",
+      "linkedToAnimeSub_few": "links",
+      "linkedToAnimeSub_many": "links",
+      "linkedToAnimeSub_other": "links"
+    },
+    "activity": {
+      "label": "Activity",
+      "label52w": "Activity · 52 weeks",
+      "less": "less",
+      "more": "more",
+      "emptyTag": "EMPTY",
+      "emptyTitle": "No activity",
+      "emptyDescription": "Write your first entry to see the heatmap."
+    },
+    "topTags": "Popular tags",
+    "topTagsHint": "Add tags to entries to track topics.",
+    "genres": "Genres",
+    "studios": "Studios"
+  }
+}

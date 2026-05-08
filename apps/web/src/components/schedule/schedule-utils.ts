@@ -1,11 +1,17 @@
 import { toLocalDate, formatDate } from '@shiroani/shared';
+import i18n from '@/lib/i18n';
 
 export { formatDate };
 export { getAnimeTitle, getCoverUrl } from '@/lib/anime-utils';
 
+/** Resolve the active UI locale, falling back to the OS locale. */
+function activeLocale(): string {
+  return i18n.language || (typeof navigator !== 'undefined' ? navigator.language : 'en');
+}
+
 export function formatTime(timestamp: number): string {
   const d = new Date(timestamp * 1000);
-  return d.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' });
+  return d.toLocaleTimeString(activeLocale(), { hour: '2-digit', minute: '2-digit' });
 }
 
 export function addDays(dateStr: string, days: number): string {
@@ -53,16 +59,17 @@ export function formatCountdown(airingAt: number, nowSeconds: number): string {
 }
 
 /**
- * Short "day + date" label for day-timeline header (e.g. "Piątek, 19 kwietnia").
+ * Short "day + date" label for day-timeline header (e.g. "Friday, April 19").
  * Falls back to `formatDate` when Intl fails.
  */
 export function formatDayHeading(dateStr: string): string {
   try {
     const [y, m, d] = dateStr.split('-').map(Number);
     const dt = new Date(y, m - 1, d);
-    const weekday = dt.toLocaleDateString('pl-PL', { weekday: 'long' });
+    const locale = activeLocale();
+    const weekday = dt.toLocaleDateString(locale, { weekday: 'long' });
     const day = dt.getDate();
-    const month = dt.toLocaleDateString('pl-PL', { month: 'long' });
+    const month = dt.toLocaleDateString(locale, { month: 'long' });
     const cap = weekday.charAt(0).toUpperCase() + weekday.slice(1);
     return `${cap}, ${day} ${month}`;
   } catch {
@@ -70,15 +77,16 @@ export function formatDayHeading(dateStr: string): string {
   }
 }
 
-/** Range label for week views, e.g. "15–21 kwietnia". */
+/** Range label for week views, e.g. "April 15–21". */
 export function formatWeekRange(first: string, last: string): string {
   try {
     const [y1, m1, d1] = first.split('-').map(Number);
     const [y2, m2, d2] = last.split('-').map(Number);
     const start = new Date(y1, m1 - 1, d1);
     const end = new Date(y2, m2 - 1, d2);
-    const monthStart = start.toLocaleDateString('pl-PL', { month: 'long' });
-    const monthEnd = end.toLocaleDateString('pl-PL', { month: 'long' });
+    const locale = activeLocale();
+    const monthStart = start.toLocaleDateString(locale, { month: 'long' });
+    const monthEnd = end.toLocaleDateString(locale, { month: 'long' });
     if (monthStart === monthEnd && y1 === y2) {
       return `${start.getDate()}–${end.getDate()} ${monthEnd}`;
     }

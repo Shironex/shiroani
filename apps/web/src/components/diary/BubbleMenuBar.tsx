@@ -1,5 +1,6 @@
 import type { Editor } from '@tiptap/react';
 import { Bold, Italic, Strikethrough, Heading2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 
 interface BubbleMenuBarProps {
@@ -10,21 +11,21 @@ const FORMATTING_BUTTONS = [
   {
     key: 'bold',
     Icon: Bold,
-    'aria-label': 'Pogrubienie',
+    labelKey: 'toolbar.bold',
     toggle: (e: Editor) => e.chain().focus().toggleBold().run(),
     isActive: (e: Editor) => e.isActive('bold'),
   },
   {
     key: 'italic',
     Icon: Italic,
-    'aria-label': 'Kursywa',
+    labelKey: 'toolbar.italic',
     toggle: (e: Editor) => e.chain().focus().toggleItalic().run(),
     isActive: (e: Editor) => e.isActive('italic'),
   },
   {
     key: 'strike',
     Icon: Strikethrough,
-    'aria-label': 'Przekreślenie',
+    labelKey: 'toolbar.strike',
     toggle: (e: Editor) => e.chain().focus().toggleStrike().run(),
     isActive: (e: Editor) => e.isActive('strike'),
   },
@@ -33,7 +34,7 @@ const FORMATTING_BUTTONS = [
 const HEADING_BUTTON = {
   key: 'heading',
   Icon: Heading2,
-  'aria-label': 'Nagłówek 2',
+  labelKey: 'toolbar.heading2',
   toggle: (e: Editor) => e.chain().focus().toggleHeading({ level: 2 }).run(),
   isActive: (e: Editor) => e.isActive('heading', { level: 2 }),
 } as const;
@@ -44,6 +45,7 @@ const HEADING_BUTTON = {
  * mono-spaced icon cluster with accent highlight for active marks.
  */
 export function BubbleMenuBar({ editor }: BubbleMenuBarProps) {
+  const { t } = useTranslation('diary');
   return (
     <div
       className={cn(
@@ -51,11 +53,11 @@ export function BubbleMenuBar({ editor }: BubbleMenuBarProps) {
         'p-1 shadow-[0_10px_28px_oklch(0_0_0/0.35)] backdrop-blur-sm'
       )}
     >
-      {FORMATTING_BUTTONS.map(({ key, Icon, 'aria-label': ariaLabel, toggle, isActive }) => (
+      {FORMATTING_BUTTONS.map(({ key, Icon, labelKey, toggle, isActive }) => (
         <button
           key={key}
           type="button"
-          aria-label={ariaLabel}
+          aria-label={t(labelKey)}
           aria-pressed={isActive(editor)}
           onClick={() => toggle(editor)}
           className={cn(
@@ -71,7 +73,7 @@ export function BubbleMenuBar({ editor }: BubbleMenuBarProps) {
       <div aria-hidden="true" className="mx-0.5 h-[18px] w-px bg-border-glass" />
       <button
         type="button"
-        aria-label={HEADING_BUTTON['aria-label']}
+        aria-label={t(HEADING_BUTTON.labelKey)}
         aria-pressed={HEADING_BUTTON.isActive(editor)}
         onClick={() => HEADING_BUTTON.toggle(editor)}
         className={cn(

@@ -1,0 +1,133 @@
+{
+  "urlBar": {
+    "placeholder": "Type a URL or search",
+    "ariaLabel": "Address bar"
+  },
+  "toolbar": {
+    "back": "Back",
+    "forward": "Forward",
+    "reload": "Reload",
+    "loading": "Loading",
+    "home": "Home",
+    "addToLibrary": "Add to library"
+  },
+  "tabs": {
+    "newTab": "New tab",
+    "newTabTooltip": "New tab",
+    "close": "Close tab",
+    "split": "Split tab",
+    "unsplit": "Unsplit",
+    "region": {
+      "tab": "Browser tab",
+      "pane": "Browser pane"
+    },
+    "empty": {
+      "cta": "Click + to open a new tab"
+    }
+  },
+  "addDialog": {
+    "title": "Add to library",
+    "description": "Save this page to your library so you can come back to it.",
+    "cover": {
+      "label": "Cover",
+      "alt": "Cover",
+      "placeholder": "Cover URL",
+      "fetchingHint": "Fetching cover",
+      "fetchedHint": "Fetched from page",
+      "emptyHint": "Paste a URL or leave blank"
+    },
+    "url": {
+      "label": "URL",
+      "empty": "No URL"
+    },
+    "titleField": {
+      "label": "Title",
+      "placeholder": "Title"
+    },
+    "status": {
+      "label": "Status"
+    },
+    "episodes": {
+      "current": "Last episode",
+      "total": "Total episodes"
+    },
+    "submit": "Add",
+    "toast": {
+      "titleEmpty": "Title cannot be empty",
+      "duplicate": "This anime is already in your library",
+      "added": "Added to library",
+      "failed": "Failed to add to library"
+    }
+  },
+  "newTab": {
+    "greeting": {
+      "morning": "Good morning",
+      "evening": "Good evening",
+      "subtitle": {
+        "default": "Happy watching.",
+        "todaySchedule_one": "<1>{{count}} episode</1> on today's schedule.",
+        "todaySchedule_other": "<1>{{count}} episodes</1> on today's schedule.",
+        "episodesWaiting_one": "<1>{{count}} episode</1> waiting for you",
+        "episodesWaiting_other": "<1>{{count}} episodes</1> waiting for you",
+        "feedUnread_one": "<1>{{count}} update</1> in your feeds",
+        "feedUnread_other": "<1>{{count}} updates</1> in your feeds"
+      }
+    },
+    "quickAccess": {
+      "title": "Quick access",
+      "tabsCount_one": "{{count}} bookmark",
+      "tabsCount_other": "{{count}} bookmarks",
+      "add": "Add",
+      "addAria": "Add a site to quick access",
+      "removeAria": "Remove site",
+      "hiddenTitle": "Hidden sites",
+      "tile": {
+        "saved": "saved",
+        "site": "site"
+      },
+      "addDialog": {
+        "title": "Add site",
+        "description": "Add a site to quick access.",
+        "namePlaceholder": "Name",
+        "nameAria": "Site name",
+        "urlPlaceholder": "https://example.com",
+        "urlAria": "Site URL",
+        "submit": "Add"
+      }
+    },
+    "recents": {
+      "title": "Recently visited",
+      "empty": {
+        "title": "No history yet",
+        "body": "Sites you visit will show up here."
+      },
+      "relative": {
+        "now": "now",
+        "minutes": "{{count}}m",
+        "hours": "{{count}}h",
+        "days": "{{count}}d",
+        "weeks": "{{count}}w",
+        "months": "{{count}}mo"
+      }
+    },
+    "airingToday": {
+      "title": "Airing today",
+      "viewAll": "View all →",
+      "more": "More",
+      "episodeShort": "Ep. {{episode}}"
+    },
+    "resume": {
+      "title": "Continue watching",
+      "count_one": "{{count}} title",
+      "count_other": "{{count}} titles",
+      "episodeUnknown": "EP ??",
+      "noUrl": "no URL",
+      "ariaResume": "Resume {{title}}",
+      "empty": {
+        "title": "Nothing in progress",
+        "body": "Mark something as \"Watching\" in your library and it'll show up here.",
+        "cta": "Library"
+      }
+    }
+  }
+}

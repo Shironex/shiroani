@@ -1,4 +1,5 @@
 import { useState, useCallback, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Loader2, Globe, X, Plus, Columns2 } from 'lucide-react';
 import {
   DndContext,
@@ -106,6 +107,7 @@ function TabContent({
   isDragOverlay?: boolean;
   isMergeTarget?: boolean;
 }) {
+  const { t } = useTranslation('browser');
   const [imgError, setImgError] = useState(false);
 
   return (
@@ -138,9 +140,9 @@ function TabContent({
       ) : (
         <Globe className="w-3 h-3 shrink-0 opacity-70" />
       )}
-      <span className="truncate flex-1">{tab.title || 'Nowa karta'}</span>
+      <span className="truncate flex-1">{tab.title || t('tabs.newTab')}</span>
       {isSplit && !isMergeTarget && (
-        <Columns2 className="w-3 h-3 shrink-0 text-primary/70" aria-label="Karta dzielona" />
+        <Columns2 className="w-3 h-3 shrink-0 text-primary/70" aria-label={t('tabs.split')} />
       )}
       {isMergeTarget && (
         <span
@@ -151,7 +153,7 @@ function TabContent({
       {onClose && (
         <button
           onClick={onClose}
-          aria-label="Zamknij kartę"
+          aria-label={t('tabs.close')}
           className={cn(
             'grid size-4 place-items-center rounded-sm shrink-0',
             'transition-opacity duration-150',
@@ -265,6 +267,7 @@ export function BrowserTabBar({
   onReorderTabs,
   onSplitTabs,
 }: BrowserTabBarProps) {
+  const { t } = useTranslation('browser');
   const [activeDragId, setActiveDragId] = useState<string | null>(null);
   const [mergeTargetId, setMergeTargetId] = useState<string | null>(null);
   const [wasDragging, setWasDragging] = useState(false);
@@ -392,7 +395,7 @@ export function BrowserTabBar({
             size="icon"
             className="size-7 rounded-full mb-[2px] shrink-0"
             onClick={onNewTab}
-            tooltip="Nowa karta"
+            tooltip={t('tabs.newTabTooltip')}
             tooltipSide="bottom"
           >
             <Plus className="w-3.5 h-3.5" />

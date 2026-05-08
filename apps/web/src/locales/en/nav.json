@@ -1,0 +1,102 @@
+{
+  "ariaPrimary": "Main navigation",
+  "ariaExpand": "Expand navigation",
+  "tooltip": {
+    "moveDock": "Move dock"
+  },
+  "logoAlt": "ShiroAni",
+  "link": {
+    "browser": "Browser",
+    "library": "Library",
+    "discover": "Discover",
+    "diary": "Diary",
+    "schedule": "Schedule",
+    "feed": "News",
+    "profile": "Profile",
+    "changelog": "History",
+    "settings": "Settings"
+  },
+  "header": {
+    "searchPlaceholder": "Search...",
+    "clearSearch": "Clear search",
+    "viewModeGrid": "Grid view",
+    "viewModeList": "List view"
+  },
+  "titleBar": {
+    "minimize": "Minimize",
+    "restore": "Restore",
+    "maximize": "Maximize",
+    "close": "Close"
+  },
+  "connection": {
+    "reconnecting": "Reconnecting…",
+    "offline": "No connection",
+    "retry": "Try again"
+  },
+  "comingSoon": {
+    "tag": "SOON"
+  },
+  "dialog": {
+    "confirm": "Delete",
+    "cancel": "Cancel"
+  },
+  "exportDialog": {
+    "title": "Export data",
+    "description": "Save data to a JSON file.",
+    "saveDialogTitle": "Export ShiroAni data",
+    "preparing": "Preparing data...",
+    "exported": "Exported <1>{{count}}</1> entries",
+    "saving": "Saving file...",
+    "saved": "File saved",
+    "saveAs": "Save as...",
+    "close": "Close",
+    "errors": {
+      "unknown": "Unknown error",
+      "saveFailed": "Failed to save the file"
+    }
+  },
+  "importDialog": {
+    "title": "Import data",
+    "description": "Load data from a JSON file.",
+    "openDialogTitle": "Import ShiroAni data",
+    "loading": "Loading file...",
+    "importing": "Importing data...",
+    "progress": "{{completed}} of {{total}}",
+    "import": "Import",
+    "close": "Close",
+    "found": "Found <1>{{library}}</1> anime and <1>{{diary}}</1> diary entries",
+    "duplicatesPrompt": "What to do with duplicates?",
+    "skip": "Skip duplicates",
+    "overwrite": "Overwrite duplicates",
+    "done": "Import finished",
+    "imported": "Imported: {{count}}",
+    "skipped": "Skipped: {{count}}",
+    "errors": "Errors: {{count}}",
+    "errorMessages": {
+      "readFailed": "Failed to read the file",
+      "invalidJson": "This is not a valid JSON file",
+      "notShiroaniExport": "This is not a ShiroAni export file.",
+      "importFailed": "Error during import",
+      "unknown": "Failed to read the file"
+    }
+  },
+  "anilistError": {
+    "apiDisabled": {
+      "title": "AniList API is temporarily disabled",
+      "subtitle": "AniList disabled the API due to stability issues. Try again later."
+    },
+    "rateLimit": {
+      "title": "Too many requests",
+      "subtitle": "AniList request limit exceeded. Wait a moment and try again."
+    },
+    "network": {
+      "title": "Connection error",
+      "subtitle": "Could not connect to AniList. Check your internet connection."
+    },
+    "unknown": {
+      "title": "Failed to load data",
+      "subtitle": ""
+    },
+    "retry": "Try again"
+  }
+}

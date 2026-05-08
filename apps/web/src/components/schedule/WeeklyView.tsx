@@ -46,7 +46,7 @@ export function WeeklyView({
   libraryAnilistIds = EMPTY_IDS,
   subscribedAnilistIds = EMPTY_IDS,
 }: WeeklyViewProps) {
-  const { i18n } = useTranslation();
+  const { i18n, t } = useTranslation('schedule');
   const dayNamesShort = useMemo(() => getDayNamesShort(), [i18n.language]);
   const weekData = useWeekData(weekDays, getEntriesForDay, schedule);
   const now = useNowSeconds(60_000);
@@ -63,7 +63,7 @@ export function WeeklyView({
               label={dayNamesShort[idx]}
               entries={dayEntries}
               now={now}
-              emptyLabel="brak emisji"
+              emptyLabel={t('weekly.emptyLabel')}
               listClassName="space-y-1.5"
               emptyStateClassName="py-6"
               emptyIconClassName="w-5 h-5"
@@ -81,6 +81,8 @@ export function WeeklyView({
                     status={status}
                     membership={membership}
                     onClick={onAnimeClick}
+                    nowLabel={t('weekly.now')}
+                    episodeLabel={t('timetable.episodeShort', { episode: anime.episode })}
                   />
                 );
               }}
@@ -99,9 +101,18 @@ interface WeekEventCardProps {
   status: SlotStatus;
   membership: MembershipKind;
   onClick?: (anime: AiringAnime) => void;
+  nowLabel: string;
+  episodeLabel: string;
 }
 
-function WeekEventCard({ anime, status, membership, onClick }: WeekEventCardProps) {
+function WeekEventCard({
+  anime,
+  status,
+  membership,
+  onClick,
+  nowLabel,
+  episodeLabel,
+}: WeekEventCardProps) {
   const title = getAnimeTitle(anime.media);
   const coverUrl = getCoverUrl(anime.media);
   const isLive = status === 'live';
@@ -185,13 +196,13 @@ function WeekEventCard({ anime, status, membership, onClick }: WeekEventCardProp
             )}
           >
             {formatTime(anime.airingAt)}
-            {isLive && <span className="ml-1.5 uppercase tracking-[0.12em]">· teraz</span>}
+            {isLive && <span className="ml-1.5 uppercase tracking-[0.12em]">· {nowLabel}</span>}
           </div>
           <p className="mt-1 text-[11.5px] font-semibold leading-[1.25] text-foreground line-clamp-2 pr-6">
             {title}
           </p>
           <p className="mt-[3px] font-mono text-[9.5px] tracking-[0.06em] text-muted-foreground/70">
-            EP {anime.episode}
+            {episodeLabel}
             {anime.media.format && <span className="ml-1.5">· {anime.media.format}</span>}
           </p>
         </div>

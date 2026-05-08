@@ -1,4 +1,5 @@
 import { useCallback } from 'react';
+import { useTranslation, Trans } from 'react-i18next';
 import { Download, Loader2, CheckCircle, AlertCircle, Save } from 'lucide-react';
 import {
   Dialog,
@@ -36,6 +37,7 @@ const EXPORT_FILENAME: Record<string, string> = {
 };
 
 export function ExportDialog({ open, onOpenChange, type, selectedIds }: ExportDialogProps) {
+  const { t } = useTranslation('nav');
   const { state, transition, reset } = useDialogStateMachine<ExportState>({ step: 'idle' });
 
   const handleExport = useCallback(async () => {
@@ -49,10 +51,10 @@ export function ExportDialog({ open, onOpenChange, type, selectedIds }: ExportDi
     } catch (err) {
       transition({
         step: 'error',
-        message: err instanceof Error ? err.message : 'Nieznany błąd',
+        message: err instanceof Error ? err.message : t('exportDialog.errors.unknown'),
       });
     }
-  }, [type, selectedIds, transition]);
+  }, [type, selectedIds, transition, t]);
 
   const handleSave = useCallback(async () => {
     if (state.step !== 'success') return;
@@ -62,7 +64,7 @@ export function ExportDialog({ open, onOpenChange, type, selectedIds }: ExportDi
 
     try {
       const filePath = await window.electronAPI?.dialog?.saveFile?.({
-        title: 'Eksportuj dane ShiroAni',
+        title: t('exportDialog.saveDialogTitle'),
         defaultPath: EXPORT_FILENAME[type] ?? 'shiroani_export.json',
         filters: [{ name: 'JSON', extensions: ['json'] }],
       });
@@ -78,10 +80,10 @@ export function ExportDialog({ open, onOpenChange, type, selectedIds }: ExportDi
     } catch (err) {
       transition({
         step: 'save-error',
-        message: err instanceof Error ? err.message : 'Nie udało się zapisać pliku',
+        message: err instanceof Error ? err.message : t('exportDialog.errors.saveFailed'),
       });
     }
-  }, [state, transition]);
+  }, [state, transition, t]);
 
   const handleOpenChange = useCallback(
     (value: boolean) => {
@@ -111,9 +113,9 @@ export function ExportDialog({ open, onOpenChange, type, selectedIds }: ExportDi
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Download className="w-5 h-5 text-primary" />
-            Eksportuj dane
+            {t('exportDialog.title')}
           </DialogTitle>
-          <DialogDescription>Zapisz dane w pliku JSON.</DialogDescription>
+          <DialogDescription>{t('exportDialog.description')}</DialogDescription>
         </DialogHeader>
 
         <div className="py-4">
@@ -121,7 +123,7 @@ export function ExportDialog({ open, onOpenChange, type, selectedIds }: ExportDi
           {state.step === 'loading' && (
             <div className="flex items-center justify-center gap-3 py-6 text-muted-foreground">
               <Loader2 className="w-5 h-5 animate-spin" />
-              <span className="text-sm">Przygotowywanie danych...</span>
+              <span className="text-sm">{t('exportDialog.preparing')}</span>
             </div>
           )}
 
@@ -130,8 +132,12 @@ export function ExportDialog({ open, onOpenChange, type, selectedIds }: ExportDi
             <div className="flex flex-col items-center gap-3 py-4">
               <CheckCircle className="w-8 h-8 text-green-400" />
               <p className="text-sm text-foreground">
-                Wyeksportowano <span className="font-semibold">{state.data.totalExported}</span>{' '}
-                wpisów
+                <Trans
+                  i18nKey="exportDialog.exported"
+                  t={t}
+                  values={{ count: state.data.totalExported }}
+                  components={{ 1: <span className="font-semibold" /> }}
+                />
               </p>
             </div>
           )}
@@ -148,7 +154,7 @@ export function ExportDialog({ open, onOpenChange, type, selectedIds }: ExportDi
           {state.step === 'saving' && (
             <div className="flex items-center justify-center gap-3 py-6 text-muted-foreground">
               <Loader2 className="w-5 h-5 animate-spin" />
-              <span className="text-sm">Zapisywanie pliku...</span>
+              <span className="text-sm">{t('exportDialog.saving')}</span>
             </div>
           )}
 
@@ -156,7 +162,7 @@ export function ExportDialog({ open, onOpenChange, type, selectedIds }: ExportDi
           {state.step === 'saved' && (
             <div className="flex flex-col items-center gap-3 py-4">
               <CheckCircle className="w-8 h-8 text-green-400" />
-              <p className="text-sm text-green-400">Zapisano plik</p>
+              <p className="text-sm text-green-400">{t('exportDialog.saved')}</p>
             </div>
           )}
 
@@ -173,12 +179,12 @@ export function ExportDialog({ open, onOpenChange, type, selectedIds }: ExportDi
           {state.step === 'success' && (
             <Button onClick={handleSave}>
               <Save className="w-4 h-4" />
-              Zapisz jako...
+              {t('exportDialog.saveAs')}
             </Button>
           )}
           {(state.step === 'error' || state.step === 'saved' || state.step === 'save-error') && (
             <Button variant="outline" onClick={() => handleOpenChange(false)}>
-              Zamknij
+              {t('exportDialog.close')}
             </Button>
           )}
         </DialogFooter>

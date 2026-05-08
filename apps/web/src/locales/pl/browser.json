@@ -1,0 +1,143 @@
+{
+  "urlBar": {
+    "placeholder": "Wpisz adres albo szukaj",
+    "ariaLabel": "Pasek adresu"
+  },
+  "toolbar": {
+    "back": "Wstecz",
+    "forward": "Dalej",
+    "reload": "Odśwież",
+    "loading": "Ładowanie",
+    "home": "Strona główna",
+    "addToLibrary": "Dodaj do biblioteki"
+  },
+  "tabs": {
+    "newTab": "Nowa karta",
+    "newTabTooltip": "Nowa karta",
+    "close": "Zamknij kartę",
+    "split": "Karta dzielona",
+    "unsplit": "Rozdziel",
+    "region": {
+      "tab": "Karta przeglądarki",
+      "pane": "Panel przeglądarki"
+    },
+    "empty": {
+      "cta": "Kliknij +, żeby otworzyć nową kartę"
+    }
+  },
+  "addDialog": {
+    "title": "Dodaj do biblioteki",
+    "description": "Zapisz tę stronę w bibliotece, żeby do niej wrócić.",
+    "cover": {
+      "label": "Okładka",
+      "alt": "Okładka",
+      "placeholder": "URL okładki",
+      "fetchingHint": "Pobieranie okładki",
+      "fetchedHint": "Pobrano ze strony",
+      "emptyHint": "Wklej URL lub zostaw puste"
+    },
+    "url": {
+      "label": "Adres URL",
+      "empty": "Brak adresu URL"
+    },
+    "titleField": {
+      "label": "Tytuł",
+      "placeholder": "Tytuł"
+    },
+    "status": {
+      "label": "Status"
+    },
+    "episodes": {
+      "current": "Ostatni odcinek",
+      "total": "Liczba odcinków"
+    },
+    "submit": "Dodaj",
+    "toast": {
+      "titleEmpty": "Tytuł nie może być pusty",
+      "duplicate": "To anime jest już w bibliotece",
+      "added": "Dodano do biblioteki",
+      "failed": "Nie udało się dodać do biblioteki"
+    }
+  },
+  "newTab": {
+    "greeting": {
+      "morning": "Dzień dobry",
+      "evening": "Dobry wieczór",
+      "subtitle": {
+        "default": "Miłego oglądania.",
+        "todaySchedule_one": "Dzisiaj w harmonogramie <1>{{count}} odcinek</1>.",
+        "todaySchedule_few": "Dzisiaj w harmonogramie <1>{{count}} odcinki</1>.",
+        "todaySchedule_many": "Dzisiaj w harmonogramie <1>{{count}} odcinków</1>.",
+        "todaySchedule_other": "Dzisiaj w harmonogramie <1>{{count}} odcinków</1>.",
+        "episodesWaiting_one": "Czeka na Ciebie <1>{{count}} odcinek</1>",
+        "episodesWaiting_few": "Czekają na Ciebie <1>{{count}} odcinki</1>",
+        "episodesWaiting_many": "Czekają na Ciebie <1>{{count}} odcinków</1>",
+        "episodesWaiting_other": "Czekają na Ciebie <1>{{count}} odcinków</1>",
+        "feedUnread_one": "<1>{{count}} nowość</1> w subskrypcjach",
+        "feedUnread_few": "<1>{{count}} nowości</1> w subskrypcjach",
+        "feedUnread_many": "<1>{{count}} nowości</1> w subskrypcjach",
+        "feedUnread_other": "<1>{{count}} nowości</1> w subskrypcjach"
+      }
+    },
+    "quickAccess": {
+      "title": "Szybki dostęp",
+      "tabsCount_one": "{{count}} zakładka",
+      "tabsCount_few": "{{count}} zakładki",
+      "tabsCount_many": "{{count}} zakładek",
+      "tabsCount_other": "{{count}} zakładek",
+      "add": "Dodaj",
+      "addAria": "Dodaj stronę do szybkiego dostępu",
+      "removeAria": "Usuń stronę",
+      "hiddenTitle": "Ukryte strony",
+      "tile": {
+        "saved": "zapisane",
+        "site": "strona"
+      },
+      "addDialog": {
+        "title": "Dodaj stronę",
+        "description": "Dodaj stronę do szybkiego dostępu.",
+        "namePlaceholder": "Nazwa",
+        "nameAria": "Nazwa strony",
+        "urlPlaceholder": "https://example.com",
+        "urlAria": "Adres URL strony",
+        "submit": "Dodaj"
+      }
+    },
+    "recents": {
+      "title": "Ostatnio odwiedzone",
+      "empty": {
+        "title": "Brak historii",
+        "body": "Strony, które odwiedzasz, pojawią się tutaj."
+      },
+      "relative": {
+        "now": "teraz",
+        "minutes": "{{count}}m",
+        "hours": "{{count}}h",
+        "days": "{{count}}d",
+        "weeks": "{{count}}t",
+        "months": "{{count}}mc"
+      }
+    },
+    "airingToday": {
+      "title": "Emitowane dzisiaj",
+      "viewAll": "Pokaż wszystkie →",
+      "more": "Więcej",
+      "episodeShort": "Odc. {{episode}}"
+    },
+    "resume": {
+      "title": "Wznów oglądanie",
+      "count_one": "{{count}} tytuł",
+      "count_few": "{{count}} tytuły",
+      "count_many": "{{count}} tytułów",
+      "count_other": "{{count}} tytułów",
+      "episodeUnknown": "EP ??",
+      "noUrl": "brak adresu",
+      "ariaResume": "Wznów {{title}}",
+      "empty": {
+        "title": "Nic w trakcie",
+        "body": "Oznacz coś jako „W trakcie\" w bibliotece, a pojawi się tutaj.",
+        "cta": "Biblioteka"
+      }
+    }
+  }
+}

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useTranslation, Trans } from 'react-i18next';
 import {
   AlertTriangle,
   Download,
@@ -111,26 +111,33 @@ export function UpdatesSection({ version }: UpdatesSectionProps) {
   const statusText = (() => {
     switch (status) {
       case 'idle':
-        return 'Brak nowych aktualizacji';
+        return t('updates.status.idle');
       case 'checking':
-        return 'Sprawdzanie...';
+        return t('updates.status.checking');
       case 'available':
-        return `Dostępna aktualizacja: ${updateInfo?.version ?? ''}`;
+        return t('updates.status.available', { version: updateInfo?.version ?? '' });
       case 'downloading': {
         if (progress && progress.total > 0) {
-          return `Pobieranie · ${formatMB(progress.transferred, locale)}/${formatMB(progress.total, locale)}`;
+          return t('updates.status.downloading', {
+            transferred: formatMB(progress.transferred, locale),
+            total: formatMB(progress.total, locale),
+          });
         }
-        return progress ? `Pobieranie · ${Math.round(progress.percent)}%` : 'Pobieranie...';
+        return progress
+          ? t('updates.status.downloadingPct', { percent: Math.round(progress.percent) })
+          : t('updates.status.downloadingFallback');
       }
       case 'ready':
-        return 'Aktualizacja gotowa do instalacji';
+        return t('updates.status.ready');
       case 'awaiting-artifacts':
-        return 'Wydanie się wgrywa — pobieranie zacznie się automatycznie.';
+        return t('updates.status.awaitingArtifacts');
       case 'error': {
         if (error === UPDATE_ERROR_RELEASE_PENDING) {
-          return 'Wydanie w toku — spróbuj za chwilę.';
+          return t('updates.status.errorReleasePending');
         }
-        return `Błąd: ${error ?? 'Nieznany błąd'}`;
+        return t('updates.status.errorPrefix', {
+          message: error ?? t('updates.status.unknownError'),
+        });
       }
       default:
         return '';
@@ -168,8 +175,8 @@ export function UpdatesSection({ version }: UpdatesSectionProps) {
       {/* Version + channel — editorial hero */}
       <SettingsCard
         icon={RefreshCw}
-        title="Wersja aplikacji"
-        subtitle={isMac ? 'Aktualna wersja ShiroAni.' : 'Aktualna wersja i kanał aktualizacji.'}
+        title={t('updates.card.title')}
+        subtitle={isMac ? t('updates.card.subtitleMac') : t('updates.card.subtitleStable')}
       >
         <div className="flex flex-wrap items-center gap-6 pb-3.5 border-b border-border-glass/60">
           <div>
@@ -177,14 +184,14 @@ export function UpdatesSection({ version }: UpdatesSectionProps) {
               {version || '...'}
             </p>
             <p className="mt-1 font-mono text-[11px] tracking-[0.12em] text-muted-foreground">
-              {channel === 'beta' ? 'KANAŁ BETA' : 'KANAŁ STABILNY'}
+              {channel === 'beta' ? t('updates.channelBetaUpper') : t('updates.channelStableUpper')}
             </p>
           </div>
           <div className="flex flex-col gap-1">
             <StatusPill tone={statusTone} text={statusText} />
             {lastCheckedLabel && (
               <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground/70">
-                Ostatnie sprawdzenie: {lastCheckedLabel}
+                {t('updates.lastChecked', { label: lastCheckedLabel })}
               </p>
             )}
           </div>
@@ -193,7 +200,7 @@ export function UpdatesSection({ version }: UpdatesSectionProps) {
         {!isMac && (
           <div>
             <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground/80 mb-2">
-              Kanał aktualizacji
+              {t('updates.channelLabel')}
             </p>
             <div className="inline-flex items-center gap-1">
               <ChannelButton
@@ -207,7 +214,7 @@ export function UpdatesSection({ version }: UpdatesSectionProps) {
                     channel === 'stable' ? 'bg-primary' : 'bg-muted-foreground/30'
                   )}
                 />
-                Stabilna
+                {t('updates.channelStable')}
               </ChannelButton>
               <ChannelButton
                 active={channel === 'beta'}
@@ -220,17 +227,16 @@ export function UpdatesSection({ version }: UpdatesSectionProps) {
                     channel === 'beta' ? 'bg-primary' : 'bg-muted-foreground/30'
                   )}
                 />
-                Beta
+                {t('updates.channelBeta')}
               </ChannelButton>
             </div>
             {updateLocked && !isChannelSwitching ? (
               <p className="mt-2 text-[11.5px] text-muted-foreground/80 leading-relaxed">
-                Nie można zmienić kanału w trakcie aktualizacji.
+                {t('updates.channelLockedNote')}
               </p>
             ) : (
               <p className="mt-2 text-[11.5px] text-muted-foreground/80 leading-relaxed">
-                Kanał stabilny dostaje aktualizacje dopiero po przetestowaniu. Beta może zawierać
-                błędy.
+                {t('updates.channelDescription')}
               </p>
             )}
           </div>
@@ -240,12 +246,11 @@ export function UpdatesSection({ version }: UpdatesSectionProps) {
         {isMac ? (
           <div className="space-y-3">
             <p className="text-[12px] text-muted-foreground/85 leading-relaxed">
-              Na macOS automatyczne aktualizacje na razie nie działają, bo aplikacja nie jest
-              podpisana cyfrowo. Najnowszą wersję pobierz ręcznie z GitHub Releases lub Discorda.
+              {t('updates.macUnsignedNote')}
             </p>
             <Button size="sm" variant="outline" onClick={openReleasesPage}>
               <ExternalLink className="w-4 h-4" />
-              Otwórz GitHub Releases
+              {t('updates.openReleases')}
             </Button>
           </div>
         ) : (
@@ -261,19 +266,19 @@ export function UpdatesSection({ version }: UpdatesSectionProps) {
                 ) : (
                   <RefreshCw className="w-4 h-4" />
                 )}
-                Sprawdź aktualizacje
+                {t('updates.checkForUpdates')}
               </Button>
 
               {status === 'available' && (
                 <Button size="sm" variant="outline" onClick={startDownload}>
                   <Download className="w-4 h-4" />
-                  Pobierz
+                  {t('updates.download')}
                 </Button>
               )}
 
               {status === 'ready' && (
                 <Button size="sm" variant="outline" onClick={installNow}>
-                  Zainstaluj i uruchom ponownie
+                  {t('updates.installAndRestart')}
                 </Button>
               )}
             </div>
@@ -293,8 +298,11 @@ export function UpdatesSection({ version }: UpdatesSectionProps) {
               >
                 <AlertTriangle className="size-4 flex-shrink-0 mt-px" />
                 <span>
-                  To jest <b className="font-semibold">cofnięcie wersji</b> — instalacja zastąpi
-                  Twoją obecną bibliotekę starszym formatem. Upewnij się, że masz kopię zapasową.
+                  <Trans
+                    i18nKey="updates.downgradeWarning"
+                    t={t}
+                    components={{ 1: <b className="font-semibold" /> }}
+                  />
                 </span>
               </div>
             )}
@@ -305,7 +313,7 @@ export function UpdatesSection({ version }: UpdatesSectionProps) {
                 className="mt-2"
                 value={progress.percent}
                 thickness={6}
-                aria-label="Postęp pobierania"
+                aria-label={t('updates.downloadProgressAria')}
               />
             )}
 
@@ -325,6 +333,7 @@ export function UpdatesSection({ version }: UpdatesSectionProps) {
 // ── Helper components ───────────────────────────────────────────────
 
 function LatestReleaseHighlights() {
+  const { t } = useTranslation('settings');
   const latest = CHANGELOG_RELEASES[0];
   if (!latest) return null;
 
@@ -335,7 +344,7 @@ function LatestReleaseHighlights() {
   for (const cat of latest.categories) {
     for (const entry of cat.entries) {
       if (rows.length >= MAX_ROWS) break;
-      rows.push({ variant: variantFor(cat.kind), label: shortLabel(cat.label), entry });
+      rows.push({ variant: variantFor(cat.kind), label: shortLabel(cat.label, t), entry });
     }
     if (rows.length >= MAX_ROWS) break;
   }
@@ -344,8 +353,8 @@ function LatestReleaseHighlights() {
     <SettingsCard
       icon={Sparkles}
       tone="gold"
-      title="Historia zmian"
-      subtitle="Co nowego w tej wersji."
+      title={t('updates.changelogPreview.title')}
+      subtitle={t('updates.changelogPreview.subtitle')}
     >
       <div className="font-mono text-[10px] uppercase tracking-[0.15em] text-primary mb-2">
         v{latest.version} — {latest.date}
@@ -372,14 +381,17 @@ function variantFor(kind: keyof typeof CHANGELOG_CATEGORY_VARIANT) {
 }
 
 /** Shorten category labels so the pill stays compact. */
-function shortLabel(label: string): string {
-  const map: Record<string, string> = {
-    Nowości: 'Nowe',
-    Poprawki: 'Fix',
-    Dopracowania: 'Ulep.',
-    Bezpieczeństwo: 'Bezp.',
+function shortLabel(label: string, t: (key: string) => string): string {
+  // The original PL labels arrive from `lib/changelog-entries`; map them to
+  // localized short tags. Falls back to the raw label for non-PL inputs.
+  const keyMap: Record<string, string> = {
+    Nowości: 'updates.changelogPreview.shortLabels.new',
+    Poprawki: 'updates.changelogPreview.shortLabels.fix',
+    Dopracowania: 'updates.changelogPreview.shortLabels.polish',
+    Bezpieczeństwo: 'updates.changelogPreview.shortLabels.security',
   };
-  return map[label] ?? label;
+  const k = keyMap[label];
+  return k ? t(k) : label;
 }
 
 function StatusPill({

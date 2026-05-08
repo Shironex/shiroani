@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Cat, Image as ImageIcon, RotateCcw } from 'lucide-react';
 import type { MascotSpriteScaleMode } from '@shiroani/shared';
 import { Switch } from '@/components/ui/switch';
@@ -14,26 +15,11 @@ import {
 import { MascotPreview } from '@/components/settings/MascotPreview';
 import { useMascotSpriteStore } from '@/stores/useMascotSpriteStore';
 
-const VISIBILITY_OPTIONS = [
-  { value: 'always', label: 'Zawsze widoczna' },
-  { value: 'tray-only', label: 'Tylko gdy okno jest zminimalizowane' },
-];
-
-/**
- * Scale-mode options for the custom sprite. Mirrors the `MascotSpriteScaleMode`
- * union — keep these in sync if the union ever grows. Labels are PL-first to
- * match the rest of the Settings panel.
- */
-const SCALE_MODE_OPTIONS: ReadonlyArray<{ value: MascotSpriteScaleMode; label: string }> = [
-  { value: 'contain', label: 'Dopasuj (zachowaj proporcje)' },
-  { value: 'cover', label: 'Wypełnij (przytnij brzegi)' },
-  { value: 'stretch', label: 'Rozciągnij' },
-];
-
 const MASCOT_MIN_SIZE = 48;
 const MASCOT_MAX_SIZE = 256;
 
 export function MascotSection() {
+  const { t } = useTranslation('settings');
   const [enabled, setEnabled] = useState(true);
   const [size, setSize] = useState(128);
   const [visibilityMode, setVisibilityMode] = useState('always');
@@ -49,6 +35,17 @@ export function MascotSection() {
   const pickSprite = useMascotSpriteStore(s => s.pickSprite);
   const removeSprite = useMascotSpriteStore(s => s.removeSprite);
   const setScaleMode = useMascotSpriteStore(s => s.setScaleMode);
+
+  const visibilityOptions = [
+    { value: 'always', label: t('mascot.visibility.options.always') },
+    { value: 'tray-only', label: t('mascot.visibility.options.trayOnly') },
+  ];
+
+  const scaleModeOptions: ReadonlyArray<{ value: MascotSpriteScaleMode; label: string }> = [
+    { value: 'contain', label: t('mascot.scaleMode.options.contain') },
+    { value: 'cover', label: t('mascot.scaleMode.options.cover') },
+    { value: 'stretch', label: t('mascot.scaleMode.options.stretch') },
+  ];
 
   useEffect(() => {
     const api = window.electronAPI?.overlay;
@@ -120,8 +117,8 @@ export function MascotSection() {
       // pickSprite re-throws on validation/IO errors so the user sees a
       // concrete reason (file too big, wrong format, etc.) instead of a
       // silent no-op. The string comes from the main process and is
-      // already user-facing PL copy.
-      const message = err instanceof Error ? err.message : 'Nie udało się wczytać sprite';
+      // already user-facing copy.
+      const message = err instanceof Error ? err.message : t('mascot.sprite.errorFallback');
       setPickError(message);
     } finally {
       setPicking(false);
@@ -145,10 +142,14 @@ export function MascotSection() {
     <div className="space-y-4">
       <SettingsCard
         icon={Cat}
-        title="Maskotka na pulpicie"
-        subtitle="Animowana maskotka chibi na pulpicie z ikonką w zasobniku systemowym."
+        title={t('mascot.card.title')}
+        subtitle={t('mascot.card.subtitle')}
         headerAccessory={
-          <Switch aria-label="Włącz maskotkę" checked={enabled} onCheckedChange={handleToggle} />
+          <Switch
+            aria-label={t('mascot.card.enableAria')}
+            checked={enabled}
+            onCheckedChange={handleToggle}
+          />
         }
       >
         {enabled && (
@@ -157,13 +158,15 @@ export function MascotSection() {
 
             <div>
               <div className="mb-2 flex items-center justify-between">
-                <span className="text-[13px] font-semibold text-foreground">Rozmiar maskotki</span>
+                <span className="text-[13px] font-semibold text-foreground">
+                  {t('mascot.size')}
+                </span>
                 <span className="font-mono text-[11px] font-semibold tabular-nums text-primary">
                   {size}px
                 </span>
               </div>
               <Slider
-                aria-label="Rozmiar maskotki"
+                aria-label={t('mascot.sizeAria')}
                 value={[size]}
                 min={MASCOT_MIN_SIZE}
                 max={MASCOT_MAX_SIZE}
@@ -178,8 +181,8 @@ export function MascotSection() {
 
             <SettingsRow divider>
               <SettingsRowLabel
-                title="Własny sprite"
-                description="PNG, JPG, GIF lub WEBP · maks. 10 MB · 2048×2048 px. Animowane GIF-y wyświetlą się jako pierwsza klatka."
+                title={t('mascot.sprite.title')}
+                description={t('mascot.sprite.description')}
               />
               <div className="flex items-center gap-2">
                 <Button
@@ -190,7 +193,7 @@ export function MascotSection() {
                   disabled={picking}
                 >
                   <ImageIcon className="w-3.5 h-3.5" />
-                  {customSpriteUrl ? 'Zmień' : 'Wybierz sprite'}
+                  {customSpriteUrl ? t('mascot.sprite.change') : t('mascot.sprite.pick')}
                 </Button>
                 {customSpriteUrl && (
                   <Button
@@ -200,7 +203,7 @@ export function MascotSection() {
                     onClick={handleRemoveSprite}
                   >
                     <RotateCcw className="w-3.5 h-3.5" />
-                    Resetuj
+                    {t('mascot.sprite.reset')}
                   </Button>
                 )}
               </div>
@@ -218,30 +221,30 @@ export function MascotSection() {
             {customSpriteUrl && (
               <SettingsSelectRow
                 divider
-                title="Skalowanie sprite"
-                description="Jak dopasować obraz do kwadratowego okna maskotki"
+                title={t('mascot.scaleMode.title')}
+                description={t('mascot.scaleMode.description')}
                 value={scaleMode}
                 onValueChange={handleScaleModeChange}
-                options={SCALE_MODE_OPTIONS}
+                options={scaleModeOptions}
                 triggerClassName="w-64"
               />
             )}
 
             <SettingsSelectRow
               divider
-              title="Tryb widoczności"
-              description="Kiedy maskotka ma być widoczna na pulpicie"
+              title={t('mascot.visibility.title')}
+              description={t('mascot.visibility.description')}
               value={visibilityMode}
               onValueChange={handleVisibilityModeChange}
-              options={VISIBILITY_OPTIONS}
+              options={visibilityOptions}
               triggerClassName="w-56"
             />
 
             <SettingsToggleRow
               divider
               id="mascot-lock-label"
-              title="Zablokuj pozycję"
-              description="Zapobiega przypadkowemu przesuwaniu maskotki"
+              title={t('mascot.lock.title')}
+              description={t('mascot.lock.description')}
               checked={positionLocked}
               onCheckedChange={handleLockToggle}
             />
@@ -249,16 +252,16 @@ export function MascotSection() {
             <SettingsToggleRow
               divider
               id="mascot-animation-label"
-              title="Animacja maskotki"
-              description="Lekkie kołysanie góra-dół. Wyłącz, aby maskotka stała nieruchomo."
+              title={t('mascot.animation.title')}
+              description={t('mascot.animation.description')}
               checked={animationEnabled}
               onCheckedChange={handleAnimationToggle}
             />
 
             <SettingsRow divider>
               <SettingsRowLabel
-                title="Resetuj pozycję"
-                description="Przywróć maskotkę do domyślnej pozycji (prawy dolny róg)"
+                title={t('mascot.resetPosition.title')}
+                description={t('mascot.resetPosition.description')}
               />
               <Button
                 variant="outline"
@@ -266,7 +269,7 @@ export function MascotSection() {
                 className="h-8 text-xs border-border-glass"
                 onClick={handleResetPosition}
               >
-                Resetuj
+                {t('mascot.resetPosition.action')}
               </Button>
             </SettingsRow>
           </>

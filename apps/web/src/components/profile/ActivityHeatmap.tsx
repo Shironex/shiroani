@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import type { AppStatsSnapshot } from '@shiroani/shared';
 import { formatPolishDuration } from '@/lib/stats-conversions';
@@ -148,13 +149,8 @@ const LEVEL_BG: Record<0 | 1 | 2 | 3 | 4, string> = {
   4: 'bg-[oklch(from_var(--primary)_l_c_h/0.85)] border-[oklch(from_var(--primary)_l_c_h/0.85)]',
 };
 
-const METRIC_LABEL: Record<'active' | 'anime', string> = {
-  active: 'aktywności',
-  anime: 'oglądania anime',
-};
-
-function formatTooltipDate(date: Date): string {
-  return date.toLocaleDateString('pl-PL', {
+function formatTooltipDate(date: Date, locale: string): string {
+  return date.toLocaleDateString(locale, {
     weekday: 'long',
     day: 'numeric',
     month: 'long',
@@ -173,9 +169,11 @@ function formatTooltipDate(date: Date): string {
  *    portals are mount-on-demand, so the off-screen DOM cost is constant.
  */
 export function ActivityHeatmap({ snapshot, weeks = 12, metric = 'active' }: ActivityHeatmapProps) {
+  const { t, i18n } = useTranslation('profile');
   // 84 cells × cheap arithmetic — useMemo wouldn't help since `snapshot.byDay`
   // is a fresh object reference on every store refresh.
   const data = buildHeatmap(snapshot.byDay, weeks, metric);
+  const metricLabel = t(`appPanel.heatmap.metric.${metric}`);
 
   return (
     <TooltipProvider delayDuration={120}>
@@ -209,28 +207,31 @@ export function ActivityHeatmap({ snapshot, weeks = 12, metric = 'active' }: Act
           {/* Cell grid */}
           <div
             role="grid"
-            aria-label={`Mapa ${METRIC_LABEL[metric]} z ostatnich ${weeks} tygodni`}
+            aria-label={t('appPanel.heatmap.ariaLabel', { metric: metricLabel, weeks })}
             className="grid gap-[3px]"
             style={{ gridTemplateColumns: `repeat(${data.weeks.length}, 12px)` }}
           >
             {data.weeks.map((week, weekIdx) => (
               <div key={weekIdx} role="row" className="grid grid-rows-7 gap-[3px]">
-                {week.map(cell => (
-                  <Tooltip key={cell.key}>
-                    <TooltipTrigger asChild>
-                      <div
-                        role="gridcell"
-                        aria-label={tooltipText(cell, metric)}
-                        className={`w-3 h-3 rounded-[3px] border ${LEVEL_BG[cell.level]} ${
-                          cell.isFuture ? 'opacity-30' : ''
-                        }`}
-                      />
-                    </TooltipTrigger>
-                    <TooltipContent side="top" className="text-[11px]">
-                      {tooltipText(cell, metric)}
-                    </TooltipContent>
-                  </Tooltip>
-                ))}
+                {week.map(cell => {
+                  const text = tooltipText(cell, metric, t, i18n.language);
+                  return (
+                    <Tooltip key={cell.key}>
+                      <TooltipTrigger asChild>
+                        <div
+                          role="gridcell"
+                          aria-label={text}
+                          className={`w-3 h-3 rounded-[3px] border ${LEVEL_BG[cell.level]} ${
+                            cell.isFuture ? 'opacity-30' : ''
+                          }`}
+                        />
+                      </TooltipTrigger>
+                      <TooltipContent side="top" className="text-[11px]">
+                        {text}
+                      </TooltipContent>
+                    </Tooltip>
+                  );
+                })}
               </div>
             ))}
           </div>
@@ -238,7 +239,7 @@ export function ActivityHeatmap({ snapshot, weeks = 12, metric = 'active' }: Act
 
         {/* Legend */}
         <div className="flex items-center gap-2 pl-7 font-mono text-[9.5px] uppercase tracking-[0.16em] text-muted-foreground">
-          <span>mniej</span>
+          <span>{t('appPanel.heatmap.less')}</span>
           {[0, 1, 2, 3, 4].map(level => (
             <span
               key={level}
@@ -246,20 +247,26 @@ export function ActivityHeatmap({ snapshot, weeks = 12, metric = 'active' }: Act
               aria-hidden="true"
             />
           ))}
-          <span>więcej</span>
+          <span>{t('appPanel.heatmap.more')}</span>
         </div>
       </div>
     </TooltipProvider>
   );
 }
 
-function tooltipText(cell: Cell, metric: 'active' | 'anime'): string {
+function tooltipText(
+  cell: Cell,
+  metric: 'active' | 'anime',
+  t: (key: string, opts?: Record<string, unknown>) => string,
+  locale: string
+): string {
+  const date = formatTooltipDate(cell.date, locale);
   if (cell.isFuture) {
-    return `${formatTooltipDate(cell.date)} — jeszcze przed nami`;
+    return t('appPanel.heatmap.tooltip.future', { date });
   }
   if (cell.seconds <= 0) {
-    return `${formatTooltipDate(cell.date)} — bez aktywności`;
+    return t('appPanel.heatmap.tooltip.empty', { date });
   }
-  const label = metric === 'active' ? 'aktywnie' : 'z anime';
-  return `${formatTooltipDate(cell.date)} — ${formatPolishDuration(cell.seconds)} ${label}`;
+  const value = formatPolishDuration(cell.seconds);
+  return t(`appPanel.heatmap.tooltip.${metric}`, { date, value });
 }

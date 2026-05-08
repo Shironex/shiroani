@@ -1,7 +1,9 @@
 import { Loader2, WifiOff } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useConnectionStore } from '@/stores/useConnectionStore';
 
 export function ConnectionBanner() {
+  const { t } = useTranslation('nav');
   const status = useConnectionStore(s => s.status);
   const retryConnection = useConnectionStore(s => s.retryConnection);
 
@@ -16,18 +18,18 @@ export function ConnectionBanner() {
       {status === 'reconnecting' ? (
         <>
           <Loader2 className="size-3.5 animate-spin" aria-hidden="true" />
-          <span>Łączę ponownie…</span>
+          <span>{t('connection.reconnecting')}</span>
         </>
       ) : (
         <>
           <WifiOff className="size-3.5" aria-hidden="true" />
-          <span>Brak połączenia</span>
+          <span>{t('connection.offline')}</span>
           <button
             type="button"
             onClick={retryConnection}
             className="ml-1 rounded px-1.5 py-0.5 font-medium text-status-warning underline underline-offset-2 transition-opacity hover:opacity-80"
           >
-            Spróbuj ponownie
+            {t('connection.retry')}
           </button>
         </>
       )}

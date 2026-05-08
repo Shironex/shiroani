@@ -38,13 +38,54 @@ import commonEn from '@/locales/en/common.json';
 import statusEn from '@/locales/en/status.json';
 import anilistEn from '@/locales/en/anilist.json';
 import settingsEn from '@/locales/en/settings.json';
+import navEn from '@/locales/en/nav.json';
+import libraryEn from '@/locales/en/library.json';
+import diaryEn from '@/locales/en/diary.json';
+import discoverEn from '@/locales/en/discover.json';
+import scheduleEn from '@/locales/en/schedule.json';
+import feedEn from '@/locales/en/feed.json';
+import profileEn from '@/locales/en/profile.json';
+import browserEn from '@/locales/en/browser.json';
+import changelogEn from '@/locales/en/changelog.json';
+import splashEn from '@/locales/en/splash.json';
+import onboardingEn from '@/locales/en/onboarding.json';
+import errorBoundaryEn from '@/locales/en/errorBoundary.json';
 
 import commonPl from '@/locales/pl/common.json';
 import statusPl from '@/locales/pl/status.json';
 import anilistPl from '@/locales/pl/anilist.json';
 import settingsPl from '@/locales/pl/settings.json';
+import navPl from '@/locales/pl/nav.json';
+import libraryPl from '@/locales/pl/library.json';
+import diaryPl from '@/locales/pl/diary.json';
+import discoverPl from '@/locales/pl/discover.json';
+import schedulePl from '@/locales/pl/schedule.json';
+import feedPl from '@/locales/pl/feed.json';
+import profilePl from '@/locales/pl/profile.json';
+import browserPl from '@/locales/pl/browser.json';
+import changelogPl from '@/locales/pl/changelog.json';
+import splashPl from '@/locales/pl/splash.json';
+import onboardingPl from '@/locales/pl/onboarding.json';
+import errorBoundaryPl from '@/locales/pl/errorBoundary.json';
 
-const namespaces = ['common', 'status', 'anilist', 'settings'] as const;
+const namespaces = [
+  'common',
+  'status',
+  'anilist',
+  'settings',
+  'nav',
+  'library',
+  'diary',
+  'discover',
+  'schedule',
+  'feed',
+  'profile',
+  'browser',
+  'changelog',
+  'splash',
+  'onboarding',
+  'errorBoundary',
+] as const;
 
 /**
  * Read the language i18next should boot with. Synchronous on purpose:
@@ -90,12 +131,36 @@ i18n.use(initReactI18next).init({
       status: statusEn,
       anilist: anilistEn,
       settings: settingsEn,
+      nav: navEn,
+      library: libraryEn,
+      diary: diaryEn,
+      discover: discoverEn,
+      schedule: scheduleEn,
+      feed: feedEn,
+      profile: profileEn,
+      browser: browserEn,
+      changelog: changelogEn,
+      splash: splashEn,
+      onboarding: onboardingEn,
+      errorBoundary: errorBoundaryEn,
     },
     pl: {
       common: commonPl,
       status: statusPl,
       anilist: anilistPl,
       settings: settingsPl,
+      nav: navPl,
+      library: libraryPl,
+      diary: diaryPl,
+      discover: discoverPl,
+      schedule: schedulePl,
+      feed: feedPl,
+      profile: profilePl,
+      browser: browserPl,
+      changelog: changelogPl,
+      splash: splashPl,
+      onboarding: onboardingPl,
+      errorBoundary: errorBoundaryPl,
     },
   },
   lng: getInitialLanguage(),

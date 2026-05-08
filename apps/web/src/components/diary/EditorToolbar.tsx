@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import type { Editor } from '@tiptap/react';
 import {
@@ -64,6 +65,7 @@ interface EditorToolbarProps {
  * unchanged — this component only redresses the surface.
  */
 export function EditorToolbar({ editor, rightSlot }: EditorToolbarProps) {
+  const { t } = useTranslation('diary');
   if (!editor) return null;
 
   return (
@@ -77,14 +79,14 @@ export function EditorToolbar({ editor, rightSlot }: EditorToolbarProps) {
       <ToolbarButton
         onClick={() => editor.chain().focus().undo().run()}
         disabled={!editor.can().undo()}
-        title="Cofnij"
+        title={t('toolbar.undo')}
       >
         <Undo2 className="w-3.5 h-3.5" />
       </ToolbarButton>
       <ToolbarButton
         onClick={() => editor.chain().focus().redo().run()}
         disabled={!editor.can().redo()}
-        title="Ponów"
+        title={t('toolbar.redo')}
       >
         <Redo2 className="w-3.5 h-3.5" />
       </ToolbarButton>
@@ -95,21 +97,21 @@ export function EditorToolbar({ editor, rightSlot }: EditorToolbarProps) {
       <ToolbarButton
         onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
         isActive={editor.isActive('heading', { level: 1 })}
-        title="Nagłówek 1"
+        title={t('toolbar.heading1')}
       >
         <Heading1 className="w-3.5 h-3.5" />
       </ToolbarButton>
       <ToolbarButton
         onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
         isActive={editor.isActive('heading', { level: 2 })}
-        title="Nagłówek 2"
+        title={t('toolbar.heading2')}
       >
         <Heading2 className="w-3.5 h-3.5" />
       </ToolbarButton>
       <ToolbarButton
         onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
         isActive={editor.isActive('heading', { level: 3 })}
-        title="Nagłówek 3"
+        title={t('toolbar.heading3')}
       >
         <Heading3 className="w-3.5 h-3.5" />
       </ToolbarButton>
@@ -120,21 +122,21 @@ export function EditorToolbar({ editor, rightSlot }: EditorToolbarProps) {
       <ToolbarButton
         onClick={() => editor.chain().focus().toggleBold().run()}
         isActive={editor.isActive('bold')}
-        title="Pogrubienie"
+        title={t('toolbar.bold')}
       >
         <Bold className="w-3.5 h-3.5" />
       </ToolbarButton>
       <ToolbarButton
         onClick={() => editor.chain().focus().toggleItalic().run()}
         isActive={editor.isActive('italic')}
-        title="Kursywa"
+        title={t('toolbar.italic')}
       >
         <Italic className="w-3.5 h-3.5" />
       </ToolbarButton>
       <ToolbarButton
         onClick={() => editor.chain().focus().toggleStrike().run()}
         isActive={editor.isActive('strike')}
-        title="Przekreślenie"
+        title={t('toolbar.strike')}
       >
         <Strikethrough className="w-3.5 h-3.5" />
       </ToolbarButton>
@@ -145,28 +147,28 @@ export function EditorToolbar({ editor, rightSlot }: EditorToolbarProps) {
       <ToolbarButton
         onClick={() => editor.chain().focus().toggleBulletList().run()}
         isActive={editor.isActive('bulletList')}
-        title="Lista"
+        title={t('toolbar.bulletList')}
       >
         <List className="w-3.5 h-3.5" />
       </ToolbarButton>
       <ToolbarButton
         onClick={() => editor.chain().focus().toggleOrderedList().run()}
         isActive={editor.isActive('orderedList')}
-        title="Lista numerowana"
+        title={t('toolbar.orderedList')}
       >
         <ListOrdered className="w-3.5 h-3.5" />
       </ToolbarButton>
       <ToolbarButton
         onClick={() => editor.chain().focus().toggleBlockquote().run()}
         isActive={editor.isActive('blockquote')}
-        title="Cytat"
+        title={t('toolbar.blockquote')}
       >
         <Quote className="w-3.5 h-3.5" />
       </ToolbarButton>
       <ToolbarButton
         onClick={() => editor.chain().focus().toggleCodeBlock().run()}
         isActive={editor.isActive('codeBlock')}
-        title="Blok kodu"
+        title={t('toolbar.codeBlock')}
       >
         <Code className="w-3.5 h-3.5" />
       </ToolbarButton>
@@ -176,7 +178,7 @@ export function EditorToolbar({ editor, rightSlot }: EditorToolbarProps) {
       {/* Horizontal rule */}
       <ToolbarButton
         onClick={() => editor.chain().focus().setHorizontalRule().run()}
-        title="Linia pozioma"
+        title={t('toolbar.horizontalRule')}
       >
         <Minus className="w-3.5 h-3.5" />
       </ToolbarButton>

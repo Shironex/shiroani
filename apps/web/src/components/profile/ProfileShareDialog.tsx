@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Download, Copy, Check, Loader2 } from 'lucide-react';
 import {
   Dialog,
@@ -19,6 +20,7 @@ interface ProfileShareDialogProps {
 }
 
 export function ProfileShareDialog({ open, onOpenChange, profile }: ProfileShareDialogProps) {
+  const { t } = useTranslation('profile');
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isRendering, setIsRendering] = useState(false);
   const [copyState, setCopyState] = useState<'idle' | 'copying' | 'done'>('idle');
@@ -48,7 +50,7 @@ export function ProfileShareDialog({ open, onOpenChange, profile }: ProfileShare
       })
       .catch(() => {
         if (!cancelled) {
-          setError('Nie udało się wygenerować karty profilu');
+          setError(t('share.errors.render'));
           setIsRendering(false);
         }
       });
@@ -56,7 +58,7 @@ export function ProfileShareDialog({ open, onOpenChange, profile }: ProfileShare
     return () => {
       cancelled = true;
     };
-  }, [open, profile]);
+  }, [open, profile, t]);
 
   const handleCopyToClipboard = useCallback(async () => {
     setCopyState('copying');
@@ -77,10 +79,10 @@ export function ProfileShareDialog({ open, onOpenChange, profile }: ProfileShare
       setCopyState('done');
       setTimeout(() => setCopyState('idle'), 2000);
     } catch {
-      setError('Nie udało się skopiować do schowka');
+      setError(t('share.errors.clipboard'));
       setCopyState('idle');
     }
-  }, [profile]);
+  }, [profile, t]);
 
   const handleSaveAsPng = useCallback(async () => {
     setSaveState('saving');
@@ -112,18 +114,18 @@ export function ProfileShareDialog({ open, onOpenChange, profile }: ProfileShare
       setSaveState('done');
       setTimeout(() => setSaveState('idle'), 2000);
     } catch {
-      setError('Nie udało się zapisać pliku');
+      setError(t('share.errors.save'));
       setSaveState('idle');
     }
-  }, [profile]);
+  }, [profile, t]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-[860px] p-0 gap-0 bg-background border-border-glass overflow-hidden">
         <DialogHeader className="px-6 pt-5 pb-3">
-          <DialogTitle className="text-base font-semibold">Udostępnij profil</DialogTitle>
+          <DialogTitle className="text-base font-semibold">{t('share.title')}</DialogTitle>
           <DialogDescription className="text-xs text-muted-foreground/70">
-            Karta profilu w formacie PNG, gotowa do wrzucenia na Discorda
+            {t('share.description')}
           </DialogDescription>
         </DialogHeader>
 
@@ -137,7 +139,7 @@ export function ProfileShareDialog({ open, onOpenChange, profile }: ProfileShare
             ) : previewUrl ? (
               <img
                 src={previewUrl}
-                alt="Podgląd karty profilu"
+                alt={t('share.previewAlt')}
                 className="w-full h-auto block"
                 draggable={false}
               />
@@ -167,7 +169,7 @@ export function ProfileShareDialog({ open, onOpenChange, profile }: ProfileShare
               ) : (
                 <Copy className="w-3.5 h-3.5" />
               )}
-              {copyState === 'done' ? 'Skopiowano!' : 'Kopiuj do schowka'}
+              {copyState === 'done' ? t('share.copied') : t('share.copyToClipboard')}
             </Button>
             <Button
               size="sm"
@@ -182,7 +184,7 @@ export function ProfileShareDialog({ open, onOpenChange, profile }: ProfileShare
               ) : (
                 <Download className="w-3.5 h-3.5" />
               )}
-              {saveState === 'done' ? 'Zapisano!' : 'Zapisz jako PNG'}
+              {saveState === 'done' ? t('share.saved') : t('share.saveAsPng')}
             </Button>
           </div>
         </div>

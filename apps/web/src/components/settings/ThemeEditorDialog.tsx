@@ -1,4 +1,5 @@
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { RotateCcw } from 'lucide-react';
 import { toast } from 'sonner';
 import {
@@ -34,7 +35,8 @@ import type { BuiltInTheme, CustomThemeDefinition } from '@shiroani/shared';
 // ── Variable groups ───────────────────────────────────────────────
 
 interface VariableGroup {
-  label: string;
+  /** i18n key for the group label, resolved against `settings:themes.editor.groups.*` */
+  labelKey: 'main' | 'cardsMenus' | 'sidebar' | 'borders' | 'statuses' | 'shadows';
   variables: string[];
   /** If true, variables are box-shadow strings — use text input instead of color picker */
   isTextOnly?: boolean;
@@ -44,7 +46,7 @@ interface VariableGroup {
 
 const VARIABLE_GROUPS: VariableGroup[] = [
   {
-    label: 'Główne kolory',
+    labelKey: 'main',
     variables: [
       'background',
       'background-80',
@@ -55,7 +57,7 @@ const VARIABLE_GROUPS: VariableGroup[] = [
     ],
   },
   {
-    label: 'Karty i menu',
+    labelKey: 'cardsMenus',
     variables: [
       'card',
       'card-foreground',
@@ -71,15 +73,15 @@ const VARIABLE_GROUPS: VariableGroup[] = [
     ],
   },
   {
-    label: 'Pasek boczny',
+    labelKey: 'sidebar',
     variables: ['sidebar', 'sidebar-foreground'],
   },
   {
-    label: 'Obramowania',
+    labelKey: 'borders',
     variables: ['border', 'border-glass', 'input', 'ring'],
   },
   {
-    label: 'Statusy',
+    labelKey: 'statuses',
     variables: [
       'status-success',
       'status-success-bg',
@@ -94,7 +96,7 @@ const VARIABLE_GROUPS: VariableGroup[] = [
     ],
   },
   {
-    label: 'Cienie',
+    labelKey: 'shadows',
     variables: [
       'shadow-xs',
       'shadow-sm',
@@ -110,10 +112,6 @@ const VARIABLE_GROUPS: VariableGroup[] = [
 // ── Helpers ───────────────────────────────────────────────────────
 
 const TEMP_THEME_ID = '__theme-editor-preview__';
-
-function makeDefaultName(cloneLabel?: string): string {
-  return cloneLabel ? `Kopia: ${cloneLabel}` : 'Mój motyw';
-}
 
 /** Human-readable label for a CSS variable name */
 function variableLabel(name: string): string {
@@ -144,7 +142,25 @@ export function ThemeEditorDialog({
   editThemeId,
   cloneFromTheme,
 }: ThemeEditorDialogProps) {
+  const { t } = useTranslation('settings');
   const { setTheme } = useSettingsStore();
+
+  const makeDefaultName = useCallback(
+    (cloneLabel?: string): string =>
+      cloneLabel
+        ? t('themes.editor.cloneNamePrefix', { label: cloneLabel })
+        : t('themes.editor.defaultName'),
+    [t]
+  );
+
+  const variableGroups = useMemo(
+    () =>
+      VARIABLE_GROUPS.map(g => ({
+        ...g,
+        label: t(`themes.editor.groups.${g.labelKey}`),
+      })),
+    [t]
+  );
 
   // Track what theme was active before opening so we can revert on cancel
   const previousThemeRef = useRef<string>('');
@@ -254,7 +270,7 @@ export function ThemeEditorDialog({
   const handleSave = useCallback(() => {
     const trimmedName = name.trim();
     if (!trimmedName) {
-      toast.error('Nazwa motywu nie może być pusta');
+      toast.error(t('themes.editor.toast.nameRequired'));
       return;
     }
 
@@ -276,7 +292,7 @@ export function ThemeEditorDialog({
         variables,
       });
       setTheme(editThemeId);
-      toast.success('Zapisano zmiany');
+      toast.success(t('themes.editor.toast.changesSaved'));
     } else {
       // Create new theme
       const newTheme: Omit<CustomThemeDefinition, 'id' | 'createdAt' | 'updatedAt'> = {
@@ -290,16 +306,16 @@ export function ThemeEditorDialog({
       if (created) {
         setTheme(created.id);
       }
-      toast.success('Motyw zapisany');
+      toast.success(t('themes.editor.toast.saved'));
     }
 
     onOpenChange(false);
-  }, [name, baseTheme, isDark, variables, editThemeId, onOpenChange, setTheme]);
+  }, [name, baseTheme, isDark, variables, editThemeId, onOpenChange, setTheme, t]);
 
   // ── Render ──
 
   const isEditing = !!editThemeId;
-  const dialogTitle = isEditing ? 'Edytuj motyw' : 'Nowy motyw';
+  const dialogTitle = isEditing ? t('themes.editor.editTitle') : t('themes.editor.newTitle');
 
   return (
     <Dialog
@@ -312,7 +328,7 @@ export function ThemeEditorDialog({
         <DialogHeader>
           <DialogTitle>{dialogTitle}</DialogTitle>
           <DialogDescription>
-            {isEditing ? 'Zmień ustawienia własnego motywu' : 'Utwórz nowy motyw'}
+            {isEditing ? t('themes.editor.editDescription') : t('themes.editor.newDescription')}
           </DialogDescription>
         </DialogHeader>
 
@@ -320,24 +336,28 @@ export function ThemeEditorDialog({
           {/* ── Header section: name, dark/light, base theme ── */}
           <div className="space-y-3">
             <div>
-              <label className="text-xs font-medium text-foreground mb-1 block">Nazwa</label>
+              <label className="text-xs font-medium text-foreground mb-1 block">
+                {t('themes.editor.name')}
+              </label>
               <Input
                 value={name}
                 onChange={e => setName(e.target.value)}
-                placeholder="Mój motyw"
+                placeholder={t('themes.editor.namePlaceholder')}
                 className="h-8"
               />
             </div>
 
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
-                <label className="text-xs font-medium text-foreground">Ciemny</label>
+                <label className="text-xs font-medium text-foreground">
+                  {t('themes.editor.dark')}
+                </label>
                 <Switch checked={isDark} onCheckedChange={setIsDark} />
               </div>
 
               <div className="flex-1">
                 <label className="text-xs font-medium text-foreground mb-1 block">
-                  Motyw bazowy
+                  {t('themes.editor.baseTheme')}
                 </label>
                 <Select value={baseTheme} onValueChange={handleBaseThemeChange}>
                   <SelectTrigger className="h-8 text-xs">
@@ -356,7 +376,7 @@ export function ThemeEditorDialog({
           </div>
 
           {/* ── Color sections ── */}
-          {VARIABLE_GROUPS.map(group => (
+          {variableGroups.map(group => (
             <div key={group.label}>
               <h4 className="text-xs font-medium text-primary mb-2">{group.label}</h4>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2">
@@ -399,13 +419,13 @@ export function ThemeEditorDialog({
         <DialogFooter className="pt-4 border-t border-border-glass gap-2">
           <Button variant="ghost" size="sm" onClick={handleReset} className="mr-auto">
             <RotateCcw className="w-3.5 h-3.5" />
-            Przywróć
+            {t('themes.editor.reset')}
           </Button>
           <Button variant="outline" size="sm" onClick={handleCancel}>
-            Anuluj
+            {t('themes.editor.cancel')}
           </Button>
           <Button size="sm" onClick={handleSave}>
-            Zapisz
+            {t('themes.editor.save')}
           </Button>
         </DialogFooter>
       </DialogContent>

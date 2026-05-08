@@ -1,4 +1,5 @@
 import { useCallback, useState, type KeyboardEvent } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Globe, Shield, X, AppWindow, Copy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,13 +9,10 @@ import { useQuickAccessStore } from '@/stores/useQuickAccessStore';
 import { SettingsCard, SettingsToggleRow } from '@/components/settings/SettingsCard';
 import { cn } from '@/lib/utils';
 
-const BLOCKED_CATEGORIES = [
-  'Reklamy graficzne / pop-up',
-  'Trackery analityczne',
-  'Reklamy w odtwarzaczu wideo',
-];
+const BLOCKED_CATEGORY_KEYS = ['graphic', 'trackers', 'videoAds'] as const;
 
 export function BrowserSection() {
+  const { t } = useTranslation('settings');
   const adblockEnabled = useBrowserStore(state => state.adblockEnabled);
   const setAdblockEnabled = useBrowserStore(state => state.setAdblockEnabled);
   const popupBlockEnabled = useBrowserStore(state => state.popupBlockEnabled);
@@ -52,27 +50,31 @@ export function BrowserSection() {
     <div className="space-y-4">
       <SettingsCard
         icon={Shield}
-        title="Blokowanie reklam"
-        subtitle="Wbudowany blokader reklam w przeglądarce ShiroAni."
+        title={t('browser.adblock.card.title')}
+        subtitle={t('browser.adblock.card.subtitle')}
       >
         <SettingsToggleRow
           id="browser-adblock-label"
-          title="Blokowanie reklam"
-          description="Blokuj reklamy we wbudowanej przeglądarce (EasyList + EasyPrivacy)"
+          title={t('browser.adblock.toggleTitle')}
+          description={t('browser.adblock.toggleDescription')}
           checked={adblockEnabled}
           onCheckedChange={setAdblockEnabled}
         />
 
         {/* Blocked categories status chips */}
         <div className="flex flex-col gap-1.5">
-          {BLOCKED_CATEGORIES.map(category => (
+          {BLOCKED_CATEGORY_KEYS.map(key => (
             <div
-              key={category}
+              key={key}
               className="flex items-center justify-between rounded-lg border border-border-glass/70 bg-background/30 px-3 py-2 text-[12px]"
             >
-              <span className="text-muted-foreground">{category}</span>
+              <span className="text-muted-foreground">
+                {t(`browser.adblock.categories.${key}`)}
+              </span>
               <PillTag variant={adblockEnabled ? 'green' : 'muted'}>
-                {adblockEnabled ? 'Blokowane' : 'Wyłączone'}
+                {adblockEnabled
+                  ? t('browser.adblock.categoryBlocked')
+                  : t('browser.adblock.categoryDisabled')}
               </PillTag>
             </div>
           ))}
@@ -82,10 +84,10 @@ export function BrowserSection() {
         <div className="border-t border-border-glass/50 pt-3.5 space-y-3">
           <div className="flex items-center justify-between gap-2">
             <span className="font-mono text-[10.5px] uppercase tracking-[0.12em] text-muted-foreground">
-              Wyjątki
+              {t('browser.adblock.exceptions')}
             </span>
             <span className="font-mono text-[10px] text-muted-foreground/70 tabular-nums">
-              {adblockWhitelist.length} / 500
+              {t('browser.adblock.exceptionsCount', { count: adblockWhitelist.length, max: 500 })}
             </span>
           </div>
 
@@ -94,22 +96,22 @@ export function BrowserSection() {
               value={whitelistInput}
               onChange={e => setWhitelistInput(e.target.value)}
               onKeyDown={handleWhitelistKeyDown}
-              placeholder="np. example.com"
-              aria-label="Dodaj domenę do listy wyjątków"
+              placeholder={t('browser.adblock.addPlaceholder')}
+              aria-label={t('browser.adblock.addAria')}
               maxLength={253}
               className="flex-1 font-mono text-[12px]"
             />
             <Button size="sm" onClick={handleAddWhitelist} disabled={!whitelistInput.trim()}>
-              Dodaj
+              {t('browser.adblock.addButton')}
             </Button>
           </div>
 
           {adblockWhitelist.length === 0 ? (
             <p className="font-mono text-[11px] text-muted-foreground/80 leading-snug">
-              Brak wyjątków. Reklamy są blokowane na wszystkich stronach.
+              {t('browser.adblock.emptyExceptions')}
             </p>
           ) : (
-            <ul className="flex flex-wrap gap-1.5" aria-label="Lista zwolnionych z blokady domen">
+            <ul className="flex flex-wrap gap-1.5" aria-label={t('browser.adblock.listAria')}>
               {adblockWhitelist.map(host => (
                 <li key={host}>
                   <span
@@ -123,7 +125,7 @@ export function BrowserSection() {
                     <button
                       type="button"
                       onClick={() => removeAdblockDomain(host)}
-                      aria-label={`Usuń ${host} z listy wyjątków`}
+                      aria-label={t('browser.adblock.removeAria', { host })}
                       className={cn(
                         'grid place-items-center size-[18px] rounded-full',
                         'text-muted-foreground hover:text-foreground hover:bg-foreground/[0.08]',
@@ -139,21 +141,21 @@ export function BrowserSection() {
           )}
 
           <p className="text-[11.5px] text-muted-foreground/85 leading-relaxed">
-            Na dodanych tu domenach adblock jest wyłączony. Filtry kosmetyczne nadal działają.
+            {t('browser.adblock.exceptionsHint')}
           </p>
         </div>
       </SettingsCard>
 
       <SettingsCard
         icon={AppWindow}
-        title="Wyskakujące okna"
-        subtitle="Kontroluj wyskakujące okna otwierane przez strony."
+        title={t('browser.popups.card.title')}
+        subtitle={t('browser.popups.card.subtitle')}
         tone="gold"
       >
         <SettingsToggleRow
           id="browser-popup-block-label"
-          title="Blokuj wyskakujące okna"
-          description="Okna OAuth (Google, Discord) zawsze są dozwolone."
+          title={t('browser.popups.toggleTitle')}
+          description={t('browser.popups.toggleDescription')}
           checked={popupBlockEnabled}
           onCheckedChange={setPopupBlockEnabled}
         />
@@ -161,30 +163,30 @@ export function BrowserSection() {
 
       <SettingsCard
         icon={Copy}
-        title="Zachowanie kart"
-        subtitle="Zarządzaj kartami i historią przeglądania."
+        title={t('browser.tabs.card.title')}
+        subtitle={t('browser.tabs.card.subtitle')}
         tone="blue"
       >
         <SettingsToggleRow
           id="browser-restore-tabs-label"
-          title="Przywróć karty po restarcie"
-          description="Zapamiętuje otwarte karty między sesjami."
+          title={t('browser.tabs.restoreTitle')}
+          description={t('browser.tabs.restoreDescription')}
           checked={restoreTabsOnStartup}
           onCheckedChange={setRestoreTabsOnStartup}
         />
 
         <SettingsToggleRow
           id="browser-split-tabs-label"
-          title="Karty dzielone"
-          description="Przeciągnij kartę na drugą, żeby otworzyć je obok siebie."
+          title={t('browser.tabs.splitTitle')}
+          description={t('browser.tabs.splitDescription')}
           checked={splitTabsEnabled}
           onCheckedChange={setSplitTabsEnabled}
         />
 
         <SettingsToggleRow
           id="browser-track-frequent-label"
-          title="Zapisz historię przeglądania"
-          description="Lokalna historia. Nigdzie nie jest wysyłana."
+          title={t('browser.tabs.trackTitle')}
+          description={t('browser.tabs.trackDescription')}
           checked={trackFrequentSites}
           onCheckedChange={setTrackFrequentSites}
         />
@@ -192,13 +194,12 @@ export function BrowserSection() {
 
       <SettingsCard
         icon={Globe}
-        title="Przeglądarka internetowa"
-        subtitle="Ogólne zachowanie wbudowanej przeglądarki"
+        title={t('browser.general.card.title')}
+        subtitle={t('browser.general.card.subtitle')}
         tone="muted"
       >
         <p className="text-[12px] text-muted-foreground/85 leading-relaxed">
-          ShiroAni używa wbudowanego Chromium. Dane przeglądania są zapisywane lokalnie i nigdy nie
-          opuszczają Twojego urządzenia.
+          {t('browser.general.description')}
         </p>
       </SettingsCard>
     </div>

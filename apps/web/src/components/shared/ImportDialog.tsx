@@ -1,4 +1,5 @@
 import { useEffect, useCallback, useRef, useMemo, useState } from 'react';
+import { useTranslation, Trans } from 'react-i18next';
 import { Upload, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
 import {
   Dialog,
@@ -35,6 +36,7 @@ type ImportStep =
   | { step: 'done'; result: ImportResponse };
 
 export function ImportDialog({ open, onOpenChange, type }: ImportDialogProps) {
+  const { t } = useTranslation('nav');
   const { state, transition, reset, updateState } = useDialogStateMachine<ImportStep>({
     step: 'idle',
   });
@@ -53,7 +55,7 @@ export function ImportDialog({ open, onOpenChange, type }: ImportDialogProps) {
 
     try {
       const filePath = await window.electronAPI?.dialog?.openFile?.({
-        title: 'Importuj dane ShiroAni',
+        title: t('importDialog.openDialogTitle'),
         filters: [{ name: 'JSON', extensions: ['json'] }],
       });
 
@@ -66,7 +68,7 @@ export function ImportDialog({ open, onOpenChange, type }: ImportDialogProps) {
       const raw = await window.electronAPI?.file?.readJson(filePath);
 
       if (!raw) {
-        transition({ step: 'file-error', message: 'Nie udało się odczytać pliku' });
+        transition({ step: 'file-error', message: t('importDialog.errorMessages.readFailed') });
         return;
       }
 
@@ -74,14 +76,14 @@ export function ImportDialog({ open, onOpenChange, type }: ImportDialogProps) {
       try {
         data = JSON.parse(raw);
       } catch {
-        transition({ step: 'file-error', message: 'To nie jest prawidłowy plik JSON' });
+        transition({ step: 'file-error', message: t('importDialog.errorMessages.invalidJson') });
         return;
       }
 
       if (data.source !== 'shiroani' || data.version !== 1) {
         transition({
           step: 'file-error',
-          message: 'To nie jest plik eksportu ShiroAni.',
+          message: t('importDialog.errorMessages.notShiroaniExport'),
         });
         return;
       }
@@ -93,10 +95,10 @@ export function ImportDialog({ open, onOpenChange, type }: ImportDialogProps) {
     } catch (err) {
       transition({
         step: 'file-error',
-        message: err instanceof Error ? err.message : 'Nie udało się odczytać pliku',
+        message: err instanceof Error ? err.message : t('importDialog.errorMessages.unknown'),
       });
     }
-  }, [onOpenChange, transition, reset]);
+  }, [onOpenChange, transition, reset, t]);
 
   const handleImport = useCallback(async () => {
     if (state.step !== 'preview') return;
@@ -159,13 +161,13 @@ export function ImportDialog({ open, onOpenChange, type }: ImportDialogProps) {
     } catch (err) {
       transition({
         step: 'file-error',
-        message: err instanceof Error ? err.message : 'Błąd podczas importu',
+        message: err instanceof Error ? err.message : t('importDialog.errorMessages.importFailed'),
       });
     } finally {
       socket.off(ImportExportEvents.IMPORT_PROGRESS, handleProgress);
       listenerCleanupRef.current = null;
     }
-  }, [state, type, strategy, transition, updateState]);
+  }, [state, type, strategy, transition, updateState, t]);
 
   const handleOpenChange = useCallback(
     (value: boolean) => {
@@ -208,9 +210,9 @@ export function ImportDialog({ open, onOpenChange, type }: ImportDialogProps) {
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Upload className="w-5 h-5 text-primary" />
-            Importuj dane
+            {t('importDialog.title')}
           </DialogTitle>
-          <DialogDescription>Wczytaj dane z pliku JSON.</DialogDescription>
+          <DialogDescription>{t('importDialog.description')}</DialogDescription>
         </DialogHeader>
 
         <div className="py-2">
@@ -218,7 +220,7 @@ export function ImportDialog({ open, onOpenChange, type }: ImportDialogProps) {
           {state.step === 'loading-file' && (
             <div className="flex items-center justify-center gap-3 py-6 text-muted-foreground">
               <Loader2 className="w-5 h-5 animate-spin" />
-              <span className="text-sm">Wczytywanie pliku...</span>
+              <span className="text-sm">{t('importDialog.loading')}</span>
             </div>
           )}
 
@@ -235,13 +237,19 @@ export function ImportDialog({ open, onOpenChange, type }: ImportDialogProps) {
             <div className="space-y-4">
               <div className="bg-accent/30 rounded-lg p-3">
                 <p className="text-sm text-foreground">
-                  Znaleziono <span className="font-semibold">{state.libraryCount}</span> anime i{' '}
-                  <span className="font-semibold">{state.diaryCount}</span> wpisów dziennika
+                  <Trans
+                    i18nKey="importDialog.found"
+                    t={t}
+                    values={{ library: state.libraryCount, diary: state.diaryCount }}
+                    components={{ 1: <span className="font-semibold" /> }}
+                  />
                 </p>
               </div>
 
               <div className="space-y-2">
-                <p className="text-sm font-medium text-foreground">Co zrobić z duplikatami?</p>
+                <p className="text-sm font-medium text-foreground">
+                  {t('importDialog.duplicatesPrompt')}
+                </p>
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
                     type="radio"
@@ -250,7 +258,7 @@ export function ImportDialog({ open, onOpenChange, type }: ImportDialogProps) {
                     onChange={() => setStrategy('skip')}
                     className="accent-primary"
                   />
-                  <span className="text-sm text-muted-foreground">Pomiń duplikaty</span>
+                  <span className="text-sm text-muted-foreground">{t('importDialog.skip')}</span>
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
@@ -260,7 +268,9 @@ export function ImportDialog({ open, onOpenChange, type }: ImportDialogProps) {
                     onChange={() => setStrategy('overwrite')}
                     className="accent-primary"
                   />
-                  <span className="text-sm text-muted-foreground">Nadpisz duplikaty</span>
+                  <span className="text-sm text-muted-foreground">
+                    {t('importDialog.overwrite')}
+                  </span>
                 </label>
               </div>
             </div>
@@ -273,9 +283,14 @@ export function ImportDialog({ open, onOpenChange, type }: ImportDialogProps) {
               <div className="flex items-center gap-3">
                 <Loader2 className="w-5 h-5 text-primary animate-spin shrink-0" />
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium text-foreground">Importowanie danych...</p>
+                  <p className="text-sm font-medium text-foreground">
+                    {t('importDialog.importing')}
+                  </p>
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    {progressInfo.completed} z {state.totalCount}
+                    {t('importDialog.progress', {
+                      completed: progressInfo.completed,
+                      total: state.totalCount,
+                    })}
                   </p>
                 </div>
                 <span className="text-sm font-semibold text-primary tabular-nums shrink-0">
@@ -302,15 +317,23 @@ export function ImportDialog({ open, onOpenChange, type }: ImportDialogProps) {
             <div className="space-y-3 py-2">
               <div className="flex items-center justify-center gap-2 py-2">
                 <CheckCircle className="w-6 h-6 text-green-400" />
-                <span className="text-sm font-medium text-foreground">Import zakończony</span>
+                <span className="text-sm font-medium text-foreground">
+                  {t('importDialog.done')}
+                </span>
               </div>
               <div className="flex items-center justify-center gap-4 text-sm">
-                <span className="text-green-400">Zaimportowano: {state.result.totalImported}</span>
+                <span className="text-green-400">
+                  {t('importDialog.imported', { count: state.result.totalImported })}
+                </span>
                 {state.result.totalSkipped > 0 && (
-                  <span className="text-yellow-400">Pominięto: {state.result.totalSkipped}</span>
+                  <span className="text-yellow-400">
+                    {t('importDialog.skipped', { count: state.result.totalSkipped })}
+                  </span>
                 )}
                 {state.result.totalErrors > 0 && (
-                  <span className="text-red-400">Błędy: {state.result.totalErrors}</span>
+                  <span className="text-red-400">
+                    {t('importDialog.errors', { count: state.result.totalErrors })}
+                  </span>
                 )}
               </div>
             </div>
@@ -321,17 +344,17 @@ export function ImportDialog({ open, onOpenChange, type }: ImportDialogProps) {
           {state.step === 'preview' && (
             <Button onClick={handleImport}>
               <Upload className="w-4 h-4" />
-              Importuj
+              {t('importDialog.import')}
             </Button>
           )}
           {state.step === 'file-error' && (
             <Button variant="outline" onClick={() => handleOpenChange(false)}>
-              Zamknij
+              {t('importDialog.close')}
             </Button>
           )}
           {state.step === 'done' && (
             <Button variant="outline" onClick={() => handleOpenChange(false)}>
-              Zamknij
+              {t('importDialog.close')}
             </Button>
           )}
         </DialogFooter>

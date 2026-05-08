@@ -42,7 +42,7 @@ const STATUS_PILL_VARIANT: Record<AnimeStatus, 'accent' | 'green' | 'gold' | 'bl
 };
 
 export function AnimeDetailModal({ entry, open, onOpenChange }: AnimeDetailModalProps) {
-  const { t, i18n } = useTranslation('status');
+  const { t, i18n } = useTranslation(['library', 'status']);
   const statusOptions = useMemo(() => getStatusOptions(), [i18n.language]);
   const navigateToBrowser = useNavigateToBrowser();
 
@@ -101,15 +101,15 @@ export function AnimeDetailModal({ entry, open, onOpenChange }: AnimeDetailModal
     const activePane = getActivePane();
 
     if (!activePane?.url) {
-      toast.error('Nie ma otwartej karty w przeglądarce');
+      toast.error(t('library:toast.noBrowserTab'));
       return;
     }
 
     setResumeUrl(activePane.url);
-    toast.success('Link zaktualizowany', {
+    toast.success(t('library:toast.linkUpdated'), {
       description: activePane.url,
     });
-  }, [entry, setResumeUrl]);
+  }, [entry, setResumeUrl, t]);
 
   if (!entry) return null;
 
@@ -189,7 +189,7 @@ export function AnimeDetailModal({ entry, open, onOpenChange }: AnimeDetailModal
             {/* Stats */}
             <div className="relative z-[1] mt-5 w-full flex flex-col gap-3 text-left">
               <SheetStat
-                label="Score"
+                label={t('library:detail.score')}
                 value={
                   score > 0 ? (
                     <>
@@ -203,27 +203,30 @@ export function AnimeDetailModal({ entry, open, onOpenChange }: AnimeDetailModal
               />
               <SheetDivider />
               <SheetStat
-                label="Postęp"
+                label={t('library:detail.progress')}
                 value={
                   entry.episodes
-                    ? `${currentEpisode} / ${entry.episodes} EP`
-                    : `${currentEpisode} EP`
+                    ? `${currentEpisode} / ${entry.episodes} ${t('library:detail.episodesShort')}`
+                    : `${currentEpisode} ${t('library:detail.episodesShort')}`
                 }
               />
               {entry.episodes ? <ProgressBar value={progressPercent} thickness={3} glow /> : null}
-              <SheetStat label="Status" value={t(STATUS_LABEL_KEY[status])} />
+              <SheetStat
+                label={t('library:detail.status')}
+                value={t(`status:${STATUS_LABEL_KEY[status]}`)}
+              />
               <SheetDivider />
               <SheetStat
-                label="Dodano"
-                value={new Date(entry.addedAt).toLocaleDateString('pl-PL', {
+                label={t('library:detail.addedAt')}
+                value={new Date(entry.addedAt).toLocaleDateString(i18n.language, {
                   day: '2-digit',
                   month: '2-digit',
                   year: 'numeric',
                 })}
               />
               <SheetStat
-                label="Aktualizacja"
-                value={new Date(entry.updatedAt).toLocaleDateString('pl-PL', {
+                label={t('library:detail.updatedAt')}
+                value={new Date(entry.updatedAt).toLocaleDateString(i18n.language, {
                   day: '2-digit',
                   month: '2-digit',
                   year: 'numeric',
@@ -243,17 +246,21 @@ export function AnimeDetailModal({ entry, open, onOpenChange }: AnimeDetailModal
                   'hover:bg-foreground/10 hover:text-foreground transition-colors',
                   'focus:outline-none focus:ring-2 focus:ring-ring'
                 )}
-                aria-label="Zamknij"
+                aria-label={t('library:detail.close')}
               >
                 <X className="w-3.5 h-3.5" />
               </DialogPrimitive.Close>
 
               <div className="flex flex-wrap items-center gap-1.5 mb-2">
                 <PillTag variant={STATUS_PILL_VARIANT[status]}>
-                  {t(STATUS_LABEL_KEY[status])}
+                  {t(`status:${STATUS_LABEL_KEY[status]}`)}
                 </PillTag>
-                {entry.episodes && <PillTag variant="muted">{entry.episodes} ODC</PillTag>}
-                {entry.anilistId && <PillTag variant="blue">ANILIST</PillTag>}
+                {entry.episodes && (
+                  <PillTag variant="muted">
+                    {entry.episodes} {t('library:detail.episodesShort')}
+                  </PillTag>
+                )}
+                {entry.anilistId && <PillTag variant="blue">{t('library:detail.anilist')}</PillTag>}
               </div>
 
               <h2 className="font-sans text-[22px] font-extrabold leading-[1.15] tracking-[-0.025em] text-foreground pr-10">
@@ -274,7 +281,7 @@ export function AnimeDetailModal({ entry, open, onOpenChange }: AnimeDetailModal
 
               {/* Status select */}
               <div className="space-y-1.5">
-                <FormLabel htmlFor="detail-status">Status</FormLabel>
+                <FormLabel htmlFor="detail-status">{t('library:detail.statusField')}</FormLabel>
                 <Select value={status} onValueChange={v => setStatus(v as AnimeStatus)}>
                   <SelectTrigger id="detail-status" className="h-8 text-xs">
                     <SelectValue />
@@ -291,7 +298,14 @@ export function AnimeDetailModal({ entry, open, onOpenChange }: AnimeDetailModal
 
               {/* Progress */}
               <SliderInputField
-                label={`Postęp: ${currentEpisode} / ${entry.episodes ?? '?'} odcinków`}
+                label={
+                  entry.episodes
+                    ? t('library:detail.progressField', {
+                        current: currentEpisode,
+                        total: entry.episodes,
+                      })
+                    : t('library:detail.progressFieldUnknown', { current: currentEpisode })
+                }
                 value={currentEpisode}
                 onChange={setCurrentEpisode}
                 min={0}
@@ -302,7 +316,11 @@ export function AnimeDetailModal({ entry, open, onOpenChange }: AnimeDetailModal
 
               {/* Score */}
               <SliderInputField
-                label={score > 0 ? `Ocena: ${score}/10` : 'Ocena: Brak'}
+                label={
+                  score > 0
+                    ? t('library:detail.scoreField', { score })
+                    : t('library:detail.scoreFieldNone')
+                }
                 value={score}
                 onChange={setScore}
                 min={0}
@@ -311,12 +329,12 @@ export function AnimeDetailModal({ entry, open, onOpenChange }: AnimeDetailModal
 
               {/* Notes */}
               <div className="space-y-1.5">
-                <FormLabel htmlFor="detail-notes">Notatki</FormLabel>
+                <FormLabel htmlFor="detail-notes">{t('library:detail.notes')}</FormLabel>
                 <textarea
                   id="detail-notes"
                   value={notes}
                   onChange={e => setNotes(e.target.value)}
-                  placeholder="Dodaj notatki..."
+                  placeholder={t('library:detail.notesPlaceholder')}
                   rows={3}
                   className={cn(
                     'flex w-full rounded-md border border-input bg-background/40 px-3 py-2',
@@ -330,7 +348,7 @@ export function AnimeDetailModal({ entry, open, onOpenChange }: AnimeDetailModal
               {/* Resume URL */}
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
-                  <FormLabel htmlFor="detail-resume-url">Link do kontynuacji</FormLabel>
+                  <FormLabel htmlFor="detail-resume-url">{t('library:detail.resumeUrl')}</FormLabel>
                   <Button
                     variant="ghost"
                     size="sm"
@@ -338,23 +356,23 @@ export function AnimeDetailModal({ entry, open, onOpenChange }: AnimeDetailModal
                     onClick={handleUpdateUrl}
                   >
                     <Link2 className="w-3 h-3" />
-                    Pobierz link z przeglądarki
+                    {t('library:detail.fetchUrlFromBrowser')}
                   </Button>
                 </div>
                 <Input
                   id="detail-resume-url"
                   value={resumeUrl}
                   onChange={e => setResumeUrl(e.target.value)}
-                  placeholder="https://..."
+                  placeholder={t('library:detail.resumeUrlPlaceholder')}
                   className="h-8 text-xs"
                 />
               </div>
 
               {/* AniList ID */}
               <div className="space-y-1.5">
-                <FormLabel htmlFor="detail-anilist-id">AniList ID</FormLabel>
+                <FormLabel htmlFor="detail-anilist-id">{t('library:detail.anilistId')}</FormLabel>
                 <p className="text-2xs text-muted-foreground/70">
-                  Wymagane do powiadomień i odliczania do premiery odcinków
+                  {t('library:detail.anilistIdHint')}
                 </p>
                 <Input
                   id="detail-anilist-id"
@@ -362,7 +380,7 @@ export function AnimeDetailModal({ entry, open, onOpenChange }: AnimeDetailModal
                   min={1}
                   value={anilistId}
                   onChange={e => setAnilistId(e.target.value)}
-                  placeholder="np. 21"
+                  placeholder={t('library:detail.anilistIdPlaceholder')}
                   className="h-8 text-xs w-32"
                 />
               </div>
@@ -372,11 +390,11 @@ export function AnimeDetailModal({ entry, open, onOpenChange }: AnimeDetailModal
             <div className="flex-shrink-0 px-6 py-3.5 border-t border-border-glass bg-background/40 flex items-center gap-2">
               <Button onClick={handleSave} size="sm" className="gap-1.5">
                 <Save className="w-3.5 h-3.5" />
-                Zapisz
+                {t('library:detail.save')}
               </Button>
               <Button onClick={handleOpenInBrowser} variant="outline" size="sm" className="gap-1.5">
                 <ExternalLink className="w-3.5 h-3.5" />
-                Otwórz
+                {t('library:detail.openInBrowser')}
               </Button>
               <Button
                 onClick={() => setShowConfirm(true)}
@@ -385,7 +403,7 @@ export function AnimeDetailModal({ entry, open, onOpenChange }: AnimeDetailModal
                 className="ml-auto text-destructive hover:text-destructive hover:bg-destructive/10 gap-1.5"
               >
                 <Trash2 className="w-3.5 h-3.5" />
-                Usuń
+                {t('library:detail.delete')}
               </Button>
             </div>
           </div>
@@ -395,8 +413,8 @@ export function AnimeDetailModal({ entry, open, onOpenChange }: AnimeDetailModal
       <ConfirmDialog
         open={showConfirm}
         onOpenChange={setShowConfirm}
-        title="Usuń z biblioteki"
-        description="Czy na pewno chcesz usunąć to anime z biblioteki?"
+        title={t('library:remove.title')}
+        description={t('library:remove.description')}
         onConfirm={() => {
           handleRemove();
           setShowConfirm(false);

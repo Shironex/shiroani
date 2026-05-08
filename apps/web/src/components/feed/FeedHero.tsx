@@ -1,10 +1,11 @@
 import { memo, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
-import { timeAgo } from '@shiroani/shared';
 import type { FeedItem } from '@shiroani/shared';
 import { PillTag } from '@/components/ui/pill-tag';
 import { KanjiWatermark } from '@/components/shared/KanjiWatermark';
-import { CATEGORY_LABELS } from './feed-constants';
+import { useCategoryLabels } from './feed-constants';
+import { useTimeAgo } from './useTimeAgo';
 
 interface FeedHeroProps {
   item: FeedItem;
@@ -17,6 +18,9 @@ interface FeedHeroProps {
  * Shippori-Mincho headline and metadata strip.
  */
 export const FeedHero = memo(function FeedHero({ item, onOpen }: FeedHeroProps) {
+  const { t } = useTranslation('feed');
+  const categoryLabels = useCategoryLabels();
+  const timeAgo = useTimeAgo();
   const handleImgError = useCallback((e: React.SyntheticEvent<HTMLImageElement>) => {
     e.currentTarget.style.display = 'none';
   }, []);
@@ -81,9 +85,9 @@ export const FeedHero = memo(function FeedHero({ item, onOpen }: FeedHeroProps) 
       {/* Content */}
       <div className="relative z-[1] flex flex-col gap-2 p-5 sm:p-6 min-h-[180px]">
         <div className="flex flex-wrap items-center gap-1.5">
-          <PillTag className="bg-white/20 text-white/95">Wyróżnione</PillTag>
+          <PillTag className="bg-white/20 text-white/95">{t('hero.featured')}</PillTag>
           <PillTag className="bg-black/35 text-white/95">
-            {CATEGORY_LABELS[item.sourceCategory]}
+            {categoryLabels[item.sourceCategory]}
           </PillTag>
           <PillTag className="text-white/95" style={{ backgroundColor: `${item.sourceColor}80` }}>
             {item.sourceName}

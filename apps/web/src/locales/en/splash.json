@@ -1,0 +1,33 @@
+{
+  "mascotAlt": "ShiroAni mascot",
+  "subtitle": {
+    "loading": "白アニ · your anime",
+    "updating": "updating · install in progress",
+    "updatingTarget": "updating · {{target}}",
+    "errorOffline": "no connection · offline mode",
+    "errorGeneric": "something went wrong · try again"
+  },
+  "error": {
+    "offline": "We can't reach AniList. Try again in a moment.",
+    "generic": "Something unexpectedly stopped the app from starting.",
+    "close": "Close",
+    "retry": "Retry"
+  },
+  "status": {
+    "installing": "Installing",
+    "newVersionFallback": "new version",
+    "restarting": "restarting..."
+  },
+  "messages": {
+    "stretching": "Shiro-chan is stretching~ nyaa...",
+    "remote": "Looking for the episode remote...",
+    "planning": "Shiro is drafting today's plan...",
+    "cookies": "Sneaking cookies from the kitchen...",
+    "checking": "Shiro is checking what's new...",
+    "nap": "One more nap... zzz",
+    "almost": "Shiro-chan is almost ready!",
+    "plushies": "Arranging plushies on the couch...",
+    "butterfly": "Shiro is chasing a butterfly... brb!",
+    "tea": "Putting the kettle on for tea..."
+  }
+}

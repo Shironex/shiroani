@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { isToday, getDayNumber } from './schedule-utils';
 
@@ -13,6 +14,7 @@ export interface DayColumnHeaderProps {
  * the accent colour.
  */
 export function DayColumnHeader({ day, label, entryCount }: DayColumnHeaderProps) {
+  const { t } = useTranslation('schedule');
   const isTodayDay = isToday(day);
 
   return (
@@ -28,7 +30,7 @@ export function DayColumnHeader({ day, label, entryCount }: DayColumnHeaderProps
           isTodayDay ? 'text-primary font-bold' : 'text-muted-foreground'
         )}
       >
-        {isTodayDay ? `${label} · dziś` : label}
+        {isTodayDay ? `${label} · ${t('weekday.todaySuffix')}` : label}
       </span>
       <div
         className={cn(
@@ -40,7 +42,7 @@ export function DayColumnHeader({ day, label, entryCount }: DayColumnHeaderProps
       </div>
       {entryCount > 0 && (
         <div className="mt-[3px] text-[10px] font-mono tracking-[0.04em] text-muted-foreground/70">
-          {entryCount} {entryCount === 1 ? 'odc.' : 'odc.'}
+          {entryCount} {t('dialog.episodesShort')}
         </div>
       )}
     </div>

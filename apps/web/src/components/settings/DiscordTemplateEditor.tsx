@@ -1,4 +1,5 @@
 import { Clock, Image, ExternalLink, MessageCircle } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
@@ -56,15 +57,18 @@ export function DiscordTemplateEditor({
   onTemplateChange,
   onReset,
 }: DiscordTemplateEditorProps) {
+  const { t } = useTranslation('settings');
   return (
     <SettingsCard
       icon={MessageCircle}
-      title="Szablony statusów"
-      subtitle="Edytuj tekst dla każdego typu aktywności"
+      title={t('discord.editor.title')}
+      subtitle={t('discord.editor.subtitle')}
     >
       {/* Activity type selector */}
       <div className="space-y-1.5">
-        <label className="text-xs font-medium text-muted-foreground">Typ aktywności</label>
+        <label className="text-xs font-medium text-muted-foreground">
+          {t('discord.editor.activityType')}
+        </label>
         <Select
           value={selectedActivity}
           onValueChange={v => onActivityChange(v as DiscordActivityType)}
@@ -87,21 +91,25 @@ export function DiscordTemplateEditor({
       {/* Template inputs */}
       <div className="space-y-3">
         <div className="space-y-1.5">
-          <label className="text-xs font-medium text-muted-foreground">Linia 1 (opis)</label>
+          <label className="text-xs font-medium text-muted-foreground">
+            {t('discord.editor.line1')}
+          </label>
           <Input
             className="h-8 text-sm"
             value={currentTemplate.details}
             onChange={e => onTemplateChange(selectedActivity, 'details', e.target.value)}
-            placeholder="np. Ogląda anime"
+            placeholder={t('discord.editor.line1Placeholder')}
           />
         </div>
         <div className="space-y-1.5">
-          <label className="text-xs font-medium text-muted-foreground">Linia 2 (stan)</label>
+          <label className="text-xs font-medium text-muted-foreground">
+            {t('discord.editor.line2')}
+          </label>
           <Input
             className="h-8 text-sm"
             value={currentTemplate.state}
             onChange={e => onTemplateChange(selectedActivity, 'state', e.target.value)}
-            placeholder="np. {anime_title}"
+            placeholder={t('discord.editor.line2Placeholder')}
           />
         </div>
       </div>
@@ -110,19 +118,19 @@ export function DiscordTemplateEditor({
       <div className="space-y-2">
         <TemplateToggle
           icon={Clock}
-          label="Czas trwania"
+          label={t('discord.editor.toggles.duration')}
           checked={currentTemplate.showTimestamp}
           onChange={v => onTemplateChange(selectedActivity, 'showTimestamp', v)}
         />
         <TemplateToggle
           icon={Image}
-          label="Okładka anime"
+          label={t('discord.editor.toggles.cover')}
           checked={currentTemplate.showLargeImage}
           onChange={v => onTemplateChange(selectedActivity, 'showLargeImage', v)}
         />
         <TemplateToggle
           icon={ExternalLink}
-          label="Przycisk AniList"
+          label={t('discord.editor.toggles.anilistButton')}
           checked={currentTemplate.showButton}
           onChange={v => onTemplateChange(selectedActivity, 'showButton', v)}
         />
@@ -130,7 +138,9 @@ export function DiscordTemplateEditor({
 
       {/* Available variables */}
       <div className="bg-muted/30 rounded-lg p-3 space-y-1.5">
-        <p className="text-xs font-medium text-muted-foreground">Dostępne zmienne:</p>
+        <p className="text-xs font-medium text-muted-foreground">
+          {t('discord.editor.variablesLabel')}
+        </p>
         <div className="flex flex-wrap gap-x-4 gap-y-1">
           {DISCORD_TEMPLATE_VARIABLES.map(v => (
             <span key={v.key} className="text-xs text-muted-foreground">
@@ -144,7 +154,7 @@ export function DiscordTemplateEditor({
       {/* Reset button */}
       <div className="flex justify-end">
         <Button variant="ghost" size="sm" className="text-xs" onClick={onReset}>
-          Przywróć domyślne
+          {t('discord.editor.resetDefaults')}
         </Button>
       </div>
     </SettingsCard>

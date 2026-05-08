@@ -1,4 +1,5 @@
 import { Activity } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { ComingSoonPlaceholder } from '@/components/shared/ComingSoonPlaceholder';
 
 /**
@@ -11,12 +12,13 @@ import { ComingSoonPlaceholder } from '@/components/shared/ComingSoonPlaceholder
  * ComingSoonPlaceholder until the backend exposes the feed.
  */
 export function ActivityFeed() {
+  const { t } = useTranslation('profile');
   return (
     <ComingSoonPlaceholder
       icon={Activity}
-      title="Ostatnia aktywność"
-      description="Historia scrobbli, zmian statusów i ocen z AniList pojawi się tu, gdy rozszerzymy synchronizację profilu."
-      tag="SOON"
+      title={t('activityFeed.title')}
+      description={t('activityFeed.description')}
+      tag={t('activityFeed.tag')}
     />
   );
 }

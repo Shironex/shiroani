@@ -1,7 +1,8 @@
 import { memo, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Rss, Flame } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { pluralize, type FeedItem, type FeedSource } from '@shiroani/shared';
+import { type FeedItem, type FeedSource } from '@shiroani/shared';
 import { ProgressBar } from '@/components/shared/ProgressBar';
 
 interface FeedSidebarProps {
@@ -35,6 +36,7 @@ export const FeedSidebar = memo(function FeedSidebar({
   totalCount,
   isBookmarksView,
 }: FeedSidebarProps) {
+  const { t } = useTranslation('feed');
   // Count items per source from the currently-loaded set for "live" counters
   const perSourceCount = useMemo(() => {
     const map = new Map<number, number>();
@@ -81,7 +83,7 @@ export const FeedSidebar = memo(function FeedSidebar({
             <Rss className="w-3 h-3" />
           </span>
           <h4 className="font-mono text-[9.5px] tracking-[0.22em] uppercase text-muted-foreground font-semibold">
-            Moje źródła
+            {t('sidebar.mySources')}
           </h4>
           <span className="ml-auto font-mono text-[9.5px] text-muted-foreground/60">
             {visibleSources.length}
@@ -114,7 +116,7 @@ export const FeedSidebar = memo(function FeedSidebar({
               >
                 ∀
               </span>
-              <span className="flex-1 text-left truncate">Wszystkie źródła</span>
+              <span className="flex-1 text-left truncate">{t('sidebar.allSources')}</span>
               <span
                 className={cn(
                   'font-mono text-[9.5px]',
@@ -183,15 +185,17 @@ export const FeedSidebar = memo(function FeedSidebar({
               <Flame className="w-3 h-3" />
             </span>
             <h4 className="font-mono text-[9.5px] tracking-[0.22em] uppercase text-muted-foreground font-semibold">
-              Najaktywniejsze
+              {t('sidebar.trending')}
             </h4>
-            <span className="ml-auto font-mono text-[9.5px] text-muted-foreground/60">7 dni</span>
+            <span className="ml-auto font-mono text-[9.5px] text-muted-foreground/60">
+              {t('sidebar.trendingPeriod')}
+            </span>
           </div>
 
           <ol className="flex flex-col">
-            {trending.map((t, idx) => (
+            {trending.map((trend, idx) => (
               <li
-                key={t.source.id}
+                key={trend.source.id}
                 className="flex items-center gap-2 py-1 border-b border-white/[0.04] last:border-b-0"
               >
                 <span className="w-5 font-serif font-extrabold text-[15px] text-primary leading-none shrink-0">
@@ -199,17 +203,17 @@ export const FeedSidebar = memo(function FeedSidebar({
                 </span>
                 <div className="flex-1 min-w-0">
                   <div className="text-[11.5px] font-medium truncate text-foreground/90 leading-tight">
-                    {t.source.name}
+                    {trend.source.name}
                   </div>
                   <div className="font-mono text-[9px] text-muted-foreground/60 mt-0.5">
-                    {t.count} {pluralize(t.count, 'wpis', 'wpisy', 'wpisów')}
+                    {t('sidebar.entries', { count: trend.count })}
                   </div>
                 </div>
                 <div className="w-10 shrink-0">
                   <ProgressBar
-                    value={(t.count / maxTrending) * 100}
+                    value={(trend.count / maxTrending) * 100}
                     thickness={3}
-                    aria-label={`Aktywność ${t.source.name}`}
+                    aria-label={t('sidebar.activityAria', { name: trend.source.name })}
                   />
                 </div>
               </li>

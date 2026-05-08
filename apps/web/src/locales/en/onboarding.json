@@ -1,0 +1,159 @@
+{
+  "wizard": {
+    "ariaLabel": "First-run setup wizard",
+    "progressAria": "Setup progress",
+    "stepDotAria": "Step {{number}}: {{id}}",
+    "skip": "Skip setup",
+    "back": "Back",
+    "next": "Next",
+    "finish": "Open library",
+    "chip": {
+      "welcome_one": "Welcome · Step {{count}} of {{total}}",
+      "welcome_other": "Welcome · Step {{count}} of {{total}}",
+      "step_one": "Step {{count}} of {{total}}",
+      "step_other": "Step {{count}} of {{total}}",
+      "summary": "Summary · {{count}} of {{total}}"
+    }
+  },
+  "step": {
+    "language": {
+      "headline": "Let's start with the <1>easy bit</1>.",
+      "description": "Hi, I'm <1>Shiro</1>. I'll walk you through six short steps — about a minute. You can change anything later in settings.",
+      "marker": "Step <1>01 · Start</1> · pick a language",
+      "title": "Interface language",
+      "hint": "Polish only for now. More languages soon.",
+      "polish": {
+        "name": "Polski",
+        "current": "Current language"
+      },
+      "english": {
+        "name": "English",
+        "soon": "Soon",
+        "badge": "Soon"
+      },
+      "footnote": "✦ More languages will arrive in future updates"
+    },
+    "name": {
+      "headline": "What should I <1>call</1> you?",
+      "description": "I'll use this name in the new-tab greeting and anywhere the app talks to you. You can skip this step and change it later in settings.",
+      "marker": "Step <1>02 · Name</1> · personalization",
+      "title": "Your name",
+      "hint": "Nickname, short form, whatever fits. Stays only on your device.",
+      "placeholder": "e.g. Alex",
+      "ariaLabel": "Your name",
+      "maxChars": "max {{count}} chars",
+      "footnote": "✦ If you leave this blank and connect AniList, Shiro will use your nick from there"
+    },
+    "theme": {
+      "headline": "Pick a <1>palette</1> that suits when you watch.",
+      "description": "Dark themes work well at night. <1>Paper</1> is gentler on the eyes in the morning. Switch any time, it saves instantly.",
+      "marker": "Step <1>03 · Look</1> · palette",
+      "title": "Themes",
+      "groupDark": "Dark",
+      "groupLight": "Light"
+    },
+    "background": {
+      "headline": "Set the <1>mood</1>: your favourite key art in the background.",
+      "description": "Drop in an image or GIF and we'll blur it behind your library and schedule. Or stick with the default: <1>no background</1>.",
+      "marker": "Step <1>04 · Mood</1> · app background",
+      "title": "App background"
+    },
+    "dock": {
+      "headline": "Where to <1>put</1> the dock? Within reach, out of the way.",
+      "description": "The floating icon pill sits at the bottom by default, but you can pin it to any edge. Live preview on the right.",
+      "marker": "Step <1>05 · Layout</1> · navigation dock",
+      "title": "Dock",
+      "edge": {
+        "bottom": "Bottom",
+        "top": "Top",
+        "left": "Left",
+        "right": "Right"
+      },
+      "autoHide": {
+        "title": "Auto-hide",
+        "description": "Collapses to an icon, expands on hover"
+      },
+      "showLabels": {
+        "title": "Show labels",
+        "description": "Names visible under icons"
+      },
+      "draggable": {
+        "title": "Draggable",
+        "description": "Reposition the dock by dragging it"
+      }
+    },
+    "discord": {
+      "headline": "Show your friends <1>what you're watching</1>.",
+      "description": "ShiroAni can show your current episode on your Discord profile. Visibility helps small projects, but if you'd rather stay private, leave this off.",
+      "marker": "Step <1>06 · Integrations</1> · Discord RPC",
+      "title": "Rich Presence",
+      "desktopOnly": "Desktop-only feature",
+      "toggle": {
+        "title": "Enable integration",
+        "description": "Show ShiroAni activity on your profile"
+      },
+      "preview": {
+        "watching": "Watching anime",
+        "off": "Off",
+        "appName": "ShiroAni",
+        "exampleTitle": "Frieren: Beyond Journey's End",
+        "exampleEpisode": "Ep. 28 · 00:42"
+      },
+      "saved": "Saved",
+      "footnote": "✦ You can customise status templates later in settings"
+    },
+    "adblock": {
+      "headline": "Last bit: a <1>clean</1> episode without ads.",
+      "description": "The built-in browser blocks ads and trackers on streaming sites (<1>EasyList + EasyPrivacy</1>). Set per-domain exceptions later.",
+      "marker": "Step <1>07 · Finish</1> · ad blocking",
+      "title": "Ad blocking",
+      "desktopOnly": "Desktop-only feature",
+      "toggle": {
+        "title": "Ad blocking",
+        "description": "EasyList + EasyPrivacy · 98,200 rules"
+      },
+      "blockedListAria": "Blocked items",
+      "blocked": {
+        "ads": "Display ads (banner / popup)",
+        "trackers": "Analytics trackers",
+        "videoAds": "Video player ads",
+        "cookieWalls": "Cookie walls",
+        "exceptions": "Custom domain exceptions"
+      },
+      "footnote": "✦ Add exceptions later in browser settings"
+    },
+    "summary": {
+      "headline": "All <1>set</1>. Time to watch.",
+      "description": "Seven settings down, all stored locally on your machine. <1>Shiro-chan</1> will be at the bottom of the screen if you need her.",
+      "marker": "Summary · <1>your setup</1>",
+      "title": "All ready!",
+      "intro": "Here are your choices. Change any of them later in settings.",
+      "row": {
+        "language": "Language",
+        "theme": "Theme",
+        "background": "Background",
+        "dock": "Dock",
+        "discord": "Discord RPC",
+        "adblock": "Adblock"
+      },
+      "languageValue": "PL",
+      "background": {
+        "custom": "Custom · {{percent}}% blur",
+        "none": "No background"
+      },
+      "dock": {
+        "edge": {
+          "bottom": "Bottom",
+          "top": "Top",
+          "left": "Left",
+          "right": "Right"
+        },
+        "autoHide": "{{edge}} · auto-hide"
+      },
+      "value": {
+        "on": "ON",
+        "off": "OFF"
+      }
+    }
+  }
+}

@@ -1,0 +1,63 @@
+{
+  "title": "Discover",
+  "subtitle": "Trending, seasonal and random",
+  "searchPlaceholder": "Search anime...",
+  "tabs": {
+    "trending": "Trending",
+    "popular": "Popular",
+    "seasonal": "Seasonal",
+    "random": "Random"
+  },
+  "search": {
+    "resultsLabel": "Search results",
+    "clear": "Clear"
+  },
+  "empty": {
+    "noResultsTitle": "No results",
+    "noResultsSubtitle": "Try a different phrase",
+    "noAnimeTitle": "No anime",
+    "noAnimeSubtitle": "Could not load anime."
+  },
+  "card": {
+    "noCover": "No cover",
+    "episodeCount": "{{count}} ep.",
+    "addToLibrary": "Add to library",
+    "inLibraryAria": "In library",
+    "inLibrary": "In library",
+    "add": "Add"
+  },
+  "genres": {
+    "title": "Genres",
+    "expand": "Expand",
+    "collapse": "Collapse",
+    "hint": "Click to include. Click again to exclude. A third click clears the choice. Selected genres combine with AND.",
+    "stateIncluded": "selected",
+    "stateExcluded": "excluded",
+    "stateNeutral": "neutral",
+    "labelTemplate": "{{genre}}: {{state}}"
+  },
+  "random": {
+    "emptyTitle": "No suggestions",
+    "emptySubtitle": "Pick different genres or try again.",
+    "featuredTag": "Random",
+    "inLibraryTag": "In library",
+    "shuffle": "Shuffle",
+    "addToLibrary": "Add to library",
+    "refreshTooltip": "Refresh suggestions from AniList",
+    "refreshAria": "Refresh suggestions",
+    "previous": "Previous",
+    "next": "Next",
+    "previousLabel": "Previous",
+    "nextLabel": "Next",
+    "previousArrow": "← Previous",
+    "nextArrow": "Next →",
+    "peekLabel": "{{direction}}: {{title}}",
+    "keyboardHint": "← → switches",
+    "indexFormat": "{{index}} / {{total}}"
+  },
+  "toast": {
+    "alreadyInLibrary": "This anime is already in your library",
+    "addedToLibrary": "Added to library",
+    "addFailed": "Could not add to library"
+  }
+}

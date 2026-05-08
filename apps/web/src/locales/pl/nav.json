@@ -1,0 +1,102 @@
+{
+  "ariaPrimary": "Nawigacja główna",
+  "ariaExpand": "Rozwiń nawigację",
+  "tooltip": {
+    "moveDock": "Przesuń dock"
+  },
+  "logoAlt": "ShiroAni",
+  "link": {
+    "browser": "Przeglądarka",
+    "library": "Biblioteka",
+    "discover": "Odkrywaj",
+    "diary": "Dziennik",
+    "schedule": "Harmonogram",
+    "feed": "Aktualności",
+    "profile": "Profil",
+    "changelog": "Historia",
+    "settings": "Ustawienia"
+  },
+  "header": {
+    "searchPlaceholder": "Szukaj...",
+    "clearSearch": "Wyczyść wyszukiwanie",
+    "viewModeGrid": "Widok siatki",
+    "viewModeList": "Widok listy"
+  },
+  "titleBar": {
+    "minimize": "Minimalizuj",
+    "restore": "Przywróć",
+    "maximize": "Maksymalizuj",
+    "close": "Zamknij"
+  },
+  "connection": {
+    "reconnecting": "Łączę ponownie…",
+    "offline": "Brak połączenia",
+    "retry": "Spróbuj ponownie"
+  },
+  "comingSoon": {
+    "tag": "WKRÓTCE"
+  },
+  "dialog": {
+    "confirm": "Usuń",
+    "cancel": "Anuluj"
+  },
+  "exportDialog": {
+    "title": "Eksportuj dane",
+    "description": "Zapisz dane w pliku JSON.",
+    "saveDialogTitle": "Eksportuj dane ShiroAni",
+    "preparing": "Przygotowywanie danych...",
+    "exported": "Wyeksportowano <1>{{count}}</1> wpisów",
+    "saving": "Zapisywanie pliku...",
+    "saved": "Zapisano plik",
+    "saveAs": "Zapisz jako...",
+    "close": "Zamknij",
+    "errors": {
+      "unknown": "Nieznany błąd",
+      "saveFailed": "Nie udało się zapisać pliku"
+    }
+  },
+  "importDialog": {
+    "title": "Importuj dane",
+    "description": "Wczytaj dane z pliku JSON.",
+    "openDialogTitle": "Importuj dane ShiroAni",
+    "loading": "Wczytywanie pliku...",
+    "importing": "Importowanie danych...",
+    "progress": "{{completed}} z {{total}}",
+    "import": "Importuj",
+    "close": "Zamknij",
+    "found": "Znaleziono <1>{{library}}</1> anime i <1>{{diary}}</1> wpisów dziennika",
+    "duplicatesPrompt": "Co zrobić z duplikatami?",
+    "skip": "Pomiń duplikaty",
+    "overwrite": "Nadpisz duplikaty",
+    "done": "Import zakończony",
+    "imported": "Zaimportowano: {{count}}",
+    "skipped": "Pominięto: {{count}}",
+    "errors": "Błędy: {{count}}",
+    "errorMessages": {
+      "readFailed": "Nie udało się odczytać pliku",
+      "invalidJson": "To nie jest prawidłowy plik JSON",
+      "notShiroaniExport": "To nie jest plik eksportu ShiroAni.",
+      "importFailed": "Błąd podczas importu",
+      "unknown": "Nie udało się odczytać pliku"
+    }
+  },
+  "anilistError": {
+    "apiDisabled": {
+      "title": "AniList API jest tymczasowo wyłączony",
+      "subtitle": "AniList wyłączył API z powodu problemów ze stabilnością. Spróbuj ponownie później."
+    },
+    "rateLimit": {
+      "title": "Zbyt wiele zapytań",
+      "subtitle": "Przekroczono limit zapytań do AniList. Odczekaj chwilę i spróbuj ponownie."
+    },
+    "network": {
+      "title": "Błąd połączenia",
+      "subtitle": "Nie udało się połączyć z AniList. Sprawdź połączenie z internetem."
+    },
+    "unknown": {
+      "title": "Nie udało się pobrać danych",
+      "subtitle": ""
+    },
+    "retry": "Spróbuj ponownie"
+  }
+}

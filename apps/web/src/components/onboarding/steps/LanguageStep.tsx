@@ -1,3 +1,4 @@
+import { Trans, useTranslation } from 'react-i18next';
 import { Check, Languages } from 'lucide-react';
 import { StepLayout } from '../StepLayout';
 import { PillTag } from '@/components/ui/pill-tag';
@@ -11,29 +12,26 @@ import { PillTag } from '@/components/ui/pill-tag';
  * informational at the moment. When a real locale store lands, rewire here.
  */
 export function LanguageStep() {
+  const { t } = useTranslation('onboarding');
+  const emPrimary = <em className="not-italic text-primary italic" />;
+  const bStrong = <b className="font-semibold text-foreground" />;
+  const bPrimary = <b className="font-bold text-primary" />;
+
   return (
     <StepLayout
       kanji="始"
       headline={
-        <>
-          Zacznijmy od <em className="not-italic text-primary italic">najprostszego</em>.
-        </>
+        <Trans ns="onboarding" i18nKey="step.language.headline" components={{ 1: emPrimary }} />
       }
       description={
-        <>
-          Cześć, jestem <b className="font-semibold text-foreground">Shiro</b>. Przeprowadzę cię
-          przez sześć krótkich kroków, zajmie ci to minutę. Wszystko zmienisz później w
-          ustawieniach.
-        </>
+        <Trans ns="onboarding" i18nKey="step.language.description" components={{ 1: bStrong }} />
       }
       stepMarker={
-        <>
-          Krok <b className="font-bold text-primary">01 · Start</b> · wybierz język
-        </>
+        <Trans ns="onboarding" i18nKey="step.language.marker" components={{ 1: bPrimary }} />
       }
       stepIcon={<Languages className="h-5 w-5" />}
-      stepTitle="Język interfejsu"
-      stepHint="Na razie tylko po polsku. Kolejne języki wkrótce."
+      stepTitle={t('step.language.title')}
+      stepHint={t('step.language.hint')}
     >
       <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
         {/* Polski — active */}
@@ -44,8 +42,12 @@ export function LanguageStep() {
             style={{ background: 'linear-gradient(180deg, #fff 50%, #dc143c 50%)' }}
           />
           <div className="min-w-0 flex-1">
-            <b className="block text-sm font-semibold text-foreground">Polski</b>
-            <small className="text-[11.5px] text-muted-foreground">Obecny język</small>
+            <b className="block text-sm font-semibold text-foreground">
+              {t('step.language.polish.name')}
+            </b>
+            <small className="text-[11.5px] text-muted-foreground">
+              {t('step.language.polish.current')}
+            </small>
           </div>
           <Check className="h-4 w-4 flex-shrink-0 text-primary" />
         </div>
@@ -63,17 +65,21 @@ export function LanguageStep() {
             }}
           />
           <div className="min-w-0 flex-1">
-            <b className="block text-sm font-semibold text-foreground">English</b>
-            <small className="text-[11.5px] text-muted-foreground">Wkrótce</small>
+            <b className="block text-sm font-semibold text-foreground">
+              {t('step.language.english.name')}
+            </b>
+            <small className="text-[11.5px] text-muted-foreground">
+              {t('step.language.english.soon')}
+            </small>
           </div>
           <PillTag variant="accent" className="absolute right-2 top-2">
-            Soon
+            {t('step.language.english.badge')}
           </PillTag>
         </div>
       </div>
 
       <p className="mt-auto font-mono text-[10.5px] uppercase tracking-[0.18em] text-muted-foreground">
-        ✦ Kolejne języki dodamy w przyszłych aktualizacjach
+        {t('step.language.footnote')}
       </p>
     </StepLayout>
   );

@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { Trans, useTranslation } from 'react-i18next';
 import {
   Languages,
   Palette,
@@ -24,6 +25,7 @@ import { useCustomThemeStore } from '@/stores/useCustomThemeStore';
  * CTA lives in the wizard chrome (wired to `onComplete`).
  */
 export function SummaryStep() {
+  const { t } = useTranslation('onboarding');
   const theme = useSettingsStore(s => s.theme);
   const customThemes = useCustomThemeStore(s => s.customThemes);
   const customBackground = useBackgroundStore(s => s.customBackground);
@@ -38,36 +40,31 @@ export function SummaryStep() {
   }, [theme, customThemes]);
 
   const backgroundLabel = customBackground
-    ? `Własne · ${Math.round((backgroundBlur / 20) * 100)}% rozmycia`
-    : 'Bez tła';
+    ? t('step.summary.background.custom', { percent: Math.round((backgroundBlur / 20) * 100) })
+    : t('step.summary.background.none');
 
   const dockLabel = useMemo(() => {
-    const edgeName =
-      edge === 'bottom' ? 'Dół' : edge === 'left' ? 'Lewo' : edge === 'right' ? 'Prawo' : 'Góra';
-    return autoHide ? `${edgeName} · auto-ukrywanie` : edgeName;
-  }, [edge, autoHide]);
+    const edgeName = t(`step.summary.dock.edge.${edge}`);
+    return autoHide ? t('step.summary.dock.autoHide', { edge: edgeName }) : edgeName;
+  }, [edge, autoHide, t]);
+
+  const emPrimary = <em className="not-italic text-primary italic" />;
+  const bStrong = <b className="font-semibold text-foreground" />;
+  const bPrimary = <b className="font-bold text-primary" />;
 
   return (
     <StepLayout
       kanji="完"
       headline={
-        <>
-          Wszystko <em className="not-italic text-primary italic">zapięte</em>. Czas oglądać.
-        </>
+        <Trans ns="onboarding" i18nKey="step.summary.headline" components={{ 1: emPrimary }} />
       }
       description={
-        <>
-          Siedem ustawień za nami, wszystko zapisane u ciebie na komputerze.{' '}
-          <b className="font-semibold text-foreground">Shiro-chan</b> będzie na dole ekranu, gdyby
-          była ci potrzebna.
-        </>
+        <Trans ns="onboarding" i18nKey="step.summary.description" components={{ 1: bStrong }} />
       }
       stepMarker={
-        <>
-          Podsumowanie · <b className="font-bold text-primary">twoja konfiguracja</b>
-        </>
+        <Trans ns="onboarding" i18nKey="step.summary.marker" components={{ 1: bPrimary }} />
       }
-      stepTitle="Wszystko gotowe!"
+      stepTitle={t('step.summary.title')}
       stepIcon={
         <span
           className="grid h-10 w-10 place-items-center rounded-full border border-primary/35 bg-primary/15 text-primary animate-[splash-bounce-in_0.5s_cubic-bezier(0.34,1.56,0.64,1)_both]"
@@ -78,24 +75,40 @@ export function SummaryStep() {
       }
     >
       <p className="max-w-[34ch] text-[13px] leading-relaxed text-muted-foreground">
-        Oto twoje wybory. Wszystko zmienisz później w ustawieniach.
+        {t('step.summary.intro')}
       </p>
 
       <div className="flex flex-col gap-2">
-        <SummaryRow icon={<Languages className="h-4 w-4" />} label="Język" value="PL" />
-        <SummaryRow icon={<Palette className="h-4 w-4" />} label="Motyw" value={themeLabel} />
-        <SummaryRow icon={<Sparkles className="h-4 w-4" />} label="Tło" value={backgroundLabel} />
-        <SummaryRow icon={<LayoutGrid className="h-4 w-4" />} label="Dock" value={dockLabel} />
+        <SummaryRow
+          icon={<Languages className="h-4 w-4" />}
+          label={t('step.summary.row.language')}
+          value={t('step.summary.languageValue')}
+        />
+        <SummaryRow
+          icon={<Palette className="h-4 w-4" />}
+          label={t('step.summary.row.theme')}
+          value={themeLabel}
+        />
+        <SummaryRow
+          icon={<Sparkles className="h-4 w-4" />}
+          label={t('step.summary.row.background')}
+          value={backgroundLabel}
+        />
+        <SummaryRow
+          icon={<LayoutGrid className="h-4 w-4" />}
+          label={t('step.summary.row.dock')}
+          value={dockLabel}
+        />
         <SummaryRow
           icon={<MessageCircle className="h-4 w-4" />}
-          label="Discord RPC"
-          value="ON"
+          label={t('step.summary.row.discord')}
+          value={t('step.summary.value.on')}
           highlight
         />
         <SummaryRow
           icon={<Shield className="h-4 w-4" />}
-          label="Adblock"
-          value={adblockEnabled ? 'ON' : 'OFF'}
+          label={t('step.summary.row.adblock')}
+          value={adblockEnabled ? t('step.summary.value.on') : t('step.summary.value.off')}
           highlight={adblockEnabled}
         />
       </div>

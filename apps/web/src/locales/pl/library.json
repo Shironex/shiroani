@@ -1,0 +1,90 @@
+{
+  "title": "Biblioteka",
+  "subtitle_one": "{{count}} pozycja",
+  "subtitle_few": "{{count}} pozycje",
+  "subtitle_many": "{{count}} pozycji",
+  "subtitle_other": "{{count}} pozycji",
+  "searchPlaceholder": "Szukaj tytułów...",
+  "sort": {
+    "title": "Tytuł",
+    "score": "Ocena",
+    "progress": "Postęp",
+    "updatedAt": "Ostatnia aktualizacja",
+    "ascending": "Rosnąco",
+    "descending": "Malejąco"
+  },
+  "actions": {
+    "export": "Eksportuj",
+    "import": "Importuj",
+    "randomPick": "Losowe anime",
+    "stats": "Statystyki",
+    "openBrowser": "Otwórz przeglądarkę"
+  },
+  "card": {
+    "noCover": "Brak okładki",
+    "continue": "Kontynuuj",
+    "edit": "Edytuj",
+    "remove": "Usuń",
+    "ariaLabel": "{{title}}, {{status}}"
+  },
+  "list": {
+    "progressAriaLabel": "Postęp: {{percent}}%"
+  },
+  "empty": {
+    "noResults": "Brak wyników",
+    "noResultsHint": "Spróbuj innej frazy lub zmień filtr",
+    "title": "Biblioteka jest pusta",
+    "subtitle": "Otwórz przeglądarkę, żeby dodać pierwsze anime"
+  },
+  "stats": {
+    "total": "Razem",
+    "episodes": "Odcinki",
+    "avgScore": "Średnia ocena",
+    "watching": "Oglądam",
+    "fromScored_one": "z {{count}} oceny",
+    "fromScored_few": "z {{count}} ocen",
+    "fromScored_many": "z {{count}} ocen",
+    "fromScored_other": "z {{count}} ocen",
+    "distribution": "Rozkład statusów",
+    "entriesCount_one": "{{count}} pozycja",
+    "entriesCount_few": "{{count}} pozycje",
+    "entriesCount_many": "{{count}} pozycji",
+    "entriesCount_other": "{{count}} pozycji",
+    "tooltip": "{{label}}: {{count}} ({{percent}}%)"
+  },
+  "detail": {
+    "close": "Zamknij",
+    "episodesShort": "ODC",
+    "anilist": "ANILIST",
+    "score": "Score",
+    "progress": "Postęp",
+    "status": "Status",
+    "addedAt": "Dodano",
+    "updatedAt": "Aktualizacja",
+    "statusField": "Status",
+    "progressField": "Postęp: {{current}} / {{total}} odcinków",
+    "progressFieldUnknown": "Postęp: {{current}} / ? odcinków",
+    "scoreField": "Ocena: {{score}}/10",
+    "scoreFieldNone": "Ocena: Brak",
+    "notes": "Notatki",
+    "notesPlaceholder": "Dodaj notatki...",
+    "resumeUrl": "Link do kontynuacji",
+    "fetchUrlFromBrowser": "Pobierz link z przeglądarki",
+    "resumeUrlPlaceholder": "https://...",
+    "anilistId": "AniList ID",
+    "anilistIdHint": "Wymagane do powiadomień i odliczania do premiery odcinków",
+    "anilistIdPlaceholder": "np. 21",
+    "save": "Zapisz",
+    "openInBrowser": "Otwórz",
+    "delete": "Usuń"
+  },
+  "toast": {
+    "noBrowserTab": "Nie ma otwartej karty w przeglądarce",
+    "linkUpdated": "Link zaktualizowany"
+  },
+  "remove": {
+    "title": "Usuń z biblioteki",
+    "description": "Czy na pewno chcesz usunąć to anime z biblioteki?",
+    "descriptionWithTitle": "Czy na pewno chcesz usunąć \"{{title}}\" z biblioteki?"
+  }
+}

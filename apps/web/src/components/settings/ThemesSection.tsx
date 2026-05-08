@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Copy,
   Download,
@@ -27,6 +28,7 @@ import { cn } from '@/lib/utils';
 import { UI_FONT_SCALE_PRESETS, type Theme } from '@shiroani/shared';
 
 export function ThemesSection() {
+  const { t } = useTranslation('settings');
   const { theme, setTheme, setPreviewTheme, uiFontScale, setUIFontScale } = useSettingsStore();
   const customThemes = useCustomThemeStore(s => s.customThemes);
   const deleteTheme = useCustomThemeStore(s => s.deleteTheme);
@@ -67,9 +69,9 @@ export function ThemesSection() {
     }
     removeCustomThemeCSS(themeToDelete.id);
     deleteTheme(themeToDelete.id);
-    toast.success('Usunięto motyw');
+    toast.success(t('themes.toast.deleted'));
     setThemeToDelete(null);
-  }, [themeToDelete, theme, setTheme, deleteTheme]);
+  }, [themeToDelete, theme, setTheme, deleteTheme, t]);
 
   const customThemeOptions = getAllThemeOptions(customThemes).filter(t => t.isCustom);
   const clearPreview = useCallback(() => setPreviewTheme(null), [setPreviewTheme]);
@@ -84,21 +86,21 @@ export function ThemesSection() {
             handleCloneTheme(opt.value);
           }}
           className="w-6 h-6 rounded bg-background/85 backdrop-blur-sm border border-border-glass flex items-center justify-center hover:bg-accent transition-colors focus-visible:ring-2 focus-visible:ring-ring"
-          aria-label={`Klonuj motyw ${opt.label}`}
+          aria-label={t('themes.custom.cloneAria', { label: opt.label })}
         >
           <Copy className="w-3 h-3 text-foreground" />
         </button>
       </div>
     ),
-    [handleCloneTheme]
+    [handleCloneTheme, t]
   );
 
   return (
     <div className="space-y-4">
       <SettingsCard
         icon={Type}
-        title="Czytelność"
-        subtitle="Dopasuj skalę tekstu i interfejsu do swojego ekranu."
+        title={t('themes.readability.title')}
+        subtitle={t('themes.readability.subtitle')}
       >
         <div className="flex flex-wrap items-center gap-3">
           <div className="flex items-center gap-1">
@@ -127,15 +129,15 @@ export function ThemesSection() {
 
         {IS_MAC && (
           <p className="text-[11.5px] leading-relaxed text-muted-foreground/80">
-            Na macOS często najlepiej sprawdza się zakres 105-110%, zwłaszcza na ekranach Retina.
+            {t('themes.readability.macHint')}
           </p>
         )}
       </SettingsCard>
 
       <SettingsCard
         icon={Palette}
-        title="Motyw kolorystyczny"
-        subtitle="Wybierz paletę: własną lub z biblioteki."
+        title={t('themes.palette.title')}
+        subtitle={t('themes.palette.subtitle')}
         headerAccessory={
           <Button
             variant="outline"
@@ -144,7 +146,7 @@ export function ThemesSection() {
             onClick={() => importTheme()}
           >
             <Upload className="h-3 w-3" />
-            Importuj
+            {t('themes.palette.import')}
           </Button>
         }
       >
@@ -153,7 +155,7 @@ export function ThemesSection() {
             <div className="flex items-center gap-2.5 text-muted-foreground">
               <span className="flex items-center gap-1.5 font-mono text-[9.5px] font-semibold uppercase tracking-[0.18em]">
                 <Palette className="h-3 w-3" />
-                Własne
+                {t('themes.custom.label')}
                 <span className="tabular-nums text-muted-foreground/60">
                   · {customThemeOptions.length}
                 </span>
@@ -176,7 +178,7 @@ export function ThemesSection() {
               ))}
               <button
                 onClick={handleCreateNew}
-                aria-label="Nowy motyw"
+                aria-label={t('themes.custom.newAria')}
                 className={cn(
                   'relative aspect-square w-full rounded-[10px] border border-dashed border-border-glass',
                   'grid place-items-center text-muted-foreground',
@@ -192,7 +194,7 @@ export function ThemesSection() {
 
         <ThemeGrid
           themes={darkThemes}
-          label="Ciemne"
+          label={t('themes.groupDark')}
           icon={Moon}
           activeTheme={theme}
           onSelect={setTheme}
@@ -203,7 +205,7 @@ export function ThemesSection() {
 
         <ThemeGrid
           themes={lightThemes}
-          label="Jasne"
+          label={t('themes.groupLight')}
           icon={Sun}
           activeTheme={theme}
           onSelect={setTheme}
@@ -221,7 +223,7 @@ export function ThemesSection() {
               onClick={handleCreateNew}
             >
               <Plus className="h-4 w-4" />
-              Nowy motyw
+              {t('themes.custom.newButton')}
             </Button>
           </div>
         )}
@@ -237,8 +239,8 @@ export function ThemesSection() {
       <ConfirmDialog
         open={themeToDelete !== null}
         onOpenChange={o => !o && setThemeToDelete(null)}
-        title="Usunąć motyw?"
-        description={`Motyw „${themeToDelete?.label ?? ''}" zostanie trwale usunięty. Nie da się tego cofnąć.`}
+        title={t('themes.deleteDialog.title')}
+        description={t('themes.deleteDialog.description', { label: themeToDelete?.label ?? '' })}
         onConfirm={confirmDeleteTheme}
       />
     </div>
@@ -264,6 +266,7 @@ function CustomThemeSwatchWrapper({
   onDelete: () => void;
   onExport: () => void;
 }) {
+  const { t } = useTranslation('settings');
   return (
     <div className="group relative">
       <ThemeSwatch
@@ -287,7 +290,7 @@ function CustomThemeSwatchWrapper({
             onEdit();
           }}
           className="flex h-6 w-6 items-center justify-center rounded border border-border-glass bg-background/85 backdrop-blur-sm transition-colors hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring"
-          aria-label="Edytuj motyw"
+          aria-label={t('themes.custom.editAria')}
         >
           <Pencil className="h-3 w-3 text-foreground" />
         </button>
@@ -297,7 +300,7 @@ function CustomThemeSwatchWrapper({
             onExport();
           }}
           className="flex h-6 w-6 items-center justify-center rounded border border-border-glass bg-background/85 backdrop-blur-sm transition-colors hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring"
-          aria-label="Eksportuj motyw"
+          aria-label={t('themes.custom.exportAria')}
         >
           <Download className="h-3 w-3 text-foreground" />
         </button>
@@ -307,7 +310,7 @@ function CustomThemeSwatchWrapper({
             onDelete();
           }}
           className="flex h-6 w-6 items-center justify-center rounded border border-border-glass bg-background/85 backdrop-blur-sm transition-colors hover:bg-destructive/20 focus-visible:ring-2 focus-visible:ring-ring"
-          aria-label="Usuń motyw"
+          aria-label={t('themes.custom.deleteAria')}
         >
           <Trash2 className="h-3 w-3 text-destructive" />
         </button>

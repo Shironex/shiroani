@@ -1,0 +1,103 @@
+{
+  "title": "Schedule",
+  "regionLabel": "Anime schedule",
+  "summary": {
+    "noAirings": "No airings",
+    "episodes_one": "{{count}} episode",
+    "episodes_few": "{{count}} episodes",
+    "episodes_many": "{{count}} episodes",
+    "episodes_other": "{{count}} episodes"
+  },
+  "modes": {
+    "ariaLabel": "Schedule view mode",
+    "daily": {
+      "label": "Day",
+      "tooltip": "Day: timeline"
+    },
+    "weekly": {
+      "label": "Week",
+      "tooltip": "Week: grid"
+    },
+    "timetable": {
+      "label": "Posters",
+      "tooltip": "Posters: board"
+    }
+  },
+  "nav": {
+    "previousDay": "Previous day",
+    "nextDay": "Next day",
+    "previousWeek": "Previous week",
+    "nextWeek": "Next week",
+    "today": "Today"
+  },
+  "legend": {
+    "live": "Live",
+    "upcoming": "Upcoming",
+    "watched": "Watched"
+  },
+  "daily": {
+    "emptyTitle": "Nothing airs that day",
+    "emptySubtitle": "Try another day or the weekly view",
+    "gapHours": "{{hours}}h break",
+    "noAiringsNow": "no airings right now",
+    "nowLabel": "Now, {{time}}",
+    "nowMarker": "NOW · {{time}}"
+  },
+  "weekly": {
+    "emptyLabel": "no airings",
+    "now": "now"
+  },
+  "timetable": {
+    "emptyLabel": "no posters",
+    "live": "▶ NOW",
+    "episodeShort": "EP {{episode}}"
+  },
+  "entry": {
+    "live": "Live",
+    "watched": "Watched",
+    "soon": "Soon",
+    "liveBadge": "LIVE",
+    "watch": "Watch",
+    "ariaLabel": "{{title}}, {{time}}",
+    "todayMarker": "{{day}} · NOW"
+  },
+  "dialog": {
+    "studios": "Studios",
+    "genres": "Genres",
+    "tags": "Tags",
+    "description": "Description",
+    "characters": "Characters",
+    "staff": "Staff",
+    "related": "Related",
+    "trailer": "Trailer",
+    "trailerTitle": "Trailer",
+    "streaming": "Where to watch",
+    "openOnAniList": "Open on AniList",
+    "expand": "Expand",
+    "collapse": "Collapse",
+    "startDate": "Start",
+    "endDate": "End",
+    "nextEpisode": {
+      "episode": "Ep. {{episode}}",
+      "in": "in"
+    },
+    "minutesShort": "min",
+    "episodesShort": "ep."
+  },
+  "subscribe": {
+    "enable": "Enable notifications",
+    "disable": "Disable notifications"
+  },
+  "weekday": {
+    "todaySuffix": "today"
+  },
+  "dayShort": {
+    "sun": "su",
+    "mon": "mo",
+    "tue": "tu",
+    "wed": "we",
+    "thu": "th",
+    "fri": "fr",
+    "sat": "sa"
+  }
+}

@@ -1,6 +1,9 @@
 import { useState, useCallback, useMemo, useEffect } from 'react';
+import { Trans, useTranslation } from 'react-i18next';
 import { Plus, X, Eye, CalendarDays, Bookmark, Clock, Play, Globe2, History } from 'lucide-react';
-import { pluralize, toLocalDate } from '@shiroani/shared';
+import { toLocalDate } from '@shiroani/shared';
+// Note: removed `pluralize` import — greeting subtitle now uses i18next CLDR plurals
+// via <Trans>, which works for both PL and EN.
 import { APP_LOGO_URL } from '@/lib/constants';
 import { useProfileStore } from '@/stores/useProfileStore';
 import type { QuickAccessSite, FrequentSite, AiringAnime, AnimeEntry } from '@shiroani/shared';
@@ -55,6 +58,7 @@ function getLogoUrl(site: QuickAccessSite): string | null {
 }
 
 export function NewTabPage({ onNavigate }: NewTabPageProps) {
+  const { t } = useTranslation('browser');
   const { customSites, frequentSites, hiddenPredefinedIds } = useQuickAccessStore(
     useShallow(s => ({
       customSites: s.sites,
@@ -134,8 +138,8 @@ export function NewTabPage({ onNavigate }: NewTabPageProps) {
               <PanelHeader
                 id="newtab-quick-access"
                 icon={Bookmark}
-                title="Szybki dostęp"
-                meta={`${sites.length} ${sites.length === 1 ? 'zakładka' : 'zakładek'}`}
+                title={t('newTab.quickAccess.title')}
+                meta={t('newTab.quickAccess.tabsCount', { count: sites.length })}
               />
 
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5">
@@ -150,7 +154,7 @@ export function NewTabPage({ onNavigate }: NewTabPageProps) {
                 {/* Add site button — tile shape */}
                 <button
                   onClick={() => setIsAddDialogOpen(true)}
-                  aria-label="Dodaj stronę do szybkiego dostępu"
+                  aria-label={t('newTab.quickAccess.addAria')}
                   className={cn(
                     'group relative flex aspect-[1.7] flex-col items-center justify-center gap-1.5',
                     'rounded-[10px] border border-dashed border-border-glass bg-foreground/[0.02]',
@@ -159,14 +163,16 @@ export function NewTabPage({ onNavigate }: NewTabPageProps) {
                   )}
                 >
                   <Plus className="w-4 h-4" />
-                  <span className="font-mono text-[9px] uppercase tracking-[0.15em]">Dodaj</span>
+                  <span className="font-mono text-[9px] uppercase tracking-[0.15em]">
+                    {t('newTab.quickAccess.add')}
+                  </span>
                 </button>
               </div>
 
               {hiddenPredefined.length > 0 && (
                 <div className="mt-4 pt-3 border-t border-border-glass/60">
                   <h3 className="mb-2 font-mono text-[9.5px] uppercase tracking-[0.16em] text-muted-foreground/80">
-                    Ukryte strony
+                    {t('newTab.quickAccess.hiddenTitle')}
                   </h3>
                   <div className="flex flex-wrap gap-1.5">
                     {hiddenPredefined.map(site => (
@@ -192,7 +198,7 @@ export function NewTabPage({ onNavigate }: NewTabPageProps) {
               <PanelHeader
                 id="newtab-recent"
                 icon={Clock}
-                title="Ostatnio odwiedzone"
+                title={t('newTab.recents.title')}
                 meta={frequentSites.length > 0 ? `${frequentSites.length}` : undefined}
               />
 
@@ -221,22 +227,22 @@ export function NewTabPage({ onNavigate }: NewTabPageProps) {
       <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>Dodaj stronę</DialogTitle>
-            <DialogDescription>Dodaj stronę do szybkiego dostępu.</DialogDescription>
+            <DialogTitle>{t('newTab.quickAccess.addDialog.title')}</DialogTitle>
+            <DialogDescription>{t('newTab.quickAccess.addDialog.description')}</DialogDescription>
           </DialogHeader>
           <div className="space-y-3 py-2">
             <Input
-              placeholder="Nazwa"
+              placeholder={t('newTab.quickAccess.addDialog.namePlaceholder')}
               value={newSiteName}
               onChange={e => setNewSiteName(e.target.value)}
-              aria-label="Nazwa strony"
+              aria-label={t('newTab.quickAccess.addDialog.nameAria')}
               className="h-8 text-sm"
             />
             <Input
-              placeholder="https://example.com"
+              placeholder={t('newTab.quickAccess.addDialog.urlPlaceholder')}
               value={newSiteUrl}
               onChange={e => setNewSiteUrl(e.target.value)}
-              aria-label="Adres URL strony"
+              aria-label={t('newTab.quickAccess.addDialog.urlAria')}
               onKeyDown={e => {
                 if (e.key === 'Enter') handleAddSite();
               }}
@@ -245,14 +251,14 @@ export function NewTabPage({ onNavigate }: NewTabPageProps) {
           </div>
           <DialogFooter>
             <Button variant="ghost" size="sm" onClick={() => setIsAddDialogOpen(false)}>
-              Anuluj
+              {t('actions.cancel', { ns: 'common' })}
             </Button>
             <Button
               size="sm"
               onClick={handleAddSite}
               disabled={!newSiteName.trim() || !newSiteUrl.trim()}
             >
-              Dodaj
+              {t('newTab.quickAccess.addDialog.submit')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -313,6 +319,7 @@ const MAX_AIRING_CARDS = 12;
  *   3. "Miłego oglądania." fallback
  */
 function GreetingBanner() {
+  const { t } = useTranslation('browser');
   const profile = useProfileStore(s => s.profile);
   const storedUsername = useProfileStore(s => s.username);
   const settingsDisplayName = useSettingsStore(s => s.displayName);
@@ -338,9 +345,9 @@ function GreetingBanner() {
 
   const greeting = useMemo(() => {
     const hour = new Date().getHours();
-    if (hour >= 5 && hour < 18) return 'Dzień dobry';
-    return 'Dobry wieczór';
-  }, []);
+    if (hour >= 5 && hour < 18) return t('newTab.greeting.morning');
+    return t('newTab.greeting.evening');
+  }, [t]);
 
   return (
     <header className="mb-6 flex items-center gap-4">
@@ -381,27 +388,29 @@ interface GreetingSubtitleProps {
 }
 
 function GreetingSubtitle({ episodesWaiting, unreadFeedCount, todayCount }: GreetingSubtitleProps) {
+  const { t } = useTranslation('browser');
   const hasActionableNews = episodesWaiting > 0 || unreadFeedCount > 0;
+  const boldStrong = <b className="font-semibold text-foreground" />;
 
   if (hasActionableNews) {
     return (
       <p className="mt-1 text-[13px] text-muted-foreground">
         {episodesWaiting > 0 && (
-          <>
-            {episodesWaiting === 1 ? 'Czeka' : 'Czekają'} na Ciebie{' '}
-            <b className="font-semibold text-foreground">
-              {episodesWaiting} {pluralize(episodesWaiting, 'odcinek', 'odcinki', 'odcinków')}
-            </b>
-          </>
+          <Trans
+            ns="browser"
+            i18nKey="newTab.greeting.subtitle.episodesWaiting"
+            count={episodesWaiting}
+            components={{ 1: boldStrong }}
+          />
         )}
         {episodesWaiting > 0 && unreadFeedCount > 0 && ' · '}
         {unreadFeedCount > 0 && (
-          <>
-            <b className="font-semibold text-foreground">
-              {unreadFeedCount} {pluralize(unreadFeedCount, 'nowość', 'nowości', 'nowości')}
-            </b>{' '}
-            w subskrypcjach
-          </>
+          <Trans
+            ns="browser"
+            i18nKey="newTab.greeting.subtitle.feedUnread"
+            count={unreadFeedCount}
+            components={{ 1: boldStrong }}
+          />
         )}
         .
       </p>
@@ -411,20 +420,26 @@ function GreetingSubtitle({ episodesWaiting, unreadFeedCount, todayCount }: Gree
   if (todayCount > 0) {
     return (
       <p className="mt-1 text-[13px] text-muted-foreground">
-        Dzisiaj w harmonogramie{' '}
-        <b className="font-semibold text-foreground">
-          {pluralize(todayCount, 'odcinek', 'odcinki', 'odcinków')}
-        </b>
-        .
+        <Trans
+          ns="browser"
+          i18nKey="newTab.greeting.subtitle.todaySchedule"
+          count={todayCount}
+          components={{ 1: boldStrong }}
+        />
       </p>
     );
   }
 
-  return <p className="mt-1 text-[13px] text-muted-foreground">Miłego oglądania.</p>;
+  return (
+    <p className="mt-1 text-[13px] text-muted-foreground">
+      {t('newTab.greeting.subtitle.default')}
+    </p>
+  );
 }
 
 /** Airing Today section — horizontal scrolling poster cards */
 function AiringTodaySection() {
+  const { t } = useTranslation('browser');
   const todayKey = useMemo(() => toLocalDate(new Date()), []);
 
   const todayEntries = useScheduleStore(s => s.schedule[todayKey]);
@@ -481,7 +496,7 @@ function AiringTodaySection() {
             <CalendarDays className="w-3 h-3" />
           </span>
           <h2 className="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-            Emitowane dzisiaj
+            {t('newTab.airingToday.title')}
           </h2>
         </div>
         <div className="flex gap-3 overflow-hidden">
@@ -506,13 +521,13 @@ function AiringTodaySection() {
           <CalendarDays className="w-3 h-3" />
         </span>
         <h2 className="flex-1 font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-          Emitowane dzisiaj
+          {t('newTab.airingToday.title')}
         </h2>
         <button
           onClick={() => navigateTo('schedule')}
           className="font-mono text-[10px] uppercase tracking-[0.15em] text-primary/70 hover:text-primary transition-colors cursor-pointer"
         >
-          Pokaż wszystkie &rarr;
+          {t('newTab.airingToday.viewAll')}
         </button>
       </div>
 
@@ -529,7 +544,7 @@ function AiringTodaySection() {
             className="w-[100px] shrink-0 aspect-[3/4] rounded-lg border border-dashed border-border/40 hover:border-border/70 hover:bg-accent/20 transition-all flex flex-col items-center justify-center gap-1.5 text-muted-foreground/50 hover:text-muted-foreground/80"
           >
             <span className="text-lg">+</span>
-            <span className="text-2xs">Więcej</span>
+            <span className="text-2xs">{t('newTab.airingToday.more')}</span>
           </button>
         )}
       </div>
@@ -539,6 +554,7 @@ function AiringTodaySection() {
 
 /** Small poster card for the airing today horizontal scroll */
 function AiringPosterCard({ entry, isUser }: { entry: AiringAnime; isUser?: boolean }) {
+  const { t } = useTranslation('browser');
   const [imgError, setImgError] = useState(false);
   const title = getAnimeTitle(entry.media);
   const coverUrl = getCoverUrl(entry.media);
@@ -579,7 +595,9 @@ function AiringPosterCard({ entry, isUser }: { entry: AiringAnime; isUser?: bool
         {/* Title + episode overlay at bottom */}
         <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-2 pt-6">
           <p className="text-2xs font-medium text-white leading-tight line-clamp-2">{title}</p>
-          <p className="text-[10px] text-white/60 mt-0.5">Odc. {entry.episode}</p>
+          <p className="text-[10px] text-white/60 mt-0.5">
+            {t('newTab.airingToday.episodeShort', { episode: entry.episode })}
+          </p>
         </div>
       </div>
     </div>
@@ -588,6 +606,7 @@ function AiringPosterCard({ entry, isUser }: { entry: AiringAnime; isUser?: bool
 
 /** Resume watching section — pulls currently-watching entries from library. */
 function ResumeWatchingSection({ onNavigate }: { onNavigate: (url: string) => void }) {
+  const { t } = useTranslation('browser');
   const entries = useLibraryStore(s => s.entries);
   const navigateTo = useAppStore(s => s.navigateTo);
 
@@ -615,12 +634,11 @@ function ResumeWatchingSection({ onNavigate }: { onNavigate: (url: string) => vo
           id="newtab-resume"
           className="flex-1 font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground"
         >
-          Wznów oglądanie
+          {t('newTab.resume.title')}
         </h2>
         {watching.length > 0 ? (
           <span className="font-mono text-[9.5px] uppercase tracking-[0.1em] text-muted-foreground/70">
-            {watching.length}{' '}
-            {watching.length === 1 ? 'tytuł' : watching.length < 5 ? 'tytuły' : 'tytułów'}
+            {t('newTab.resume.count', { count: watching.length })}
           </span>
         ) : null}
       </div>
@@ -646,18 +664,20 @@ function ResumeWatchingSection({ onNavigate }: { onNavigate: (url: string) => vo
 }
 
 function ResumeCard({ entry, onResume }: { entry: AnimeEntry; onResume: () => void }) {
+  const { t } = useTranslation('browser');
   const [imgError, setImgError] = useState(false);
   const total = entry.episodes ?? 0;
   const current = entry.currentEpisode ?? 0;
   const progress = total > 0 ? Math.min(100, (current / total) * 100) : 0;
-  const episodeLabel = current > 0 ? `EP ${String(current).padStart(2, '0')}` : 'EP ??';
+  const episodeLabel =
+    current > 0 ? `EP ${String(current).padStart(2, '0')}` : t('newTab.resume.episodeUnknown');
   const host = entry.resumeUrl ? hostFromUrl(entry.resumeUrl) : null;
 
   return (
     <button
       onClick={onResume}
       className="group relative flex w-[200px] shrink-0 flex-col overflow-hidden rounded-[10px] border border-border-glass bg-foreground/[0.04] text-left transition-colors hover:border-primary/40 hover:bg-primary/[0.04] cursor-pointer"
-      aria-label={`Wznów ${entry.title}`}
+      aria-label={t('newTab.resume.ariaResume', { title: entry.title })}
     >
       <div className="relative h-[96px] w-full overflow-hidden bg-gradient-to-br from-primary/30 to-primary/5">
         {entry.coverImage && !imgError ? (
@@ -691,7 +711,7 @@ function ResumeCard({ entry, onResume }: { entry: AnimeEntry; onResume: () => vo
           {entry.title}
         </p>
         <p className="line-clamp-1 font-mono text-[10px] text-muted-foreground">
-          {host ?? 'brak adresu'}
+          {host ?? t('newTab.resume.noUrl')}
           {total > 0 && ` · ${current}/${total}`}
         </p>
         {total > 0 && <ProgressBar value={progress} thickness={2} glow />}
@@ -701,6 +721,7 @@ function ResumeCard({ entry, onResume }: { entry: AnimeEntry; onResume: () => vo
 }
 
 function EmptyResumeState({ onBrowseLibrary }: { onBrowseLibrary: () => void }) {
+  const { t } = useTranslation('browser');
   return (
     <div className="flex items-center justify-between gap-4 rounded-[10px] border border-dashed border-border-glass bg-foreground/[0.02] px-4 py-5">
       <div className="flex items-start gap-3 min-w-0">
@@ -708,28 +729,33 @@ function EmptyResumeState({ onBrowseLibrary }: { onBrowseLibrary: () => void }) 
           <Play className="w-3.5 h-3.5" />
         </span>
         <div className="min-w-0">
-          <p className="text-[12.5px] font-semibold text-foreground">Nic w trakcie</p>
+          <p className="text-[12.5px] font-semibold text-foreground">
+            {t('newTab.resume.empty.title')}
+          </p>
           <p className="mt-0.5 text-[11px] text-muted-foreground">
-            Oznacz coś jako „W trakcie" w bibliotece, a pojawi się tutaj.
+            {t('newTab.resume.empty.body')}
           </p>
         </div>
       </div>
       <Button variant="outline" size="sm" onClick={onBrowseLibrary}>
-        Biblioteka
+        {t('newTab.resume.empty.cta')}
       </Button>
     </div>
   );
 }
 
 function EmptyRecents() {
+  const { t } = useTranslation('browser');
   return (
     <div className="flex flex-col items-center justify-center gap-2 rounded-[10px] border border-dashed border-border-glass bg-foreground/[0.02] px-4 py-6 text-center">
       <span className="grid size-8 place-items-center rounded-md bg-primary/10 text-primary">
         <History className="w-3.5 h-3.5" />
       </span>
-      <p className="text-[11.5px] font-medium text-foreground/80">Brak historii</p>
+      <p className="text-[11.5px] font-medium text-foreground/80">
+        {t('newTab.recents.empty.title')}
+      </p>
       <p className="max-w-[28ch] text-[10.5px] text-muted-foreground">
-        Strony, które odwiedzasz, pojawią się tutaj.
+        {t('newTab.recents.empty.body')}
       </p>
     </div>
   );
@@ -750,6 +776,7 @@ function SiteCard({
   onClick: () => void;
   onRemove: () => void;
 }) {
+  const { t } = useTranslation('browser');
   const [faviconError, setFaviconError] = useState(false);
   const [logoError, setLogoError] = useState(false);
   const displayHost = hostFromUrl(site.url);
@@ -806,7 +833,9 @@ function SiteCard({
             <Globe2 className="w-3 h-3" />
           )}
           <span className="truncate">
-            {site.isPredefined ? 'zapisane' : (displayHost ?? 'strona')}
+            {site.isPredefined
+              ? t('newTab.quickAccess.tile.saved')
+              : (displayHost ?? t('newTab.quickAccess.tile.site'))}
           </span>
         </span>
 
@@ -841,7 +870,7 @@ function SiteCard({
           e.stopPropagation();
           onRemove();
         }}
-        aria-label="Usuń stronę"
+        aria-label={t('newTab.quickAccess.removeAria')}
         className="absolute top-1.5 right-1.5 z-10 grid size-5 place-items-center rounded-full bg-black/50 text-white/80 opacity-0 transition-opacity hover:bg-destructive hover:text-destructive-foreground group-hover:opacity-100 group-focus-within:opacity-100 cursor-pointer"
       >
         <X className="w-3 h-3" />
@@ -852,6 +881,7 @@ function SiteCard({
 
 /** Frequent site row — favicon + title + host + time-ago */
 function FrequentSiteRow({ site, onClick }: { site: FrequentSite; onClick: () => void }) {
+  const { t } = useTranslation('browser');
   const [imgError, setImgError] = useState(false);
   const host = hostFromUrl(site.url) ?? site.url;
 
@@ -879,23 +909,26 @@ function FrequentSiteRow({ site, onClick }: { site: FrequentSite; onClick: () =>
         </div>
       </div>
       <span className="shrink-0 font-mono text-[9.5px] text-muted-foreground/70">
-        {formatRelativeTime(site.lastVisited)}
+        {formatRelativeTime(site.lastVisited, t)}
       </span>
     </button>
   );
 }
 
-function formatRelativeTime(timestamp: number): string {
+function formatRelativeTime(
+  timestamp: number,
+  t: (key: string, opts?: Record<string, unknown>) => string
+): string {
   const diff = Date.now() - timestamp;
   const minutes = Math.floor(diff / 60_000);
-  if (minutes < 1) return 'teraz';
-  if (minutes < 60) return `${minutes}m`;
+  if (minutes < 1) return t('newTab.recents.relative.now');
+  if (minutes < 60) return t('newTab.recents.relative.minutes', { count: minutes });
   const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h`;
+  if (hours < 24) return t('newTab.recents.relative.hours', { count: hours });
   const days = Math.floor(hours / 24);
-  if (days < 7) return `${days}d`;
+  if (days < 7) return t('newTab.recents.relative.days', { count: days });
   const weeks = Math.floor(days / 7);
-  if (weeks < 4) return `${weeks}t`;
+  if (weeks < 4) return t('newTab.recents.relative.weeks', { count: weeks });
   const months = Math.floor(days / 30);
-  return `${months}mc`;
+  return t('newTab.recents.relative.months', { count: months });
 }

@@ -24,5 +24,41 @@
       "sat": "Sobota",
       "sun": "Niedziela"
     }
+  },
+  "actions": {
+    "save": "Zapisz",
+    "cancel": "Anuluj",
+    "confirm": "Potwierdź",
+    "close": "Zamknij",
+    "delete": "Usuń",
+    "remove": "Usuń",
+    "add": "Dodaj",
+    "edit": "Edytuj",
+    "back": "Wstecz",
+    "next": "Dalej",
+    "retry": "Spróbuj ponownie",
+    "search": "Szukaj",
+    "filter": "Filtruj",
+    "sort": "Sortuj",
+    "refresh": "Odśwież",
+    "open": "Otwórz",
+    "select": "Wybierz",
+    "copy": "Kopiuj",
+    "viewMore": "Pokaż więcej",
+    "viewLess": "Pokaż mniej"
+  },
+  "state": {
+    "loading": "Ładowanie...",
+    "saving": "Zapisywanie...",
+    "error": "Błąd",
+    "empty": "Brak wyników",
+    "ok": "OK",
+    "yes": "Tak",
+    "no": "Nie",
+    "success": "Sukces"
+  },
+  "dialog": {
+    "areYouSure": "Czy na pewno?",
+    "thisCannotBeUndone": "Tej akcji nie można cofnąć."
   }
 }

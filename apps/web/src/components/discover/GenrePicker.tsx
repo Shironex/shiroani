@@ -1,4 +1,5 @@
 import { memo, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Check, Ban } from 'lucide-react';
 import { ANIME_GENRES, ANIME_GENRE_LABELS_PL, type AnimeGenre } from '@shiroani/shared';
 import { cn } from '@/lib/utils';
@@ -23,6 +24,7 @@ const GenrePicker = memo(function GenrePicker({
   onChange,
   disabled,
 }: GenrePickerProps) {
+  const { t } = useTranslation('discover');
   const cycle = useCallback(
     (genre: AnimeGenre, direction: 'forward' | 'exclude') => {
       const isIn = included.includes(genre);
@@ -66,9 +68,15 @@ const GenrePicker = memo(function GenrePicker({
               cycle(genre, 'exclude');
             }}
             aria-pressed={state !== 'neutral'}
-            aria-label={`${ANIME_GENRE_LABELS_PL[genre]}: ${
-              state === 'included' ? 'wybrane' : state === 'excluded' ? 'wykluczone' : 'neutralne'
-            }`}
+            aria-label={t('genres.labelTemplate', {
+              genre: ANIME_GENRE_LABELS_PL[genre],
+              state:
+                state === 'included'
+                  ? t('genres.stateIncluded')
+                  : state === 'excluded'
+                    ? t('genres.stateExcluded')
+                    : t('genres.stateNeutral'),
+            })}
             className={cn(
               'group inline-flex items-center gap-1 px-2.5 py-[5px] rounded-full',
               'font-mono text-[10px] uppercase tracking-[0.08em] font-semibold',

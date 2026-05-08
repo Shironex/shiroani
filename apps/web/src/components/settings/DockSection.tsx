@@ -1,4 +1,5 @@
 import { LayoutGrid } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { useDockStore, type DockEdge } from '@/stores/useDockStore';
 import {
@@ -11,14 +12,18 @@ import { DockStage } from '@/components/shared/DockStage';
 import { cn } from '@/lib/utils';
 import { useDockPreviewItems } from '@/hooks/useDockPreviewItems';
 
-const DOCK_EDGES: ReadonlyArray<{ value: DockEdge; label: string }> = [
-  { value: 'bottom', label: 'Dół' },
-  { value: 'top', label: 'Góra' },
-  { value: 'left', label: 'Lewo' },
-  { value: 'right', label: 'Prawo' },
+const DOCK_EDGES: ReadonlyArray<{
+  value: DockEdge;
+  labelKey: 'bottom' | 'top' | 'left' | 'right';
+}> = [
+  { value: 'bottom', labelKey: 'bottom' },
+  { value: 'top', labelKey: 'top' },
+  { value: 'left', labelKey: 'left' },
+  { value: 'right', labelKey: 'right' },
 ];
 
 export function DockSection() {
+  const { t } = useTranslation('settings');
   const dockEdge = useDockStore(s => s.edge);
   const setDockEdge = useDockStore(s => s.setEdge);
   const dockItems = useDockPreviewItems();
@@ -34,22 +39,22 @@ export function DockSection() {
     <div className="space-y-4">
       <SettingsCard
         icon={LayoutGrid}
-        title="Pozycja docka"
-        subtitle="Wybierz krawędź ekranu. Podgląd po prawej reaguje na zmianę."
+        title={t('dock.position.title')}
+        subtitle={t('dock.position.subtitle')}
       >
         <DockStage edge={dockEdge} items={dockItems} height={160} />
 
         <SettingsRow stacked>
           <SettingsRowLabel
-            title="Krawędź"
-            description="Do której krawędzi ekranu przypiąć dock."
+            title={t('dock.position.edgeTitle')}
+            description={t('dock.position.edgeDescription')}
           />
           <div
             role="radiogroup"
-            aria-label="Krawędź docka"
+            aria-label={t('dock.position.edgeAria')}
             className="grid grid-cols-2 gap-1.5 sm:grid-cols-4"
           >
-            {DOCK_EDGES.map(({ value, label }) => {
+            {DOCK_EDGES.map(({ value, labelKey }) => {
               const isActive = dockEdge === value;
               return (
                 <button
@@ -66,7 +71,7 @@ export function DockSection() {
                       : 'border-border-glass bg-background/30 text-muted-foreground hover:bg-accent/40 hover:text-foreground'
                   )}
                 >
-                  {label}
+                  {t(`dock.position.edges.${labelKey}`)}
                 </button>
               );
             })}
@@ -75,8 +80,8 @@ export function DockSection() {
 
         <SettingsRow divider>
           <SettingsRowLabel
-            title="Pozycja na krawędzi"
-            description="Przywróć dock na środek krawędzi, jeśli przeciągnąłeś go w inne miejsce."
+            title={t('dock.position.resetTitle')}
+            description={t('dock.position.resetDescription')}
           />
           <Button
             variant="outline"
@@ -84,7 +89,7 @@ export function DockSection() {
             className="h-8 border-border-glass text-xs"
             onClick={resetDockPosition}
           >
-            Przywróć pozycję
+            {t('dock.position.resetAction')}
           </Button>
         </SettingsRow>
       </SettingsCard>
@@ -92,29 +97,29 @@ export function DockSection() {
       <SettingsCard
         icon={LayoutGrid}
         tone="muted"
-        title="Zachowanie"
-        subtitle="Jak dock reaguje na kursor i czy można go przesuwać."
+        title={t('dock.behavior.title')}
+        subtitle={t('dock.behavior.subtitle')}
       >
         <SettingsToggleRow
           id="dock-autohide-label"
-          title="Automatyczne ukrywanie"
-          description="Dock chowa się do ikony i rozwija po najechaniu kursorem"
+          title={t('dock.behavior.autoHide.title')}
+          description={t('dock.behavior.autoHide.description')}
           checked={dockAutoHide}
           onCheckedChange={setDockAutoHide}
         />
         <SettingsToggleRow
           divider
           id="dock-labels-label"
-          title="Pokaż etykiety"
-          description="Wyświetlaj nazwy pod ikonami nawigacji"
+          title={t('dock.behavior.showLabels.title')}
+          description={t('dock.behavior.showLabels.description')}
           checked={dockShowLabels}
           onCheckedChange={setDockShowLabels}
         />
         <SettingsToggleRow
           divider
           id="dock-draggable-label"
-          title="Przeciąganie"
-          description="Pozwól na zmianę pozycji docka przeciąganiem"
+          title={t('dock.behavior.draggable.title')}
+          description={t('dock.behavior.draggable.description')}
           checked={dockDraggable}
           onCheckedChange={setDockDraggable}
         />

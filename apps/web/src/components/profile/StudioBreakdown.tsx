@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { PillTag } from '@/components/ui/pill-tag';
 import type { UserProfile } from '@shiroani/shared';
 
@@ -12,10 +13,11 @@ interface StudioBreakdownProps {
  * (the sibling pattern below `.side-label{Ulubione studia}`).
  */
 export function StudioBreakdown({ studios, limit = 4 }: StudioBreakdownProps) {
+  const { t } = useTranslation('profile');
   const top = studios.slice(0, limit);
 
   if (top.length === 0) {
-    return <p className="text-[12px] text-muted-foreground/70">Brak danych o studiach.</p>;
+    return <p className="text-[12px] text-muted-foreground/70">{t('studios.empty')}</p>;
   }
 
   return (

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   BookOpen,
   Calendar,
@@ -175,6 +176,8 @@ function DockItem({
   showLabel: boolean;
   onClick: () => void;
 }) {
+  const { t } = useTranslation('nav');
+  const label = t(`link.${item.id}`, { defaultValue: item.label });
   const [ripple, setRipple] = useState(false);
 
   const handleClick = useCallback(() => {
@@ -189,7 +192,7 @@ function DockItem({
       onClick={handleClick}
       onAnimationEnd={() => ripple && setRipple(false)}
       aria-current={isActive ? 'page' : undefined}
-      aria-label={item.label}
+      aria-label={label}
       className={cn(
         'group relative z-[1] flex items-center justify-center',
         // Floating pill dock uses circular slots without labels; labeled mode
@@ -220,7 +223,7 @@ function DockItem({
             isActive ? 'text-primary-foreground/90' : 'text-muted-foreground/70'
           )}
         >
-          {item.label}
+          {label}
         </span>
       )}
     </button>
@@ -330,6 +333,7 @@ function DockDragHandle({
   dragHandlers,
   hasVisibleItems,
 }: DockDragHandleProps) {
+  const { t } = useTranslation('nav');
   if (!draggable) return null;
 
   const GripIcon = vertical ? GripHorizontal : GripVertical;
@@ -357,8 +361,8 @@ function DockDragHandle({
       {hasVisibleItems && <span aria-hidden="true" className={dividerClass} />}
       <button
         type="button"
-        aria-label="Przesuń dock"
-        title="Przesuń dock"
+        aria-label={t('tooltip.moveDock')}
+        title={t('tooltip.moveDock')}
         className={buttonClass}
         onPointerDown={dragHandlers.onPointerDown}
         onPointerMove={dragHandlers.onPointerMove}
@@ -378,6 +382,7 @@ interface NavigationDockProps {
 }
 
 export function NavigationDock({ hasBg }: NavigationDockProps) {
+  const { t } = useTranslation('nav');
   const activeView = useAppStore(s => s.activeView);
   const navigateTo = useAppStore(s => s.navigateTo);
 
@@ -505,10 +510,10 @@ export function NavigationDock({ hasBg }: NavigationDockProps) {
   if (!showFullDock) {
     // Collapsed: show only the logo
     return (
-      <nav aria-label="Nawigacja główna">
+      <nav aria-label={t('ariaPrimary')}>
         <button
           type="button"
-          aria-label="Rozwiń nawigację"
+          aria-label={t('ariaExpand')}
           style={dockStyle}
           onMouseEnter={handleMouseEnter}
           onPointerDown={draggable ? dragHandlers.onPointerDown : undefined}
@@ -535,7 +540,7 @@ export function NavigationDock({ hasBg }: NavigationDockProps) {
         >
           <img
             src={APP_LOGO_URL}
-            alt="ShiroAni"
+            alt={t('logoAlt')}
             draggable={false}
             className="w-6 h-6 object-contain"
           />
@@ -546,7 +551,7 @@ export function NavigationDock({ hasBg }: NavigationDockProps) {
 
   return (
     <nav
-      aria-label="Nawigacja główna"
+      aria-label={t('ariaPrimary')}
       style={dockStyle}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}

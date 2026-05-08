@@ -5,7 +5,50 @@
   },
   "updates": {
     "justNow": "przed chwilą",
-    "today": "dziś {{time}}"
+    "today": "dziś {{time}}",
+    "card": {
+      "title": "Wersja aplikacji",
+      "subtitleStable": "Aktualna wersja i kanał aktualizacji.",
+      "subtitleMac": "Aktualna wersja ShiroAni."
+    },
+    "channelLabel": "Kanał aktualizacji",
+    "channelStableUpper": "KANAŁ STABILNY",
+    "channelBetaUpper": "KANAŁ BETA",
+    "channelStable": "Stabilna",
+    "channelBeta": "Beta",
+    "channelLockedNote": "Nie można zmienić kanału w trakcie aktualizacji.",
+    "channelDescription": "Kanał stabilny dostaje aktualizacje dopiero po przetestowaniu. Beta może zawierać błędy.",
+    "macUnsignedNote": "Na macOS automatyczne aktualizacje na razie nie działają, bo aplikacja nie jest podpisana cyfrowo. Najnowszą wersję pobierz ręcznie z GitHub Releases lub Discorda.",
+    "openReleases": "Otwórz GitHub Releases",
+    "checkForUpdates": "Sprawdź aktualizacje",
+    "download": "Pobierz",
+    "installAndRestart": "Zainstaluj i uruchom ponownie",
+    "lastChecked": "Ostatnie sprawdzenie: {{label}}",
+    "downgradeWarning": "To jest <1>cofnięcie wersji</1> — instalacja zastąpi Twoją obecną bibliotekę starszym formatem. Upewnij się, że masz kopię zapasową.",
+    "downloadProgressAria": "Postęp pobierania",
+    "status": {
+      "idle": "Brak nowych aktualizacji",
+      "checking": "Sprawdzanie...",
+      "available": "Dostępna aktualizacja: {{version}}",
+      "downloading": "Pobieranie · {{transferred}}/{{total}}",
+      "downloadingPct": "Pobieranie · {{percent}}%",
+      "downloadingFallback": "Pobieranie...",
+      "ready": "Aktualizacja gotowa do instalacji",
+      "awaitingArtifacts": "Wydanie się wgrywa — pobieranie zacznie się automatycznie.",
+      "errorReleasePending": "Wydanie w toku — spróbuj za chwilę.",
+      "errorPrefix": "Błąd: {{message}}",
+      "unknownError": "Nieznany błąd"
+    },
+    "changelogPreview": {
+      "title": "Historia zmian",
+      "subtitle": "Co nowego w tej wersji.",
+      "shortLabels": {
+        "new": "Nowe",
+        "fix": "Fix",
+        "polish": "Ulep.",
+        "security": "Bezp."
+      }
+    }
   },
   "notifications": {
     "card": {
@@ -44,5 +87,473 @@
       "empty": "Brak subskrypcji. Dodaj anime z harmonogramu, klikając ikonę dzwonka.",
       "remove": "Usuń subskrypcję"
     }
+  },
+  "general": {
+    "profileCard": {
+      "title": "Profil",
+      "subtitle": "Imię używane w powitaniu na nowej karcie. Zostaje na tym urządzeniu."
+    },
+    "displayName": {
+      "title": "Twoje imię",
+      "description": "Zostaw puste, a Shiro użyje nicku z AniList (jeśli masz połączone konto).",
+      "placeholder": "np. Aleks"
+    },
+    "appCard": {
+      "title": "Ogólne ustawienia aplikacji",
+      "subtitle": "Zachowanie aplikacji przy starcie systemu i odświeżaniu danych."
+    },
+    "autoLaunch": {
+      "title": "Uruchamiaj przy starcie systemu",
+      "description": "Automatycznie otwiera ShiroAni po zalogowaniu do systemu"
+    },
+    "feedRefreshOnStartup": {
+      "title": "Odświeżaj RSS przy starcie aplikacji",
+      "description": "Gdy wyłączone, aktualności pobiorą się dopiero po wejściu do widoku Aktualności lub po ręcznym odświeżeniu. Zmiana zadziała od następnego uruchomienia."
+    },
+    "restartCallout": "Niektóre zmiany systemowe wymagają ponownego uruchomienia aplikacji. <1>Twoje dane są bezpieczne.</1>"
+  },
+  "themes": {
+    "readability": {
+      "title": "Czytelność",
+      "subtitle": "Dopasuj skalę tekstu i interfejsu do swojego ekranu.",
+      "macHint": "Na macOS często najlepiej sprawdza się zakres 105-110%, zwłaszcza na ekranach Retina."
+    },
+    "palette": {
+      "title": "Motyw kolorystyczny",
+      "subtitle": "Wybierz paletę: własną lub z biblioteki.",
+      "import": "Importuj"
+    },
+    "custom": {
+      "label": "Własne",
+      "newAria": "Nowy motyw",
+      "newButton": "Nowy motyw",
+      "cloneAria": "Klonuj motyw {{label}}",
+      "editAria": "Edytuj motyw",
+      "exportAria": "Eksportuj motyw",
+      "deleteAria": "Usuń motyw"
+    },
+    "groupDark": "Ciemne",
+    "groupLight": "Jasne",
+    "deleteDialog": {
+      "title": "Usunąć motyw?",
+      "description": "Motyw „{{label}}\" zostanie trwale usunięty. Nie da się tego cofnąć."
+    },
+    "toast": {
+      "deleted": "Usunięto motyw"
+    },
+    "editor": {
+      "newTitle": "Nowy motyw",
+      "editTitle": "Edytuj motyw",
+      "newDescription": "Utwórz nowy motyw",
+      "editDescription": "Zmień ustawienia własnego motywu",
+      "name": "Nazwa",
+      "namePlaceholder": "Mój motyw",
+      "dark": "Ciemny",
+      "baseTheme": "Motyw bazowy",
+      "defaultName": "Mój motyw",
+      "cloneNamePrefix": "Kopia: {{label}}",
+      "groups": {
+        "main": "Główne kolory",
+        "cardsMenus": "Karty i menu",
+        "sidebar": "Pasek boczny",
+        "borders": "Obramowania",
+        "statuses": "Statusy",
+        "shadows": "Cienie"
+      },
+      "reset": "Przywróć",
+      "cancel": "Anuluj",
+      "save": "Zapisz",
+      "toast": {
+        "nameRequired": "Nazwa motywu nie może być pusta",
+        "saved": "Motyw zapisany",
+        "changesSaved": "Zapisano zmiany"
+      }
+    }
+  },
+  "background": {
+    "card": {
+      "title": "Tło aplikacji",
+      "subtitle": "Ustaw własny obrazek lub GIF jako tło interfejsu."
+    }
+  },
+  "panel": {
+    "previewAlt": "Podgląd tła",
+    "labelCustom": "Własne tło",
+    "labelCustomTag": "Własne",
+    "labelDefault": "Domyślne",
+    "labelDefaultTag": "Sakura twilight",
+    "labelSet": "Ustawione",
+    "labelEmpty": "Brak tła",
+    "pickImage": "Wybierz obraz",
+    "remove": "Usuń tło",
+    "reset": "Resetuj",
+    "opacity": "Przezroczystość",
+    "blur": "Rozmycie",
+    "dim": "Przyciemnienie"
+  },
+  "dock": {
+    "position": {
+      "title": "Pozycja docka",
+      "subtitle": "Wybierz krawędź ekranu. Podgląd po prawej reaguje na zmianę.",
+      "edgeTitle": "Krawędź",
+      "edgeDescription": "Do której krawędzi ekranu przypiąć dock.",
+      "edgeAria": "Krawędź docka",
+      "edges": {
+        "bottom": "Dół",
+        "top": "Góra",
+        "left": "Lewo",
+        "right": "Prawo"
+      },
+      "resetTitle": "Pozycja na krawędzi",
+      "resetDescription": "Przywróć dock na środek krawędzi, jeśli przeciągnąłeś go w inne miejsce.",
+      "resetAction": "Przywróć pozycję"
+    },
+    "behavior": {
+      "title": "Zachowanie",
+      "subtitle": "Jak dock reaguje na kursor i czy można go przesuwać.",
+      "autoHide": {
+        "title": "Automatyczne ukrywanie",
+        "description": "Dock chowa się do ikony i rozwija po najechaniu kursorem"
+      },
+      "showLabels": {
+        "title": "Pokaż etykiety",
+        "description": "Wyświetlaj nazwy pod ikonami nawigacji"
+      },
+      "draggable": {
+        "title": "Przeciąganie",
+        "description": "Pozwól na zmianę pozycji docka przeciąganiem"
+      }
+    }
+  },
+  "views": {
+    "card": {
+      "title": "Widoczność widoków",
+      "subtitle": "Ukryj sekcje, których nie używasz. Ustawienia są zawsze dostępne."
+    },
+    "alwaysOn": "(zawsze)"
+  },
+  "browser": {
+    "adblock": {
+      "card": {
+        "title": "Blokowanie reklam",
+        "subtitle": "Wbudowany blokader reklam w przeglądarce ShiroAni."
+      },
+      "toggleTitle": "Blokowanie reklam",
+      "toggleDescription": "Blokuj reklamy we wbudowanej przeglądarce (EasyList + EasyPrivacy)",
+      "categories": {
+        "graphic": "Reklamy graficzne / pop-up",
+        "trackers": "Trackery analityczne",
+        "videoAds": "Reklamy w odtwarzaczu wideo"
+      },
+      "categoryBlocked": "Blokowane",
+      "categoryDisabled": "Wyłączone",
+      "exceptions": "Wyjątki",
+      "exceptionsCount": "{{count}} / {{max}}",
+      "addPlaceholder": "np. example.com",
+      "addAria": "Dodaj domenę do listy wyjątków",
+      "addButton": "Dodaj",
+      "emptyExceptions": "Brak wyjątków. Reklamy są blokowane na wszystkich stronach.",
+      "listAria": "Lista zwolnionych z blokady domen",
+      "removeAria": "Usuń {{host}} z listy wyjątków",
+      "exceptionsHint": "Na dodanych tu domenach adblock jest wyłączony. Filtry kosmetyczne nadal działają."
+    },
+    "popups": {
+      "card": {
+        "title": "Wyskakujące okna",
+        "subtitle": "Kontroluj wyskakujące okna otwierane przez strony."
+      },
+      "toggleTitle": "Blokuj wyskakujące okna",
+      "toggleDescription": "Okna OAuth (Google, Discord) zawsze są dozwolone."
+    },
+    "tabs": {
+      "card": {
+        "title": "Zachowanie kart",
+        "subtitle": "Zarządzaj kartami i historią przeglądania."
+      },
+      "restoreTitle": "Przywróć karty po restarcie",
+      "restoreDescription": "Zapamiętuje otwarte karty między sesjami.",
+      "splitTitle": "Karty dzielone",
+      "splitDescription": "Przeciągnij kartę na drugą, żeby otworzyć je obok siebie.",
+      "trackTitle": "Zapisz historię przeglądania",
+      "trackDescription": "Lokalna historia. Nigdzie nie jest wysyłana."
+    },
+    "general": {
+      "card": {
+        "title": "Przeglądarka internetowa",
+        "subtitle": "Ogólne zachowanie wbudowanej przeglądarki"
+      },
+      "description": "ShiroAni używa wbudowanego Chromium. Dane przeglądania są zapisywane lokalnie i nigdy nie opuszczają Twojego urządzenia."
+    }
+  },
+  "discord": {
+    "main": {
+      "title": "Discord Rich Presence",
+      "subtitle": "Połącz z Discordem i pokaż swoją aktywność znajomym.",
+      "enableAria": "Włącz Discord Rich Presence",
+      "showDetailsTitle": "Pokaż tytuły anime",
+      "showDetailsDescription": "Wyświetlaj tytuł oglądanego anime na Discordzie",
+      "showTimeTitle": "Pokaż czas",
+      "showTimeDescription": "Pokazuj, od ilu minut coś oglądasz.",
+      "useTemplatesTitle": "Własne szablony",
+      "useTemplatesDescription": "Dostosuj tekst statusu dla każdej aktywności",
+      "save": "Zapisz",
+      "saved": "Zapisano"
+    },
+    "preview": {
+      "title": "Podgląd",
+      "subtitle": "Tak będzie wyglądał Twój status na Discordzie.",
+      "playingHeader": "Ogląda anime",
+      "elapsed": "Upłynęło 00:42:15",
+      "anilistButton": "Pokaż na AniList"
+    },
+    "editor": {
+      "title": "Szablony statusów",
+      "subtitle": "Edytuj tekst dla każdego typu aktywności",
+      "activityType": "Typ aktywności",
+      "line1": "Linia 1 (opis)",
+      "line2": "Linia 2 (stan)",
+      "line1Placeholder": "np. Ogląda anime",
+      "line2Placeholder": "np. {anime_title}",
+      "toggles": {
+        "duration": "Czas trwania",
+        "cover": "Okładka anime",
+        "anilistButton": "Przycisk AniList"
+      },
+      "variablesLabel": "Dostępne zmienne:",
+      "resetDefaults": "Przywróć domyślne"
+    },
+    "info": "Status na Discordzie działa tylko, gdy klient Discord jest uruchomiony na komputerze. Na Twoim profilu Discord znajomi zobaczą, co robisz w ShiroAni."
+  },
+  "mascot": {
+    "card": {
+      "title": "Maskotka na pulpicie",
+      "subtitle": "Animowana maskotka chibi na pulpicie z ikonką w zasobniku systemowym.",
+      "enableAria": "Włącz maskotkę"
+    },
+    "size": "Rozmiar maskotki",
+    "sizeAria": "Rozmiar maskotki",
+    "sprite": {
+      "title": "Własny sprite",
+      "description": "PNG, JPG, GIF lub WEBP · maks. 10 MB · 2048×2048 px. Animowane GIF-y wyświetlą się jako pierwsza klatka.",
+      "change": "Zmień",
+      "pick": "Wybierz sprite",
+      "reset": "Resetuj",
+      "errorFallback": "Nie udało się wczytać sprite"
+    },
+    "scaleMode": {
+      "title": "Skalowanie sprite",
+      "description": "Jak dopasować obraz do kwadratowego okna maskotki",
+      "options": {
+        "contain": "Dopasuj (zachowaj proporcje)",
+        "cover": "Wypełnij (przytnij brzegi)",
+        "stretch": "Rozciągnij"
+      }
+    },
+    "visibility": {
+      "title": "Tryb widoczności",
+      "description": "Kiedy maskotka ma być widoczna na pulpicie",
+      "options": {
+        "always": "Zawsze widoczna",
+        "trayOnly": "Tylko gdy okno jest zminimalizowane"
+      }
+    },
+    "lock": {
+      "title": "Zablokuj pozycję",
+      "description": "Zapobiega przypadkowemu przesuwaniu maskotki"
+    },
+    "animation": {
+      "title": "Animacja maskotki",
+      "description": "Lekkie kołysanie góra-dół. Wyłącz, aby maskotka stała nieruchomo."
+    },
+    "resetPosition": {
+      "title": "Resetuj pozycję",
+      "description": "Przywróć maskotkę do domyślnej pozycji (prawy dolny róg)",
+      "action": "Resetuj"
+    }
+  },
+  "data": {
+    "export": {
+      "card": {
+        "title": "Eksportuj dane",
+        "subtitle": "Zapisz wszystkie dane z aplikacji do pliku JSON."
+      },
+      "scope": {
+        "library": "Biblioteka",
+        "diary": "Pamiętnik",
+        "settings": "Ustawienia",
+        "settingsValue": "Wszystkie",
+        "titles": {
+          "one": "{{count}} tytuł",
+          "few": "{{count}} tytuły",
+          "many": "{{count}} tytułów",
+          "other": "{{count}} tytułów"
+        },
+        "entries": {
+          "one": "{{count}} wpis",
+          "few": "{{count}} wpisy",
+          "many": "{{count}} wpisów",
+          "other": "{{count}} wpisów"
+        }
+      },
+      "action": "Eksportuj wszystko"
+    },
+    "import": {
+      "card": {
+        "title": "Importuj dane",
+        "subtitle": "Wczytaj dane z pliku JSON do aplikacji."
+      },
+      "warning": "<1>Uwaga:</1> import nadpisze istniejące dane. Najlepiej najpierw zrób eksport jako kopię zapasową.",
+      "action": "Wybierz plik JSON"
+    },
+    "danger": {
+      "title": "Usuń wszystkie dane",
+      "subtitle": "Usuwa wszystkie dane bez możliwości cofnięcia.",
+      "description": "Usuniesz bibliotekę, pamiętnik, subskrypcje i ustawienia. Tego nie można cofnąć.",
+      "action": "Usuń wszystkie dane"
+    }
+  },
+  "about": {
+    "logoAlt": "Logo ShiroAni",
+    "tagline": "Przeglądarka · tracker anime w jednym miejscu",
+    "rerunOnboarding": "Uruchom kreator ponownie",
+    "onboardingHint": "Po kliknięciu kreator uruchomi się od razu, a Shiro-chan przeprowadzi Cię jeszcze raz!",
+    "github": "GitHub",
+    "openChangelog": "Zobacz historię zmian",
+    "story": {
+      "title": "Historia",
+      "subtitle": "Od autora. Po prostu chciałem takiej aplikacji.",
+      "p1": "ShiroAni zrobiłem, bo chciałem mieć wszystko do oglądania anime w jednym miejscu. <1>Przeglądarka, biblioteka, harmonogram, pamiętnik</1>, po prostu jedno przytulne miejsce.",
+      "p2": "Z czasem zacząłem dodawać coraz więcej rzeczy: maskotki, motywy, powiadomienia i po prostu świetnie się przy tym bawiłem. W pewnym momencie pomyślałem: czemu nie udostępnić tego innym?",
+      "p3": "Chodzi o to, żeby każdy miał swój własny, fajny sposób oglądania anime. I żeby dało się przy okazji pogadać o ulubionych seriach z innymi osobami, w dobrej <1>społeczności</1>."
+    },
+    "logs": {
+      "title": "Logi aplikacji",
+      "subtitle": "Otwórz folder z logami aplikacji w eksploratorze.",
+      "action": "Otwórz folder logów"
+    }
+  },
+  "developer": {
+    "card": {
+      "title": "Tryb deweloperski",
+      "subtitle": "Narzędzia debugowania. Przydają się, kiedy chcesz zgłosić błąd lub zajrzeć pod maskę."
+    },
+    "toggleTitle": "Włącz tryb deweloperski",
+    "toggleDescription": "Włącza DevTools, podgląd logów i eksport diagnostyki.",
+    "devtools": "Narzędzia deweloperskie",
+    "copyDiagnostics": "Kopiuj diagnostykę",
+    "diagnosticsCopied": "Skopiowano",
+    "showLogs": "Pokaż logi"
+  },
+  "logs": {
+    "title": "Podgląd logów",
+    "descriptionBuffer": "Ostatnie {{count}} {{entries}} z bufora aplikacji. Zapisywane tylko w pamięci, nie są nigdzie wysyłane.",
+    "descriptionTruncated": "Pokazano ostatnie {{limit}} z {{total}} wpisów z pliku.",
+    "descriptionFile": "{{count}} {{entries}} z pliku logów.",
+    "source": {
+      "buffer": "Bufor",
+      "today": "Plik dzisiejszy",
+      "archive": "Archiwum"
+    },
+    "filePicker": {
+      "label": "Plik:",
+      "noFiles": "Brak plików",
+      "placeholder": "Wybierz plik logów"
+    },
+    "filterAria": "Filtr poziomu",
+    "levelLabel": "Poziom:",
+    "runtimeLevelAria": "Poziom logowania",
+    "levelChanged": "zmieniono",
+    "level": {
+      "all": "Wszystkie",
+      "error": "Error",
+      "warn": "Warn",
+      "info": "Info",
+      "debug": "Debug"
+    },
+    "searchPlaceholder": "Szukaj w logach…",
+    "searchAria": "Szukaj w logach",
+    "pause": "Pauza",
+    "resume": "Wznów",
+    "newCount": {
+      "one": "+{{count}} nowy",
+      "few": "+{{count}} nowe",
+      "many": "+{{count}} nowych",
+      "other": "+{{count}} nowych"
+    },
+    "copyAll": "Kopiuj wszystko",
+    "copied": "Skopiowano",
+    "export": "Eksportuj",
+    "clear": "Wyczyść",
+    "loading": "Wczytywanie pliku…",
+    "fileError": "Nie udało się wczytać pliku logów.",
+    "logsUnavailable": "Dostęp do plików logów jest niedostępny w tym środowisku.",
+    "noFilesError": "Brak plików logów na dysku.",
+    "emptyBuffer": "Bufor jest pusty.",
+    "emptyFile": "Plik nie zawiera wpisów.",
+    "noFilterMatches": "Brak wpisów pasujących do filtra.",
+    "showMoreData": "Rozwiń dane",
+    "showLessData": "Zwiń dane",
+    "newEntries": "Nowe wpisy",
+    "unknownError": "Nieznany błąd.",
+    "entries": {
+      "one": "wpis",
+      "few": "wpisy",
+      "many": "wpisów",
+      "other": "wpisów"
+    }
+  },
+  "suite": {
+    "card": {
+      "title": "Rodzina aplikacji",
+      "subtitle": "Inne małe aplikacje, które tworzę. Może coś Ci się przyda. Wszystkie są darmowe."
+    },
+    "available": "Dostępne",
+    "openCta": "Sprawdź {{name}}",
+    "shiranami": {
+      "tagline": "Przystań dla muzyki",
+      "description": "Spokojny odtwarzacz na lokalną bibliotekę: playlisty, radio internetowe, synchronizowane teksty i pobieranie z YouTube. Idealny w tle, gdy oglądasz odcinek albo nadrabiasz mangę.",
+      "previewAlt": "Widok biblioteki w aplikacji Shiranami"
+    },
+    "kireimanga": {
+      "tagline": "Czytnik mangi",
+      "description": "Wygodny czytnik z biblioteką rozdziałów, zakładkami, importem i trybem nocnym. Twoje serie czekają w jednym, cichym miejscu.",
+      "previewAlt": "Widok biblioteki w aplikacji KireiManga"
+    }
+  },
+  "nav": {
+    "groupApp": "Aplikacja",
+    "groupAppearance": "Wygląd",
+    "groupIntegrations": "Integracje",
+    "groupData": "Dane",
+    "groupAdvanced": "Zaawansowane",
+    "ariaSections": "Sekcje ustawień",
+    "general": "Ogólne",
+    "generalSubtitle": "Podstawowe ustawienia aplikacji",
+    "browser": "Przeglądarka",
+    "browserSubtitle": "Ustawienia wbudowanej przeglądarki",
+    "notifications": "Powiadomienia",
+    "notificationsSubtitle": "Nowe odcinki i harmonogram emisji",
+    "themes": "Motywy",
+    "themesSubtitle": "Paleta kolorów i skala czytelności",
+    "background": "Tło",
+    "backgroundSubtitle": "Własny obraz tła i regulacja rozmycia",
+    "dock": "Dock",
+    "dockSubtitle": "Pozycja i zachowanie paska nawigacji",
+    "views": "Widoki",
+    "viewsSubtitle": "Widoczność sekcji w docku",
+    "discord": "Discord",
+    "discordSubtitle": "Rich Presence: pokaż znajomym, co oglądasz",
+    "mascot": "Maskotka",
+    "mascotSubtitle": "Animowana maskotka chibi na pulpicie",
+    "data": "Dane",
+    "dataSubtitle": "Eksport i import danych aplikacji",
+    "updates": "Aktualizacje",
+    "updatesSubtitle": "Wersja i kanał aktualizacji",
+    "suite": "Rodzina",
+    "suiteSubtitle": "Inne aplikacje, które warto sprawdzić",
+    "about": "O aplikacji",
+    "aboutSubtitle": "Historia, wersja i logi",
+    "developer": "Deweloper",
+    "developerSubtitle": "Narzędzia debugowania i diagnostyka"
   }
 }

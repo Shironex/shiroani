@@ -1,8 +1,11 @@
+import { useTranslation } from 'react-i18next';
+
 /**
  * Delightful SVG loading animation with animated RSS signal waves,
  * floating news card silhouettes, and subtle sparkle effects.
  */
 export function FeedLoadingAnimation() {
+  const { t } = useTranslation('feed');
   return (
     <div className="flex-1 flex flex-col items-center justify-center py-20 gap-6 select-none">
       <div className="relative w-56 h-56">
@@ -286,7 +289,7 @@ export function FeedLoadingAnimation() {
 
       {/* Loading text with animated dots */}
       <div className="flex items-center gap-1.5 text-sm text-foreground/75">
-        <span className="font-medium tracking-tight">Ładowanie aktualności</span>
+        <span className="font-medium tracking-tight">{t('loading')}</span>
         <span className="inline-flex w-6">
           {[0, 1, 2].map(i => (
             <span

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import type { UserProfile } from '@shiroani/shared';
 
 interface GenreBreakdownProps {
@@ -14,11 +15,12 @@ interface GenreBreakdownProps {
  * mock's hand-picked hues).
  */
 export function GenreBreakdown({ genres, limit = 5 }: GenreBreakdownProps) {
+  const { t } = useTranslation('profile');
   const top = genres.slice(0, limit);
   const max = Math.max(...top.map(g => g.count), 1);
 
   if (top.length === 0) {
-    return <p className="text-[12px] text-muted-foreground/70">Brak danych o gatunkach.</p>;
+    return <p className="text-[12px] text-muted-foreground/70">{t('genres.empty')}</p>;
   }
 
   return (

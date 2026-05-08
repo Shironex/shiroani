@@ -1,18 +1,37 @@
+import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { FeedCategory, FeedLanguage } from '@shiroani/shared';
 
-export const CATEGORY_LABELS: Record<FeedCategory | 'all', string> = {
-  all: 'Wszystko',
-  news: 'Wiadomości',
-  episodes: 'Odcinki',
-  reviews: 'Recenzje',
-  community: 'Społeczność',
-};
+/**
+ * Translated category labels. Hook-form so callers re-render on language
+ * change without each component repeating the same `t('category.*')`
+ * boilerplate.
+ */
+export function useCategoryLabels(): Record<FeedCategory | 'all', string> {
+  const { t } = useTranslation('feed');
+  return useMemo(
+    () => ({
+      all: t('category.all'),
+      news: t('category.news'),
+      episodes: t('category.episodes'),
+      reviews: t('category.reviews'),
+      community: t('category.community'),
+    }),
+    [t]
+  );
+}
 
-export const LANGUAGE_LABELS: Record<FeedLanguage | 'all', string> = {
-  all: 'Wszystkie',
-  en: 'Angielski',
-  pl: 'Polski',
-};
+export function useLanguageLabels(): Record<FeedLanguage | 'all', string> {
+  const { t } = useTranslation('feed');
+  return useMemo(
+    () => ({
+      all: t('languageLabel.all'),
+      en: t('languageLabel.en'),
+      pl: t('languageLabel.pl'),
+    }),
+    [t]
+  );
+}
 
 export const CATEGORY_COLORS: Record<FeedCategory, string> = {
   news: 'bg-blue-500/15 text-blue-400',

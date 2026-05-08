@@ -26,6 +26,7 @@ const DiscoverCard = memo(function DiscoverCard({
 }: DiscoverCardProps) {
   // Re-render on language change so the format/status label getters refresh.
   useTranslation('anilist');
+  const { t } = useTranslation('discover');
   const [imgError, setImgError] = useState(false);
 
   const handleKeyDown = useCallback(
@@ -53,7 +54,7 @@ const DiscoverCard = memo(function DiscoverCard({
   const formatLabel = media.format ? getAnilistFormatLabel(media.format) : null;
   const statusLabel = media.status ? getAnilistStatusLabel(media.status) : null;
 
-  const episodeInfo = media.episodes ? `${media.episodes} odc.` : null;
+  const episodeInfo = media.episodes ? t('card.episodeCount', { count: media.episodes }) : null;
   const subtitle = [episodeInfo, statusLabel].filter(Boolean).join(' \u00B7 ');
 
   return (
@@ -86,7 +87,9 @@ const DiscoverCard = memo(function DiscoverCard({
             <div className="w-10 h-10 rounded-xl bg-background/30 flex items-center justify-center">
               <Film className="w-5 h-5 text-muted-foreground/40" />
             </div>
-            <span className="text-muted-foreground/50 text-2xs font-medium">Brak okładki</span>
+            <span className="text-muted-foreground/50 text-2xs font-medium">
+              {t('card.noCover')}
+            </span>
           </div>
         )}
 
@@ -162,7 +165,7 @@ const DiscoverCard = memo(function DiscoverCard({
               type="button"
               onClick={handleAddClick}
               disabled={inLibrary}
-              aria-label={inLibrary ? 'W bibliotece' : 'Dodaj do biblioteki'}
+              aria-label={inLibrary ? t('card.inLibraryAria') : t('card.addToLibrary')}
               className={cn(
                 'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[8px]',
                 'text-[11.5px] font-bold shadow-[0_6px_16px_-6px_oklch(0_0_0/0.7)]',
@@ -174,12 +177,13 @@ const DiscoverCard = memo(function DiscoverCard({
             >
               {inLibrary ? (
                 <>
-                  <Check className="w-3.5 h-3.5" />W bibliotece
+                  <Check className="w-3.5 h-3.5" />
+                  {t('card.inLibrary')}
                 </>
               ) : (
                 <>
                   <Plus className="w-3.5 h-3.5" />
-                  Dodaj
+                  {t('card.add')}
                 </>
               )}
             </button>
