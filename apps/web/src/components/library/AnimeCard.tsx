@@ -1,10 +1,11 @@
 import { memo, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Play, Pencil, Trash2, Film, Star } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { PillTag } from '@/components/ui/pill-tag';
 import { CountdownBadge } from '@/components/library/CountdownBadge';
 import type { AnimeEntry } from '@shiroani/shared';
-import { STATUS_CONFIG } from '@/lib/constants';
+import { STATUS_LABEL_KEY } from '@/lib/constants';
 
 interface AnimeCardProps {
   entry: AnimeEntry;
@@ -21,6 +22,7 @@ const AnimeCard = memo(function AnimeCard({
   onContinue,
   onRemove,
 }: AnimeCardProps) {
+  const { t } = useTranslation('status');
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
       if (e.key === 'Enter' || e.key === ' ') {
@@ -44,7 +46,7 @@ const AnimeCard = memo(function AnimeCard({
   const showProgress = !!entry.episodes && entry.episodes > 0 && (isWatching || isCompleted);
 
   // Status badge (top-left). completed -> green, watching -> accent, dropped/on_hold -> muted.
-  const statusLabel = STATUS_CONFIG[entry.status].label;
+  const statusLabel = t(STATUS_LABEL_KEY[entry.status]);
   const statusVariant: 'accent' | 'green' | 'muted' = isCompleted
     ? 'green'
     : isWatching

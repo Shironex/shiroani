@@ -1,5 +1,7 @@
+import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
-import { DAY_NAMES_SHORT } from '@/lib/constants';
+import { getDayNamesShort } from '@/lib/constants';
 import { Tv } from 'lucide-react';
 import { formatTime, getAnimeTitle, getCoverUrl, type SlotStatus } from './schedule-utils';
 import { ScheduleDayColumn } from './ScheduleDayColumn';
@@ -44,6 +46,8 @@ export function WeeklyView({
   libraryAnilistIds = EMPTY_IDS,
   subscribedAnilistIds = EMPTY_IDS,
 }: WeeklyViewProps) {
+  const { i18n } = useTranslation();
+  const dayNamesShort = useMemo(() => getDayNamesShort(), [i18n.language]);
   const weekData = useWeekData(weekDays, getEntriesForDay, schedule);
   const now = useNowSeconds(60_000);
 
@@ -56,7 +60,7 @@ export function WeeklyView({
             <ScheduleDayColumn
               key={day}
               day={day}
-              label={DAY_NAMES_SHORT[idx]}
+              label={dayNamesShort[idx]}
               entries={dayEntries}
               now={now}
               emptyLabel="brak emisji"

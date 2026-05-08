@@ -1,9 +1,10 @@
 import { memo, useCallback, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Check, Film, Plus, Star } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { PillTag } from '@/components/ui/pill-tag';
 import { formatScore } from '@/lib/anime-utils';
-import { ANILIST_FORMAT_LABELS, ANILIST_STATUS_LABELS } from '@/lib/constants';
+import { getAnilistFormatLabel, getAnilistStatusLabel } from '@/lib/constants';
 import type { DiscoverMedia } from '@/stores/useDiscoverStore';
 
 interface DiscoverCardProps {
@@ -23,6 +24,8 @@ const DiscoverCard = memo(function DiscoverCard({
   onClick,
   onAddToLibrary,
 }: DiscoverCardProps) {
+  // Re-render on language change so the format/status label getters refresh.
+  useTranslation('anilist');
   const [imgError, setImgError] = useState(false);
 
   const handleKeyDown = useCallback(
@@ -47,8 +50,8 @@ const DiscoverCard = memo(function DiscoverCard({
 
   const coverUrl = media.coverImage.large || media.coverImage.extraLarge || media.coverImage.medium;
   const title = getTitle(media.title);
-  const formatLabel = media.format ? (ANILIST_FORMAT_LABELS[media.format] ?? media.format) : null;
-  const statusLabel = media.status ? (ANILIST_STATUS_LABELS[media.status] ?? media.status) : null;
+  const formatLabel = media.format ? getAnilistFormatLabel(media.format) : null;
+  const statusLabel = media.status ? getAnilistStatusLabel(media.status) : null;
 
   const episodeInfo = media.episodes ? `${media.episodes} odc.` : null;
   const subtitle = [episodeInfo, statusLabel].filter(Boolean).join(' \u00B7 ');

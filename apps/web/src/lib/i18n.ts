@@ -34,6 +34,16 @@ import {
 import { IS_ELECTRON } from '@/lib/platform';
 import { electronStoreGet, electronStoreSet } from '@/lib/electron-store';
 
+import commonEn from '@/locales/en/common.json';
+import statusEn from '@/locales/en/status.json';
+import anilistEn from '@/locales/en/anilist.json';
+
+import commonPl from '@/locales/pl/common.json';
+import statusPl from '@/locales/pl/status.json';
+import anilistPl from '@/locales/pl/anilist.json';
+
+const namespaces = ['common', 'status', 'anilist'] as const;
+
 /**
  * Read the language i18next should boot with. Synchronous on purpose:
  * this runs before React mounts and must not block on IPC.
@@ -72,14 +82,21 @@ export function persistLanguage(lang: SupportedLanguage) {
 }
 
 i18n.use(initReactI18next).init({
-  // Empty for now — namespaces ship in step 3 of the rollout. i18next is
-  // happy with no resources; missing-key lookups just return the key.
   resources: {
-    en: {},
-    pl: {},
+    en: {
+      common: commonEn,
+      status: statusEn,
+      anilist: anilistEn,
+    },
+    pl: {
+      common: commonPl,
+      status: statusPl,
+      anilist: anilistPl,
+    },
   },
   lng: getInitialLanguage(),
   fallbackLng: DEFAULT_LANGUAGE,
+  ns: namespaces as unknown as string[],
   defaultNS: 'common',
   interpolation: {
     // React already escapes; double-escaping mangles diacritics in PL.

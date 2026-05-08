@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Dialog,
   DialogContent,
@@ -22,7 +23,7 @@ import { useBrowserStore } from '@/stores/useBrowserStore';
 import { getWebview } from '@/components/browser/webviewRefs';
 import { toast } from 'sonner';
 import type { AnimeStatus } from '@shiroani/shared';
-import { STATUS_OPTIONS } from '@/lib/constants';
+import { getStatusOptions } from '@/lib/constants';
 import { SCRAPE_METADATA_SCRIPT } from '@/lib/scrape-metadata';
 import { useDialogStateMachine } from '@/hooks/useDialogStateMachine';
 
@@ -36,6 +37,8 @@ interface AddToLibraryDialogProps {
 type AddToLibraryStep = { step: 'fetching' } | { step: 'ready' };
 
 export function AddToLibraryDialog({ open, onOpenChange, url, title }: AddToLibraryDialogProps) {
+  const { i18n } = useTranslation();
+  const statusOptions = useMemo(() => getStatusOptions(), [i18n.language]);
   const { addToLibrary } = useLibraryStore();
 
   const [editableTitle, setEditableTitle] = useState('');
@@ -234,7 +237,7 @@ export function AddToLibraryDialog({ open, onOpenChange, url, title }: AddToLibr
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {STATUS_OPTIONS.map(opt => (
+                {statusOptions.map(opt => (
                   <SelectItem key={opt.value} value={opt.value}>
                     {opt.label}
                   </SelectItem>

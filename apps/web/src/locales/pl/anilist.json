@@ -1,0 +1,51 @@
+{
+  "format": {
+    "tv": "TV",
+    "tvShort": "TV Short",
+    "movie": "Film",
+    "special": "Special",
+    "ova": "OVA",
+    "ona": "ONA",
+    "music": "Teledysk"
+  },
+  "status": {
+    "finished": "Zakończone",
+    "releasing": "Emitowane",
+    "notYetReleased": "Nadchodzące",
+    "cancelled": "Anulowane",
+    "hiatus": "W przerwie"
+  },
+  "source": {
+    "original": "Oryginał",
+    "manga": "Manga",
+    "lightNovel": "Light Novel",
+    "visualNovel": "Visual Novel",
+    "videoGame": "Gra wideo",
+    "novel": "Powieść",
+    "other": "Inne",
+    "anime": "Anime",
+    "webNovel": "Web Novel",
+    "comic": "Komiks"
+  },
+  "season": {
+    "winter": "Zima",
+    "spring": "Wiosna",
+    "summer": "Lato",
+    "fall": "Jesień"
+  },
+  "relation": {
+    "adaptation": "Adaptacja",
+    "prequel": "Prequel",
+    "sequel": "Sequel",
+    "parent": "Seria główna",
+    "sideStory": "Historia poboczna",
+    "character": "Postacie",
+    "summary": "Streszczenie",
+    "alternative": "Alternatywne",
+    "spinOff": "Spin-off",
+    "other": "Inne",
+    "source": "Źródło",
+    "compilation": "Kompilacja",
+    "contains": "Zawiera"
+  }
+}

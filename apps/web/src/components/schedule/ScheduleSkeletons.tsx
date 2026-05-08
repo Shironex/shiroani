@@ -1,7 +1,14 @@
 import type { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
-import { DAY_NAMES_SHORT } from '@/lib/constants';
+
+/**
+ * Skeleton placeholders only need a stable key per column — strings are not
+ * rendered, just used for React's reconciliation. Hard-coded weekday tokens
+ * keep the file independent of i18n; if/when these become user-visible the
+ * caller should switch to `getDayNamesShort()` + a `useTranslation` hook.
+ */
+const DAY_KEYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] as const;
 
 /** Varied title widths for natural-looking skeletons */
 const TITLE_WIDTHS = ['w-[70%]', 'w-[55%]', 'w-[80%]', 'w-[62%]', 'w-[75%]', 'w-[48%]'];
@@ -17,7 +24,7 @@ const TIMETABLE_COUNTS = [2, 3, 2, 3, 2, 1, 2];
  * the actual card shape.
  */
 interface WeekGridSkeletonProps {
-  /** Per-column skeleton card counts — length must equal `DAY_NAMES_SHORT`. */
+  /** Per-column skeleton card counts — length must equal 7 (one per weekday). */
   counts: readonly number[];
   /** Tailwind class for vertical spacing between skeleton cards. */
   listClassName: string;
@@ -29,8 +36,8 @@ function WeekGridSkeleton({ counts, listClassName, renderCard }: WeekGridSkeleto
   return (
     <div className="flex-1 overflow-x-auto overflow-y-hidden">
       <div className="grid h-full min-w-[1100px] grid-cols-7 divide-x divide-border-glass">
-        {DAY_NAMES_SHORT.map((dayName, colIdx) => (
-          <div key={dayName} className="flex flex-col min-h-0">
+        {DAY_KEYS.map((dayKey, colIdx) => (
+          <div key={dayKey} className="flex flex-col min-h-0">
             {/* Day header */}
             <div className="sticky top-0 z-10 shrink-0 px-3 py-3 text-center border-b border-border-glass bg-card/20 backdrop-blur-sm">
               <Skeleton className="h-2.5 w-8 mx-auto rounded" />

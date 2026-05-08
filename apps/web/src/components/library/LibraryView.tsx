@@ -33,7 +33,8 @@ import { LibrarySkeleton } from '@/components/library/LibrarySkeleton';
 import { LibraryStats } from '@/components/library/LibraryStats';
 import { useBrowserStore } from '@/stores/useBrowserStore';
 import { useAppStore } from '@/stores/useAppStore';
-import { STATUS_FILTER_OPTIONS } from '@/lib/constants';
+import { useTranslation } from 'react-i18next';
+import { getStatusFilterOptions } from '@/lib/constants';
 import { useNextAiringMap } from '@/hooks/useNextAiringMap';
 import { pluralize } from '@shiroani/shared';
 import type { AnimeEntry, AnimeStatus } from '@shiroani/shared';
@@ -56,6 +57,7 @@ const {
 } = useLibraryStore.getState();
 
 export function LibraryView() {
+  const { i18n } = useTranslation();
   const entries = useLibraryStore(s => s.entries);
   const activeFilter = useLibraryStore(s => s.activeFilter);
   const searchQuery = useLibraryStore(s => s.searchQuery);
@@ -120,14 +122,14 @@ export function LibraryView() {
 
   const filtersWithCounts = useMemo(
     () =>
-      STATUS_FILTER_OPTIONS.map(opt => {
+      getStatusFilterOptions().map(opt => {
         const count = statusCounts[opt.value] ?? 0;
         return {
           value: opt.value as 'all' | AnimeStatus,
           label: count > 0 ? `${opt.label} · ${count}` : opt.label,
         };
       }),
-    [statusCounts]
+    [statusCounts, i18n.language]
   );
 
   const subtitle =

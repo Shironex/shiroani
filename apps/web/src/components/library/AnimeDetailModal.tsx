@@ -1,4 +1,5 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { ExternalLink, Save, Trash2, Link2, X, Film } from 'lucide-react';
 import { Dialog, DialogPortal, DialogOverlay } from '@/components/ui/dialog';
@@ -19,7 +20,7 @@ import { useLibraryStore } from '@/stores/useLibraryStore';
 import { getActivePane } from '@/stores/useBrowserStore';
 import { toast } from 'sonner';
 import type { AnimeEntry, AnimeStatus } from '@shiroani/shared';
-import { STATUS_OPTIONS, STATUS_CONFIG } from '@/lib/constants';
+import { STATUS_LABEL_KEY, getStatusOptions } from '@/lib/constants';
 import { useAnimeDetailForm } from '@/hooks/useAnimeDetailForm';
 import { useNavigateToBrowser } from '@/hooks/useNavigateToBrowser';
 import { SliderInputField } from './SliderInputField';
@@ -41,6 +42,8 @@ const STATUS_PILL_VARIANT: Record<AnimeStatus, 'accent' | 'green' | 'gold' | 'bl
 };
 
 export function AnimeDetailModal({ entry, open, onOpenChange }: AnimeDetailModalProps) {
+  const { t, i18n } = useTranslation('status');
+  const statusOptions = useMemo(() => getStatusOptions(), [i18n.language]);
   const navigateToBrowser = useNavigateToBrowser();
 
   const {
@@ -208,7 +211,7 @@ export function AnimeDetailModal({ entry, open, onOpenChange }: AnimeDetailModal
                 }
               />
               {entry.episodes ? <ProgressBar value={progressPercent} thickness={3} glow /> : null}
-              <SheetStat label="Status" value={STATUS_CONFIG[status].label} />
+              <SheetStat label="Status" value={t(STATUS_LABEL_KEY[status])} />
               <SheetDivider />
               <SheetStat
                 label="Dodano"
@@ -247,7 +250,7 @@ export function AnimeDetailModal({ entry, open, onOpenChange }: AnimeDetailModal
 
               <div className="flex flex-wrap items-center gap-1.5 mb-2">
                 <PillTag variant={STATUS_PILL_VARIANT[status]}>
-                  {STATUS_CONFIG[status].label}
+                  {t(STATUS_LABEL_KEY[status])}
                 </PillTag>
                 {entry.episodes && <PillTag variant="muted">{entry.episodes} ODC</PillTag>}
                 {entry.anilistId && <PillTag variant="blue">ANILIST</PillTag>}
@@ -277,7 +280,7 @@ export function AnimeDetailModal({ entry, open, onOpenChange }: AnimeDetailModal
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {STATUS_OPTIONS.map(opt => (
+                    {statusOptions.map(opt => (
                       <SelectItem key={opt.value} value={opt.value} className="text-xs">
                         {opt.label}
                       </SelectItem>

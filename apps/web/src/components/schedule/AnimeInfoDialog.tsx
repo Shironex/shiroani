@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -25,11 +26,11 @@ import {
   formatTimeUntilAiring,
 } from '@/lib/anime-utils';
 import {
-  ANILIST_FORMAT_LABELS,
-  ANILIST_STATUS_LABELS,
-  ANILIST_SOURCE_LABELS,
-  ANILIST_SEASON_LABELS,
-  ANILIST_RELATION_LABELS,
+  getAnilistFormatLabel,
+  getAnilistStatusLabel,
+  getAnilistSourceLabel,
+  getAnilistSeasonLabel,
+  getAnilistRelationLabel,
 } from '@/lib/constants';
 import { emitAsync } from '@/lib/socketHelpers';
 import { useNavigateToBrowser } from '@/hooks/useNavigateToBrowser';
@@ -82,6 +83,9 @@ interface AnimeInfoDialogProps {
 }
 
 export function AnimeInfoDialog({ anime, open, onOpenChange }: AnimeInfoDialogProps) {
+  // Subscribe to language changes so the imperative anilist label getters
+  // re-evaluate on the next render when the user switches language.
+  useTranslation('anilist');
   const [details, setDetails] = useState<AnimeDetail | null>(null);
   const [loading, setLoading] = useState(false);
   const [descExpanded, setDescExpanded] = useState(false);
@@ -262,16 +266,14 @@ export function AnimeInfoDialog({ anime, open, onOpenChange }: AnimeInfoDialogPr
 
           {/* Info badges */}
           <div className="flex flex-wrap gap-1.5">
-            {format && <Badge variant="outline">{ANILIST_FORMAT_LABELS[format] ?? format}</Badge>}
-            {status && <Badge variant="outline">{ANILIST_STATUS_LABELS[status] ?? status}</Badge>}
+            {format && <Badge variant="outline">{getAnilistFormatLabel(format)}</Badge>}
+            {status && <Badge variant="outline">{getAnilistStatusLabel(status)}</Badge>}
             {details?.source && (
-              <Badge variant="outline">
-                {ANILIST_SOURCE_LABELS[details.source] ?? details.source}
-              </Badge>
+              <Badge variant="outline">{getAnilistSourceLabel(details.source)}</Badge>
             )}
             {details?.season && details?.seasonYear && (
               <Badge variant="outline">
-                {ANILIST_SEASON_LABELS[details.season] ?? details.season} {details.seasonYear}
+                {getAnilistSeasonLabel(details.season)} {details.seasonYear}
               </Badge>
             )}
             {episodes && (
@@ -455,7 +457,7 @@ export function AnimeInfoDialog({ anime, open, onOpenChange }: AnimeInfoDialogPr
                       <div className="w-full aspect-[3/4] rounded-lg bg-muted border border-border/50" />
                     )}
                     <p className="text-2xs text-primary mt-1">
-                      {ANILIST_RELATION_LABELS[rel.relationType] ?? rel.relationType}
+                      {getAnilistRelationLabel(rel.relationType)}
                     </p>
                     <p className="text-2xs font-medium truncate mt-0.5">
                       {rel.node.title.romaji ?? rel.node.title.english}

@@ -1,8 +1,8 @@
 import type { DiscoverMedia } from '@/stores/useDiscoverStore';
 import {
-  ANILIST_FORMAT_LABELS,
-  ANILIST_STATUS_LABELS,
-  ANILIST_SEASON_LABELS,
+  getAnilistFormatLabel,
+  getAnilistStatusLabel,
+  getAnilistSeasonLabel,
 } from '@/lib/constants';
 
 export function getTitle(t: DiscoverMedia['title']): string {
@@ -31,11 +31,11 @@ export interface ShowcaseMeta {
 export function buildShowcaseMeta(media: DiscoverMedia): ShowcaseMeta {
   const cover = media.coverImage.extraLarge || media.coverImage.large || media.coverImage.medium;
   const banner = media.bannerImage || cover;
-  const formatLabel = media.format ? (ANILIST_FORMAT_LABELS[media.format] ?? media.format) : null;
-  const statusLabel = media.status ? (ANILIST_STATUS_LABELS[media.status] ?? media.status) : null;
+  const formatLabel = media.format ? getAnilistFormatLabel(media.format) : null;
+  const statusLabel = media.status ? getAnilistStatusLabel(media.status) : null;
   const yearLabel =
     media.seasonYear && media.season
-      ? `${ANILIST_SEASON_LABELS[media.season] ?? media.season} ${media.seasonYear}`
+      ? `${getAnilistSeasonLabel(media.season)} ${media.seasonYear}`
       : media.seasonYear
         ? String(media.seasonYear)
         : null;

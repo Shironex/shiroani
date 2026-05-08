@@ -1,0 +1,51 @@
+{
+  "format": {
+    "tv": "TV",
+    "tvShort": "TV Short",
+    "movie": "Movie",
+    "special": "Special",
+    "ova": "OVA",
+    "ona": "ONA",
+    "music": "Music Video"
+  },
+  "status": {
+    "finished": "Finished",
+    "releasing": "Releasing",
+    "notYetReleased": "Not Yet Released",
+    "cancelled": "Cancelled",
+    "hiatus": "On Hiatus"
+  },
+  "source": {
+    "original": "Original",
+    "manga": "Manga",
+    "lightNovel": "Light Novel",
+    "visualNovel": "Visual Novel",
+    "videoGame": "Video Game",
+    "novel": "Novel",
+    "other": "Other",
+    "anime": "Anime",
+    "webNovel": "Web Novel",
+    "comic": "Comic"
+  },
+  "season": {
+    "winter": "Winter",
+    "spring": "Spring",
+    "summer": "Summer",
+    "fall": "Fall"
+  },
+  "relation": {
+    "adaptation": "Adaptation",
+    "prequel": "Prequel",
+    "sequel": "Sequel",
+    "parent": "Parent Story",
+    "sideStory": "Side Story",
+    "character": "Character",
+    "summary": "Summary",
+    "alternative": "Alternative",
+    "spinOff": "Spin-off",
+    "other": "Other",
+    "source": "Source",
+    "compilation": "Compilation",
+    "contains": "Contains"
+  }
+}

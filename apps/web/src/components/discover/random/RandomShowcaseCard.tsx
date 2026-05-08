@@ -1,4 +1,5 @@
 import { memo, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Shuffle,
   ChevronLeft,
@@ -47,6 +48,8 @@ export const RandomShowcaseCard = memo(function RandomShowcaseCard({
   onOpenDetails,
   onAddToLibrary,
 }: RandomShowcaseCardProps) {
+  // Re-render on language change so showcase meta labels refresh.
+  useTranslation('anilist');
   const meta = buildShowcaseMeta(media);
   const showRomaji = media.title.romaji && media.title.romaji !== meta.title;
 

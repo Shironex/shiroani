@@ -1,6 +1,8 @@
+import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Film } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { DAY_NAMES_SHORT } from '@/lib/constants';
+import { getDayNamesShort } from '@/lib/constants';
 import { formatTime, getAnimeTitle, type SlotStatus } from './schedule-utils';
 import { ScheduleDayColumn } from './ScheduleDayColumn';
 import { SubscribeBellButton } from './SubscribeBellButton';
@@ -30,6 +32,8 @@ export function TimetableView({
   schedule,
   onAnimeClick,
 }: TimetableViewProps) {
+  const { i18n } = useTranslation();
+  const dayNamesShort = useMemo(() => getDayNamesShort(), [i18n.language]);
   const weekData = useWeekData(weekDays, getEntriesForDay, schedule);
   const now = useNowSeconds(60_000);
 
@@ -42,7 +46,7 @@ export function TimetableView({
             <ScheduleDayColumn
               key={day}
               day={day}
-              label={DAY_NAMES_SHORT[idx]}
+              label={dayNamesShort[idx]}
               entries={dayEntries}
               now={now}
               emptyLabel="brak plakatów"

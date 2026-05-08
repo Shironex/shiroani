@@ -1,11 +1,12 @@
 import { memo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Star } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { PillTag } from '@/components/ui/pill-tag';
 import { ProgressBar } from '@/components/shared/ProgressBar';
 import { CountdownBadge } from '@/components/library/CountdownBadge';
 import { formatEpisodeProgress } from '@/lib/anime-utils';
-import { STATUS_CONFIG } from '@/lib/constants';
+import { STATUS_LABEL_KEY } from '@/lib/constants';
 import type { AnimeEntry } from '@shiroani/shared';
 
 interface LibraryListItemProps {
@@ -30,11 +31,12 @@ const LibraryListItem = memo(function LibraryListItem({
   nextAiring,
   onClick,
 }: LibraryListItemProps) {
+  const { t } = useTranslation('status');
   const progressPercent = entry.episodes
     ? Math.min(100, Math.round((entry.currentEpisode / entry.episodes) * 100))
     : 0;
 
-  const statusLabel = STATUS_CONFIG[entry.status].label;
+  const statusLabel = t(STATUS_LABEL_KEY[entry.status]);
   const hasScore = entry.score != null && entry.score > 0;
 
   return (
