@@ -21,15 +21,13 @@
       "description": "Cześć, jestem <1>Shiro</1>. Przeprowadzę cię przez sześć krótkich kroków, zajmie ci to minutę. Wszystko zmienisz później w ustawieniach.",
       "marker": "Krok <1>01 · Start</1> · wybierz język",
       "title": "Język interfejsu",
-      "hint": "Na razie tylko po polsku. Kolejne języki wkrótce.",
-      "polish": {
-        "name": "Polski",
-        "current": "Obecny język"
+      "hint": "Wybierz język aplikacji. Zmienisz go potem w ustawieniach.",
+      "groupAria": "Język interfejsu",
+      "pl": {
+        "description": "Polski interfejs"
       },
-      "english": {
-        "name": "English",
-        "soon": "Wkrótce",
-        "badge": "Soon"
+      "en": {
+        "description": "Interfejs po angielsku"
       },
       "footnote": "✦ Kolejne języki dodamy w przyszłych aktualizacjach"
     },

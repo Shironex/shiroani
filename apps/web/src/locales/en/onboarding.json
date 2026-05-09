@@ -21,15 +21,13 @@
       "description": "Hi, I'm <1>Shiro</1>. I'll walk you through six short steps — about a minute. You can change anything later in settings.",
       "marker": "Step <1>01 · Start</1> · pick a language",
       "title": "Interface language",
-      "hint": "Polish only for now. More languages soon.",
-      "polish": {
-        "name": "Polski",
-        "current": "Current language"
+      "hint": "Pick a language for the app. You can change it later in settings.",
+      "groupAria": "Interface language",
+      "pl": {
+        "description": "Polish interface"
       },
-      "english": {
-        "name": "English",
-        "soon": "Soon",
-        "badge": "Soon"
+      "en": {
+        "description": "English interface"
       },
       "footnote": "✦ More languages will arrive in future updates"
     },

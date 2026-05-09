@@ -1,18 +1,25 @@
 import { Trans, useTranslation } from 'react-i18next';
 import { Check, Languages } from 'lucide-react';
 import { StepLayout } from '../StepLayout';
-import { PillTag } from '@/components/ui/pill-tag';
+import { SUPPORTED_LANGUAGES, type SupportedLanguage } from '@shiroani/shared';
+import { persistLanguage } from '@/lib/i18n';
+import { cn } from '@/lib/utils';
 
-/**
- * Step 01 · Language.
- *
- * Polish is the only locale currently shipped; English is shown as a teaser
- * with a SOON pill. No store wiring — `useSettingsStore.preferredLanguage`
- * controls anime-title language, not the UI locale, so this screen is purely
- * informational at the moment. When a real locale store lands, rewire here.
- */
+const FLAG_BACKGROUNDS: Record<SupportedLanguage, string> = {
+  pl: 'linear-gradient(180deg, #fff 50%, #dc143c 50%)',
+  en: 'linear-gradient(180deg, #012169 33%, #fff 33% 66%, #c8102e 66%)',
+};
+
 export function LanguageStep() {
-  const { t } = useTranslation('onboarding');
+  const { t, i18n } = useTranslation('onboarding');
+  const active = i18n.language as SupportedLanguage;
+
+  async function handleSelect(code: SupportedLanguage) {
+    if (code === i18n.language) return;
+    await i18n.changeLanguage(code);
+    persistLanguage(code);
+  }
+
   const emPrimary = <em className="not-italic text-primary italic" />;
   const bStrong = <b className="font-semibold text-foreground" />;
   const bPrimary = <b className="font-bold text-primary" />;
@@ -33,49 +40,45 @@ export function LanguageStep() {
       stepTitle={t('step.language.title')}
       stepHint={t('step.language.hint')}
     >
-      <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
-        {/* Polski — active */}
-        <div className="relative flex items-center gap-3.5 overflow-hidden rounded-xl border border-primary/40 bg-primary/10 p-3.5">
-          <span
-            aria-hidden="true"
-            className="h-[26px] w-9 flex-shrink-0 rounded-[4px] border border-border-glass"
-            style={{ background: 'linear-gradient(180deg, #fff 50%, #dc143c 50%)' }}
-          />
-          <div className="min-w-0 flex-1">
-            <b className="block text-sm font-semibold text-foreground">
-              {t('step.language.polish.name')}
-            </b>
-            <small className="text-[11.5px] text-muted-foreground">
-              {t('step.language.polish.current')}
-            </small>
-          </div>
-          <Check className="h-4 w-4 flex-shrink-0 text-primary" />
-        </div>
-
-        {/* English — coming soon */}
-        <div
-          aria-disabled="true"
-          className="relative flex items-center gap-3.5 overflow-hidden rounded-xl border border-border-glass bg-foreground/[0.02] p-3.5 opacity-60"
-        >
-          <span
-            aria-hidden="true"
-            className="h-[26px] w-9 flex-shrink-0 rounded-[4px] border border-border-glass"
-            style={{
-              background: 'linear-gradient(180deg, #012169 33%, #fff 33% 66%, #c8102e 66%)',
-            }}
-          />
-          <div className="min-w-0 flex-1">
-            <b className="block text-sm font-semibold text-foreground">
-              {t('step.language.english.name')}
-            </b>
-            <small className="text-[11.5px] text-muted-foreground">
-              {t('step.language.english.soon')}
-            </small>
-          </div>
-          <PillTag variant="accent" className="absolute right-2 top-2">
-            {t('step.language.english.badge')}
-          </PillTag>
-        </div>
+      <div
+        role="radiogroup"
+        aria-label={t('step.language.groupAria')}
+        className="grid grid-cols-1 gap-2.5 sm:grid-cols-2"
+      >
+        {SUPPORTED_LANGUAGES.map(lang => {
+          const isActive = active === lang.code;
+          return (
+            <button
+              key={lang.code}
+              type="button"
+              role="radio"
+              aria-checked={isActive}
+              onClick={() => {
+                void handleSelect(lang.code);
+              }}
+              className={cn(
+                'relative flex items-center gap-3.5 overflow-hidden rounded-xl border p-3.5 text-left transition-colors',
+                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50',
+                isActive
+                  ? 'border-primary/40 bg-primary/10'
+                  : 'border-border-glass bg-foreground/[0.02] hover:bg-foreground/[0.04]'
+              )}
+            >
+              <span
+                aria-hidden="true"
+                className="h-[26px] w-9 flex-shrink-0 rounded-[4px] border border-border-glass"
+                style={{ background: FLAG_BACKGROUNDS[lang.code] }}
+              />
+              <div className="min-w-0 flex-1">
+                <b className="block text-sm font-semibold text-foreground">{lang.label}</b>
+                <small className="text-[11.5px] text-muted-foreground">
+                  {t(`step.language.${lang.code}.description`)}
+                </small>
+              </div>
+              {isActive && <Check className="h-4 w-4 flex-shrink-0 text-primary" />}
+            </button>
+          );
+        })}
       </div>
 
       <p className="mt-auto font-mono text-[10.5px] uppercase tracking-[0.18em] text-muted-foreground">
