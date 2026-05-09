@@ -1,3 +1,9 @@
+// MUST run before any other import — `@/lib/i18n` reads
+// `window.localStorage.getItem` at module load, and Node 25 leaks a
+// broken stub through vitest's jsdom env unless this polyfill restores
+// jsdom's working Storage first. See file header for details.
+import './setup-storage-polyfill';
+
 import '@testing-library/jest-dom/vitest';
 import { vi } from 'vitest';
 
