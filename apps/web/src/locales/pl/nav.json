@@ -31,7 +31,10 @@
   "connection": {
     "reconnecting": "Łączę ponownie…",
     "offline": "Brak połączenia",
-    "retry": "Spróbuj ponownie"
+    "retry": "Spróbuj ponownie",
+    "toast": {
+      "throttled": "Zbyt wiele zapytań — poczekaj chwilę"
+    }
   },
   "comingSoon": {
     "tag": "WKRÓTCE"

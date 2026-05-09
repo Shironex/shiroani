@@ -139,7 +139,14 @@
       "description": "Theme \"{{label}}\" will be permanently deleted. This cannot be undone."
     },
     "toast": {
-      "deleted": "Theme deleted"
+      "deleted": "Theme deleted",
+      "notFound": "Theme not found",
+      "exported": "Theme exported",
+      "exportFailed": "Failed to export theme",
+      "invalidFile": "Invalid file format",
+      "limitReached": "Theme limit reached ({{limit}})",
+      "imported": "Theme imported",
+      "importFailed": "Failed to import theme"
     },
     "editor": {
       "newTitle": "New theme",

@@ -3,6 +3,7 @@ import { devtools } from 'zustand/middleware';
 import { AnimeEvents } from '@shiroani/shared';
 import { createLogger } from '@shiroani/shared';
 import { emitWithErrorHandling } from '@/lib/socket';
+import i18n from '@/lib/i18n';
 
 const logger = createLogger('DiscoverStore');
 
@@ -101,8 +102,6 @@ type DiscoverStore = DiscoverState & DiscoverActions;
 
 const initialPage: PageInfo = { current: 1, hasNext: false };
 
-const RATE_LIMIT_MSG = 'Zbyt wiele zapytań — odczekaj chwilę i spróbuj ponownie';
-
 function shuffleArray<T>(arr: T[]): T[] {
   const out = [...arr];
   for (let i = out.length - 1; i > 0; i--) {
@@ -114,7 +113,7 @@ function shuffleArray<T>(arr: T[]): T[] {
 
 function toUserError(err: Error): string {
   if (err.message.includes('rate limit') || err.message.includes('429')) {
-    return RATE_LIMIT_MSG;
+    return i18n.t('discover:toast.rateLimited');
   }
   return err.message;
 }

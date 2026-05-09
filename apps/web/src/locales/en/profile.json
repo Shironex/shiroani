@@ -186,6 +186,10 @@
       }
     }
   },
+  "errors": {
+    "userNotFound": "AniList user not found",
+    "rateLimited": "Too many requests — wait a moment"
+  },
   "share": {
     "title": "Share profile",
     "description": "A profile card in PNG format, ready to drop into Discord",

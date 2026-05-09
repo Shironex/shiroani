@@ -204,6 +204,10 @@
       }
     }
   },
+  "errors": {
+    "userNotFound": "Nie znaleziono użytkownika na AniList",
+    "rateLimited": "Zbyt wiele zapytań — odczekaj chwilę"
+  },
   "share": {
     "title": "Udostępnij profil",
     "description": "Karta profilu w formacie PNG, gotowa do wrzucenia na Discorda",

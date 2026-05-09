@@ -31,7 +31,10 @@
   "connection": {
     "reconnecting": "Reconnecting…",
     "offline": "No connection",
-    "retry": "Try again"
+    "retry": "Try again",
+    "toast": {
+      "throttled": "Too many requests — give it a moment"
+    }
   },
   "comingSoon": {
     "tag": "SOON"

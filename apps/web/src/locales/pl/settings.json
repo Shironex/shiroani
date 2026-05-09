@@ -139,7 +139,14 @@
       "description": "Motyw „{{label}}\" zostanie trwale usunięty. Nie da się tego cofnąć."
     },
     "toast": {
-      "deleted": "Usunięto motyw"
+      "deleted": "Usunięto motyw",
+      "notFound": "Nie znaleziono motywu",
+      "exported": "Motyw został wyeksportowany",
+      "exportFailed": "Błąd podczas eksportu motywu",
+      "invalidFile": "Nieprawidłowy format pliku",
+      "limitReached": "Osiągnięto limit motywów ({{limit}})",
+      "imported": "Motyw został zaimportowany",
+      "importFailed": "Błąd podczas importu motywu"
     },
     "editor": {
       "newTitle": "Nowy motyw",

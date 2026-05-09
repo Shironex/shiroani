@@ -58,6 +58,7 @@
   "toast": {
     "alreadyInLibrary": "To anime jest już w bibliotece",
     "addedToLibrary": "Dodano do biblioteki",
-    "addFailed": "Nie udało się dodać do biblioteki"
+    "addFailed": "Nie udało się dodać do biblioteki",
+    "rateLimited": "Zbyt wiele zapytań — odczekaj chwilę i spróbuj ponownie"
   }
 }
