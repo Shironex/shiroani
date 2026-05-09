@@ -5,9 +5,11 @@ import type { AiringAnime } from '@shiroani/shared';
 
 describe('formatTime', () => {
   it('formats a unix timestamp to HH:MM', () => {
-    // The output is locale-dependent (pl-PL), so just check the format
+    // Output is locale-dependent — `formatTime` reads `i18n.language`,
+    // which is EN under the test setup. EN renders 12h ("01:00 AM"); PL
+    // would render 24h ("01:00"). Assert the format shape, not the locale.
     const result = formatTime(1704067200); // 2024-01-01 00:00 UTC
-    expect(result).toMatch(/^\d{2}:\d{2}$/);
+    expect(result).toMatch(/^\d{1,2}:\d{2}(\s?(AM|PM))?$/i);
   });
 
   it('returns a string for any valid timestamp', () => {
@@ -19,7 +21,9 @@ describe('formatTime', () => {
 describe('formatDate', () => {
   it('returns a human-readable date string', () => {
     const result = formatDate('2024-01-15');
-    // pl-PL locale: "15 stycznia 2024"
+    // `formatDate` is the shared helper still hardcoded to `pl-PL`
+    // (e.g. "15 stycznia 2024"). Assert the numeric components only so
+    // this test stays valid if/when the helper migrates to `i18n.language`.
     expect(result).toContain('2024');
     expect(result).toContain('15');
   });
