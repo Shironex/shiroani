@@ -28,11 +28,14 @@ import {
   DEFAULT_LANGUAGE,
   LANGUAGE_STORAGE_KEY,
   UI_LANGUAGE_SETTING_KEY,
+  createLogger,
   isSupportedLanguage,
   type SupportedLanguage,
 } from '@shiroani/shared';
 import { IS_ELECTRON } from '@/lib/platform';
 import { electronStoreGet, electronStoreSet } from '@/lib/electron-store';
+
+const logger = createLogger('i18n');
 
 import commonEn from '@/locales/en/common.json';
 import statusEn from '@/locales/en/status.json';
@@ -124,6 +127,12 @@ export function persistLanguage(lang: SupportedLanguage) {
   }
 }
 
+// Dev-only telemetry: warn once per missing key per locale so QA notices
+// drift between dictionaries without spamming the console. Production builds
+// skip the handler entirely so there is zero overhead and no surprise logs.
+const IS_DEV = import.meta.env.DEV;
+const reportedMissingKeys = new Set<string>();
+
 i18n.use(initReactI18next).init({
   resources: {
     en: {
@@ -171,6 +180,16 @@ i18n.use(initReactI18next).init({
     // React already escapes; double-escaping mangles diacritics in PL.
     escapeValue: false,
   },
+  saveMissing: IS_DEV,
+  missingKeyHandler: IS_DEV
+    ? (lngs, ns, key) => {
+        const lng = Array.isArray(lngs) ? lngs[0] : lngs;
+        const dedupeKey = `${lng}::${ns}:${key}`;
+        if (reportedMissingKeys.has(dedupeKey)) return;
+        reportedMissingKeys.add(dedupeKey);
+        logger.warn(`[i18n] missing key: ${ns}:${key} (active locale: ${lng})`);
+      }
+    : undefined,
 });
 
 /**
