@@ -134,7 +134,10 @@
         "discord": "Discord RPC",
         "adblock": "Adblock"
       },
-      "languageValue": "PL",
+      "languages": {
+        "pl": "Polish",
+        "en": "English"
+      },
       "background": {
         "custom": "Custom · {{percent}}% blur",
         "none": "No background"

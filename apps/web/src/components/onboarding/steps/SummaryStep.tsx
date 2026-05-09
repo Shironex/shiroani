@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 import {
   Languages,
@@ -10,6 +10,7 @@ import {
   PartyPopper,
 } from 'lucide-react';
 import { StepLayout } from '../StepLayout';
+import { isSupportedLanguage } from '@shiroani/shared';
 import { getThemeOption } from '@/lib/theme';
 import { useSettingsStore } from '@/stores/useSettingsStore';
 import { useBackgroundStore } from '@/stores/useBackgroundStore';
@@ -20,12 +21,15 @@ import { useCustomThemeStore } from '@/stores/useCustomThemeStore';
 /**
  * Step 07 · Summary.
  *
- * Pure confirmation screen — reads every store the wizard touched and echoes
- * the user's selections back. No mutations, no API calls. The "Zaczynamy!"
- * CTA lives in the wizard chrome (wired to `onComplete`).
+ * Read-only confirmation screen — reflects every store the wizard touched.
+ * Discord RPC state lives in main-process electron-store, so it's loaded via
+ * `electronAPI.discordRpc.getSettings()` rather than a renderer store. The
+ * "Zaczynamy!" CTA lives in the wizard chrome (wired to `onComplete`).
  */
+const UNKNOWN = '—';
+
 export function SummaryStep() {
-  const { t } = useTranslation('onboarding');
+  const { t, i18n } = useTranslation('onboarding');
   const theme = useSettingsStore(s => s.theme);
   const customThemes = useCustomThemeStore(s => s.customThemes);
   const customBackground = useBackgroundStore(s => s.customBackground);
@@ -33,6 +37,32 @@ export function SummaryStep() {
   const edge = useDockStore(s => s.edge);
   const autoHide = useDockStore(s => s.autoHide);
   const adblockEnabled = useBrowserStore(s => s.adblockEnabled);
+
+  // Discord RPC state lives in main-process electron-store; mirror DiscordStep's
+  // load pattern. Stays `null` until the IPC settles or when the API is missing
+  // (web preview / pre-IPC-ready), in which case the row renders "—".
+  const [discordEnabled, setDiscordEnabled] = useState<boolean | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    window.electronAPI?.discordRpc
+      ?.getSettings()
+      .then((s: { enabled?: boolean } | null) => {
+        if (cancelled) return;
+        if (s && typeof s.enabled === 'boolean') setDiscordEnabled(s.enabled);
+      })
+      .catch(() => {
+        // Electron API unavailable — leave as null so the row falls back to "—"
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const languageValue = useMemo(() => {
+    const lng = i18n.language;
+    if (!isSupportedLanguage(lng)) return UNKNOWN;
+    return t(`step.summary.languages.${lng}`);
+  }, [i18n.language, t]);
 
   const themeLabel = useMemo(() => {
     const opt = getThemeOption(theme, customThemes);
@@ -47,6 +77,13 @@ export function SummaryStep() {
     const edgeName = t(`step.summary.dock.edge.${edge}`);
     return autoHide ? t('step.summary.dock.autoHide', { edge: edgeName }) : edgeName;
   }, [edge, autoHide, t]);
+
+  const discordValue =
+    discordEnabled === null
+      ? UNKNOWN
+      : discordEnabled
+        ? t('step.summary.value.on')
+        : t('step.summary.value.off');
 
   const emPrimary = <em className="not-italic text-primary italic" />;
   const bStrong = <b className="font-semibold text-foreground" />;
@@ -82,7 +119,7 @@ export function SummaryStep() {
         <SummaryRow
           icon={<Languages className="h-4 w-4" />}
           label={t('step.summary.row.language')}
-          value={t('step.summary.languageValue')}
+          value={languageValue}
         />
         <SummaryRow
           icon={<Palette className="h-4 w-4" />}
@@ -102,8 +139,8 @@ export function SummaryStep() {
         <SummaryRow
           icon={<MessageCircle className="h-4 w-4" />}
           label={t('step.summary.row.discord')}
-          value={t('step.summary.value.on')}
-          highlight
+          value={discordValue}
+          highlight={discordEnabled === true}
         />
         <SummaryRow
           icon={<Shield className="h-4 w-4" />}
