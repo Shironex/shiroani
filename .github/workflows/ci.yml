@@ -118,6 +118,25 @@ jobs:
       - name: Run web tests
         run: pnpm --filter @shiroani/web test
 
+  check-locales:
+    name: Check Locale Parity
+    needs: [changes]
+    if: needs.changes.outputs.web == 'true'
+    runs-on: ubuntu-latest
+    # TODO: switch to hard-fail in Phase E (i18n-cleanup) once locale divergences close.
+    continue-on-error: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup
+        uses: ./.github/actions/setup
+        with:
+          install: 'false'
+
+      - name: Check locale parity (advisory)
+        run: pnpm check:locales
+
   test-desktop:
     name: Test Desktop
     needs: [changes]
@@ -181,6 +200,8 @@ jobs:
   ci-result:
     name: CI Result
     if: always()
+    # check-locales is intentionally excluded — it's an advisory job (continue-on-error)
+    # and shouldn't gate the rollup. Switch to hard-fail in Phase E once divergences close.
     needs: [lint, typecheck, test-web, test-desktop, test-bot, landing]
     runs-on: ubuntu-latest
     steps:
