@@ -1,12 +1,20 @@
-import { toLocalDate, formatDate } from '@shiroani/shared';
+import { toLocalDate, formatDate as sharedFormatDate } from '@shiroani/shared';
 import i18n from '@/lib/i18n';
 
-export { formatDate };
 export { getAnimeTitle, getCoverUrl } from '@/lib/anime-utils';
 
 /** Resolve the active UI locale, falling back to the OS locale. */
 function activeLocale(): string {
   return i18n.language || (typeof navigator !== 'undefined' ? navigator.language : 'en');
+}
+
+/**
+ * Locale-aware wrapper around the shared `formatDate` helper. Re-exported so
+ * tests and other schedule helpers can format dates without re-importing
+ * `i18n` everywhere.
+ */
+export function formatDate(dateStr: string, format: 'short' | 'long' = 'long'): string {
+  return sharedFormatDate(dateStr, activeLocale(), format);
 }
 
 export function formatTime(timestamp: number): string {

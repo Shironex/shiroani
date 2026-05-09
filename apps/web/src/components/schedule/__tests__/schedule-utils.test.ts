@@ -21,9 +21,9 @@ describe('formatTime', () => {
 describe('formatDate', () => {
   it('returns a human-readable date string', () => {
     const result = formatDate('2024-01-15');
-    // `formatDate` is the shared helper still hardcoded to `pl-PL`
-    // (e.g. "15 stycznia 2024"). Assert the numeric components only so
-    // this test stays valid if/when the helper migrates to `i18n.language`.
+    // `formatDate` now follows `i18n.language` (EN under the test setup
+    // → "January 15, 2024"). Assert the numeric components only so the
+    // test stays locale-tolerant.
     expect(result).toContain('2024');
     expect(result).toContain('15');
   });
