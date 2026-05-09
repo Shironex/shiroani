@@ -8,7 +8,7 @@ import {
   stopAppStatsPolling,
   useAppStatsStore,
 } from '@/stores/useAppStatsStore';
-import { buildHeroLine, daysSinceCreated, formatPolishDuration } from '@/lib/stats-conversions';
+import { buildHeroLine, daysSinceCreated, formatDuration } from '@/lib/stats-conversions';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import { ActivityHeatmap } from './ActivityHeatmap';
 
@@ -61,18 +61,18 @@ export function InAppStatsPanel() {
       <section className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <CounterCard
           label={t('appPanel.counters.open')}
-          value={formatPolishDuration(totals.appOpenSeconds)}
+          value={formatDuration(totals.appOpenSeconds)}
           sub={t('appPanel.counters.openSub')}
         />
         <CounterCard
           label={t('appPanel.counters.active')}
-          value={formatPolishDuration(totals.appActiveSeconds)}
+          value={formatDuration(totals.appActiveSeconds)}
           sub={t('appPanel.counters.activeSub')}
           tone="accent"
         />
         <CounterCard
           label={t('appPanel.counters.anime')}
-          value={formatPolishDuration(totals.animeWatchSeconds)}
+          value={formatDuration(totals.animeWatchSeconds)}
           sub={t('appPanel.counters.animeSub')}
           tone="gold"
         />

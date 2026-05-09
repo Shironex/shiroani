@@ -104,6 +104,55 @@
   "appPanel": {
     "heroTag": "Twój czas z ShiroAni",
     "footer": "{{days}} z ShiroAni · {{sessions}}",
+    "hero": {
+      "primary": "Spędziłeś tu {{duration}} — to {{yardstick}}",
+      "secondary": "Aktywnie {{active}} · {{watch}} z anime",
+      "primaryEmpty": "Twoja podróż dopiero się zaczyna · zostań tu chwilę dłużej",
+      "secondaryEmpty": "0 minut aktywności · czekamy na pierwszą sesję",
+      "duration": {
+        "seconds": {
+          "one": "{{count}} sekunda",
+          "few": "{{count}} sekundy",
+          "many": "{{count}} sekund",
+          "other": "{{count}} sekund"
+        },
+        "minutes": {
+          "one": "{{count}} minuta",
+          "few": "{{count}} minuty",
+          "many": "{{count}} minut",
+          "other": "{{count}} minut"
+        },
+        "hours": {
+          "one": "{{count}} godzina",
+          "few": "{{count}} godziny",
+          "many": "{{count}} godzin",
+          "other": "{{count}} godzin"
+        },
+        "daysOnly": {
+          "one": "{{count}} dzień",
+          "few": "{{count}} dni",
+          "many": "{{count}} dni",
+          "other": "{{count}} dni"
+        },
+        "hoursAndMinutes": "{{hours}} {{minutes}}",
+        "daysAndHours": "{{days}} {{hours}}"
+      },
+      "yardstick": {
+        "empty": "Jeszcze nie starczyło na pierwszy odcinek {{title}}",
+        "fullSeries": {
+          "one": "{{count}} raz cały {{title}}",
+          "few": "{{count}} razy cały {{title}}",
+          "many": "{{count}} razy cały {{title}}",
+          "other": "{{count}} razy cały {{title}}"
+        },
+        "episodes": {
+          "one": "{{count}} odcinek {{title}}",
+          "few": "{{count}} odcinki {{title}}",
+          "many": "{{count}} odcinków {{title}}",
+          "other": "{{count}} odcinków {{title}}"
+        }
+      }
+    },
     "days": {
       "one": "{{count}} dzień",
       "few": "{{count}} dni",

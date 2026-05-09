@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import type { AppStatsSnapshot } from '@shiroani/shared';
-import { formatPolishDuration } from '@/lib/stats-conversions';
+import { formatDuration } from '@/lib/stats-conversions';
 
 interface ActivityHeatmapProps {
   snapshot: AppStatsSnapshot;
@@ -289,6 +289,6 @@ function tooltipText(
   if (cell.seconds <= 0) {
     return t('appPanel.heatmap.tooltip.empty', { date });
   }
-  const value = formatPolishDuration(cell.seconds);
+  const value = formatDuration(cell.seconds);
   return t(`appPanel.heatmap.tooltip.${metric}`, { date, value });
 }

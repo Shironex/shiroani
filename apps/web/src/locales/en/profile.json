@@ -102,6 +102,43 @@
   "appPanel": {
     "heroTag": "Your time with ShiroAni",
     "footer": "{{days}} with ShiroAni · {{sessions}}",
+    "hero": {
+      "primary": "You've spent {{duration}} here — that's {{yardstick}}",
+      "secondary": "Active {{active}} · {{watch}} of anime",
+      "primaryEmpty": "Your journey is just beginning · stay a little longer",
+      "secondaryEmpty": "0 minutes of activity · waiting for your first session",
+      "duration": {
+        "seconds": {
+          "one": "{{count}} second",
+          "other": "{{count}} seconds"
+        },
+        "minutes": {
+          "one": "{{count}} minute",
+          "other": "{{count}} minutes"
+        },
+        "hours": {
+          "one": "{{count}} hour",
+          "other": "{{count}} hours"
+        },
+        "daysOnly": {
+          "one": "{{count}} day",
+          "other": "{{count}} days"
+        },
+        "hoursAndMinutes": "{{hours}} {{minutes}}",
+        "daysAndHours": "{{days}} {{hours}}"
+      },
+      "yardstick": {
+        "empty": "Not enough yet for the first episode of {{title}}",
+        "fullSeries": {
+          "one": "{{count}} time through {{title}}",
+          "other": "{{count}} times through {{title}}"
+        },
+        "episodes": {
+          "one": "{{count}} episode of {{title}}",
+          "other": "{{count}} episodes of {{title}}"
+        }
+      }
+    },
     "days": {
       "one": "{{count}} day",
       "other": "{{count}} days"
