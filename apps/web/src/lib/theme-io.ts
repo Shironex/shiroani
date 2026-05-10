@@ -3,6 +3,7 @@
  */
 import { createLogger, isBuiltInTheme } from '@shiroani/shared';
 import type { CustomThemeDefinition } from '@shiroani/shared';
+import i18n from '@/lib/i18n';
 import { THEME_VARIABLE_NAMES } from '@/lib/custom-theme-css';
 
 const logger = createLogger('ThemeIO');
@@ -71,52 +72,60 @@ export function sanitizeFileName(name: string): string {
 /**
  * Validate an imported theme JSON against the expected format.
  * Returns an error message if invalid, or null if valid.
+ *
+ * The single shared "invalid file" message is resolved through i18n at every
+ * return site so the toast that surfaces it tracks the active UI language.
+ * Stores can't use the `useTranslation` hook, so we lean on the singleton
+ * i18n instance here — the same pattern used by the four toast-emitting
+ * stores in apps/web/src/stores.
  */
 export function validateImportData(data: unknown): string | null {
+  const invalidMessage = () => i18n.t('settings:themes.toast.invalidFile');
+
   if (!data || typeof data !== 'object') {
-    return 'Nieprawidłowy format pliku';
+    return invalidMessage();
   }
 
   const obj = data as Record<string, unknown>;
 
   if (obj.version !== 1 || obj.type !== 'shiroani-custom-theme') {
-    return 'Nieprawidłowy format pliku';
+    return invalidMessage();
   }
 
   if (!obj.theme || typeof obj.theme !== 'object') {
-    return 'Nieprawidłowy format pliku';
+    return invalidMessage();
   }
 
   const theme = obj.theme as Record<string, unknown>;
 
   if (typeof theme.name !== 'string' || theme.name.trim().length === 0) {
-    return 'Nieprawidłowy format pliku';
+    return invalidMessage();
   }
 
   if (typeof theme.baseTheme !== 'string' || !isBuiltInTheme(theme.baseTheme)) {
-    return 'Nieprawidłowy format pliku';
+    return invalidMessage();
   }
 
   if (typeof theme.isDark !== 'boolean') {
-    return 'Nieprawidłowy format pliku';
+    return invalidMessage();
   }
 
   if (typeof theme.color !== 'string') {
-    return 'Nieprawidłowy format pliku';
+    return invalidMessage();
   }
 
   if (!theme.variables || typeof theme.variables !== 'object') {
-    return 'Nieprawidłowy format pliku';
+    return invalidMessage();
   }
 
   const validNames = new Set<string>(THEME_VARIABLE_NAMES);
   const variables = theme.variables as Record<string, unknown>;
   for (const [key, val] of Object.entries(variables)) {
     if (!validNames.has(key)) {
-      return 'Nieprawidłowy format pliku';
+      return invalidMessage();
     }
     if (typeof val !== 'string') {
-      return 'Nieprawidłowy format pliku';
+      return invalidMessage();
     }
   }
 
