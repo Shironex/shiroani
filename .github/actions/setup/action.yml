@@ -13,11 +13,22 @@ runs:
     - name: Setup pnpm
       uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
 
-    - name: Setup Node.js
+    # Only enable pnpm caching when we actually install. The post-cache step
+    # otherwise fails with "Path Validation Error: Path(s) specified in the
+    # action for caching do(es) not exist" because the pnpm store directory
+    # never gets populated for install-skipping jobs (e.g. check-locales).
+    - name: Setup Node.js (with pnpm cache)
+      if: inputs.install == 'true'
       uses: actions/setup-node@v6
       with:
         node-version-file: .nvmrc
         cache: pnpm
+
+    - name: Setup Node.js (no cache)
+      if: inputs.install != 'true'
+      uses: actions/setup-node@v6
+      with:
+        node-version-file: .nvmrc
 
     - name: Install dependencies
       if: inputs.install == 'true'
