@@ -176,10 +176,10 @@ function assertContentMatchesExtension(
   const probe = buffer.subarray(0, MAGIC_PROBE_BYTES);
   const detected = detectImageFormat(probe);
   if (!detected) {
-    throw new Error('Plik nie jest prawidłowym obrazem');
+    throw new Error(t('sprite.notAValidImage'));
   }
   if (detected !== expected) {
-    throw new Error('Zawartość pliku nie pasuje do rozszerzenia');
+    throw new Error(t('sprite.contentMismatchesExtension'));
   }
 }
 
@@ -356,18 +356,18 @@ export function registerSpriteHandlers(mainWindow: BrowserWindow): void {
 
       if (!isAllowedExtension(sourcePath)) {
         logger.warn(`Rejected sprite with invalid extension: ${sourcePath}`);
-        throw new Error('Nieobsługiwany format pliku');
+        throw new Error(t('sprite.unsupportedFormat'));
       }
 
       const fileStats = await stat(sourcePath);
       if (fileStats.size > MAX_FILE_SIZE) {
-        throw new Error('Plik jest za duży (maksymalnie 10 MB)');
+        throw new Error(t('sprite.tooLarge'));
       }
 
       const ext = extname(sourcePath).toLowerCase().replace('.', '');
       const format = extensionToFormat(ext);
       if (!format) {
-        throw new Error('Nieobsługiwany format pliku');
+        throw new Error(t('sprite.unsupportedFormat'));
       }
 
       // Read the full file once for magic-byte + dimension probing.
@@ -377,10 +377,10 @@ export function registerSpriteHandlers(mainWindow: BrowserWindow): void {
       const dims = readImageDimensions(buffer, format);
       if (dims) {
         if (dims.width > MAX_DIMENSION || dims.height > MAX_DIMENSION) {
-          throw new Error(`Obraz jest za duży (maks. ${MAX_DIMENSION}×${MAX_DIMENSION} px)`);
+          throw new Error(t('sprite.dimensionsTooLarge', { max: MAX_DIMENSION }));
         }
         if (dims.width <= 0 || dims.height <= 0) {
-          throw new Error('Obraz ma niepoprawne wymiary');
+          throw new Error(t('sprite.invalidDimensions'));
         }
       }
 

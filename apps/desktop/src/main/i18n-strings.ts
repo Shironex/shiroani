@@ -58,6 +58,14 @@ const strings = {
       selectBackground: 'Select background image',
       imagesFilter: 'Images',
     },
+    sprite: {
+      notAValidImage: 'File is not a valid image',
+      contentMismatchesExtension: "File contents don't match its extension",
+      unsupportedFormat: 'Unsupported file format',
+      tooLarge: 'File is too large (max 10 MB)',
+      dimensionsTooLarge: 'Image is too large (max {{max}}×{{max}} px)',
+      invalidDimensions: 'Image has invalid dimensions',
+    },
     discord: {
       browsingLibrary: 'Browsing library',
       libraryCount: '{{count}} anime',
@@ -111,6 +119,14 @@ const strings = {
       selectBackground: 'Wybierz obraz tła',
       imagesFilter: 'Obrazy',
     },
+    sprite: {
+      notAValidImage: 'Plik nie jest prawidłowym obrazem',
+      contentMismatchesExtension: 'Zawartość pliku nie pasuje do rozszerzenia',
+      unsupportedFormat: 'Nieobsługiwany format pliku',
+      tooLarge: 'Plik jest za duży (maksymalnie 10 MB)',
+      dimensionsTooLarge: 'Obraz jest za duży (maks. {{max}}×{{max}} px)',
+      invalidDimensions: 'Obraz ma niepoprawne wymiary',
+    },
     discord: {
       browsingLibrary: 'Przeglądanie biblioteki',
       libraryCount: '{{count}} anime',
@@ -163,6 +179,14 @@ type MainStringsShape = {
     bodyInFuture: string;
   };
   dialog: { selectSprite: string; selectBackground: string; imagesFilter: string };
+  sprite: {
+    notAValidImage: string;
+    contentMismatchesExtension: string;
+    unsupportedFormat: string;
+    tooLarge: string;
+    dimensionsTooLarge: string;
+    invalidDimensions: string;
+  };
   discord: {
     browsingLibrary: string;
     libraryCount: string;
