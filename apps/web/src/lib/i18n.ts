@@ -96,7 +96,8 @@ const namespaces = [
  *
  * Order:
  *   1. `localStorage[LANGUAGE_STORAGE_KEY]` if it parses to a supported code.
- *   2. {@link DEFAULT_LANGUAGE}.
+ *   2. `navigator.language` (region stripped, lowercased) if supported.
+ *   3. {@link DEFAULT_LANGUAGE}.
  *
  * The `electron-store` value is reconciled later via
  * {@link hydrateLanguageFromStore} once the React tree mounts.
@@ -104,7 +105,15 @@ const namespaces = [
 function getInitialLanguage(): SupportedLanguage {
   if (typeof window === 'undefined') return DEFAULT_LANGUAGE;
   const stored = window.localStorage.getItem(LANGUAGE_STORAGE_KEY);
-  return isSupportedLanguage(stored) ? stored : DEFAULT_LANGUAGE;
+  if (isSupportedLanguage(stored)) return stored;
+
+  const navigatorLang = window.navigator?.language;
+  if (typeof navigatorLang === 'string' && navigatorLang.length > 0) {
+    const base = navigatorLang.split('-')[0]?.toLowerCase();
+    if (isSupportedLanguage(base)) return base;
+  }
+
+  return DEFAULT_LANGUAGE;
 }
 
 /**
