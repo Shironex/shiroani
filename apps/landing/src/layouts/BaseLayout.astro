@@ -55,7 +55,12 @@ const { title, description, titleKey, descriptionKey, lang = 'pl' } = Astro.prop
         } catch {
           /* ignore — localStorage may be unavailable in private mode */
         }
-        return DEFAULT_LANGUAGE;
+        // First-visit fallback: trust the SSR `<html lang>` the page was
+        // rendered with. The route already chose the language (`/` → pl,
+        // `/en/` → en), so overwriting it from a hardcoded default would
+        // flash the wrong language on first paint.
+        const ssrLang = document.documentElement.lang;
+        return isSupportedLanguage(ssrLang) ? ssrLang : DEFAULT_LANGUAGE;
       }
 
       function applyTranslations(lang: SupportedLanguage) {
