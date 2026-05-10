@@ -41,7 +41,7 @@
     "@swc-node/register": "^1.11.1",
     "@swc/core": "^1.15.32",
     "@types/jest": "^30.0.0",
-    "@types/node": "^25.6.0",
+    "@types/node": "^25.6.2",
     "@types/pg": "^8.15.4",
     "dotenv": "^17.3.1",
     "jest": "^30.3.0",
