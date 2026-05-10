@@ -1,7 +1,26 @@
-import { describe, it, expect } from 'vitest';
-import { formatTime, formatDate, addDays, isToday } from '../schedule-utils';
+import { afterEach, describe, it, expect } from 'vitest';
+import {
+  formatTime,
+  formatDate,
+  formatDayHeading,
+  formatWeekRange,
+  addDays,
+  isToday,
+} from '../schedule-utils';
 import { getAnimeTitle, getCoverUrl } from '@/lib/anime-utils';
-import type { AiringAnime } from '@shiroani/shared';
+import i18n from '@/lib/i18n';
+import type { AiringAnime, SupportedLanguage } from '@shiroani/shared';
+
+/** Run `fn` with i18n forced to `lang`; restore the previous language after. */
+async function withLocale<T>(lang: SupportedLanguage, fn: () => T | Promise<T>): Promise<T> {
+  const previous = i18n.language;
+  await i18n.changeLanguage(lang);
+  try {
+    return await fn();
+  } finally {
+    await i18n.changeLanguage(previous);
+  }
+}
 
 describe('formatTime', () => {
   it('formats a unix timestamp to HH:MM', () => {
@@ -32,6 +51,53 @@ describe('formatDate', () => {
     const result = formatDate('2024-12-31');
     expect(result).toContain('31');
     expect(result).toContain('2024');
+  });
+});
+
+describe('locale-parametrized formatters', () => {
+  afterEach(async () => {
+    await i18n.changeLanguage('en');
+  });
+
+  it('formatDate renders a different month string in PL vs EN', async () => {
+    const en = await withLocale('en', () => formatDate('2024-01-15'));
+    const pl = await withLocale('pl', () => formatDate('2024-01-15'));
+    // Both should contain the year and day, but the month name diverges:
+    // EN → "January", PL → "stycznia".
+    expect(en).toContain('January');
+    expect(pl.toLowerCase()).toContain('stycznia');
+    expect(en).not.toBe(pl);
+  });
+
+  it('formatDayHeading uses the active locale for weekday + month', async () => {
+    const en = await withLocale('en', () => formatDayHeading('2024-01-15'));
+    const pl = await withLocale('pl', () => formatDayHeading('2024-01-15'));
+    // 2024-01-15 is a Monday. Intl returns the nominative month form
+    // ("January" / "styczeń") rather than the genitive that long-date
+    // formats produce ("January 15" / "15 stycznia").
+    expect(en).toContain('Monday');
+    expect(en).toContain('January');
+    expect(pl).toContain('Poniedziałek');
+    expect(pl.toLowerCase()).toContain('styczeń');
+  });
+
+  it('formatWeekRange uses the active locale for the month name', async () => {
+    const en = await withLocale('en', () => formatWeekRange('2024-04-15', '2024-04-21'));
+    const pl = await withLocale('pl', () => formatWeekRange('2024-04-15', '2024-04-21'));
+    expect(en).toContain('April');
+    expect(pl.toLowerCase()).toContain('kwiecień');
+    expect(en).not.toBe(pl);
+  });
+
+  it('formatTime distinguishes EN 12h from PL 24h output', async () => {
+    // 2024-01-01 13:00 UTC == 14:00 in CET / 1:00 PM in EN clock systems.
+    const ts = Math.floor(Date.UTC(2024, 0, 1, 13, 0, 0) / 1000);
+    const en = await withLocale('en', () => formatTime(ts));
+    const pl = await withLocale('pl', () => formatTime(ts));
+    // EN renders an AM/PM marker; PL is 24-hour. The shape diverges
+    // regardless of the runner's TZ, which is what we assert here.
+    expect(en).toMatch(/AM|PM/i);
+    expect(pl).not.toMatch(/AM|PM/i);
   });
 });
 
