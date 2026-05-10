@@ -123,8 +123,6 @@ jobs:
     needs: [changes]
     if: needs.changes.outputs.web == 'true'
     runs-on: ubuntu-latest
-    # TODO: switch to hard-fail in Phase E (i18n-cleanup) once locale divergences close.
-    continue-on-error: true
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -134,7 +132,7 @@ jobs:
         with:
           install: 'false'
 
-      - name: Check locale parity (advisory)
+      - name: Check locale parity
         run: pnpm check:locales
 
   test-desktop:
@@ -200,9 +198,7 @@ jobs:
   ci-result:
     name: CI Result
     if: always()
-    # check-locales is intentionally excluded — it's an advisory job (continue-on-error)
-    # and shouldn't gate the rollup. Switch to hard-fail in Phase E once divergences close.
-    needs: [lint, typecheck, test-web, test-desktop, test-bot, landing]
+    needs: [lint, typecheck, test-web, check-locales, test-desktop, test-bot, landing]
     runs-on: ubuntu-latest
     steps:
       - name: Check CI outcome
