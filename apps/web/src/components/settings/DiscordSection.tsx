@@ -7,33 +7,81 @@ import { SettingsCard, SettingsToggleRow } from '@/components/settings/SettingsC
 import { DiscordPreview } from '@/components/settings/DiscordPreview';
 import { DiscordTemplateEditor } from '@/components/settings/DiscordTemplateEditor';
 import { substitutePreview } from '@/lib/discord-utils';
-import type { DiscordRpcSettings, DiscordActivityType } from '@shiroani/shared';
-import { DEFAULT_DISCORD_TEMPLATES } from '@shiroani/shared';
+import type {
+  DiscordRpcSettings,
+  DiscordActivityType,
+  DiscordPresenceTemplate,
+  DiscordPresenceTemplates,
+} from '@shiroani/shared';
+import {
+  DEFAULT_DISCORD_TEMPLATES,
+  DISCORD_ACTIVITY_TYPES,
+  resolveLocalizedTemplateField,
+} from '@shiroani/shared';
+
+/**
+ * Convert a template that may still contain `@@i18n:<key>` sentinels (i.e. a
+ * fresh default the user has never edited) into a fully resolved template
+ * whose strings are in the active UI language. User-customised strings pass
+ * through unchanged because they no longer carry the sentinel.
+ *
+ * Resolved here once at hydrate / reset time so the editor inputs show real
+ * copy, and so persisting the settings stores resolved strings (not key
+ * references) in electron-store. Subsequent runtime presence emission in main
+ * reads those persisted strings directly.
+ */
+function resolveTemplate(
+  template: DiscordPresenceTemplate,
+  translate: (key: string) => string
+): DiscordPresenceTemplate {
+  return {
+    ...template,
+    details: resolveLocalizedTemplateField(template.details, translate),
+    state: resolveLocalizedTemplateField(template.state, translate),
+  };
+}
+
+function resolveTemplates(
+  templates: DiscordPresenceTemplates,
+  translate: (key: string) => string
+): DiscordPresenceTemplates {
+  const resolved = {} as DiscordPresenceTemplates;
+  for (const type of DISCORD_ACTIVITY_TYPES) {
+    resolved[type] = resolveTemplate(templates[type], translate);
+  }
+  return resolved;
+}
 
 export function DiscordSection() {
-  const { t } = useTranslation('settings');
+  const { t, i18n } = useTranslation('settings');
   const [settings, setSettings] = useState<DiscordRpcSettings | null>(null);
   const [saved, setSaved] = useState(false);
   const [selectedActivity, setSelectedActivity] = useState<DiscordActivityType>('watching');
 
   useEffect(() => {
     let mounted = true;
+    // Resolve sentinel-prefixed default fields the moment we hydrate so the
+    // editor inputs show real copy in the active UI language. Saved user
+    // overrides are passed through unchanged. The sentinels reference keys
+    // inside the `settings` namespace, so we look them up there.
+    const translate = (key: string) => i18n.t(`settings:${key}`);
     window.electronAPI?.discordRpc?.getSettings().then((s: DiscordRpcSettings) => {
       if (!mounted) return;
       if (s) {
+        const merged: DiscordPresenceTemplates = s.templates
+          ? { ...DEFAULT_DISCORD_TEMPLATES, ...s.templates }
+          : { ...DEFAULT_DISCORD_TEMPLATES };
         setSettings({
           ...s,
           useCustomTemplates: s.useCustomTemplates ?? false,
-          templates: s.templates
-            ? { ...DEFAULT_DISCORD_TEMPLATES, ...s.templates }
-            : { ...DEFAULT_DISCORD_TEMPLATES },
+          templates: resolveTemplates(merged, translate),
         });
       }
     });
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [i18n]);
 
   const updateField = useCallback(
     <K extends keyof DiscordRpcSettings>(key: K, value: DiscordRpcSettings[K]) => {
@@ -66,17 +114,21 @@ export function DiscordSection() {
   }, [settings]);
 
   const handleResetTemplate = useCallback(() => {
+    const translate = (key: string) => i18n.t(`settings:${key}`);
     setSettings(prev => {
       if (!prev) return prev;
       return {
         ...prev,
         templates: {
           ...prev.templates,
-          [selectedActivity]: { ...DEFAULT_DISCORD_TEMPLATES[selectedActivity] },
+          [selectedActivity]: resolveTemplate(
+            DEFAULT_DISCORD_TEMPLATES[selectedActivity],
+            translate
+          ),
         },
       };
     });
-  }, [selectedActivity]);
+  }, [selectedActivity, i18n]);
 
   const currentTemplate =
     settings?.templates?.[selectedActivity] ?? DEFAULT_DISCORD_TEMPLATES[selectedActivity];

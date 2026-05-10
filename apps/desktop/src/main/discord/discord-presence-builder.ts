@@ -4,8 +4,12 @@ import type {
   DiscordPresenceTemplate,
   DiscordActivityType,
 } from '@shiroani/shared';
-import { DEFAULT_DISCORD_TEMPLATES, LANDING_URL } from '@shiroani/shared';
-import { t } from '../i18n-strings';
+import {
+  DEFAULT_DISCORD_TEMPLATES,
+  LANDING_URL,
+  resolveLocalizedTemplateField,
+} from '@shiroani/shared';
+import { t, type MainTranslationKey } from '../i18n-strings';
 
 /**
  * Build the "Download ShiroAni" rich-presence button. Resolved at call time
@@ -58,8 +62,20 @@ function buildFromTemplate(
   const template: DiscordPresenceTemplate =
     settings.templates?.[activityType] ?? DEFAULT_DISCORD_TEMPLATES[activityType];
 
-  const details = substituteVariables(template.details, activity);
-  const state = substituteVariables(template.state, activity);
+  // `template.details` / `template.state` may carry the i18n sentinel
+  // (`@@i18n:<key>`) when the field still holds a fresh default that the user
+  // never customised. Resolve through main's `t()` so the active UI language
+  // wins, and only then run variable substitution. User-customised strings
+  // pass through `resolveLocalizedTemplateField` unchanged.
+  const localizedDetails = resolveLocalizedTemplateField(template.details, key =>
+    t(key as MainTranslationKey)
+  );
+  const localizedState = resolveLocalizedTemplateField(template.state, key =>
+    t(key as MainTranslationKey)
+  );
+
+  const details = substituteVariables(localizedDetails, activity);
+  const state = substituteVariables(localizedState, activity);
 
   let largeImageKey = 'shiroani';
   let largeImageText = 'ShiroAni';

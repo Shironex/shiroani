@@ -17,6 +17,7 @@ import {
   DISCORD_ACTIVITY_TYPES,
   DISCORD_ACTIVITY_LABELS,
   DISCORD_TEMPLATE_VARIABLES,
+  resolveLocalizedTemplateField,
 } from '@shiroani/shared';
 
 interface DiscordTemplateEditorProps {
@@ -57,7 +58,12 @@ export function DiscordTemplateEditor({
   onTemplateChange,
   onReset,
 }: DiscordTemplateEditorProps) {
-  const { t } = useTranslation('settings');
+  const { t, i18n } = useTranslation('settings');
+  // The dropdown labels and variable descriptions ship as `@@i18n:<key>`
+  // sentinels in `@shiroani/shared` so they pick up the active UI language
+  // here rather than at module-load time. The keys live in the `settings`
+  // namespace alongside the rest of the Discord copy.
+  const translate = (key: string) => i18n.t(`settings:${key}`);
   return (
     <SettingsCard
       icon={MessageCircle}
@@ -79,7 +85,7 @@ export function DiscordTemplateEditor({
           <SelectContent>
             {DISCORD_ACTIVITY_TYPES.map(type => (
               <SelectItem key={type} value={type}>
-                {DISCORD_ACTIVITY_LABELS[type]}
+                {resolveLocalizedTemplateField(DISCORD_ACTIVITY_LABELS[type], translate)}
               </SelectItem>
             ))}
           </SelectContent>
@@ -145,7 +151,7 @@ export function DiscordTemplateEditor({
           {DISCORD_TEMPLATE_VARIABLES.map(v => (
             <span key={v.key} className="text-xs text-muted-foreground">
               <code className="text-primary/80 bg-primary/5 px-1 rounded text-2xs">{v.key}</code> ·{' '}
-              {v.description}
+              {resolveLocalizedTemplateField(v.description, translate)}
             </span>
           ))}
         </div>

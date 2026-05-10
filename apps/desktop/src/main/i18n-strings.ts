@@ -69,6 +69,30 @@ const strings = {
       usingApp: 'Using ShiroAni',
       buttonDownload: 'Download ShiroAni',
       buttonAniList: 'View on AniList',
+      template: {
+        watching: { details: 'Watching anime' },
+        browsing: { details: 'Browsing' },
+        library: { details: 'Browsing library' },
+        diary: { details: 'Writing in diary' },
+        schedule: { details: 'Checking schedule' },
+        settings: { details: 'Configuring settings' },
+        idle: { details: 'Idle' },
+      },
+      activityLabel: {
+        watching: 'Watching anime',
+        browsing: 'Browsing',
+        library: 'Library',
+        diary: 'Diary',
+        schedule: 'Schedule',
+        settings: 'Settings',
+        idle: 'Idle',
+      },
+      templateVariable: {
+        animeTitle: 'Anime title',
+        episode: 'Episode number',
+        siteName: 'Site name',
+        libraryCount: 'Library count',
+      },
     },
   },
   pl: {
@@ -98,6 +122,30 @@ const strings = {
       usingApp: 'Korzysta z ShiroAni',
       buttonDownload: 'Pobierz ShiroAni',
       buttonAniList: 'Pokaż na AniList',
+      template: {
+        watching: { details: 'Ogląda anime' },
+        browsing: { details: 'Przeglądanie' },
+        library: { details: 'Przeglądanie biblioteki' },
+        diary: { details: 'Pisanie w dzienniku' },
+        schedule: { details: 'Sprawdzanie harmonogramu' },
+        settings: { details: 'Przeglądanie ustawień' },
+        idle: { details: 'Oczekiwanie' },
+      },
+      activityLabel: {
+        watching: 'Oglądanie anime',
+        browsing: 'Przeglądanie',
+        library: 'Biblioteka',
+        diary: 'Dziennik',
+        schedule: 'Harmonogram',
+        settings: 'Ustawienia',
+        idle: 'Bez aktywności',
+      },
+      templateVariable: {
+        animeTitle: 'Tytuł anime',
+        episode: 'Numer odcinka',
+        siteName: 'Nazwa strony',
+        libraryCount: 'Liczba anime w bibliotece',
+      },
     },
   },
 } as const satisfies Record<SupportedLanguage, MainStringsShape>;
@@ -126,6 +174,30 @@ type MainStringsShape = {
     usingApp: string;
     buttonDownload: string;
     buttonAniList: string;
+    template: {
+      watching: { details: string };
+      browsing: { details: string };
+      library: { details: string };
+      diary: { details: string };
+      schedule: { details: string };
+      settings: { details: string };
+      idle: { details: string };
+    };
+    activityLabel: {
+      watching: string;
+      browsing: string;
+      library: string;
+      diary: string;
+      schedule: string;
+      settings: string;
+      idle: string;
+    };
+    templateVariable: {
+      animeTitle: string;
+      episode: string;
+      siteName: string;
+      libraryCount: string;
+    };
   };
 };
 

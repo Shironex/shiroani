@@ -329,6 +329,30 @@
       "variablesLabel": "Dostępne zmienne:",
       "resetDefaults": "Przywróć domyślne"
     },
+    "template": {
+      "watching": { "details": "Ogląda anime" },
+      "browsing": { "details": "Przeglądanie" },
+      "library": { "details": "Przeglądanie biblioteki" },
+      "diary": { "details": "Pisanie w dzienniku" },
+      "schedule": { "details": "Sprawdzanie harmonogramu" },
+      "settings": { "details": "Przeglądanie ustawień" },
+      "idle": { "details": "Oczekiwanie" }
+    },
+    "activityLabel": {
+      "watching": "Oglądanie anime",
+      "browsing": "Przeglądanie",
+      "library": "Biblioteka",
+      "diary": "Dziennik",
+      "schedule": "Harmonogram",
+      "settings": "Ustawienia",
+      "idle": "Bez aktywności"
+    },
+    "templateVariable": {
+      "animeTitle": "Tytuł anime",
+      "episode": "Numer odcinka",
+      "siteName": "Nazwa strony",
+      "libraryCount": "Liczba anime w bibliotece"
+    },
     "info": "Status na Discordzie działa tylko, gdy klient Discord jest uruchomiony na komputerze. Na Twoim profilu Discord znajomi zobaczą, co robisz w ShiroAni."
   },
   "mascot": {
