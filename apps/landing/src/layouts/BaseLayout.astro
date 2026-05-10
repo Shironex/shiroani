@@ -1,24 +1,27 @@
 ---
 import BaseHead from '../components/BaseHead.astro';
+import type { SupportedLanguage } from '../lib/i18n';
 
 interface Props {
   title: string;
   description?: string;
   titleKey?: string;
   descriptionKey?: string;
+  lang?: SupportedLanguage;
 }
 
-const { title, description, titleKey, descriptionKey } = Astro.props;
+const { title, description, titleKey, descriptionKey, lang = 'pl' } = Astro.props;
 ---
 
 <!doctype html>
-<html lang="en" data-theme="plum">
+<html lang={lang} data-theme="plum">
   <head>
     <BaseHead
       title={title}
       description={description}
       titleKey={titleKey}
       descriptionKey={descriptionKey}
+      lang={lang}
     />
   </head>
   <body>

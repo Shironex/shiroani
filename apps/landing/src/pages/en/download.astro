@@ -1,0 +1,20 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Navbar from '../../components/Navbar.astro';
+import { DownloadPage } from '../../components/DownloadPage';
+import { Footer } from '../../components/Footer';
+---
+
+<BaseLayout
+  title="Download · ShiroAni"
+  description="Download the latest ShiroAni — anime browser & tracker. Windows and macOS."
+  titleKey="meta.download.title"
+  descriptionKey="meta.download.description"
+  lang="en"
+>
+  <Navbar activeHref="/#pobierz" />
+  <main id="main" class="dlp-wrap">
+    <DownloadPage client:load />
+  </main>
+  <Footer client:visible />
+</BaseLayout>

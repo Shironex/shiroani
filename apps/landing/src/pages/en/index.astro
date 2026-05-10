@@ -1,0 +1,122 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Ticker from '../../components/Ticker.astro';
+import Navbar from '../../components/Navbar.astro';
+import Hero from '../../components/Hero.astro';
+import Chapter from '../../components/Chapter.astro';
+import Features from '../../components/Features.astro';
+import { Anatomy } from '../../components/Anatomy';
+import Mascot from '../../components/Mascot.astro';
+import Suite from '../../components/Suite.astro';
+import Download from '../../components/Download.astro';
+import FAQ from '../../components/FAQ.astro';
+import { Footer } from '../../components/Footer';
+---
+
+<BaseLayout
+  title="白アニ · ShiroAni — anime browser & tracker"
+  titleKey="meta.home.title"
+  descriptionKey="meta.home.description"
+  lang="en"
+>
+  <Ticker />
+  <Navbar />
+  <main id="main">
+    <Hero />
+
+    <Chapter
+      id="funkcje"
+      num="01"
+      eyebrow="Chapter one · Co jest w środku"
+      title="Jedna aplikacja. "
+      em="Sześć przestrzeni."
+      meta="9 funkcji<br />str. 04–09"
+      eyebrowKey="chapter.01.eyebrow"
+      titleKey="chapter.01.title"
+      emKey="chapter.01.em"
+      metaKey="chapter.01.meta"
+    />
+    <Features />
+
+    <Chapter
+      id="podglad"
+      num="02"
+      eyebrow="Chapter two · Anatomia aplikacji"
+      title="Kliknij pinezkę, żeby "
+      em="zobaczyć szczegóły"
+      titleSuffix="."
+      meta="4 widoki · 12 pinów<br />str. 10–11"
+      eyebrowKey="chapter.02.eyebrow"
+      titleKey="chapter.02.title"
+      emKey="chapter.02.em"
+      titleSuffixKey="chapter.02.titleSuffix"
+      metaKey="chapter.02.meta"
+    />
+    <Anatomy client:visible />
+
+    <Chapter
+      id="maskotka"
+      num="03"
+      eyebrow="Chapter three · Mała towarzyszka"
+      title="Poznaj "
+      em="Shiro-chan"
+      titleSuffix="."
+      meta="8+ póz<br />str. 13"
+      eyebrowKey="chapter.03.eyebrow"
+      titleKey="chapter.03.title"
+      emKey="chapter.03.em"
+      titleSuffixKey="chapter.03.titleSuffix"
+      metaKey="chapter.03.meta"
+    />
+    <Mascot />
+
+    <Chapter
+      id="suite"
+      num="04"
+      eyebrow="Chapter four · Rodzina"
+      title="Jedna cicha półka na "
+      em="anime, mangę i muzykę"
+      titleSuffix="."
+      meta="3 aplikacje<br />1 język wizualny"
+      eyebrowKey="chapter.04.eyebrow"
+      titleKey="chapter.04.title"
+      emKey="chapter.04.em"
+      titleSuffixKey="chapter.04.titleSuffix"
+      metaKey="chapter.04.meta"
+    />
+    <Suite />
+
+    <Chapter
+      id="pobierz"
+      num="05"
+      eyebrow="Chapter five · Zainstaluj"
+      title="Zabierz ją "
+      em="do siebie"
+      titleSuffix="."
+      meta="2 platformy · 48 MB<br />str. 14"
+      eyebrowKey="chapter.05.eyebrow"
+      titleKey="chapter.05.title"
+      emKey="chapter.05.em"
+      titleSuffixKey="chapter.05.titleSuffix"
+      metaKey="chapter.05.meta"
+    />
+    <Download />
+
+    <Chapter
+      id="faq"
+      num="06"
+      eyebrow="Chapter six · Pytania"
+      title="Krótko i "
+      em="na temat"
+      titleSuffix="."
+      meta="6 pytań<br />str. 15"
+      eyebrowKey="chapter.06.eyebrow"
+      titleKey="chapter.06.title"
+      emKey="chapter.06.em"
+      titleSuffixKey="chapter.06.titleSuffix"
+      metaKey="chapter.06.meta"
+    />
+    <FAQ />
+  </main>
+  <Footer client:visible />
+</BaseLayout>

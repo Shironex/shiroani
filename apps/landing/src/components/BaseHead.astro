@@ -1,5 +1,6 @@
 ---
 import '../styles/global.css';
+import { translations, type SupportedLanguage } from '../lib/i18n';
 
 interface Props {
   title: string;
@@ -7,15 +8,25 @@ interface Props {
   titleKey?: string;
   descriptionKey?: string;
   ogTitleKey?: string;
+  lang?: SupportedLanguage;
 }
 
 const {
   title,
-  description = 'ShiroAni to aplikacja na komputer: przeglądarka bez reklam, biblioteka, harmonogram emisji i pamiętnik.',
+  description,
   titleKey,
   descriptionKey,
   ogTitleKey = 'meta.home.ogTitle',
+  lang = 'pl',
 } = Astro.props;
+
+const dict = translations[lang];
+const resolvedTitle = (titleKey && dict[titleKey]) || title;
+const resolvedDescription =
+  (descriptionKey && dict[descriptionKey]) ||
+  description ||
+  dict['meta.home.description'];
+const resolvedOgTitle = dict[ogTitleKey] ?? resolvedTitle;
 
 const ogImage = new URL('/og-default.png', Astro.site);
 ---
@@ -42,18 +53,19 @@ const ogImage = new URL('/og-default.png', Astro.site);
   />
 </noscript>
 
-<title data-i18n-text={titleKey}>{title}</title>
-<meta name="description" content={description} data-i18n-content={descriptionKey} />
+<title data-i18n-text={titleKey}>{resolvedTitle}</title>
+<meta name="description" content={resolvedDescription} data-i18n-content={descriptionKey} />
 
 <!-- Open Graph -->
 <meta property="og:type" content="website" />
 <meta property="og:url" content={Astro.url} />
-<meta property="og:title" content="ShiroAni · przeglądarka i tracker anime" data-i18n-content={ogTitleKey} />
-<meta property="og:description" content={description} data-i18n-content={descriptionKey} />
+<meta property="og:locale" content={lang === 'pl' ? 'pl_PL' : 'en_US'} />
+<meta property="og:title" content={resolvedOgTitle} data-i18n-content={ogTitleKey} />
+<meta property="og:description" content={resolvedDescription} data-i18n-content={descriptionKey} />
 <meta property="og:image" content={ogImage} />
 
 <!-- Twitter -->
 <meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:title" content="ShiroAni · przeglądarka i tracker anime" data-i18n-content={ogTitleKey} />
-<meta name="twitter:description" content={description} data-i18n-content={descriptionKey} />
+<meta name="twitter:title" content={resolvedOgTitle} data-i18n-content={ogTitleKey} />
+<meta name="twitter:description" content={resolvedDescription} data-i18n-content={descriptionKey} />
 <meta name="twitter:image" content={ogImage} />
