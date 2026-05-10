@@ -72,20 +72,23 @@ describe('locale-parametrized formatters', () => {
   it('formatDayHeading uses the active locale for weekday + month', async () => {
     const en = await withLocale('en', () => formatDayHeading('2024-01-15'));
     const pl = await withLocale('pl', () => formatDayHeading('2024-01-15'));
-    // 2024-01-15 is a Monday. Intl returns the nominative month form
-    // ("January" / "styczeń") rather than the genitive that long-date
-    // formats produce ("January 15" / "15 stycznia").
+    // 2024-01-15 is a Monday. We delegate to a single `Intl.DateTimeFormat`
+    // call so the parts follow locale conventions and Polish gets the
+    // correct genitive month form ("stycznia"), not the nominative
+    // ("styczeń") that a manual `{ month: 'long' }` produced.
     expect(en).toContain('Monday');
     expect(en).toContain('January');
     expect(pl).toContain('Poniedziałek');
-    expect(pl.toLowerCase()).toContain('styczeń');
+    expect(pl.toLowerCase()).toContain('stycznia');
   });
 
   it('formatWeekRange uses the active locale for the month name', async () => {
     const en = await withLocale('en', () => formatWeekRange('2024-04-15', '2024-04-21'));
     const pl = await withLocale('pl', () => formatWeekRange('2024-04-15', '2024-04-21'));
     expect(en).toContain('April');
-    expect(pl.toLowerCase()).toContain('kwiecień');
+    // `formatRange` uses the genitive in Polish ("kwietnia"), which is
+    // the correct natural form for "15–21 of April".
+    expect(pl.toLowerCase()).toContain('kwietnia');
     expect(en).not.toBe(pl);
   });
 

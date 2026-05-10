@@ -27,21 +27,24 @@ interface UpdatesSectionProps {
 
 const BYTES_PER_MB = 1024 * 1024;
 
+// Cache `Intl.NumberFormat` per locale. `formatMB` runs twice per
+// download-progress tick (~200–500ms cadence from electron-updater) so
+// allocating a fresh formatter per call wastes ~1–2 KB per allocation
+// for the duration of a multi-hundred-MB download.
+const mbFormatters = new Map<string, Intl.NumberFormat>();
+function getMbFormatter(locale: string): Intl.NumberFormat {
+  let f = mbFormatters.get(locale);
+  if (!f) {
+    f = new Intl.NumberFormat(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+    mbFormatters.set(locale, f);
+  }
+  return f;
+}
+
 /** Format bytes as `X.Y MB` with 1 decimal, using a locale-aware decimal separator. */
 function formatMB(bytes: number, locale: string): string {
-  if (!Number.isFinite(bytes) || bytes <= 0) {
-    return (
-      new Intl.NumberFormat(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(
-        0
-      ) + ' MB'
-    );
-  }
-  const value = bytes / BYTES_PER_MB;
-  return (
-    new Intl.NumberFormat(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(
-      value
-    ) + ' MB'
-  );
+  const value = Number.isFinite(bytes) && bytes > 0 ? bytes / BYTES_PER_MB : 0;
+  return getMbFormatter(locale).format(value) + ' MB';
 }
 
 /**
