@@ -234,7 +234,12 @@ export function initializeAutoUpdater(mainWindow: BrowserWindow, isDev: boolean)
     const isYmlPending =
       /Cannot find (latest|beta)\.yml/.test(message) ||
       (message.includes('.yml') && message.includes('404'));
-    const isAssetPending = /\b404\b[\s\S]*\.(exe|dmg|zip|blockmap|yml)/i.test(message);
+    // Match `.<ext>` and `404` in either order — electron-updater can phrase
+    // the error as "404 ... ShiroAni-Setup.exe" (manifest path) OR
+    // "Cannot download \"…/ShiroAni-Setup.exe\": HTTP 404" (binary asset path).
+    const hasAssetExt = /\.(exe|dmg|zip|blockmap|yml)\b/i.test(message);
+    const has404 = /\b404\b/.test(message);
+    const isAssetPending = hasAssetExt && has404;
     const isReleasePending = isYmlPending || isAssetPending;
 
     if (isReleasePending) {
