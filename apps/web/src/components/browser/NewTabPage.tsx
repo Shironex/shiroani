@@ -1,5 +1,6 @@
 import { useState, useCallback, useMemo, useEffect } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
+import type { TFunction } from 'i18next';
 import { Plus, X, Eye, CalendarDays, Bookmark, Clock, Play, Globe2, History } from 'lucide-react';
 import { toLocalDate } from '@shiroani/shared';
 // Note: removed `pluralize` import — greeting subtitle now uses i18next CLDR plurals
@@ -915,10 +916,7 @@ function FrequentSiteRow({ site, onClick }: { site: FrequentSite; onClick: () =>
   );
 }
 
-function formatRelativeTime(
-  timestamp: number,
-  t: (key: string, opts?: Record<string, unknown>) => string
-): string {
+function formatRelativeTime(timestamp: number, t: TFunction<'browser'>): string {
   const diff = Date.now() - timestamp;
   const minutes = Math.floor(diff / 60_000);
   if (minutes < 1) return t('newTab.recents.relative.now');

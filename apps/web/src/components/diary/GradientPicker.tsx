@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { DIARY_GRADIENTS } from '@/lib/diary-constants';
+import { tDynamic } from '@/lib/i18n';
 import type { DiaryGradient } from '@shiroani/shared';
 
 interface GradientPickerProps {
@@ -23,7 +24,7 @@ export function GradientPicker({
   stacked = false,
   className,
 }: GradientPickerProps) {
-  const { t } = useTranslation('diary');
+  const { t, i18n } = useTranslation('diary');
   return (
     <div
       className={cn(
@@ -38,7 +39,7 @@ export function GradientPicker({
       <div className={cn('flex flex-wrap gap-1.5', stacked && 'w-full')}>
         {Object.entries(DIARY_GRADIENTS).map(([key, { labelKey, css }]) => {
           const active = value === key;
-          const label = t(labelKey);
+          const label = tDynamic(i18n, `diary:${labelKey}`);
           return (
             <button
               key={key}

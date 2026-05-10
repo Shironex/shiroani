@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { MOOD_EMOJI, MOOD_OPTIONS } from '@/lib/diary-constants';
+import { tDynamic } from '@/lib/i18n';
 import type { DiaryMood } from '@shiroani/shared';
 
 interface MoodPickerPillsProps {
@@ -19,7 +20,7 @@ interface MoodPickerPillsProps {
  * and toolbar (emoji-only tiles). Toggling the active mood clears it.
  */
 export function MoodPickerPills({ value, onChange, size, className }: MoodPickerPillsProps) {
-  const { t } = useTranslation('diary');
+  const { i18n } = useTranslation('diary');
   return (
     <div
       className={cn(
@@ -30,7 +31,7 @@ export function MoodPickerPills({ value, onChange, size, className }: MoodPicker
       {MOOD_OPTIONS.map(opt => {
         const active = value === opt.value;
         const handleClick = () => onChange(active ? undefined : opt.value);
-        const label = t(opt.labelKey);
+        const label = tDynamic(i18n, `diary:${opt.labelKey}`);
         if (size === 'sm') {
           return (
             <button

@@ -6,6 +6,7 @@ import { PillTag } from '@/components/ui/pill-tag';
 import { CountdownBadge } from '@/components/library/CountdownBadge';
 import type { AnimeEntry } from '@shiroani/shared';
 import { STATUS_LABEL_KEY } from '@/lib/constants';
+import { tDynamic } from '@/lib/i18n';
 
 interface AnimeCardProps {
   entry: AnimeEntry;
@@ -22,7 +23,7 @@ const AnimeCard = memo(function AnimeCard({
   onContinue,
   onRemove,
 }: AnimeCardProps) {
-  const { t } = useTranslation(['library', 'status', 'common']);
+  const { t, i18n } = useTranslation(['library', 'status', 'common']);
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
       if (e.key === 'Enter' || e.key === ' ') {
@@ -46,7 +47,7 @@ const AnimeCard = memo(function AnimeCard({
   const showProgress = !!entry.episodes && entry.episodes > 0 && (isWatching || isCompleted);
 
   // Status badge (top-left). completed -> green, watching -> accent, dropped/on_hold -> muted.
-  const statusLabel = t(`status:${STATUS_LABEL_KEY[entry.status]}`);
+  const statusLabel = tDynamic(i18n, `status:${STATUS_LABEL_KEY[entry.status]}`);
   const statusVariant: 'accent' | 'green' | 'muted' = isCompleted
     ? 'green'
     : isWatching

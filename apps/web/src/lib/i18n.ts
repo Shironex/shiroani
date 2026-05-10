@@ -22,7 +22,7 @@
  * the first-paint flash documented in the arch doc's init-timing note.
  */
 
-import i18n from 'i18next';
+import i18n, { type TOptions, type i18n as I18nInstance } from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import {
   DEFAULT_LANGUAGE,
@@ -226,6 +226,31 @@ export async function hydrateLanguageFromStore() {
   } catch {
     // Ignore store read failures — see function docstring.
   }
+}
+
+/**
+ * Escape hatch for genuinely dynamic translation keys (cross-namespace
+ * dispatch, runtime-built suffixes). The typed `t()` API rejects template
+ * literal keys because they can't be narrowed to a known leaf — this helper
+ * does the cast in one place so call sites stay typed against `string` and
+ * we don't proliferate `as never` at every site.
+ *
+ * Use sparingly: prefer a const lookup map (`as const satisfies Record<...,
+ * Key>`) when the dynamic key is actually a closed enum dispatch, and reach
+ * for `tDynamic` only when the suffix is genuinely runtime-derived.
+ */
+export function tDynamic(
+  source: I18nInstance | { t: I18nInstance['t'] },
+  key: string,
+  opts?: TOptions
+): string {
+  const t = source.t.bind(source);
+  // Cast through `never` so the literal-key overload accepts a wide string.
+  // The runtime resolves the key normally; missing keys are reported via the
+  // dev-only `missingKeyHandler` configured above.
+  return opts !== undefined
+    ? (t(key as never, opts as never) as unknown as string)
+    : (t(key as never) as unknown as string);
 }
 
 export default i18n;

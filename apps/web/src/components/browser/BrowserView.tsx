@@ -1,5 +1,6 @@
 import { useState, useEffect, useLayoutEffect, useCallback, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+import type { TFunction } from 'i18next';
 import { createPortal } from 'react-dom';
 import { useShallow } from 'zustand/react/shallow';
 import { Globe, Columns2 } from 'lucide-react';
@@ -41,7 +42,7 @@ interface PaneRendererProps {
   node: BrowserNode;
   activePaneId: string | null;
   /** Bound `t` instance for the `browser` namespace, threaded so renderNode stays pure. */
-  t: (key: string) => string;
+  t: TFunction<'browser'>;
   /**
    * Id of the enclosing SplitNode, or null when this leaf sits at the top
    * level. Drives whether the per-pane chrome bar with the unsplit button

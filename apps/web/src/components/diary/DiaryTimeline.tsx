@@ -25,7 +25,7 @@ function dayKeyFor(dateStr: string): string {
  * Date components use Intl.DateTimeFormat under the active locale; weekday and
  * full-date variants follow shape conventions of the locale.
  */
-function formatDayHeader(dateStr: string, t: TFunction, locale: string): string {
+function formatDayHeader(dateStr: string, t: TFunction<'diary'>, locale: string): string {
   const d = new Date(dateStr);
   const now = new Date();
   const yesterday = new Date(now);
@@ -79,7 +79,7 @@ interface DayGroup {
   entries: DiaryEntry[];
 }
 
-function groupByDay(entries: DiaryEntry[], t: TFunction, locale: string): DayGroup[] {
+function groupByDay(entries: DiaryEntry[], t: TFunction<'diary'>, locale: string): DayGroup[] {
   const groups = new Map<string, DayGroup>();
   for (const entry of entries) {
     const key = dayKeyFor(entry.createdAt);

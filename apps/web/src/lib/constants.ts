@@ -1,5 +1,5 @@
 import type { AnimeStatus } from '@shiroani/shared';
-import i18n from '@/lib/i18n';
+import i18n, { tDynamic } from '@/lib/i18n';
 
 /** Path to the app mascot logo (chibi SVG) */
 export const APP_LOGO_URL = `${import.meta.env.BASE_URL}shiro-chibi.svg`;
@@ -70,7 +70,7 @@ export const STATUS_ORDER: AnimeStatus[] = Object.keys(STATUS_CONFIG) as AnimeSt
  * the value re-renders on language change.
  */
 export function getStatusLabel(status: AnimeStatus): string {
-  return i18n.t(STATUS_LABEL_KEY[status], { ns: 'status' });
+  return tDynamic(i18n, `status:${STATUS_LABEL_KEY[status]}`);
 }
 
 /**
@@ -81,7 +81,7 @@ export function getStatusLabel(status: AnimeStatus): string {
 export function getStatusOptions(): { value: AnimeStatus; label: string }[] {
   return STATUS_ORDER.map(value => ({
     value,
-    label: i18n.t(STATUS_LABEL_KEY[value], { ns: 'status' }),
+    label: tDynamic(i18n, `status:${STATUS_LABEL_KEY[value]}`),
   }));
 }
 

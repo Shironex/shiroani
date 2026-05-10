@@ -7,6 +7,7 @@ import { ProgressBar } from '@/components/shared/ProgressBar';
 import { CountdownBadge } from '@/components/library/CountdownBadge';
 import { formatEpisodeProgress } from '@/lib/anime-utils';
 import { STATUS_LABEL_KEY } from '@/lib/constants';
+import { tDynamic } from '@/lib/i18n';
 import type { AnimeEntry } from '@shiroani/shared';
 
 interface LibraryListItemProps {
@@ -31,13 +32,13 @@ const LibraryListItem = memo(function LibraryListItem({
   nextAiring,
   onClick,
 }: LibraryListItemProps) {
-  const { t } = useTranslation(['library', 'status', 'common']);
+  const { t, i18n } = useTranslation(['library', 'status', 'common']);
   const { t: tc } = useTranslation('common');
   const progressPercent = entry.episodes
     ? Math.min(100, Math.round((entry.currentEpisode / entry.episodes) * 100))
     : 0;
 
-  const statusLabel = t(`status:${STATUS_LABEL_KEY[entry.status]}`);
+  const statusLabel = tDynamic(i18n, `status:${STATUS_LABEL_KEY[entry.status]}`);
   const hasScore = entry.score != null && entry.score > 0;
 
   return (

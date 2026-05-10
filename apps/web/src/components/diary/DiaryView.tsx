@@ -17,6 +17,7 @@ import { ViewHeader } from '@/components/shared/ViewHeader';
 import { EmptyState } from '@/components/shared/EmptyState';
 import { KanjiWatermark } from '@/components/shared/KanjiWatermark';
 import { useTranslation } from 'react-i18next';
+import { tDynamic } from '@/lib/i18n';
 import { useDiaryStore, getFilteredDiaryEntries } from '@/stores/useDiaryStore';
 import { DiaryEntryGrid } from './DiaryEntryGrid';
 import { DiaryTimeline } from './DiaryTimeline';
@@ -113,8 +114,12 @@ export function DiaryView() {
   const subtitle = entries.length > 0 ? t('subtitle', { count: entries.length }) : undefined;
 
   const localizedFilterOptions = useMemo(
-    () => DIARY_FILTER_OPTIONS.map(opt => ({ value: opt.value, label: t(opt.labelKey) })),
-    [t, i18n.language]
+    () =>
+      DIARY_FILTER_OPTIONS.map(opt => ({
+        value: opt.value,
+        label: tDynamic(i18n, `diary:${opt.labelKey}`),
+      })),
+    [i18n, i18n.language]
   );
 
   const isEmpty = filteredEntries.length === 0;
@@ -159,7 +164,7 @@ export function DiaryView() {
               <SelectContent>
                 {DIARY_SORT_OPTIONS.map(option => (
                   <SelectItem key={option.value} value={option.value} className="text-xs">
-                    {t(option.labelKey)}
+                    {tDynamic(i18n, `diary:${option.labelKey}`)}
                   </SelectItem>
                 ))}
               </SelectContent>

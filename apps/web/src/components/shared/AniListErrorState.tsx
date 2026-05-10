@@ -2,6 +2,7 @@ import { CloudOff, RefreshCw } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { classifyAniListError } from '@shiroani/shared';
 import { Button } from '@/components/ui/button';
+import { tDynamic } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 
 interface AniListErrorStateProps {
@@ -18,13 +19,13 @@ const KIND_KEY: Record<ReturnType<typeof classifyAniListError>, string> = {
 };
 
 export function AniListErrorState({ error, onRetry, className }: AniListErrorStateProps) {
-  const { t } = useTranslation('nav');
+  const { t, i18n } = useTranslation('nav');
   if (!error) return null;
 
   const kind = classifyAniListError(error);
   const groupKey = KIND_KEY[kind];
-  const title = t(`anilistError.${groupKey}.title`);
-  const subtitle = t(`anilistError.${groupKey}.subtitle`);
+  const title = tDynamic(i18n, `nav:anilistError.${groupKey}.title`);
+  const subtitle = tDynamic(i18n, `nav:anilistError.${groupKey}.subtitle`);
   const body = kind === 'unknown' ? error : subtitle;
 
   return (

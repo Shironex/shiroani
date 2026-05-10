@@ -21,6 +21,7 @@ import { getActivePane } from '@/stores/useBrowserStore';
 import { toast } from 'sonner';
 import type { AnimeEntry, AnimeStatus } from '@shiroani/shared';
 import { STATUS_LABEL_KEY, getStatusOptions } from '@/lib/constants';
+import { tDynamic } from '@/lib/i18n';
 import { useAnimeDetailForm } from '@/hooks/useAnimeDetailForm';
 import { useNavigateToBrowser } from '@/hooks/useNavigateToBrowser';
 import { SliderInputField } from './SliderInputField';
@@ -213,7 +214,7 @@ export function AnimeDetailModal({ entry, open, onOpenChange }: AnimeDetailModal
               {entry.episodes ? <ProgressBar value={progressPercent} thickness={3} glow /> : null}
               <SheetStat
                 label={t('library:detail.status')}
-                value={t(`status:${STATUS_LABEL_KEY[status]}`)}
+                value={tDynamic(i18n, `status:${STATUS_LABEL_KEY[status]}`)}
               />
               <SheetDivider />
               <SheetStat
@@ -253,7 +254,7 @@ export function AnimeDetailModal({ entry, open, onOpenChange }: AnimeDetailModal
 
               <div className="flex flex-wrap items-center gap-1.5 mb-2">
                 <PillTag variant={STATUS_PILL_VARIANT[status]}>
-                  {t(`status:${STATUS_LABEL_KEY[status]}`)}
+                  {tDynamic(i18n, `status:${STATUS_LABEL_KEY[status]}`)}
                 </PillTag>
                 {entry.episodes && (
                   <PillTag variant="muted">

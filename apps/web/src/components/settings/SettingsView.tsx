@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { tDynamic } from '@/lib/i18n';
 import { IS_WINDOWS, IS_MAC, IS_ELECTRON } from '@/lib/platform';
 import { KanjiWatermark } from '@/components/shared/KanjiWatermark';
 import { ViewHeader } from '@/components/shared/ViewHeader';
@@ -176,7 +177,7 @@ const GROUP_LABEL_KEYS: Record<SectionGroup, string> = {
 const GROUP_ORDER: SectionGroup[] = ['app', 'appearance', 'integrations', 'data', 'advanced'];
 
 export function SettingsView() {
-  const { t } = useTranslation('settings');
+  const { t, i18n } = useTranslation('settings');
   const [activeSection, setActiveSection] = useState<SettingsSection>(
     IS_ELECTRON ? 'general' : 'themes'
   );
@@ -219,8 +220,8 @@ export function SettingsView() {
   }, []);
 
   const currentSection = sections.find(s => s.id === activeSection) ?? sections[0];
-  const currentLabel = t(`nav.${currentSection.labelKey}`);
-  const currentSubtitle = t(`nav.${currentSection.subtitleKey}`);
+  const currentLabel = tDynamic(i18n, `settings:nav.${currentSection.labelKey}`);
+  const currentSubtitle = tDynamic(i18n, `settings:nav.${currentSection.subtitleKey}`);
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden animate-fade-in relative">
@@ -240,7 +241,7 @@ export function SettingsView() {
             return (
               <div key={group} className="mb-1.5">
                 <div className="px-2.5 pt-2 pb-1 font-mono text-[9px] uppercase tracking-[0.2em] text-muted-foreground/80">
-                  {t(`nav.${GROUP_LABEL_KEYS[group]}`)}
+                  {tDynamic(i18n, `settings:nav.${GROUP_LABEL_KEYS[group]}`)}
                 </div>
                 {items.map(section => {
                   const Icon = section.Icon;
@@ -273,7 +274,9 @@ export function SettingsView() {
                           isActive ? 'opacity-100' : 'opacity-85'
                         )}
                       />
-                      <span className="truncate">{t(`nav.${section.labelKey}`)}</span>
+                      <span className="truncate">
+                        {tDynamic(i18n, `settings:nav.${section.labelKey}`)}
+                      </span>
                     </button>
                   );
                 })}

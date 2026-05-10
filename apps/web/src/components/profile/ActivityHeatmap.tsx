@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+import type { TFunction } from 'i18next';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import type { AppStatsSnapshot } from '@shiroani/shared';
 import { formatDuration } from '@/lib/stats-conversions';
@@ -279,7 +280,7 @@ export function ActivityHeatmap({ snapshot, weeks = 12, metric = 'active' }: Act
 function tooltipText(
   cell: Cell,
   metric: 'active' | 'anime',
-  t: (key: string, opts?: Record<string, unknown>) => string,
+  t: TFunction<'profile'>,
   locale: string
 ): string {
   const date = formatTooltipDate(cell.date, locale);

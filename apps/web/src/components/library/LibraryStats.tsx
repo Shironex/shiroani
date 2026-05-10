@@ -4,10 +4,11 @@ import { Eye, Star, Tv, TrendingUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useLibraryStore } from '@/stores/useLibraryStore';
 import { STATUS_CONFIG, STATUS_LABEL_KEY, STATUS_ORDER } from '@/lib/constants';
+import { tDynamic } from '@/lib/i18n';
 import type { AnimeStatus } from '@shiroani/shared';
 
 export function LibraryStats() {
-  const { t } = useTranslation(['library', 'status']);
+  const { t, i18n } = useTranslation(['library', 'status']);
   const entries = useLibraryStore(s => s.entries);
 
   const stats = useMemo(() => {
@@ -98,7 +99,7 @@ export function LibraryStats() {
                     minWidth: count > 0 ? '6px' : 0,
                   }}
                   title={t('library:stats.tooltip', {
-                    label: t(`status:${STATUS_LABEL_KEY[status]}`),
+                    label: tDynamic(i18n, `status:${STATUS_LABEL_KEY[status]}`),
                     count,
                     percent: Math.round(percent),
                   })}
@@ -124,7 +125,7 @@ export function LibraryStats() {
                     style={{ backgroundColor: STATUS_CONFIG[status].cssColor }}
                   />
                   <span className="text-2xs text-foreground/80 whitespace-nowrap">
-                    {t(`status:${STATUS_LABEL_KEY[status]}`)}
+                    {tDynamic(i18n, `status:${STATUS_LABEL_KEY[status]}`)}
                   </span>
                   <span
                     className="text-2xs font-semibold"

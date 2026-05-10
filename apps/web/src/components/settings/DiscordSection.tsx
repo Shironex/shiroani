@@ -7,6 +7,7 @@ import { SettingsCard, SettingsToggleRow } from '@/components/settings/SettingsC
 import { DiscordPreview } from '@/components/settings/DiscordPreview';
 import { DiscordTemplateEditor } from '@/components/settings/DiscordTemplateEditor';
 import { substitutePreview } from '@/lib/discord-utils';
+import { tDynamic } from '@/lib/i18n';
 import type {
   DiscordRpcSettings,
   DiscordActivityType,
@@ -64,7 +65,7 @@ export function DiscordSection() {
     // editor inputs show real copy in the active UI language. Saved user
     // overrides are passed through unchanged. The sentinels reference keys
     // inside the `settings` namespace, so we look them up there.
-    const translate = (key: string) => i18n.t(`settings:${key}`);
+    const translate = (key: string) => tDynamic(i18n, `settings:${key}`);
     window.electronAPI?.discordRpc?.getSettings().then((s: DiscordRpcSettings) => {
       if (!mounted) return;
       if (s) {
@@ -114,7 +115,7 @@ export function DiscordSection() {
   }, [settings]);
 
   const handleResetTemplate = useCallback(() => {
-    const translate = (key: string) => i18n.t(`settings:${key}`);
+    const translate = (key: string) => tDynamic(i18n, `settings:${key}`);
     setSettings(prev => {
       if (!prev) return prev;
       return {

@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation, Trans } from 'react-i18next';
+import type { i18n as I18nInstance } from 'i18next';
+import { tDynamic } from '@/lib/i18n';
 import {
   AlertTriangle,
   Download,
@@ -333,7 +335,7 @@ export function UpdatesSection({ version }: UpdatesSectionProps) {
 // ── Helper components ───────────────────────────────────────────────
 
 function LatestReleaseHighlights() {
-  const { t } = useTranslation('settings');
+  const { t, i18n } = useTranslation('settings');
   const latest = CHANGELOG_RELEASES[0];
   if (!latest) return null;
 
@@ -344,7 +346,7 @@ function LatestReleaseHighlights() {
   for (const cat of latest.categories) {
     for (const entry of cat.entries) {
       if (rows.length >= MAX_ROWS) break;
-      rows.push({ variant: variantFor(cat.kind), label: shortLabel(cat.label, t), entry });
+      rows.push({ variant: variantFor(cat.kind), label: shortLabel(cat.label, i18n), entry });
     }
     if (rows.length >= MAX_ROWS) break;
   }
@@ -381,7 +383,7 @@ function variantFor(kind: keyof typeof CHANGELOG_CATEGORY_VARIANT) {
 }
 
 /** Shorten category labels so the pill stays compact. */
-function shortLabel(label: string, t: (key: string) => string): string {
+function shortLabel(label: string, i18n: I18nInstance): string {
   // The original PL labels arrive from `lib/changelog-entries`; map them to
   // localized short tags. Falls back to the raw label for non-PL inputs.
   const keyMap: Record<string, string> = {
@@ -391,7 +393,7 @@ function shortLabel(label: string, t: (key: string) => string): string {
     Bezpieczeństwo: 'updates.changelogPreview.shortLabels.security',
   };
   const k = keyMap[label];
-  return k ? t(k) : label;
+  return k ? tDynamic(i18n, `settings:${k}`) : label;
 }
 
 function StatusPill({

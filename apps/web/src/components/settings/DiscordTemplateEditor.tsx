@@ -12,6 +12,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { SettingsCard } from '@/components/settings/SettingsCard';
+import { tDynamic } from '@/lib/i18n';
 import type { DiscordActivityType, DiscordPresenceTemplate } from '@shiroani/shared';
 import {
   DISCORD_ACTIVITY_TYPES,
@@ -63,7 +64,7 @@ export function DiscordTemplateEditor({
   // sentinels in `@shiroani/shared` so they pick up the active UI language
   // here rather than at module-load time. The keys live in the `settings`
   // namespace alongside the rest of the Discord copy.
-  const translate = (key: string) => i18n.t(`settings:${key}`);
+  const translate = (key: string) => tDynamic(i18n, `settings:${key}`);
   return (
     <SettingsCard
       icon={MessageCircle}

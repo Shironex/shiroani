@@ -35,6 +35,7 @@ import { useBrowserStore } from '@/stores/useBrowserStore';
 import { useAppStore } from '@/stores/useAppStore';
 import { useTranslation } from 'react-i18next';
 import { getStatusFilterOptions } from '@/lib/constants';
+import { tDynamic } from '@/lib/i18n';
 import { useNextAiringMap } from '@/hooks/useNextAiringMap';
 import type { AnimeEntry, AnimeStatus } from '@shiroani/shared';
 
@@ -157,7 +158,7 @@ export function LibraryView() {
               <SelectContent>
                 {SORT_OPTIONS.map(option => (
                   <SelectItem key={option.value} value={option.value} className="text-xs">
-                    {t(option.labelKey)}
+                    {tDynamic(i18n, option.labelKey)}
                   </SelectItem>
                 ))}
               </SelectContent>

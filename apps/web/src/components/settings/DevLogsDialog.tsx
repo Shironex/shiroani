@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import type { TFunction } from 'i18next';
 import {
   Copy,
   Trash2,
@@ -784,7 +785,7 @@ function formatDownloadStamp(d: Date): string {
   return `${yyyy}-${mm}-${dd}-${hh}${mi}`;
 }
 
-function describeError(err: unknown, t: (key: string) => string): string {
+function describeError(err: unknown, t: TFunction<'settings'>): string {
   if (err instanceof Error) return err.message || t('logs.unknownError');
   if (typeof err === 'string') return err;
   return t('logs.fileError');
