@@ -330,13 +330,27 @@
       "resetDefaults": "Przywróć domyślne"
     },
     "template": {
-      "watching": { "details": "Ogląda anime" },
-      "browsing": { "details": "Przeglądanie" },
-      "library": { "details": "Przeglądanie biblioteki" },
-      "diary": { "details": "Pisanie w dzienniku" },
-      "schedule": { "details": "Sprawdzanie harmonogramu" },
-      "settings": { "details": "Przeglądanie ustawień" },
-      "idle": { "details": "Oczekiwanie" }
+      "watching": {
+        "details": "Ogląda anime"
+      },
+      "browsing": {
+        "details": "Przeglądanie"
+      },
+      "library": {
+        "details": "Przeglądanie biblioteki"
+      },
+      "diary": {
+        "details": "Pisanie w dzienniku"
+      },
+      "schedule": {
+        "details": "Sprawdzanie harmonogramu"
+      },
+      "settings": {
+        "details": "Przeglądanie ustawień"
+      },
+      "idle": {
+        "details": "Oczekiwanie"
+      }
     },
     "activityLabel": {
       "watching": "Oglądanie anime",
@@ -413,18 +427,14 @@
         "diary": "Pamiętnik",
         "settings": "Ustawienia",
         "settingsValue": "Wszystkie",
-        "titles": {
-          "one": "{{count}} tytuł",
-          "few": "{{count}} tytuły",
-          "many": "{{count}} tytułów",
-          "other": "{{count}} tytułów"
-        },
-        "entries": {
-          "one": "{{count}} wpis",
-          "few": "{{count}} wpisy",
-          "many": "{{count}} wpisów",
-          "other": "{{count}} wpisów"
-        }
+        "titles_one": "{{count}} tytuł",
+        "titles_few": "{{count}} tytuły",
+        "titles_many": "{{count}} tytułów",
+        "titles_other": "{{count}} tytułów",
+        "entries_one": "{{count}} wpis",
+        "entries_few": "{{count}} wpisy",
+        "entries_many": "{{count}} wpisów",
+        "entries_other": "{{count}} wpisów"
       },
       "action": "Eksportuj wszystko"
     },
@@ -505,12 +515,10 @@
     "searchAria": "Szukaj w logach",
     "pause": "Pauza",
     "resume": "Wznów",
-    "newCount": {
-      "one": "+{{count}} nowy",
-      "few": "+{{count}} nowe",
-      "many": "+{{count}} nowych",
-      "other": "+{{count}} nowych"
-    },
+    "newCount_one": "+{{count}} nowy",
+    "newCount_few": "+{{count}} nowe",
+    "newCount_many": "+{{count}} nowych",
+    "newCount_other": "+{{count}} nowych",
     "copyAll": "Kopiuj wszystko",
     "copied": "Skopiowano",
     "export": "Eksportuj",
@@ -526,12 +534,10 @@
     "showLessData": "Zwiń dane",
     "newEntries": "Nowe wpisy",
     "unknownError": "Nieznany błąd.",
-    "entries": {
-      "one": "wpis",
-      "few": "wpisy",
-      "many": "wpisów",
-      "other": "wpisów"
-    }
+    "entries_one": "wpis",
+    "entries_few": "wpisy",
+    "entries_many": "wpisów",
+    "entries_other": "wpisów"
   },
   "suite": {
     "card": {

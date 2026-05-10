@@ -43,10 +43,8 @@
       "exportPng": "Export card as PNG",
       "disconnect": "Disconnect AniList"
     },
-    "days": {
-      "one": "{{count}} day",
-      "other": "{{count}} days"
-    }
+    "days_one": "{{count}} day",
+    "days_other": "{{count}} days"
   },
   "dashboard": {
     "sections": {
@@ -61,12 +59,10 @@
       "screenTime": "That's about <1>{{value}} {{unit}}</1> on screen",
       "favoriteYear": "Favorite year: <1>{{year}}</1> · {{count}} {{titles}}"
     },
-    "titles": {
-      "one": "title",
-      "few": "titles",
-      "many": "titles",
-      "other": "titles"
-    }
+    "titles_one": "title",
+    "titles_few": "titles",
+    "titles_many": "titles",
+    "titles_other": "titles"
   },
   "stats": {
     "completed": "Completed",
@@ -108,45 +104,29 @@
       "primaryEmpty": "Your journey is just beginning · stay a little longer",
       "secondaryEmpty": "0 minutes of activity · waiting for your first session",
       "duration": {
-        "seconds": {
-          "one": "{{count}} second",
-          "other": "{{count}} seconds"
-        },
-        "minutes": {
-          "one": "{{count}} minute",
-          "other": "{{count}} minutes"
-        },
-        "hours": {
-          "one": "{{count}} hour",
-          "other": "{{count}} hours"
-        },
-        "daysOnly": {
-          "one": "{{count}} day",
-          "other": "{{count}} days"
-        },
+        "seconds_one": "{{count}} second",
+        "seconds_other": "{{count}} seconds",
+        "minutes_one": "{{count}} minute",
+        "minutes_other": "{{count}} minutes",
+        "hours_one": "{{count}} hour",
+        "hours_other": "{{count}} hours",
+        "daysOnly_one": "{{count}} day",
+        "daysOnly_other": "{{count}} days",
         "hoursAndMinutes": "{{hours}} {{minutes}}",
         "daysAndHours": "{{days}} {{hours}}"
       },
       "yardstick": {
         "empty": "Not enough yet for the first episode of {{title}}",
-        "fullSeries": {
-          "one": "{{count}} time through {{title}}",
-          "other": "{{count}} times through {{title}}"
-        },
-        "episodes": {
-          "one": "{{count}} episode of {{title}}",
-          "other": "{{count}} episodes of {{title}}"
-        }
+        "fullSeries_one": "{{count}} time through {{title}}",
+        "fullSeries_other": "{{count}} times through {{title}}",
+        "episodes_one": "{{count}} episode of {{title}}",
+        "episodes_other": "{{count}} episodes of {{title}}"
       }
     },
-    "days": {
-      "one": "{{count}} day",
-      "other": "{{count}} days"
-    },
-    "sessions": {
-      "one": "{{count}} session",
-      "other": "{{count}} sessions"
-    },
+    "days_one": "{{count}} day",
+    "days_other": "{{count}} days",
+    "sessions_one": "{{count}} session",
+    "sessions_other": "{{count}} sessions",
     "counters": {
       "open": "App open",
       "openSub": "while the window is on screen",

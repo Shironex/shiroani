@@ -330,13 +330,27 @@
       "resetDefaults": "Restore defaults"
     },
     "template": {
-      "watching": { "details": "Watching anime" },
-      "browsing": { "details": "Browsing" },
-      "library": { "details": "Browsing library" },
-      "diary": { "details": "Writing in diary" },
-      "schedule": { "details": "Checking schedule" },
-      "settings": { "details": "Configuring settings" },
-      "idle": { "details": "Idle" }
+      "watching": {
+        "details": "Watching anime"
+      },
+      "browsing": {
+        "details": "Browsing"
+      },
+      "library": {
+        "details": "Browsing library"
+      },
+      "diary": {
+        "details": "Writing in diary"
+      },
+      "schedule": {
+        "details": "Checking schedule"
+      },
+      "settings": {
+        "details": "Configuring settings"
+      },
+      "idle": {
+        "details": "Idle"
+      }
     },
     "activityLabel": {
       "watching": "Watching anime",
@@ -413,18 +427,14 @@
         "diary": "Diary",
         "settings": "Settings",
         "settingsValue": "All",
-        "titles": {
-          "one": "{{count}} title",
-          "few": "{{count}} titles",
-          "many": "{{count}} titles",
-          "other": "{{count}} titles"
-        },
-        "entries": {
-          "one": "{{count}} entry",
-          "few": "{{count}} entries",
-          "many": "{{count}} entries",
-          "other": "{{count}} entries"
-        }
+        "titles_one": "{{count}} title",
+        "titles_few": "{{count}} titles",
+        "titles_many": "{{count}} titles",
+        "titles_other": "{{count}} titles",
+        "entries_one": "{{count}} entry",
+        "entries_few": "{{count}} entries",
+        "entries_many": "{{count}} entries",
+        "entries_other": "{{count}} entries"
       },
       "action": "Export everything"
     },
@@ -505,10 +515,8 @@
     "searchAria": "Search logs",
     "pause": "Pause",
     "resume": "Resume",
-    "newCount": {
-      "one": "+{{count}} new",
-      "other": "+{{count}} new"
-    },
+    "newCount_one": "+{{count}} new",
+    "newCount_other": "+{{count}} new",
     "copyAll": "Copy all",
     "copied": "Copied",
     "export": "Export",
@@ -524,12 +532,10 @@
     "showLessData": "Collapse data",
     "newEntries": "New entries",
     "unknownError": "Unknown error.",
-    "entries": {
-      "one": "entry",
-      "few": "entries",
-      "many": "entries",
-      "other": "entries"
-    }
+    "entries_one": "entry",
+    "entries_few": "entries",
+    "entries_many": "entries",
+    "entries_other": "entries"
   },
   "suite": {
     "card": {

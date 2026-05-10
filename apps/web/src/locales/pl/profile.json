@@ -43,12 +43,10 @@
       "exportPng": "Eksportuj kartę jako PNG",
       "disconnect": "Odłącz konto AniList"
     },
-    "days": {
-      "one": "{{count}} dzień",
-      "few": "{{count}} dni",
-      "many": "{{count}} dni",
-      "other": "{{count}} dni"
-    }
+    "days_one": "{{count}} dzień",
+    "days_few": "{{count}} dni",
+    "days_many": "{{count}} dni",
+    "days_other": "{{count}} dni"
   },
   "dashboard": {
     "sections": {
@@ -63,12 +61,10 @@
       "screenTime": "To ok. <1>{{value}} {{unit}}</1> przed ekranem",
       "favoriteYear": "Ulubiony rok: <1>{{year}}</1> · {{count}} {{titles}}"
     },
-    "titles": {
-      "one": "tytuł",
-      "few": "tytuły",
-      "many": "tytułów",
-      "other": "tytułów"
-    }
+    "titles_one": "tytuł",
+    "titles_few": "tytuły",
+    "titles_many": "tytułów",
+    "titles_other": "tytułów"
   },
   "stats": {
     "completed": "Ukończone",
@@ -110,61 +106,45 @@
       "primaryEmpty": "Twoja podróż dopiero się zaczyna · zostań tu chwilę dłużej",
       "secondaryEmpty": "0 minut aktywności · czekamy na pierwszą sesję",
       "duration": {
-        "seconds": {
-          "one": "{{count}} sekunda",
-          "few": "{{count}} sekundy",
-          "many": "{{count}} sekund",
-          "other": "{{count}} sekund"
-        },
-        "minutes": {
-          "one": "{{count}} minuta",
-          "few": "{{count}} minuty",
-          "many": "{{count}} minut",
-          "other": "{{count}} minut"
-        },
-        "hours": {
-          "one": "{{count}} godzina",
-          "few": "{{count}} godziny",
-          "many": "{{count}} godzin",
-          "other": "{{count}} godzin"
-        },
-        "daysOnly": {
-          "one": "{{count}} dzień",
-          "few": "{{count}} dni",
-          "many": "{{count}} dni",
-          "other": "{{count}} dni"
-        },
+        "seconds_one": "{{count}} sekunda",
+        "seconds_few": "{{count}} sekundy",
+        "seconds_many": "{{count}} sekund",
+        "seconds_other": "{{count}} sekund",
+        "minutes_one": "{{count}} minuta",
+        "minutes_few": "{{count}} minuty",
+        "minutes_many": "{{count}} minut",
+        "minutes_other": "{{count}} minut",
+        "hours_one": "{{count}} godzina",
+        "hours_few": "{{count}} godziny",
+        "hours_many": "{{count}} godzin",
+        "hours_other": "{{count}} godzin",
+        "daysOnly_one": "{{count}} dzień",
+        "daysOnly_few": "{{count}} dni",
+        "daysOnly_many": "{{count}} dni",
+        "daysOnly_other": "{{count}} dni",
         "hoursAndMinutes": "{{hours}} {{minutes}}",
         "daysAndHours": "{{days}} {{hours}}"
       },
       "yardstick": {
         "empty": "Jeszcze nie starczyło na pierwszy odcinek {{title}}",
-        "fullSeries": {
-          "one": "{{count}} raz cały {{title}}",
-          "few": "{{count}} razy cały {{title}}",
-          "many": "{{count}} razy cały {{title}}",
-          "other": "{{count}} razy cały {{title}}"
-        },
-        "episodes": {
-          "one": "{{count}} odcinek {{title}}",
-          "few": "{{count}} odcinki {{title}}",
-          "many": "{{count}} odcinków {{title}}",
-          "other": "{{count}} odcinków {{title}}"
-        }
+        "fullSeries_one": "{{count}} raz cały {{title}}",
+        "fullSeries_few": "{{count}} razy cały {{title}}",
+        "fullSeries_many": "{{count}} razy cały {{title}}",
+        "fullSeries_other": "{{count}} razy cały {{title}}",
+        "episodes_one": "{{count}} odcinek {{title}}",
+        "episodes_few": "{{count}} odcinki {{title}}",
+        "episodes_many": "{{count}} odcinków {{title}}",
+        "episodes_other": "{{count}} odcinków {{title}}"
       }
     },
-    "days": {
-      "one": "{{count}} dzień",
-      "few": "{{count}} dni",
-      "many": "{{count}} dni",
-      "other": "{{count}} dni"
-    },
-    "sessions": {
-      "one": "{{count}} sesja",
-      "few": "{{count}} sesje",
-      "many": "{{count}} sesji",
-      "other": "{{count}} sesji"
-    },
+    "days_one": "{{count}} dzień",
+    "days_few": "{{count}} dni",
+    "days_many": "{{count}} dni",
+    "days_other": "{{count}} dni",
+    "sessions_one": "{{count}} sesja",
+    "sessions_few": "{{count}} sesje",
+    "sessions_many": "{{count}} sesji",
+    "sessions_other": "{{count}} sesji",
     "counters": {
       "open": "Otwarta aplikacja",
       "openSub": "kiedy okno jest na ekranie",
