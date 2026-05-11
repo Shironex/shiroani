@@ -19,7 +19,7 @@ import { useUpdateStore, isUpdateLocked } from '@/stores/useUpdateStore';
 import { useBrowserStore } from '@/stores/useBrowserStore';
 import { SettingsCard } from '@/components/settings/SettingsCard';
 import { ProgressBar } from '@/components/shared/ProgressBar';
-import { CHANGELOG_RELEASES, CHANGELOG_CATEGORY_VARIANT } from '@/lib/changelog-entries';
+import { getChangelogReleases, CHANGELOG_CATEGORY_VARIANT } from '@/lib/changelog-entries';
 
 interface UpdatesSectionProps {
   version: string;
@@ -339,7 +339,7 @@ export function UpdatesSection({ version }: UpdatesSectionProps) {
 
 function LatestReleaseHighlights() {
   const { t, i18n } = useTranslation('settings');
-  const latest = CHANGELOG_RELEASES[0];
+  const latest = getChangelogReleases(i18n.language)[0];
   if (!latest) return null;
 
   // Flatten the release's categories into (variant, label, entry) triples,

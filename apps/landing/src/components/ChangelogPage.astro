@@ -1,16 +1,18 @@
 ---
-import { releases, type CategorySlug } from '../lib/releases';
+import { getReleases, type CategorySlug } from '../lib/releases';
 import { t, type SupportedLanguage } from '../lib/i18n';
 
 interface Props {
   /** Active SSR language. Defaults to PL; `/en/changelog` passes `lang="en"`.
-   *  Note: release *entry content* still comes from `@shiroani/changelog`,
-   *  which is PL-only — only the page chrome is localized here. */
+   *  Both the page chrome and the release data (titles, descriptions,
+   *  category labels and bullets) are localized to this language — the
+   *  data comes from the bilingual `@shiroani/changelog` package. */
   lang?: SupportedLanguage;
 }
 
 const { lang = 'pl' } = Astro.props;
 const tt = (key: string) => t(key, lang);
+const releases = getReleases(lang);
 
 const counts = {
   all: releases.length,

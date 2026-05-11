@@ -7,7 +7,7 @@ import { KanjiWatermark } from '@/components/shared/KanjiWatermark';
 import { Timeline, type TimelineEntry } from '@/components/shared/Timeline';
 import {
   CHANGELOG_CATEGORY_VARIANT,
-  CHANGELOG_RELEASES,
+  getChangelogReleases,
   type ChangelogRelease,
   type ChangelogReleaseType,
 } from '@/lib/changelog-entries';
@@ -44,30 +44,34 @@ interface ChangelogViewProps {
  * 'changelog'`) and reachable from the dock or from Settings → About.
  */
 export function ChangelogView({ compact = false, className }: ChangelogViewProps) {
-  const { t } = useTranslation('changelog');
+  const { t, i18n } = useTranslation('changelog');
   const [filter, setFilter] = useState<FilterValue>('all');
 
+  // Release copy is bilingual — follow the active UI language.
+  const releases = useMemo(() => getChangelogReleases(i18n.language), [i18n.language]);
+
   const filters: FilterChip[] = useMemo(() => {
-    const majorCount = CHANGELOG_RELEASES.filter(r => r.type === 'major').length;
-    const minorCount = CHANGELOG_RELEASES.filter(r => r.type === 'minor').length;
+    const majorCount = releases.filter(r => r.type === 'major').length;
+    const minorCount = releases.filter(r => r.type === 'minor').length;
     return [
-      { value: 'all', label: t('filter.all'), count: CHANGELOG_RELEASES.length },
+      { value: 'all', label: t('filter.all'), count: releases.length },
       { value: 'major', label: t('filter.major'), count: majorCount },
       { value: 'minor', label: t('filter.minor'), count: minorCount },
     ];
-  }, [t]);
+  }, [t, releases]);
 
   const visible = useMemo(
-    () =>
-      filter === 'all' ? CHANGELOG_RELEASES : CHANGELOG_RELEASES.filter(r => r.type === filter),
-    [filter]
+    () => (filter === 'all' ? releases : releases.filter(r => r.type === filter)),
+    [filter, releases]
   );
 
   // Jump-nav anchors: major releases only to keep the strip short.
   const jumpTargets = useMemo(
-    () => CHANGELOG_RELEASES.filter(r => r.type === 'major').slice(0, 6),
-    []
+    () => releases.filter(r => r.type === 'major').slice(0, 6),
+    [releases]
   );
+
+  const latest = useMemo(() => releases.find(r => r.latest) ?? releases[0], [releases]);
 
   const entries: TimelineEntry[] = visible.map(release => ({
     id: `v${release.version}`,
@@ -103,6 +107,7 @@ export function ChangelogView({ compact = false, className }: ChangelogViewProps
             onFilterChange={setFilter}
             filters={filters}
             jumpTargets={jumpTargets}
+            latest={latest}
             compact={compact}
           />
 
@@ -118,12 +123,12 @@ interface HeaderProps {
   onFilterChange: (f: FilterValue) => void;
   filters: FilterChip[];
   jumpTargets: ChangelogRelease[];
+  latest: ChangelogRelease;
   compact: boolean;
 }
 
-function Header({ filter, onFilterChange, filters, jumpTargets, compact }: HeaderProps) {
+function Header({ filter, onFilterChange, filters, jumpTargets, latest, compact }: HeaderProps) {
   const { t } = useTranslation('changelog');
-  const latest = CHANGELOG_RELEASES.find(r => r.latest) ?? CHANGELOG_RELEASES[0];
   const emPrimary = <em className="font-serif italic font-extrabold text-primary" />;
 
   return (
