@@ -4,9 +4,6 @@ import i18n, { tDynamic } from '@/lib/i18n';
 /** Path to the app mascot logo (chibi SVG) */
 export const APP_LOGO_URL = `${import.meta.env.BASE_URL}shiro-chibi.svg`;
 
-/** Path to the thinking mascot pose (used on splash screen) */
-export const MASCOT_THINK_URL = `${import.meta.env.BASE_URL}chibi_think.png`;
-
 /** Path to the waving mascot pose (used on splash loading variant) */
 export const MASCOT_WAVE_URL = `${import.meta.env.BASE_URL}chibi_wave.png`;
 

@@ -1,7 +1,7 @@
 // Components using mascot sprite state should import from this store
 // (e.g., MascotPreview.tsx, MascotSection.tsx).
 import { create } from 'zustand';
-import { devtools } from 'zustand/middleware';
+import { maybeDevtools } from '@/stores/utils/maybeDevtools';
 import { createLogger, type MascotSpriteScaleMode } from '@shiroani/shared';
 import { electronStoreGet, electronStoreSet, electronStoreDelete } from '@/lib/electron-store';
 
@@ -74,7 +74,7 @@ async function persistSpriteSettings(settings: MascotSpriteSettings | null): Pro
  * Mascot sprite store using Zustand
  */
 export const useMascotSpriteStore = create<MascotSpriteStore>()(
-  devtools(
+  maybeDevtools(
     (set, get) => ({
       // Initial state
       customSpriteUrl: null,

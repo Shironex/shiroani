@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { devtools } from 'zustand/middleware';
+import { maybeDevtools } from '@/stores/utils/maybeDevtools';
 import { toast } from 'sonner';
 import {
   createLogger,
@@ -50,7 +50,7 @@ let listenersInitialized = false;
 let failureTimeoutHandle: ReturnType<typeof setTimeout> | null = null;
 
 export const useConnectionStore = create<ConnectionStore>()(
-  devtools(
+  maybeDevtools(
     (set, get) => ({
       // Initial state: reconnecting because socket starts disconnected
       status: 'reconnecting',

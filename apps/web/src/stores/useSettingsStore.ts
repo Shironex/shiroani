@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { devtools } from 'zustand/middleware';
+import { maybeDevtools } from '@/stores/utils/maybeDevtools';
 import type { Theme } from '@shiroani/shared';
 import {
   createLogger,
@@ -170,7 +170,7 @@ const DEFAULT_THEME: Theme = 'plum';
  * Settings store using Zustand
  */
 export const useSettingsStore = create<SettingsStore>()(
-  devtools(
+  maybeDevtools(
     (set, get) => {
       // Resolve initial theme from localStorage (instant) or fall back to default.
       // Validate against known built-in themes and custom themes.

@@ -3,7 +3,7 @@
  * and localStorage fallback for web builds.
  */
 import { create } from 'zustand';
-import { devtools } from 'zustand/middleware';
+import { maybeDevtools } from '@/stores/utils/maybeDevtools';
 import { toast } from 'sonner';
 import { createLogger } from '@shiroani/shared';
 import type { CustomThemeDefinition, BuiltInTheme } from '@shiroani/shared';
@@ -55,7 +55,7 @@ type CustomThemeStore = CustomThemeState & CustomThemeActions;
 // ─── Store ───────────────────────────────────────────────────────────────────
 
 export const useCustomThemeStore = create<CustomThemeStore>()(
-  devtools(
+  maybeDevtools(
     (set, get) => ({
       // Initial state
       customThemes: [],

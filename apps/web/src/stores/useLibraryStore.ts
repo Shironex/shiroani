@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { devtools } from 'zustand/middleware';
+import { maybeDevtools } from '@/stores/utils/maybeDevtools';
 import {
   type SocketStoreSlice,
   initialSocketState,
@@ -58,7 +58,7 @@ interface LibraryActions {
 type LibraryStore = LibraryState & LibraryActions;
 
 export const useLibraryStore = create<LibraryStore>()(
-  devtools(
+  maybeDevtools(
     (set, get) => {
       const socketActions = createSocketActions<LibraryStore>(set, 'library');
 

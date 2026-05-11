@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { devtools } from 'zustand/middleware';
+import { maybeDevtools } from '@/stores/utils/maybeDevtools';
 import { AnimeEvents, createLogger } from '@shiroani/shared';
 import type { UserProfile } from '@shiroani/shared';
 import { emitWithErrorHandling } from '@/lib/socket';
@@ -29,7 +29,7 @@ interface ProfileActions {
 type ProfileStore = ProfileState & ProfileActions;
 
 export const useProfileStore = create<ProfileStore>()(
-  devtools(
+  maybeDevtools(
     (set, get) => ({
       username: '',
       profile: null,

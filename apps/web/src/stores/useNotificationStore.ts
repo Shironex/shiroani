@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { devtools } from 'zustand/middleware';
+import { maybeDevtools } from '@/stores/utils/maybeDevtools';
 import type { NotificationSubscription, AiringAnime } from '@shiroani/shared';
 import { createLogger } from '@shiroani/shared';
 
@@ -26,7 +26,7 @@ function buildSubscribedIds(subscriptions: NotificationSubscription[]): Set<numb
 }
 
 export const useNotificationStore = create<NotificationStore>()(
-  devtools(
+  maybeDevtools(
     (set, get) => ({
       // State
       subscriptions: [],

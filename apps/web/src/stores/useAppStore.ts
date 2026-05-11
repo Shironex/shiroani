@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { devtools } from 'zustand/middleware';
+import { maybeDevtools } from '@/stores/utils/maybeDevtools';
 import { IS_ELECTRON } from '@/lib/platform';
 import { updateAnimePresence } from '@/lib/anime-detection';
 import { useBrowserStore } from '@/stores/useBrowserStore';
@@ -27,7 +27,7 @@ interface AppActions {
 type AppStore = AppState & AppActions;
 
 export const useAppStore = create<AppStore>()(
-  devtools(
+  maybeDevtools(
     (set, get) => ({
       activeView: 'browser',
 

@@ -39,7 +39,7 @@ type AddToLibraryStep = { step: 'fetching' } | { step: 'ready' };
 export function AddToLibraryDialog({ open, onOpenChange, url, title }: AddToLibraryDialogProps) {
   const { t, i18n } = useTranslation('browser');
   const statusOptions = useMemo(() => getStatusOptions(), [i18n.language]);
-  const { addToLibrary } = useLibraryStore();
+  const addToLibrary = useLibraryStore(s => s.addToLibrary);
 
   const [editableTitle, setEditableTitle] = useState('');
   const [status, setStatus] = useState<AnimeStatus>('plan_to_watch');

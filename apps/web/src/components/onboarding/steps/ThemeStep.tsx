@@ -14,7 +14,9 @@ import { ThemeGrid } from '@/components/shared/theme/ThemeGrid';
  */
 export function ThemeStep() {
   const { t } = useTranslation('onboarding');
-  const { theme, setTheme, setPreviewTheme } = useSettingsStore();
+  const theme = useSettingsStore(s => s.theme);
+  const setTheme = useSettingsStore(s => s.setTheme);
+  const setPreviewTheme = useSettingsStore(s => s.setPreviewTheme);
   const clearPreview = useCallback(() => setPreviewTheme(null), [setPreviewTheme]);
 
   const emPrimary = <em className="not-italic text-primary italic" />;

@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { devtools } from 'zustand/middleware';
+import { maybeDevtools } from '@/stores/utils/maybeDevtools';
 import {
   type SocketStoreSlice,
   initialSocketState,
@@ -133,7 +133,7 @@ function persistReadIds(ids: Set<number>) {
 type FeedStore = FeedState & FeedActions;
 
 export const useFeedStore = create<FeedStore>()(
-  devtools(
+  maybeDevtools(
     (set, get) => {
       const socketActions = createSocketActions<FeedStore>(set, 'feed');
       let refreshFallbackTimer: ReturnType<typeof setTimeout> | null = null;

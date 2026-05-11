@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { devtools } from 'zustand/middleware';
+import { maybeDevtools } from '@/stores/utils/maybeDevtools';
 import type { AppStatsSnapshot } from '@shiroani/shared';
 import { IS_ELECTRON } from '@/lib/platform';
 
@@ -33,7 +33,7 @@ interface AppStatsActions {
 type AppStatsStore = AppStatsState & AppStatsActions;
 
 export const useAppStatsStore = create<AppStatsStore>()(
-  devtools(
+  maybeDevtools(
     (set, get) => ({
       snapshot: EMPTY_SNAPSHOT,
       isLoading: false,
