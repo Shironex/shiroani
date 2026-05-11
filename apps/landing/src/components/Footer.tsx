@@ -1,9 +1,23 @@
+import { translations, DEFAULT_LANGUAGE, type SupportedLanguage } from '../lib/i18n';
 import { currentVersion } from '../lib/releases';
-import { useT } from '../lib/useLandingLang';
+import { useLandingLang } from '../lib/useLandingLang';
 
-export function Footer() {
+interface FooterProps {
+  /** Page's SSR `<html lang>`. Defaults to PL; `/en/*` pages pass `lang="en"`
+   *  so the server-rendered footer text and links match the route. The
+   *  client-side language swap still re-renders on `shiroani:lang-change`. */
+  lang?: SupportedLanguage;
+}
+
+export function Footer({ lang: initialLang }: FooterProps = {}) {
   const version = currentVersion();
-  const t = useT();
+  const lang = useLandingLang(initialLang);
+  const t = (key: string) =>
+    translations[lang]?.[key] ?? translations[DEFAULT_LANGUAGE]?.[key] ?? key;
+  // Keep in-site links inside the active locale's route tree (PL is un-prefixed,
+  // EN lives under `/en/...`) so crawlers and no-JS visitors can traverse it.
+  const prefix = lang === 'en' ? '/en' : '';
+  const href = (path: string) => `${prefix}${path}`;
   const year = new Date().getFullYear();
   return (
     <footer className="ft">
@@ -51,14 +65,14 @@ export function Footer() {
         </div>
         <div className="ft-col">
           <h4>{t('footer.col.product')}</h4>
-          <a href="/#funkcje">{t('footer.link.features')}</a>
-          <a href="/#podglad">{t('footer.link.preview')}</a>
-          <a href="/#pobierz">{t('footer.link.download')}</a>
+          <a href={href('/#funkcje')}>{t('footer.link.features')}</a>
+          <a href={href('/#podglad')}>{t('footer.link.preview')}</a>
+          <a href={href('/#pobierz')}>{t('footer.link.download')}</a>
         </div>
         <div className="ft-col">
           <h4>{t('footer.col.resources')}</h4>
-          <a href="/changelog">{t('footer.link.changelog')}</a>
-          <a href="/#faq">{t('footer.link.faq')}</a>
+          <a href={href('/changelog')}>{t('footer.link.changelog')}</a>
+          <a href={href('/#faq')}>{t('footer.link.faq')}</a>
           <a href="https://github.com/Shironex/shiroani" target="_blank" rel="noopener noreferrer">
             {t('footer.link.github')}
           </a>
@@ -68,7 +82,7 @@ export function Footer() {
         </div>
         <div className="ft-col">
           <h4>{t('footer.col.suite')}</h4>
-          <a href="/#suite">ShiroAni</a>
+          <a href={href('/#suite')}>ShiroAni</a>
           <a href="https://shiranami.app" target="_blank" rel="noopener noreferrer">
             Shiranami ↗
           </a>

@@ -1,5 +1,14 @@
 ---
 import { BUILT_IN_THEME_METADATA, type BuiltInThemeMeta } from '@shiroani/shared';
+import { t, type SupportedLanguage } from '../lib/i18n';
+
+interface Props {
+  /** Active SSR language. Defaults to PL; `/en/*` pages pass `lang="en"`. */
+  lang?: SupportedLanguage;
+}
+
+const { lang = 'pl' } = Astro.props;
+const tt = (key: string) => t(key, lang);
 
 type Feature = {
   cls: string;
@@ -158,16 +167,16 @@ const features: Feature[] = [
     {features.map((f) => (
       <article class={`fc ${f.cls}`}>
         <div class="fc-head">
-          <span class="no" data-i18n={f.noKey}>{f.noFallback}</span>
-          {f.tagFallback && <span class={`tag ${f.tagOn ? 'on' : ''}`} data-i18n={f.tagKey}>{f.tagFallback}</span>}
+          <span class="no" data-i18n={f.noKey}>{tt(f.noKey)}</span>
+          {f.tagKey && <span class={`tag ${f.tagOn ? 'on' : ''}`} data-i18n={f.tagKey}>{tt(f.tagKey)}</span>}
         </div>
-        <h3 data-i18n={f.titleKey}>{f.titleFallback}</h3>
-        <p data-i18n={f.descKey}>{f.descFallback}</p>
+        <h3 data-i18n={f.titleKey}>{tt(f.titleKey)}</h3>
+        <p data-i18n={f.descKey}>{tt(f.descKey)}</p>
         {f.img && (
           <div class="fimg">
             <img
               src={f.img}
-              alt={f.altFallback}
+              alt={f.altKey ? tt(f.altKey) : f.altFallback}
               data-i18n-alt={f.altKey}
               loading="lazy"
               decoding="async"

@@ -3,6 +3,8 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import Navbar from '../../components/Navbar.astro';
 import ChangelogPage from '../../components/ChangelogPage.astro';
 import { Footer } from '../../components/Footer';
+
+const lang = 'en';
 ---
 
 <BaseLayout
@@ -10,11 +12,11 @@ import { Footer } from '../../components/Footer';
   description="ShiroAni release history — feature by feature, fix by fix."
   titleKey="meta.changelog.title"
   descriptionKey="meta.changelog.description"
-  lang="en"
+  lang={lang}
 >
-  <Navbar activeHref="/changelog" />
+  <Navbar activeHref="/changelog" lang={lang} />
   <main id="main">
-    <ChangelogPage />
+    <ChangelogPage lang={lang} />
   </main>
-  <Footer client:visible />
+  <Footer client:visible lang={lang} />
 </BaseLayout>

@@ -1,37 +1,53 @@
 ---
 import { currentVersion } from '../lib/releases';
+import { t, type SupportedLanguage } from '../lib/i18n';
 
 interface Props {
+  /** href of the currently-active link, in PL form (e.g. `/changelog`,
+   *  `/#pobierz`). It is locale-prefixed alongside the nav links. */
   activeHref?: string;
+  /** Active SSR language. Defaults to PL; `/en/*` pages pass `lang="en"` so the
+   *  nav renders English labels and keeps links inside the `/en` tree. */
+  lang?: SupportedLanguage;
 }
 
-const { activeHref } = Astro.props;
+const { activeHref, lang = 'pl' } = Astro.props;
+const tt = (key: string) => t(key, lang);
 const version = currentVersion();
 
+// In-site links must stay within the active locale's route tree. PL is the
+// default locale (un-prefixed); EN pages live under `/en/...`. The client-side
+// language toggle re-applies labels on swap, but the SSR href has to be right
+// so crawlers and no-JS visitors can reach the matching `/en` pages.
+const prefix = lang === 'en' ? '/en' : '';
+const localized = (href: string) => `${prefix}${href}`;
+const homeHref = lang === 'en' ? '/en/' : '/';
+
 const links = [
-  { num: '01', label: 'Funkcje', href: '/#funkcje', i18nKey: 'nav.features' },
-  { num: '02', label: 'Podgląd', href: '/#podglad', i18nKey: 'nav.preview' },
-  { num: '03', label: 'Rodzina', href: '/#suite', i18nKey: 'nav.suite' },
-  { num: '04', label: 'Pobierz', href: '/#pobierz', i18nKey: 'nav.download' },
-  { num: '05', label: 'Zmiany', href: '/changelog', i18nKey: 'nav.changelog' },
+  { num: '01', href: localized('/#funkcje'), i18nKey: 'nav.features' },
+  { num: '02', href: localized('/#podglad'), i18nKey: 'nav.preview' },
+  { num: '03', href: localized('/#suite'), i18nKey: 'nav.suite' },
+  { num: '04', href: localized('/#pobierz'), i18nKey: 'nav.download' },
+  { num: '05', href: localized('/changelog'), i18nKey: 'nav.changelog' },
 ];
+const activeLocalizedHref = activeHref ? localized(activeHref) : undefined;
 ---
 
-<nav class="nav" aria-label="Nawigacja główna" data-i18n-aria-label="nav.primary">
+<nav class="nav" aria-label={tt('nav.primary')} data-i18n-aria-label="nav.primary">
   <div class="nav-inner">
-    <a class="logo" href="/">
+    <a class="logo" href={homeHref}>
       <span class="mark"><img src="/assets/mascot-wave.png" alt="" width="44" height="44" decoding="async" /></span>
       <span class="name">ShiroAni<small>SHIRO·ANI · v{version}</small></span>
     </a>
     <div class="nav-links">
       {links.map((l) => (
-        <a href={l.href} class={activeHref === l.href ? 'on' : undefined}>
-          <span class="num">{l.num}</span><span data-i18n={l.i18nKey}>{l.label}</span>
+        <a href={l.href} class={activeLocalizedHref === l.href ? 'on' : undefined}>
+          <span class="num">{l.num}</span><span data-i18n={l.i18nKey}>{tt(l.i18nKey)}</span>
         </a>
       ))}
     </div>
     <div class="nav-right">
-      <a class="nav-gh" href="https://github.com/Shironex/shiroani" aria-label="GitHub" data-i18n-aria-label="nav.github" target="_blank" rel="noopener noreferrer">
+      <a class="nav-gh" href="https://github.com/Shironex/shiroani" aria-label={tt('nav.github')} data-i18n-aria-label="nav.github" target="_blank" rel="noopener noreferrer">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
           <path d="M12 0C5.4 0 0 5.4 0 12c0 5.3 3.4 9.8 8.2 11.4.6.1.8-.3.8-.6v-2c-3.3.7-4-1.6-4-1.6-.5-1.4-1.3-1.8-1.3-1.8-1.1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1.1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.8-1.6-2.7-.3-5.5-1.3-5.5-5.9 0-1.3.5-2.4 1.2-3.2-.1-.3-.5-1.5.1-3.2 0 0 1-.3 3.3 1.2 1-.3 2-.4 3-.4s2 .1 3 .4c2.3-1.5 3.3-1.2 3.3-1.2.7 1.7.2 2.9.1 3.2.8.8 1.2 1.9 1.2 3.2 0 4.6-2.8 5.6-5.5 5.9.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6C20.6 21.8 24 17.3 24 12c0-6.6-5.4-12-12-12z"/>
         </svg>
@@ -40,10 +56,10 @@ const links = [
         class="lang-toggle"
         type="button"
         data-lang-toggle
-        aria-label="Przełącz na polski"
-      >PL</button>
-      <a class="nav-cta" href="/download"><span data-i18n="nav.cta">Pobierz</span> <span aria-hidden="true">↗</span></a>
-      <button class="nav-burger" type="button" aria-label="Menu" data-i18n-aria-label="nav.toggleMenu" aria-expanded="false" aria-controls="nav-mobile">
+        aria-label={tt(lang === 'en' ? 'nav.switchLanguageToPl' : 'nav.switchLanguageToEn')}
+      >{lang === 'en' ? 'PL' : 'EN'}</button>
+      <a class="nav-cta" href={localized('/download')}><span data-i18n="nav.cta">{tt('nav.cta')}</span> <span aria-hidden="true">↗</span></a>
+      <button class="nav-burger" type="button" aria-label={tt('nav.toggleMenu')} data-i18n-aria-label="nav.toggleMenu" aria-expanded="false" aria-controls="nav-mobile">
         <span aria-hidden="true"></span>
         <span aria-hidden="true"></span>
         <span aria-hidden="true"></span>
@@ -52,8 +68,8 @@ const links = [
   </div>
   <div class="nav-mobile" id="nav-mobile" hidden>
     {links.map((l) => (
-      <a href={l.href} class={activeHref === l.href ? 'on' : undefined}>
-        <span class="num">{l.num}</span><span data-i18n={l.i18nKey}>{l.label}</span>
+      <a href={l.href} class={activeLocalizedHref === l.href ? 'on' : undefined}>
+        <span class="num">{l.num}</span><span data-i18n={l.i18nKey}>{tt(l.i18nKey)}</span>
       </a>
     ))}
   </div>

@@ -29,6 +29,17 @@ const resolvedDescription =
 const resolvedOgTitle = dict[ogTitleKey] ?? resolvedTitle;
 
 const ogImage = new URL('/og-default.png', Astro.site);
+
+// Build the PL/EN URL pair for this page so every page emits a self-canonical
+// link plus reciprocal hreflang alternates. The route convention is `/foo` for
+// PL (the default locale) and `/en/foo` for EN; strip/prepend the `/en` segment
+// to derive the counterpart. `x-default` points at the PL page.
+const path = Astro.url.pathname;
+const plPath = path === '/en' || path === '/en/' ? '/' : path.replace(/^\/en(?=\/)/, '');
+const enPath = plPath === '/' ? '/en/' : `/en${plPath}`;
+const plUrl = new URL(plPath, Astro.site);
+const enUrl = new URL(enPath, Astro.site);
+const canonicalUrl = lang === 'en' ? enUrl : plUrl;
 ---
 
 <meta charset="UTF-8" />
@@ -36,6 +47,11 @@ const ogImage = new URL('/og-default.png', Astro.site);
 <meta name="color-scheme" content="dark" />
 <link rel="icon" type="image/png" href="/favicon.png" />
 <link rel="sitemap" href="/sitemap-index.xml" />
+
+<link rel="canonical" href={canonicalUrl} />
+<link rel="alternate" hreflang="pl" href={plUrl} />
+<link rel="alternate" hreflang="en" href={enUrl} />
+<link rel="alternate" hreflang="x-default" href={plUrl} />
 
 <!-- Fonts -->
 <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -58,7 +74,7 @@ const ogImage = new URL('/og-default.png', Astro.site);
 
 <!-- Open Graph -->
 <meta property="og:type" content="website" />
-<meta property="og:url" content={Astro.url} />
+<meta property="og:url" content={canonicalUrl} />
 <meta property="og:locale" content={lang === 'pl' ? 'pl_PL' : 'en_US'} />
 <meta property="og:title" content={resolvedOgTitle} data-i18n-content={ogTitleKey} />
 <meta property="og:description" content={resolvedDescription} data-i18n-content={descriptionKey} />

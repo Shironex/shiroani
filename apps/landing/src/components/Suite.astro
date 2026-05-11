@@ -1,6 +1,14 @@
 ---
 import { currentVersion } from '../lib/releases';
+import { t, type SupportedLanguage } from '../lib/i18n';
 
+interface Props {
+  /** Active SSR language. Defaults to PL; `/en/*` pages pass `lang="en"`. */
+  lang?: SupportedLanguage;
+}
+
+const { lang = 'pl' } = Astro.props;
+const tt = (key: string) => t(key, lang);
 const version = currentVersion();
 ---
 
@@ -10,13 +18,11 @@ const version = currentVersion();
       <div class="corner">·</div>
       <div>
         <div class="kanji">白アニ</div>
-        <div class="romaji">ShiroAni<small data-i18n="suite.shiroani.role">Tracker anime</small></div>
-        <p class="role" data-i18n="suite.shiroani.desc">
-          Biblioteka, harmonogram, pamiętnik i wbudowana przeglądarka bez reklam.
-        </p>
+        <div class="romaji">ShiroAni<small data-i18n="suite.shiroani.role">{tt('suite.shiroani.role')}</small></div>
+        <p class="role" data-i18n="suite.shiroani.desc">{tt('suite.shiroani.desc')}</p>
       </div>
       <div class="suite-bottom">
-        <span class="here" data-i18n="suite.shiroani.here">Tutaj jesteś</span>
+        <span class="here" data-i18n="suite.shiroani.here">{tt('suite.shiroani.here')}</span>
         <span>v{version}</span>
       </div>
     </div>
@@ -25,10 +31,8 @@ const version = currentVersion();
       <div class="corner">↗</div>
       <div>
         <div class="kanji">白波</div>
-        <div class="romaji">Shiranami<small data-i18n="suite.shiranami.role">Przystań dla muzyki</small></div>
-        <p class="role" data-i18n="suite.shiranami.desc">
-          Odtwarzacz z playlistami, który gra w tle, gdy czytasz lub oglądasz.
-        </p>
+        <div class="romaji">Shiranami<small data-i18n="suite.shiranami.role">{tt('suite.shiranami.role')}</small></div>
+        <p class="role" data-i18n="suite.shiranami.desc">{tt('suite.shiranami.desc')}</p>
       </div>
       <div class="suite-bottom">
         <span>shiranami.app</span>
@@ -40,10 +44,8 @@ const version = currentVersion();
       <div class="corner">↗</div>
       <div>
         <div class="kanji">綺麗漫画</div>
-        <div class="romaji">KireiManga<small data-i18n="suite.kireimanga.role">Czytnik mangi</small></div>
-        <p class="role" data-i18n="suite.kireimanga.desc">
-          Wygodny czytnik z biblioteką rozdziałów, zakładkami i trybem nocnym.
-        </p>
+        <div class="romaji">KireiManga<small data-i18n="suite.kireimanga.role">{tt('suite.kireimanga.role')}</small></div>
+        <p class="role" data-i18n="suite.kireimanga.desc">{tt('suite.kireimanga.desc')}</p>
       </div>
       <div class="suite-bottom">
         <span>kireimanga.app</span>

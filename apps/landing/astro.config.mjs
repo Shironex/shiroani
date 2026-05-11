@@ -13,7 +13,15 @@ const here = dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
   site: 'https://shiroani.app',
-  integrations: [react(), sitemap()],
+  integrations: [
+    react(),
+    sitemap({
+      i18n: {
+        defaultLocale: 'pl',
+        locales: { pl: 'pl', en: 'en' },
+      },
+    }),
+  ],
   vite: {
     plugins: [tailwindcss()],
     resolve: {

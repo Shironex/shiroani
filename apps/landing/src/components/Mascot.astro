@@ -1,20 +1,26 @@
 ---
+import { t, type SupportedLanguage } from '../lib/i18n';
+
+interface Props {
+  /** Active SSR language. Defaults to PL; `/en/*` pages pass `lang="en"`. */
+  lang?: SupportedLanguage;
+}
+
+const { lang = 'pl' } = Astro.props;
+const tt = (key: string) => t(key, lang);
 ---
 
 <section class="mascot">
   <div class="mascot-wrap">
     <div class="mascot-l">
       <h2>
-        <span data-i18n="mascot.title.lead">Mała towarzyszka</span><br />
-        <em data-i18n="mascot.title.em">na Twoim pulpicie.</em>
+        <span data-i18n="mascot.title.lead">{tt('mascot.title.lead')}</span><br />
+        <em data-i18n="mascot.title.em">{tt('mascot.title.em')}</em>
       </h2>
-      <p data-i18n="mascot.body">
-        Shiro-chan siedzi w rogu okna i dotrzymuje Ci towarzystwa. Przeciągnij ją, gdzie chcesz —
-        i tam zostanie. Kolejne pozy i reakcje dojdą w następnych wydaniach.
-      </p>
+      <p data-i18n="mascot.body">{tt('mascot.body')}</p>
     </div>
     <div class="mascot-r">
-      <img src="/assets/mascot-wave.png" alt="Shiro-chan" data-i18n-alt="mascot.alt" loading="lazy" decoding="async" width="320" height="320" />
+      <img src="/assets/mascot-wave.png" alt={tt('mascot.alt')} data-i18n-alt="mascot.alt" loading="lazy" decoding="async" width="320" height="320" />
     </div>
   </div>
 </section>

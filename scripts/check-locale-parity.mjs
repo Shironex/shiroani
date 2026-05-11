@@ -10,6 +10,128 @@ const localesRoot = resolve(root, 'apps/web/src/locales');
 const baseLang = 'pl';
 const otherLang = 'en';
 
+// ---------------------------------------------------------------------------
+// Helpers for TS inline-dict sources (landing + desktop main process)
+// ---------------------------------------------------------------------------
+
+/**
+ * Extract the source text of a `<lang>: { … }` block from a TS source file
+ * by balancing braces from the first `{` following the `<lang>: ` marker.
+ */
+function extractLangBlock(src, lang) {
+  const marker = `${lang}: {`;
+  const markerIdx = src.indexOf(marker);
+  if (markerIdx === -1) return null;
+  let depth = 0;
+  let i = markerIdx + marker.length - 1; // at the opening '{'
+  while (i < src.length) {
+    if (src[i] === '{') depth++;
+    else if (src[i] === '}') {
+      depth--;
+      if (depth === 0) break;
+    }
+    i++;
+  }
+  return src.slice(markerIdx + marker.length - 1, i + 1);
+}
+
+/**
+ * Extract all flat string-literal keys from a `Record<string, string>` block
+ * (landing-page style). Matches `'some.key':` patterns.
+ */
+function extractFlatKeys(block) {
+  const keys = [];
+  const re = /'([^']+)'\s*:/g;
+  let m;
+  while ((m = re.exec(block)) !== null) {
+    keys.push(m[1]);
+  }
+  return keys;
+}
+
+/**
+ * Walk a nested TS object literal block and collect dotted leaf-key paths.
+ * Handles arbitrary nesting depth; treats any value that is NOT `{` as a leaf.
+ */
+function collectNestedLeafKeys(block, prefix) {
+  const keys = [];
+  // Scan at depth 0 (direct children of this block) only.
+  let depth = 0;
+  let i = 1; // skip opening '{'
+  while (i < block.length - 1) {
+    const c = block[i];
+    if (c === '{' || c === '[') { depth++; i++; continue; }
+    if (c === '}' || c === ']') { depth--; i++; continue; }
+    if (depth !== 0) { i++; continue; }
+    // At top level — try to match an identifier key.
+    const propRe = /(\w+)\s*:/y;
+    propRe.lastIndex = i;
+    const m = propRe.exec(block);
+    if (m) {
+      const key = m[1];
+      const fullKey = prefix ? `${prefix}.${key}` : key;
+      // Find the start of the value (skip whitespace after ':').
+      let j = i + m[0].length;
+      while (j < block.length && /\s/.test(block[j])) j++;
+      if (block[j] === '{') {
+        // Nested object — recurse.
+        const nested = balancedBraceSlice(block, j);
+        keys.push(...collectNestedLeafKeys(nested, fullKey));
+        i = j + nested.length;
+      } else {
+        keys.push(fullKey);
+        i = j + 1;
+      }
+    } else {
+      i++;
+    }
+  }
+  return keys;
+}
+
+/** Return the substring of `src` from `startIdx` through the matching `}`. */
+function balancedBraceSlice(src, startIdx) {
+  let depth = 0, i = startIdx;
+  while (i < src.length) {
+    if (src[i] === '{') depth++;
+    else if (src[i] === '}') { depth--; if (depth === 0) break; }
+    i++;
+  }
+  return src.slice(startIdx, i + 1);
+}
+
+/**
+ * Check a single TypeScript inline-dict file.
+ * Returns `{ label, onlyInBase, onlyInOther }` — both arrays empty means parity.
+ *
+ * @param {string} filePath  Absolute path to the TS file.
+ * @param {'flat'|'nested'} shape  How to extract keys.
+ * @param {string} label     Human-readable name for reporting.
+ */
+function checkTsInlineDict(filePath, shape, label) {
+  const src = readFileSync(filePath, 'utf-8');
+  const baseBlock = extractLangBlock(src, baseLang);
+  const otherBlock = extractLangBlock(src, otherLang);
+
+  if (!baseBlock || !otherBlock) {
+    return {
+      label,
+      error: `Could not find language blocks for both '${baseLang}' and '${otherLang}' in ${filePath}`,
+    };
+  }
+
+  const baseKeys = shape === 'flat'
+    ? extractFlatKeys(baseBlock).sort()
+    : collectNestedLeafKeys(baseBlock, '').sort();
+  const otherKeys = shape === 'flat'
+    ? extractFlatKeys(otherBlock).sort()
+    : collectNestedLeafKeys(otherBlock, '').sort();
+
+  const onlyInBase = diffSets(baseKeys, otherKeys);
+  const onlyInOther = diffSets(otherKeys, baseKeys);
+  return { label, onlyInBase, onlyInOther };
+}
+
 function loadNamespace(lang, file) {
   const path = resolve(localesRoot, lang, file);
   return JSON.parse(readFileSync(path, 'utf-8'));
@@ -146,11 +268,50 @@ for (const file of [...fileSet].sort()) {
   });
 }
 
-if (totalMissing === 0) {
+// ---------------------------------------------------------------------------
+// Inline-dict checks: landing page + desktop main process
+// ---------------------------------------------------------------------------
+
+const inlineDictChecks = [
+  checkTsInlineDict(
+    resolve(root, 'apps/landing/src/lib/i18n.ts'),
+    'flat',
+    'landing (apps/landing/src/lib/i18n.ts)',
+  ),
+  checkTsInlineDict(
+    resolve(root, 'apps/desktop/src/main/i18n-strings.ts'),
+    'nested',
+    'desktop-main (apps/desktop/src/main/i18n-strings.ts)',
+  ),
+];
+
+const inlineReport = [];
+let totalInlineMissing = 0;
+
+for (const result of inlineDictChecks) {
+  if (result.error) {
+    totalInlineMissing += 1;
+    inlineReport.push(result);
+    continue;
+  }
+  if (result.onlyInBase.length === 0 && result.onlyInOther.length === 0) continue;
+  totalInlineMissing += result.onlyInBase.length + result.onlyInOther.length;
+  inlineReport.push(result);
+}
+
+// ---------------------------------------------------------------------------
+// Final summary
+// ---------------------------------------------------------------------------
+
+const overallMissing = totalMissing + totalInlineMissing;
+
+if (overallMissing === 0) {
   console.log(`OK · all ${fileSet.size} namespaces are key-complete across ${baseLang}/${otherLang}`);
   if (totalCldrSkipped > 0) {
     console.log(`(skipped CLDR-correct asymmetry: ${totalCldrSkipped} plural variant${totalCldrSkipped === 1 ? '' : 's'})`);
   }
+  console.log(`OK · landing inline dict is key-complete (${baseLang}/${otherLang})`);
+  console.log(`OK · desktop main-process dict is key-complete (${baseLang}/${otherLang})`);
   process.exit(0);
 }
 
@@ -175,8 +336,25 @@ for (const entry of report) {
   }
 }
 
+for (const result of inlineReport) {
+  problemNamespaces += 1;
+  if (result.error) {
+    console.log(`\n[${result.label}] ${result.error}`);
+    continue;
+  }
+  console.log(`\n[${result.label}]`);
+  if (result.onlyInBase.length) {
+    console.log(`  only in ${baseLang} (${result.onlyInBase.length}):`);
+    for (const key of result.onlyInBase) console.log(`    + ${key}`);
+  }
+  if (result.onlyInOther.length) {
+    console.log(`  only in ${otherLang} (${result.onlyInOther.length}):`);
+    for (const key of result.onlyInOther) console.log(`    - ${key}`);
+  }
+}
+
 console.log('-'.repeat(60));
 console.log(
-  `FAIL · ${totalMissing} divergent key${totalMissing === 1 ? '' : 's'} across ${problemNamespaces} namespace${problemNamespaces === 1 ? '' : 's'}`
+  `FAIL · ${overallMissing} divergent key${overallMissing === 1 ? '' : 's'} across ${problemNamespaces} source${problemNamespaces === 1 ? '' : 's'}`
 );
 process.exit(1);

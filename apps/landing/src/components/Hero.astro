@@ -1,6 +1,15 @@
 ---
 import { currentVersion } from '../lib/releases';
+import { t, type SupportedLanguage } from '../lib/i18n';
 
+interface Props {
+  /** Active SSR language. Defaults to PL (`/` is the canonical PL page);
+   *  `/en/*` pages pass `lang="en"` so the HTML ships English before JS runs. */
+  lang?: SupportedLanguage;
+}
+
+const { lang = 'pl' } = Astro.props;
+const tt = (key: string) => t(key, lang);
 const version = currentVersion();
 
 const libraryCards = [
@@ -16,32 +25,32 @@ const libraryCards = [
 <section class="hero">
   <div class="hero-grid">
     <div>
-      <span class="eyebrow"><span class="blip"></span>v{version} · <span data-i18n="hero.eyebrow">Pływający dock już dostępny</span></span>
+      <span class="eyebrow"><span class="blip"></span>v{version} · <span data-i18n="hero.eyebrow">{tt('hero.eyebrow')}</span></span>
       <h1>
-        <span data-i18n="hero.headline.lead">Oglądaj i śledź w</span>
-        <span class="kanji" data-i18n="hero.headline.kanji">jednym</span>
-        <mark class="hl" data-i18n="hero.headline.mark">spokojnym miejscu</mark><span data-i18n="hero.headline.tail">.</span>
+        <span data-i18n="hero.headline.lead">{tt('hero.headline.lead')}</span>
+        <span class="kanji" data-i18n="hero.headline.kanji">{tt('hero.headline.kanji')}</span>
+        <mark class="hl" data-i18n="hero.headline.mark">{tt('hero.headline.mark')}</mark><span data-i18n="hero.headline.tail">{tt('hero.headline.tail')}</span>
       </h1>
       <p class="hero-sub">
-        <b>ShiroAni</b> <span data-i18n="hero.sub.lead">to aplikacja na komputer: przeglądarka bez reklam, biblioteka, harmonogram emisji i pamiętnik. Cała półka anime w jednym przytulnym oknie.</span>
+        <b>ShiroAni</b> <span data-i18n="hero.sub.lead">{tt('hero.sub.lead')}</span>
       </p>
       <div class="hero-ctas">
         <a href="#pobierz" class="btn btn-primary">
-          <span data-i18n="hero.cta.download">Pobierz ShiroAni</span><span class="os" data-i18n="hero.cta.os">· Windows / macOS</span>
+          <span data-i18n="hero.cta.download">{tt('hero.cta.download')}</span><span class="os" data-i18n="hero.cta.os">{tt('hero.cta.os')}</span>
         </a>
         <a href="#podglad" class="btn btn-ghost">
           <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-          <span data-i18n="hero.cta.see">Zobacz jak działa</span>
+          <span data-i18n="hero.cta.see">{tt('hero.cta.see')}</span>
         </a>
       </div>
       <p class="hero-strip">
-        <span><b>17</b> <span data-i18n="hero.strip.themes">motywów</span></span>
+        <span><b>17</b> <span data-i18n="hero.strip.themes">{tt('hero.strip.themes')}</span></span>
         <span class="dot" aria-hidden="true">·</span>
-        <span><b>05</b> <span data-i18n="hero.strip.statuses">statusów biblioteki</span></span>
+        <span><b>05</b> <span data-i18n="hero.strip.statuses">{tt('hero.strip.statuses')}</span></span>
         <span class="dot" aria-hidden="true">·</span>
-        <span><b data-i18n="hero.strip.adfree">bez reklam</b></span>
+        <span><b data-i18n="hero.strip.adfree">{tt('hero.strip.adfree')}</b></span>
         <span class="dot" aria-hidden="true">·</span>
-        <span><b data-i18n="hero.strip.priceValue">0 zł</b> <span data-i18n="hero.strip.price">wiecznie</span></span>
+        <span><b data-i18n="hero.strip.priceValue">{tt('hero.strip.priceValue')}</b> <span data-i18n="hero.strip.price">{tt('hero.strip.price')}</span></span>
       </p>
     </div>
 
@@ -58,8 +67,8 @@ const libraryCards = [
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
             </div>
             <div>
-              <h4 data-i18n="hero.mock.library">Moja biblioteka</h4>
-              <small>{libraryCards.length} <span data-i18n="hero.mock.titlesSuffix">TYTUŁÓW</span></small>
+              <h4 data-i18n="hero.mock.library">{tt('hero.mock.library')}</h4>
+              <small>{libraryCards.length} <span data-i18n="hero.mock.titlesSuffix">{tt('hero.mock.titlesSuffix')}</span></small>
             </div>
           </div>
           <div class="mock-head-btns">
@@ -72,15 +81,15 @@ const libraryCards = [
         </div>
         <div class="mock-search">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-          <span data-i18n="hero.mock.search">Szukaj w bibliotece...</span>
+          <span data-i18n="hero.mock.search">{tt('hero.mock.search')}</span>
         </div>
         <div class="mock-tabs">
-          <span class="on" data-i18n="hero.mock.tab.all">Wszystkie</span>
-          <span data-i18n="hero.mock.tab.watching">Oglądam</span>
-          <span data-i18n="hero.mock.tab.completed">Ukończone</span>
-          <span data-i18n="hero.mock.tab.planned">Planowane</span>
-          <span data-i18n="hero.mock.tab.paused">Wstrzymane</span>
-          <span data-i18n="hero.mock.tab.dropped">Porzucone</span>
+          <span class="on" data-i18n="hero.mock.tab.all">{tt('hero.mock.tab.all')}</span>
+          <span data-i18n="hero.mock.tab.watching">{tt('hero.mock.tab.watching')}</span>
+          <span data-i18n="hero.mock.tab.completed">{tt('hero.mock.tab.completed')}</span>
+          <span data-i18n="hero.mock.tab.planned">{tt('hero.mock.tab.planned')}</span>
+          <span data-i18n="hero.mock.tab.paused">{tt('hero.mock.tab.paused')}</span>
+          <span data-i18n="hero.mock.tab.dropped">{tt('hero.mock.tab.dropped')}</span>
         </div>
         <div class="lib-grid">
           {libraryCards.map((card) => (
@@ -102,20 +111,20 @@ const libraryCards = [
       </div>
 
       <div class="mock-dock">
-        <button class="d on" title="Biblioteka" data-i18n-title="hero.dock.library" aria-label="Biblioteka" data-i18n-aria-label="hero.dock.library">
+        <button class="d on" title={tt('hero.dock.library')} data-i18n-title="hero.dock.library" aria-label={tt('hero.dock.library')} data-i18n-aria-label="hero.dock.library">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
         </button>
-        <button class="d" title="Harmonogram" data-i18n-title="hero.dock.schedule" aria-label="Harmonogram" data-i18n-aria-label="hero.dock.schedule">
+        <button class="d" title={tt('hero.dock.schedule')} data-i18n-title="hero.dock.schedule" aria-label={tt('hero.dock.schedule')} data-i18n-aria-label="hero.dock.schedule">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
         </button>
-        <button class="d" title="Pamiętnik" data-i18n-title="hero.dock.diary" aria-label="Pamiętnik" data-i18n-aria-label="hero.dock.diary">
+        <button class="d" title={tt('hero.dock.diary')} data-i18n-title="hero.dock.diary" aria-label={tt('hero.dock.diary')} data-i18n-aria-label="hero.dock.diary">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
         </button>
-        <button class="d" title="Przeglądarka" data-i18n-title="hero.dock.browser" aria-label="Przeglądarka" data-i18n-aria-label="hero.dock.browser">
+        <button class="d" title={tt('hero.dock.browser')} data-i18n-title="hero.dock.browser" aria-label={tt('hero.dock.browser')} data-i18n-aria-label="hero.dock.browser">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 4 10 15 15 0 0 1-4 10 15 15 0 0 1-4-10 15 15 0 0 1 4-10z"/></svg>
         </button>
         <span class="sep"></span>
-        <button class="d" title="Ustawienia" data-i18n-title="hero.dock.settings" aria-label="Ustawienia" data-i18n-aria-label="hero.dock.settings">
+        <button class="d" title={tt('hero.dock.settings')} data-i18n-title="hero.dock.settings" aria-label={tt('hero.dock.settings')} data-i18n-aria-label="hero.dock.settings">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.01a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h.01a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.01a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
         </button>
       </div>

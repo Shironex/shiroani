@@ -11,22 +11,24 @@ import Suite from '../../components/Suite.astro';
 import Download from '../../components/Download.astro';
 import FAQ from '../../components/FAQ.astro';
 import { Footer } from '../../components/Footer';
+
+const lang = 'en';
 ---
 
 <BaseLayout
   title="白アニ · ShiroAni — anime browser & tracker"
   titleKey="meta.home.title"
   descriptionKey="meta.home.description"
-  lang="en"
+  lang={lang}
 >
   <Ticker />
-  <Navbar />
+  <Navbar lang={lang} />
   <main id="main">
-    <Hero />
+    <Hero lang={lang} />
 
     <Chapter
       id="funkcje"
-      lang="en"
+      lang={lang}
       num="01"
       eyebrow="Chapter one · Co jest w środku"
       title="Jedna aplikacja. "
@@ -37,11 +39,11 @@ import { Footer } from '../../components/Footer';
       emKey="chapter.01.em"
       metaKey="chapter.01.meta"
     />
-    <Features />
+    <Features lang={lang} />
 
     <Chapter
       id="podglad"
-      lang="en"
+      lang={lang}
       num="02"
       eyebrow="Chapter two · Anatomia aplikacji"
       title="Kliknij pinezkę, żeby "
@@ -54,11 +56,11 @@ import { Footer } from '../../components/Footer';
       titleSuffixKey="chapter.02.titleSuffix"
       metaKey="chapter.02.meta"
     />
-    <Anatomy client:visible />
+    <Anatomy client:visible lang={lang} />
 
     <Chapter
       id="maskotka"
-      lang="en"
+      lang={lang}
       num="03"
       eyebrow="Chapter three · Mała towarzyszka"
       title="Poznaj "
@@ -71,11 +73,11 @@ import { Footer } from '../../components/Footer';
       titleSuffixKey="chapter.03.titleSuffix"
       metaKey="chapter.03.meta"
     />
-    <Mascot />
+    <Mascot lang={lang} />
 
     <Chapter
       id="suite"
-      lang="en"
+      lang={lang}
       num="04"
       eyebrow="Chapter four · Rodzina"
       title="Jedna cicha półka na "
@@ -88,11 +90,11 @@ import { Footer } from '../../components/Footer';
       titleSuffixKey="chapter.04.titleSuffix"
       metaKey="chapter.04.meta"
     />
-    <Suite />
+    <Suite lang={lang} />
 
     <Chapter
       id="pobierz"
-      lang="en"
+      lang={lang}
       num="05"
       eyebrow="Chapter five · Zainstaluj"
       title="Zabierz ją "
@@ -105,11 +107,11 @@ import { Footer } from '../../components/Footer';
       titleSuffixKey="chapter.05.titleSuffix"
       metaKey="chapter.05.meta"
     />
-    <Download />
+    <Download lang={lang} />
 
     <Chapter
       id="faq"
-      lang="en"
+      lang={lang}
       num="06"
       eyebrow="Chapter six · Pytania"
       title="Krótko i "
@@ -122,7 +124,7 @@ import { Footer } from '../../components/Footer';
       titleSuffixKey="chapter.06.titleSuffix"
       metaKey="chapter.06.meta"
     />
-    <FAQ />
+    <FAQ lang={lang} />
   </main>
-  <Footer client:visible />
+  <Footer client:visible lang={lang} />
 </BaseLayout>

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import type { SupportedLanguage } from '../lib/i18n';
 import { useT } from '../lib/useLandingLang';
 
 type Pin = { x: number; y: number; titleKey: string; textKey: string };
@@ -103,8 +104,8 @@ const ANA: Record<
 
 const TAB_ORDER: TabKey[] = ['library', 'schedule', 'newtab', 'settings'];
 
-export function Anatomy() {
-  const t = useT();
+export function Anatomy({ lang }: { lang?: SupportedLanguage } = {}) {
+  const t = useT(lang);
   const [tab, setTab] = useState<TabKey>('library');
   const [pin, setPin] = useState(0);
 

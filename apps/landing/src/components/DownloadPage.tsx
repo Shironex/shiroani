@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { GITHUB_RELEASES_API_URL, GITHUB_RELEASES_URL } from '@shiroani/shared';
 import { currentVersion } from '../lib/releases';
 import { useLandingLang } from '../lib/useLandingLang';
-import { t as translate } from '../lib/i18n';
+import { t as translate, type SupportedLanguage } from '../lib/i18n';
 
 type Platform = 'win' | 'mac';
 
@@ -84,8 +84,8 @@ function formatTemplate(template: string, vars: Record<string, string>): string 
   );
 }
 
-export function DownloadPage() {
-  const lang = useLandingLang();
+export function DownloadPage({ lang: initialLang }: { lang?: SupportedLanguage } = {}) {
+  const lang = useLandingLang(initialLang);
   const t = (key: string) => translate(key, lang);
 
   const fallbackVersion = currentVersion();

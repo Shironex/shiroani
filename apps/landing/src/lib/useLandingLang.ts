@@ -15,9 +15,16 @@ import {
  * `detail: { lang }`. React islands hydrate independently and would
  * otherwise hold the SSR-default language forever — this hook re-reads
  * on mount and re-renders whenever the toggle fires.
+ *
+ * Pass `initialLang` (the page's SSR `<html lang>`) so the island's
+ * server-rendered HTML matches the route's language instead of defaulting
+ * to {@link DEFAULT_LANGUAGE}; on the client the stored preference and the
+ * `shiroani:lang-change` event still take over.
  */
-export function useLandingLang(): SupportedLanguage {
-  const [lang, setLang] = useState<SupportedLanguage>(DEFAULT_LANGUAGE);
+export function useLandingLang(
+  initialLang: SupportedLanguage = DEFAULT_LANGUAGE
+): SupportedLanguage {
+  const [lang, setLang] = useState<SupportedLanguage>(initialLang);
 
   useEffect(() => {
     try {
@@ -42,9 +49,10 @@ export function useLandingLang(): SupportedLanguage {
 /**
  * Convenience translator paired with {@link useLandingLang}. Returns the
  * dictionary entry for the active language, falling back to the default
- * language and finally to the key itself.
+ * language and finally to the key itself. Pass `initialLang` (the page's
+ * SSR `<html lang>`) so the island renders the right language on the server.
  */
-export function useT(): (key: string) => string {
-  const lang = useLandingLang();
+export function useT(initialLang?: SupportedLanguage): (key: string) => string {
+  const lang = useLandingLang(initialLang);
   return (key: string) => translations[lang]?.[key] ?? translations[DEFAULT_LANGUAGE]?.[key] ?? key;
 }

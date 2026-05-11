@@ -205,10 +205,18 @@ i18n.use(initReactI18next).init({
  * Reconcile the renderer's i18next language with the durable
  * `electron-store` value. Runs after mount because it's async.
  *
- * If the stored value differs from the synchronous `localStorage` seed
- * (e.g. another window changed the language since this window last
- * booted), we update both `localStorage` and i18next so subsequent
- * reloads stay consistent.
+ * Two cases:
+ *
+ * 1. Stored value is valid — mirrors it into `localStorage` and updates
+ *    i18next if it differs from the synchronous seed (e.g. another window
+ *    changed the language since this window last booted).
+ *
+ * 2. Stored value is absent / invalid — the renderer already has a detected
+ *    or default language from `getInitialLanguage()`. We persist it to
+ *    electron-store so the main process (tray, notifications, Discord
+ *    rich presence) picks it up on this boot rather than waiting until the
+ *    user explicitly touches Settings. Only happens once per user on first
+ *    run or after the store is cleared; subsequent boots hit case 1.
  *
  * Failures are swallowed — a missing or unreadable store just means we
  * keep the seed value, which is the correct fallback.
@@ -221,6 +229,13 @@ export async function hydrateLanguageFromStore() {
       window.localStorage.setItem(LANGUAGE_STORAGE_KEY, stored);
       if (i18n.language !== stored) {
         await i18n.changeLanguage(stored);
+      }
+    } else {
+      // No valid value in electron-store yet — write the renderer's detected
+      // language so the main process sees a non-English locale on this boot.
+      const detected = i18n.language;
+      if (isSupportedLanguage(detected)) {
+        persistLanguage(detected);
       }
     }
   } catch {

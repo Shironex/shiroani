@@ -111,13 +111,25 @@ describe('lib/i18n', () => {
       expect(mocks.electronStoreGet).not.toHaveBeenCalled();
     });
 
-    it('ignores unsupported stored values', async () => {
+    it('ignores unsupported stored values but persists detected language', async () => {
       mocks.isElectron.value = true;
       mocks.electronStoreGet.mockResolvedValueOnce('xx');
       const { default: i18n, hydrateLanguageFromStore } = await loadI18n();
       const before = i18n.language;
       await hydrateLanguageFromStore();
+      // i18next language must not change
       expect(i18n.language).toBe(before);
+      // detected language should be persisted to electron-store
+      expect(mocks.electronStoreSet).toHaveBeenCalledWith(UI_LANGUAGE_SETTING_KEY, before);
+    });
+
+    it('persists detected locale to electron-store when store has no value yet', async () => {
+      mocks.isElectron.value = true;
+      mocks.electronStoreGet.mockResolvedValueOnce(undefined);
+      window.localStorage.setItem(LANGUAGE_STORAGE_KEY, 'pl');
+      const { hydrateLanguageFromStore } = await loadI18n();
+      await hydrateLanguageFromStore();
+      expect(mocks.electronStoreSet).toHaveBeenCalledWith(UI_LANGUAGE_SETTING_KEY, 'pl');
     });
 
     it('mirrors stored language to localStorage and switches i18next', async () => {

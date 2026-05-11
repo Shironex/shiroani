@@ -1,6 +1,15 @@
 ---
 import { releases } from '../lib/releases';
+import { t, type SupportedLanguage } from '../lib/i18n';
 
+interface Props {
+  /** Active SSR language. Defaults to PL; `/en/*` pages pass `lang="en"`. */
+  lang?: SupportedLanguage;
+}
+
+const { lang = 'pl' } = Astro.props;
+const tt = (key: string) => t(key, lang);
+const downloadHref = lang === 'en' ? '/en/download' : '/download';
 const latest = releases[0];
 ---
 
@@ -8,33 +17,30 @@ const latest = releases[0];
   <div class="dl">
     <div class="dl-l">
       <h2>
-        <span data-i18n="download.title.lead">Twoja półka anime</span><br />
-        <span data-i18n="download.title.mid">w</span> <em data-i18n="download.title.em">dwóch&nbsp;kliknięciach</em><span data-i18n="download.title.tail">.</span>
+        <span data-i18n="download.title.lead">{tt('download.title.lead')}</span><br />
+        <span data-i18n="download.title.mid">{tt('download.title.mid')}</span> <em data-i18n="download.title.em">{tt('download.title.em')}</em><span data-i18n="download.title.tail">{tt('download.title.tail')}</span>
       </h2>
-      <p data-i18n="download.body">
-        Za darmo, bez konta i bez reklam. Na Windowsie auto-aktualizacja. Na macOS po każdym
-        pobraniu trzeba wpisać jedną komendę w terminalu, bo aplikacja nie jest podpisana.
-      </p>
-      <div class="minor">v{latest.version} · <span data-i18n="download.minor.released">wydanie z</span> {latest.dateShort} · <span data-i18n="download.minor.openSource">open source</span></div>
+      <p data-i18n="download.body">{tt('download.body')}</p>
+      <div class="minor">v{latest.version} · <span data-i18n="download.minor.released">{tt('download.minor.released')}</span> {latest.dateShort} · <span data-i18n="download.minor.openSource">{tt('download.minor.openSource')}</span></div>
     </div>
     <div class="dl-r">
-      <a class="dl-row" href="/download">
+      <a class="dl-row" href={downloadHref}>
         <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor">
           <path d="M3 5.5L10.5 4.2v8H3V5.5zm0 13L10.5 19.8v-8H3v6.7zM11.5 20l9.5 1.7V11.5h-9.5V20zM11.5 4l9.5-1.7v9.2h-9.5V4z"/>
         </svg>
         <div>
-          <div class="pl" data-i18n="download.row.win.platform">Windows · 64-bit · .exe</div>
-          <div class="pv" data-i18n="download.row.win.file">ShiroAni.Setup.exe</div>
+          <div class="pl" data-i18n="download.row.win.platform">{tt('download.row.win.platform')}</div>
+          <div class="pv" data-i18n="download.row.win.file">{tt('download.row.win.file')}</div>
         </div>
         <div class="arr">↓</div>
       </a>
-      <a class="dl-row" href="/download">
+      <a class="dl-row" href={downloadHref}>
         <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor">
           <path d="M17.3 12.6c0-2.5 2-3.7 2.1-3.8-1.1-1.7-2.9-1.9-3.5-1.9-1.5-.2-2.9.9-3.7.9-.8 0-1.9-.9-3.2-.9-1.7 0-3.2 1-4 2.5-1.7 3-.4 7.4 1.2 9.9.8 1.2 1.8 2.5 3 2.4 1.2-.1 1.6-.8 3.1-.8 1.4 0 1.9.8 3.2.7 1.3 0 2.2-1.2 3-2.4.9-1.4 1.3-2.7 1.3-2.8-.1 0-2.5-.9-2.5-3.8zM15 4.8c.7-.8 1.1-2 1-3.2-1 0-2.2.7-2.9 1.5-.6.7-1.2 1.9-1 3 1.1.1 2.3-.6 2.9-1.3z"/>
         </svg>
         <div>
-          <div class="pl" data-i18n="download.row.mac.platform">macOS · Universal · .dmg</div>
-          <div class="pv" data-i18n="download.row.mac.file">ShiroAni.dmg</div>
+          <div class="pl" data-i18n="download.row.mac.platform">{tt('download.row.mac.platform')}</div>
+          <div class="pv" data-i18n="download.row.mac.file">{tt('download.row.mac.file')}</div>
         </div>
         <div class="arr">↓</div>
       </a>
