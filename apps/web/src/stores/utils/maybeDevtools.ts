@@ -2,14 +2,15 @@ import { devtools, type DevtoolsOptions } from 'zustand/middleware';
 import type { StateCreator, StoreMutatorIdentifier } from 'zustand';
 
 /**
- * Wraps a store creator with Zustand devtools middleware in development only.
- * In production the creator is returned unchanged, eliminating the devtools
- * bundle overhead and action-wrapping cost from every `set()` call.
+ * Wraps a store creator with Zustand devtools middleware.
+ * In production, passes `enabled: false` to make the dev-only intent explicit
+ * at the call site — zustand's devtools middleware already no-ops in production
+ * builds on its own (MODE check), so this is a clarity/consistency change, not
+ * a runtime perf win or leak fix.
  *
  * The return type always reflects the devtools-augmented creator so that
  * 3-argument `set(state, replace, actionName)` calls remain valid TypeScript
- * in both environments — the extra argument is silently ignored at runtime
- * when devtools is absent.
+ * in both environments.
  */
 export function maybeDevtools<
   T,
