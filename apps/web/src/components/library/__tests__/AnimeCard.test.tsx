@@ -44,7 +44,7 @@ describe('AnimeCard', () => {
       <AnimeCard entry={createEntry({ currentEpisode: 5, episodes: 12 })} onSelect={onSelect} />
     );
 
-    expect(screen.getByText('Odc. 5/12')).toBeInTheDocument();
+    expect(screen.getByText('Ep. 5/12')).toBeInTheDocument();
   });
 
   it('renders progress text without total episodes', () => {
@@ -55,7 +55,7 @@ describe('AnimeCard', () => {
       />
     );
 
-    expect(screen.getByText('Odc. 3')).toBeInTheDocument();
+    expect(screen.getByText('Ep. 3')).toBeInTheDocument();
   });
 
   it('shows score badge when score is greater than 0', () => {
@@ -79,7 +79,7 @@ describe('AnimeCard', () => {
   it('shows placeholder image when no coverImage', () => {
     render(<AnimeCard entry={createEntry({ coverImage: undefined })} onSelect={onSelect} />);
 
-    expect(screen.getByText('Brak okładki')).toBeInTheDocument();
+    expect(screen.getByText('No cover')).toBeInTheDocument();
     // No <img> tag rendered — the status dot has role="img" but no actual image
     expect(screen.queryByRole('img', { name: /Steins;Gate/i })).not.toBeInTheDocument();
   });
@@ -106,13 +106,13 @@ describe('AnimeCard', () => {
       <AnimeCard entry={entry} onSelect={onSelect} onContinue={onContinue} onRemove={onRemove} />
     );
 
-    expect(screen.getByLabelText('Edytuj')).toBeInTheDocument();
+    expect(screen.getByLabelText('Edit')).toBeInTheDocument();
 
     await user.hover(screen.getByText('Steins;Gate'));
 
-    expect(screen.getByLabelText('Kontynuuj')).toBeInTheDocument();
-    expect(screen.getByLabelText('Edytuj')).toBeInTheDocument();
-    expect(screen.getByLabelText('Usuń')).toBeInTheDocument();
+    expect(screen.getByLabelText('Continue')).toBeInTheDocument();
+    expect(screen.getByLabelText('Edit')).toBeInTheDocument();
+    expect(screen.getByLabelText('Remove')).toBeInTheDocument();
   });
 
   it('shows continue button only when resumeUrl exists', () => {
@@ -124,7 +124,7 @@ describe('AnimeCard', () => {
       />
     );
 
-    expect(screen.queryByLabelText('Kontynuuj')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Continue')).not.toBeInTheDocument();
 
     rerender(
       <AnimeCard
@@ -134,7 +134,7 @@ describe('AnimeCard', () => {
       />
     );
 
-    expect(screen.getByLabelText('Kontynuuj')).toBeInTheDocument();
+    expect(screen.getByLabelText('Continue')).toBeInTheDocument();
   });
 
   it('does not show continue button when onContinue is not provided', () => {
@@ -145,7 +145,7 @@ describe('AnimeCard', () => {
       />
     );
 
-    expect(screen.queryByLabelText('Kontynuuj')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Continue')).not.toBeInTheDocument();
   });
 
   it('calls onRemove when remove button is clicked', async () => {
@@ -153,7 +153,7 @@ describe('AnimeCard', () => {
     const { user } = render(<AnimeCard entry={entry} onSelect={onSelect} onRemove={onRemove} />);
 
     await user.hover(screen.getByText('Steins;Gate'));
-    await user.click(screen.getByLabelText('Usuń'));
+    await user.click(screen.getByLabelText('Remove'));
 
     expect(onRemove).toHaveBeenCalledWith(entry);
   });
@@ -163,7 +163,7 @@ describe('AnimeCard', () => {
     const { user } = render(<AnimeCard entry={entry} onSelect={onSelect} onRemove={onRemove} />);
 
     await user.hover(screen.getByText('Steins;Gate'));
-    await user.click(screen.getByLabelText('Usuń'));
+    await user.click(screen.getByLabelText('Remove'));
 
     // onSelect should only have been called 0 times from the button click
     // (stopPropagation prevents the card click)
@@ -173,12 +173,12 @@ describe('AnimeCard', () => {
   it('renders status label from STATUS_CONFIG', () => {
     render(<AnimeCard entry={createEntry({ status: 'completed' })} onSelect={onSelect} />);
 
-    expect(screen.getByText('Ukończone')).toBeInTheDocument();
+    expect(screen.getByText('Completed')).toBeInTheDocument();
   });
 
   it('does not show remove button when onRemove is not provided', () => {
     render(<AnimeCard entry={createEntry()} onSelect={onSelect} />);
 
-    expect(screen.queryByLabelText('Usuń')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Remove')).not.toBeInTheDocument();
   });
 });

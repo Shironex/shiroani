@@ -6,6 +6,7 @@ import { join, extname, resolve, sep } from 'path';
 import { pathToFileURL } from 'url';
 import { randomUUID } from 'crypto';
 import { createMainLogger } from '../logging/logger';
+import { t } from '../i18n-strings';
 import { handle, handleWithFallback } from './with-ipc-handler';
 import { backgroundPickSchema, backgroundRemoveSchema, backgroundGetUrlSchema } from './schemas';
 
@@ -115,10 +116,10 @@ export function registerBackgroundHandlers(mainWindow: BrowserWindow): void {
       logger.debug('background:pick invoked');
 
       const result = await dialog.showOpenDialog(mainWindow, {
-        title: 'Wybierz obraz tla',
+        title: t('dialog.selectBackground'),
         filters: [
           {
-            name: 'Obrazy',
+            name: t('dialog.imagesFilter'),
             extensions: ['png', 'jpg', 'jpeg', 'gif', 'webp'],
           },
         ],

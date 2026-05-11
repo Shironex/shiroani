@@ -7,6 +7,7 @@ import { devtools } from 'zustand/middleware';
 import { toast } from 'sonner';
 import { createLogger } from '@shiroani/shared';
 import type { CustomThemeDefinition, BuiltInTheme } from '@shiroani/shared';
+import i18n from '@/lib/i18n';
 import {
   persistThemes,
   loadPersistedThemes,
@@ -136,7 +137,7 @@ export const useCustomThemeStore = create<CustomThemeStore>()(
         try {
           const theme = get().getTheme(id);
           if (!theme) {
-            toast.error('Nie znaleziono motywu');
+            toast.error(i18n.t('settings:themes.toast.notFound'));
             return;
           }
 
@@ -166,15 +167,15 @@ export const useCustomThemeStore = create<CustomThemeStore>()(
 
             const jsonString = JSON.stringify(exportData, null, 2);
             await window.electronAPI.file.writeJson(filePath, jsonString);
-            toast.success('Motyw został wyeksportowany');
+            toast.success(i18n.t('settings:themes.toast.exported'));
           } else {
             // Web fallback: Blob download
             webExportFallback(exportData, fileName);
-            toast.success('Motyw został wyeksportowany');
+            toast.success(i18n.t('settings:themes.toast.exported'));
           }
         } catch (err) {
           logger.error('Failed to export theme:', err);
-          toast.error('Błąd podczas eksportu motywu');
+          toast.error(i18n.t('settings:themes.toast.exportFailed'));
         }
       },
 
@@ -203,7 +204,7 @@ export const useCustomThemeStore = create<CustomThemeStore>()(
           try {
             data = JSON.parse(raw);
           } catch {
-            toast.error('Nieprawidłowy format pliku');
+            toast.error(i18n.t('settings:themes.toast.invalidFile'));
             return;
           }
 
@@ -217,7 +218,7 @@ export const useCustomThemeStore = create<CustomThemeStore>()(
 
           // Check theme limit before adding
           if (get().customThemes.length >= MAX_THEMES) {
-            toast.error('Osiągnięto limit motywów (50)');
+            toast.error(i18n.t('settings:themes.toast.limitReached', { limit: MAX_THEMES }));
             return;
           }
 
@@ -230,11 +231,11 @@ export const useCustomThemeStore = create<CustomThemeStore>()(
           });
 
           if (result) {
-            toast.success('Motyw został zaimportowany');
+            toast.success(i18n.t('settings:themes.toast.imported'));
           }
         } catch (err) {
           logger.error('Failed to import theme:', err);
-          toast.error('Błąd podczas importu motywu');
+          toast.error(i18n.t('settings:themes.toast.importFailed'));
         }
       },
     }),

@@ -1,9 +1,9 @@
 import { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { User, RefreshCw, Share2, LogOut } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import type { UserProfile } from '@shiroani/shared';
-import { pluralize } from '@shiroani/shared';
 import {
   startAppStatsPolling,
   stopAppStatsPolling,
@@ -34,6 +34,7 @@ export function ProfileSidebar({
   onShare,
   onDisconnect,
 }: ProfileSidebarProps) {
+  const { t, i18n } = useTranslation('profile');
   const { statistics: stats } = profile;
   const appStatsSnapshot = useAppStatsStore(s => s.snapshot);
 
@@ -47,13 +48,14 @@ export function ProfileSidebar({
   }, []);
 
   const memberSince = profile.createdAt
-    ? new Date(profile.createdAt * 1000).toLocaleDateString('pl-PL', {
+    ? new Date(profile.createdAt * 1000).toLocaleDateString(i18n.language, {
         year: 'numeric',
         month: 'long',
       })
     : null;
 
   const daysActive = appStatsSnapshot.createdAt ? daysSinceCreated(appStatsSnapshot) : 0;
+  const daysActiveLabel = t('sidebar.days', { count: daysActive });
 
   return (
     <aside className="w-[280px] shrink-0 border-r border-border-glass overflow-y-auto px-5 pt-6 pb-20 flex flex-col">
@@ -62,7 +64,7 @@ export function ProfileSidebar({
         {profile.avatar ? (
           <img
             src={profile.avatar}
-            alt={profile.name}
+            alt={t('avatarAlt', { name: profile.name })}
             className={cn(
               'w-20 h-20 rounded-full object-cover',
               'border-2 border-primary/40',
@@ -102,10 +104,12 @@ export function ProfileSidebar({
             aria-hidden="true"
             className="w-[5px] h-[5px] rounded-full bg-[oklch(0.7_0.12_220)] shadow-[0_0_6px_oklch(0.7_0.12_220)]"
           />
-          AniList · podłączono
+          {t('sidebar.connectedBadge')}
         </div>
         {memberSince && (
-          <div className="mt-2 text-[10.5px] text-muted-foreground/70">od {memberSince}</div>
+          <div className="mt-2 text-[10.5px] text-muted-foreground/70">
+            {t('sidebar.memberSince', { date: memberSince })}
+          </div>
         )}
         {daysActive > 0 && (
           <div
@@ -119,23 +123,33 @@ export function ProfileSidebar({
               aria-hidden="true"
               className="w-[5px] h-[5px] rounded-full bg-primary shadow-[0_0_6px_oklch(from_var(--primary)_l_c_h)]"
             />
-            W ShiroAni · {pluralize(daysActive, 'dzień', 'dni', 'dni')}
+            {t('sidebar.shiroAniBadge', { value: daysActiveLabel })}
           </div>
         )}
       </div>
 
       {/* ── Summary stat grid (2×2) ─────────────────────────── */}
       <div className="font-mono text-[9px] uppercase tracking-[0.2em] text-muted-foreground font-semibold mb-2">
-        Podsumowanie
+        {t('sidebar.summaryHeading')}
       </div>
       <div className="grid grid-cols-2 gap-2 mb-4">
-        <SideStat label="Anime" value={formatCount(stats.count)} />
-        <SideStat label="Odcinki" value={formatCount(stats.episodesWatched)} />
+        <SideStat
+          label={t('sidebar.stats.anime')}
+          value={formatCount(stats.count, i18n.language)}
+        />
+        <SideStat
+          label={t('sidebar.stats.episodes')}
+          value={formatCount(stats.episodesWatched, i18n.language)}
+        />
         <SideStat
           label={formatDaysLabel(stats.minutesWatched)}
           value={formatDays(stats.minutesWatched)}
         />
-        <SideStat label="Śr. ocena" value={formatScore(stats.meanScore)} sub="/10" />
+        <SideStat
+          label={t('sidebar.stats.meanScore')}
+          value={formatScore(stats.meanScore)}
+          sub="/10"
+        />
       </div>
 
       {/* ── Actions ─────────────────────────────────────────── */}
@@ -152,7 +166,7 @@ export function ProfileSidebar({
           )}
         >
           <RefreshCw className={cn('w-3.5 h-3.5', isLoading && 'animate-spin')} />
-          Odśwież profil
+          {t('sidebar.actions.refresh')}
         </Button>
         <Button
           variant="ghost"
@@ -165,7 +179,7 @@ export function ProfileSidebar({
           )}
         >
           <Share2 className="w-3.5 h-3.5" />
-          Eksportuj kartę jako PNG
+          {t('sidebar.actions.exportPng')}
         </Button>
         <Button
           variant="ghost"
@@ -178,7 +192,7 @@ export function ProfileSidebar({
           )}
         >
           <LogOut className="w-3.5 h-3.5" />
-          Odłącz konto AniList
+          {t('sidebar.actions.disconnect')}
         </Button>
       </div>
     </aside>
@@ -203,6 +217,6 @@ function SideStat({ label, value, sub }: { label: string; value: string; sub?: s
   );
 }
 
-function formatCount(n: number): string {
-  return n.toLocaleString('pl-PL').replace(/,/g, ' ');
+function formatCount(n: number, locale: string): string {
+  return n.toLocaleString(locale).replace(/,/g, ' ');
 }

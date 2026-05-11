@@ -1,11 +1,13 @@
 import { memo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Star } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { PillTag } from '@/components/ui/pill-tag';
 import { ProgressBar } from '@/components/shared/ProgressBar';
 import { CountdownBadge } from '@/components/library/CountdownBadge';
 import { formatEpisodeProgress } from '@/lib/anime-utils';
-import { STATUS_CONFIG } from '@/lib/constants';
+import { STATUS_LABEL_KEY } from '@/lib/constants';
+import { tDynamic } from '@/lib/i18n';
 import type { AnimeEntry } from '@shiroani/shared';
 
 interface LibraryListItemProps {
@@ -30,11 +32,13 @@ const LibraryListItem = memo(function LibraryListItem({
   nextAiring,
   onClick,
 }: LibraryListItemProps) {
+  const { t, i18n } = useTranslation(['library', 'status', 'common']);
+  const { t: tc } = useTranslation('common');
   const progressPercent = entry.episodes
     ? Math.min(100, Math.round((entry.currentEpisode / entry.episodes) * 100))
     : 0;
 
-  const statusLabel = STATUS_CONFIG[entry.status].label;
+  const statusLabel = tDynamic(i18n, `status:${STATUS_LABEL_KEY[entry.status]}`);
   const hasScore = entry.score != null && entry.score > 0;
 
   return (
@@ -75,7 +79,7 @@ const LibraryListItem = memo(function LibraryListItem({
           {entry.title}
         </h3>
         <p className="text-[11px] text-muted-foreground mt-0.5 font-mono tracking-[0.04em]">
-          {formatEpisodeProgress(entry.currentEpisode, entry.episodes)}
+          {formatEpisodeProgress(tc, entry.currentEpisode, entry.episodes)}
         </p>
       </div>
 
@@ -93,7 +97,7 @@ const LibraryListItem = memo(function LibraryListItem({
           value={progressPercent}
           thickness={4}
           className="flex-1 min-w-0"
-          aria-label={`Postęp: ${progressPercent}%`}
+          aria-label={t('library:list.progressAriaLabel', { percent: progressPercent })}
         />
         <span className="text-[10.5px] font-mono text-muted-foreground whitespace-nowrap tabular-nums shrink-0">
           {entry.episodes ? `${entry.currentEpisode}/${entry.episodes}` : entry.currentEpisode}

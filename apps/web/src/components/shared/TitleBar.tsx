@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Minus, Square, Copy, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { IS_ELECTRON, IS_MAC } from '@/lib/platform';
@@ -18,6 +19,7 @@ import { IS_ELECTRON, IS_MAC } from '@/lib/platform';
  * window continues to move when the user grabs the bar.
  */
 export function TitleBar() {
+  const { t } = useTranslation('nav');
   const [isMaximized, setIsMaximized] = useState(false);
 
   useEffect(() => {
@@ -89,7 +91,7 @@ export function TitleBar() {
             'text-muted-foreground hover:bg-accent hover:text-foreground',
             'transition-colors duration-150'
           )}
-          aria-label="Minimalizuj"
+          aria-label={t('titleBar.minimize')}
         >
           <Minus className="w-3.5 h-3.5" />
         </button>
@@ -100,7 +102,7 @@ export function TitleBar() {
             'text-muted-foreground hover:bg-accent hover:text-foreground',
             'transition-colors duration-150'
           )}
-          aria-label={isMaximized ? 'Przywróć' : 'Maksymalizuj'}
+          aria-label={isMaximized ? t('titleBar.restore') : t('titleBar.maximize')}
         >
           {isMaximized ? <Copy className="w-3 h-3" /> : <Square className="w-3 h-3" />}
         </button>
@@ -111,7 +113,7 @@ export function TitleBar() {
             'text-muted-foreground hover:bg-destructive hover:text-destructive-foreground',
             'transition-colors duration-150'
           )}
-          aria-label="Zamknij"
+          aria-label={t('titleBar.close')}
         >
           <X className="w-3.5 h-3.5" />
         </button>

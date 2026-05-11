@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import type { DiscordActivityType } from '@shiroani/shared';
 
 interface DiscordPreviewProps {
@@ -18,11 +19,14 @@ export function DiscordPreview({
   showButton,
   activityType,
 }: DiscordPreviewProps) {
+  const { t } = useTranslation('settings');
   const isWatching = activityType === 'watching' || activityType === 'diary';
 
   return (
     <div className="bg-[#2b2d31] rounded-lg p-3 text-white/90 font-sans">
-      <p className="text-2xs font-semibold text-white/60 uppercase mb-2">Ogląda anime</p>
+      <p className="text-2xs font-semibold text-white/60 uppercase mb-2">
+        {t('discord.preview.playingHeader')}
+      </p>
       <div className="flex gap-3">
         {/* Large image */}
         {showLargeImage && (
@@ -44,7 +48,7 @@ export function DiscordPreview({
           <p className="text-xs font-semibold text-white truncate">ShiroAni</p>
           {details && <p className="text-xs text-white/70 truncate">{details}</p>}
           {state && <p className="text-xs text-white/70 truncate">{state}</p>}
-          {showTimestamp && <p className="text-xs text-white/50">Upłynęło 00:42:15</p>}
+          {showTimestamp && <p className="text-xs text-white/50">{t('discord.preview.elapsed')}</p>}
         </div>
       </div>
 
@@ -52,7 +56,7 @@ export function DiscordPreview({
       {showButton && isWatching && (
         <div className="mt-2">
           <div className="w-full py-1.5 rounded bg-[#4e505899] text-center text-xs font-medium text-white/80">
-            Pokaż na AniList
+            {t('discord.preview.anilistButton')}
           </div>
         </div>
       )}

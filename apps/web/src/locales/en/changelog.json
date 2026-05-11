@@ -1,0 +1,22 @@
+{
+  "latestBadge": "v{{version}} · latest",
+  "headline": "What's <1>new</1>?",
+  "subtitle": "ShiroAni's change history: feature by feature, fix by fix.",
+  "filter": {
+    "label": "Filter",
+    "all": "All",
+    "major": "Major releases",
+    "minor": "Patches"
+  },
+  "jump": {
+    "label": "Jump to",
+    "ariaLabel": "Jump to version"
+  },
+  "release": {
+    "latest": "Latest"
+  },
+  "origin": {
+    "label": "Origin · 2026",
+    "tagline": "\"what if tracking anime were actually pleasant?\""
+  }
+}

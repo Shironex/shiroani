@@ -1,4 +1,5 @@
 import { useCallback } from 'react';
+import { Trans, useTranslation } from 'react-i18next';
 import { Shield, Check, Plus } from 'lucide-react';
 import { StepLayout } from '../StepLayout';
 import { SettingsToggleRow } from '@/components/settings/SettingsCard';
@@ -13,6 +14,7 @@ import { useBrowserStore } from '@/stores/useBrowserStore';
  * screen (`SummaryStep`).
  */
 export function AdblockStep() {
+  const { t } = useTranslation('onboarding');
   const adblockEnabled = useBrowserStore(s => s.adblockEnabled);
   const setAdblockEnabled = useBrowserStore(s => s.setAdblockEnabled);
 
@@ -23,33 +25,27 @@ export function AdblockStep() {
     [setAdblockEnabled]
   );
 
+  const emPrimary = <em className="not-italic text-primary italic" />;
+  const bStrong = <b className="font-semibold text-foreground" />;
+  const bPrimary = <b className="font-bold text-primary" />;
+
   return (
     <StepLayout
       kanji="盾"
       headline={
-        <>
-          Na koniec: <em className="not-italic text-primary italic">czysty</em> odcinek bez reklam.
-        </>
+        <Trans ns="onboarding" i18nKey="step.adblock.headline" components={{ 1: emPrimary }} />
       }
       description={
-        <>
-          Wbudowana przeglądarka blokuje reklamy i trackery na stronach streamingowych (
-          <b className="font-semibold text-foreground">EasyList + EasyPrivacy</b>). Wyjątki ustawisz
-          dla konkretnych domen.
-        </>
+        <Trans ns="onboarding" i18nKey="step.adblock.description" components={{ 1: bStrong }} />
       }
       stepMarker={
-        <>
-          Krok <b className="font-bold text-primary">07 · Finisz</b> · blokowanie reklam
-        </>
+        <Trans ns="onboarding" i18nKey="step.adblock.marker" components={{ 1: bPrimary }} />
       }
       stepIcon={<Shield className="h-5 w-5" />}
-      stepTitle="Blokowanie reklam"
+      stepTitle={t('step.adblock.title')}
     >
       <div className="flex flex-col gap-3 rounded-2xl border border-border-glass bg-foreground/[0.02] p-4">
-        {!IS_ELECTRON && (
-          <p className="text-xs text-amber-500">Dostępne tylko w wersji desktopowej</p>
-        )}
+        {!IS_ELECTRON && <p className="text-xs text-amber-500">{t('step.adblock.desktopOnly')}</p>}
 
         <div className="flex items-start gap-3 border-b border-border-glass pb-3">
           <span
@@ -61,25 +57,28 @@ export function AdblockStep() {
           <SettingsToggleRow
             className="flex-1"
             id="onb-adblock-label"
-            title="Blokowanie reklam"
-            description="EasyList + EasyPrivacy · 98 200 reguł"
+            title={t('step.adblock.toggle.title')}
+            description={t('step.adblock.toggle.description')}
             checked={adblockEnabled}
             onCheckedChange={handleAdblock}
             disabled={!IS_ELECTRON}
           />
         </div>
 
-        <ul className="flex flex-col font-mono text-[10.5px]" aria-label="Blokowane elementy">
-          <BlockedRow label="Reklamy graficzne (banner / popup)" />
-          <BlockedRow label="Trackery analityczne" />
-          <BlockedRow label="Reklamy w odtwarzaczu wideo" />
-          <BlockedRow label="Cookie walls" />
-          <BlockedRow label="Własne wyjątki domen" variant="add" />
+        <ul
+          className="flex flex-col font-mono text-[10.5px]"
+          aria-label={t('step.adblock.blockedListAria')}
+        >
+          <BlockedRow label={t('step.adblock.blocked.ads')} />
+          <BlockedRow label={t('step.adblock.blocked.trackers')} />
+          <BlockedRow label={t('step.adblock.blocked.videoAds')} />
+          <BlockedRow label={t('step.adblock.blocked.cookieWalls')} />
+          <BlockedRow label={t('step.adblock.blocked.exceptions')} variant="add" />
         </ul>
       </div>
 
       <p className="font-mono text-[10.5px] uppercase tracking-[0.18em] text-muted-foreground">
-        ✦ Listę wyjątków dodasz później w ustawieniach przeglądarki
+        {t('step.adblock.footnote')}
       </p>
     </StepLayout>
   );

@@ -1,6 +1,7 @@
 import { memo, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Check, Ban } from 'lucide-react';
-import { ANIME_GENRES, ANIME_GENRE_LABELS_PL, type AnimeGenre } from '@shiroani/shared';
+import { ANIME_GENRES, getAnimeGenreLabel, type AnimeGenre } from '@shiroani/shared';
 import { cn } from '@/lib/utils';
 
 type GenreState = 'neutral' | 'included' | 'excluded';
@@ -23,6 +24,7 @@ const GenrePicker = memo(function GenrePicker({
   onChange,
   disabled,
 }: GenrePickerProps) {
+  const { t, i18n } = useTranslation('discover');
   const cycle = useCallback(
     (genre: AnimeGenre, direction: 'forward' | 'exclude') => {
       const isIn = included.includes(genre);
@@ -55,6 +57,7 @@ const GenrePicker = memo(function GenrePicker({
     <div className="flex flex-wrap gap-1.5">
       {ANIME_GENRES.map(genre => {
         const state = stateOf(genre);
+        const genreLabel = getAnimeGenreLabel(genre, i18n.language);
         return (
           <button
             key={genre}
@@ -66,9 +69,15 @@ const GenrePicker = memo(function GenrePicker({
               cycle(genre, 'exclude');
             }}
             aria-pressed={state !== 'neutral'}
-            aria-label={`${ANIME_GENRE_LABELS_PL[genre]}: ${
-              state === 'included' ? 'wybrane' : state === 'excluded' ? 'wykluczone' : 'neutralne'
-            }`}
+            aria-label={t('genres.labelTemplate', {
+              genre: genreLabel,
+              state:
+                state === 'included'
+                  ? t('genres.stateIncluded')
+                  : state === 'excluded'
+                    ? t('genres.stateExcluded')
+                    : t('genres.stateNeutral'),
+            })}
             className={cn(
               'group inline-flex items-center gap-1 px-2.5 py-[5px] rounded-full',
               'font-mono text-[10px] uppercase tracking-[0.08em] font-semibold',
@@ -85,7 +94,7 @@ const GenrePicker = memo(function GenrePicker({
           >
             {state === 'included' && <Check className="w-3 h-3" />}
             {state === 'excluded' && <Ban className="w-3 h-3" />}
-            <span>{ANIME_GENRE_LABELS_PL[genre]}</span>
+            <span>{genreLabel}</span>
           </button>
         );
       })}

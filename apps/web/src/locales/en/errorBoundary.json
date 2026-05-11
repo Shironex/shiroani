@@ -1,0 +1,9 @@
+{
+  "brand": "ShiroAni",
+  "kicker": "something went wrong",
+  "description": "An unexpected error occurred. Try going back to the previous screen or restart the app.",
+  "technicalDetails": "Technical details",
+  "restart": "Restart app",
+  "retry": "Try again",
+  "mascotAlt": "ShiroAni mascot — sleeping"
+}

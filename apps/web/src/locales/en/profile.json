@@ -1,0 +1,196 @@
+{
+  "view": {
+    "title": "My profile",
+    "watermarkAria": "Profile",
+    "subtitleApp": "Local · time spent in ShiroAni",
+    "subtitleAniListConnected": "AniList · @{{handle}}",
+    "subtitleAniListConnect": "Connect an AniList account to see your stats",
+    "tabs": {
+      "anilist": "From AniList",
+      "app": "In app",
+      "ariaLabel": "Profile statistics source"
+    },
+    "actions": {
+      "refresh": "Refresh",
+      "refreshAria": "Refresh profile",
+      "share": "Share as PNG",
+      "shareAria": "Share profile as PNG",
+      "openAniList": "Open AniList"
+    },
+    "private": {
+      "title": "This user has private statistics",
+      "changeUser": "Change user"
+    }
+  },
+  "setup": {
+    "title": "Connect your AniList profile",
+    "description": "Enter your AniList username to see your stats",
+    "placeholder": "AniList username",
+    "submit": "Connect"
+  },
+  "sidebar": {
+    "connectedBadge": "AniList · connected",
+    "memberSince": "since {{date}}",
+    "shiroAniBadge": "In ShiroAni · {{value}}",
+    "summaryHeading": "Summary",
+    "stats": {
+      "anime": "Anime",
+      "episodes": "Episodes",
+      "meanScore": "Avg. score"
+    },
+    "actions": {
+      "refresh": "Refresh profile",
+      "exportPng": "Export card as PNG",
+      "disconnect": "Disconnect AniList"
+    },
+    "days_one": "{{count}} day",
+    "days_other": "{{count}} days"
+  },
+  "dashboard": {
+    "sections": {
+      "libraryBreakdown": "Library breakdown",
+      "favoriteGenres": "Favorite genres",
+      "favoriteStudios": "Favorite studios",
+      "recentActivity": "Recent activity",
+      "favorites": "Favorite anime"
+    },
+    "summary": {
+      "watched": "You watched a total of <1>{{episodes}} episodes</1>",
+      "screenTime": "That's about <1>{{value}} {{unit}}</1> on screen",
+      "favoriteYear": "Favorite year: <1>{{year}}</1> · {{count}} {{titles}}"
+    },
+    "titles_one": "title",
+    "titles_few": "titles",
+    "titles_many": "titles",
+    "titles_other": "titles"
+  },
+  "stats": {
+    "completed": "Completed",
+    "completedSub": "watched in full",
+    "current": "Watching",
+    "currentSub": "in progress",
+    "planning": "Planning",
+    "planningSub": "queued to watch",
+    "meanScore": "Avg. score",
+    "meanScoreSub": "across rated titles"
+  },
+  "rings": {
+    "labels": {
+      "current": "Watching",
+      "completed": "Completed",
+      "planning": "Planning",
+      "dropped": "Dropped",
+      "paused": "Paused",
+      "repeating": "Repeating"
+    }
+  },
+  "genres": {
+    "empty": "No genre data yet."
+  },
+  "studios": {
+    "empty": "No studio data yet."
+  },
+  "activityFeed": {
+    "title": "Recent activity",
+    "description": "Scrobble history, status changes and ratings from AniList will appear here once we extend profile sync.",
+    "tag": "SOON"
+  },
+  "appPanel": {
+    "heroTag": "Your time with ShiroAni",
+    "footer": "{{days}} with ShiroAni · {{sessions}}",
+    "hero": {
+      "primary": "You've spent {{duration}} here — that's {{yardstick}}",
+      "secondary": "Active {{active}} · {{watch}} of anime",
+      "primaryEmpty": "Your journey is just beginning · stay a little longer",
+      "secondaryEmpty": "0 minutes of activity · waiting for your first session",
+      "duration": {
+        "seconds_one": "{{count}} second",
+        "seconds_other": "{{count}} seconds",
+        "minutes_one": "{{count}} minute",
+        "minutes_other": "{{count}} minutes",
+        "hours_one": "{{count}} hour",
+        "hours_other": "{{count}} hours",
+        "daysOnly_one": "{{count}} day",
+        "daysOnly_other": "{{count}} days",
+        "hoursAndMinutes": "{{hours}} {{minutes}}",
+        "daysAndHours": "{{days}} {{hours}}"
+      },
+      "yardstick": {
+        "empty": "Not enough yet for the first episode of {{title}}",
+        "fullSeries_one": "{{count}} time through {{title}}",
+        "fullSeries_other": "{{count}} times through {{title}}",
+        "episodes_one": "{{count}} episode of {{title}}",
+        "episodes_other": "{{count}} episodes of {{title}}"
+      }
+    },
+    "days_one": "{{count}} day",
+    "days_other": "{{count}} days",
+    "sessions_one": "{{count}} session",
+    "sessions_other": "{{count}} sessions",
+    "counters": {
+      "open": "App open",
+      "openSub": "while the window is on screen",
+      "active": "Active",
+      "activeSub": "window focused, no idle time",
+      "anime": "With anime",
+      "animeSub": "browser on a recognised page"
+    },
+    "heatmap": {
+      "title": "Activity in the last 12 weeks",
+      "caption": "Each cell is one day. Intensity shows how much active time you spent in the app.",
+      "ariaLabel": "Map of {{metric}} over the last {{weeks}} weeks",
+      "metric": {
+        "active": "activity",
+        "anime": "anime watching"
+      },
+      "less": "less",
+      "more": "more",
+      "tooltip": {
+        "future": "{{date}} — still ahead",
+        "empty": "{{date}} — no activity",
+        "active": "{{date}} — {{value}} actively",
+        "anime": "{{date}} — {{value}} of anime"
+      }
+    },
+    "streak": {
+      "current": "Current streak",
+      "longest": "Longest streak"
+    },
+    "reset": {
+      "action": "Clear stats",
+      "hint": "Everything is counted locally — no counter ever leaves your computer.",
+      "dialog": {
+        "title": "Clear stats?",
+        "description": "All local time counters will be deleted. This cannot be undone.",
+        "confirm": "Clear"
+      }
+    }
+  },
+  "errors": {
+    "userNotFound": "AniList user not found",
+    "rateLimited": "Too many requests — wait a moment"
+  },
+  "share": {
+    "title": "Share profile",
+    "description": "A profile card in PNG format, ready to drop into Discord",
+    "previewAlt": "Profile card preview",
+    "copyToClipboard": "Copy to clipboard",
+    "copied": "Copied!",
+    "saveAsPng": "Save as PNG",
+    "saved": "Saved!",
+    "errors": {
+      "render": "Failed to generate the profile card",
+      "clipboard": "Failed to copy to clipboard",
+      "save": "Failed to save the file"
+    }
+  },
+  "card": {
+    "genres": "GENRES",
+    "scoreDistribution": "SCORE DISTRIBUTION",
+    "studios": "STUDIOS",
+    "epShort": "ep",
+    "daysShort": "d",
+    "hoursShort": "h"
+  },
+  "avatarAlt": "Avatar of {{name}}"
+}

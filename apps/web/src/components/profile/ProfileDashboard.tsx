@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { useTranslation, Trans } from 'react-i18next';
 import { useProfileStore } from '@/stores/useProfileStore';
 import { ProfileSidebar } from './ProfileSidebar';
 import { ProfileStatGrid } from './ProfileStatGrid';
@@ -6,9 +7,9 @@ import { ProgressRing } from './ProgressRing';
 import { GenreBreakdown } from './GenreBreakdown';
 import { StudioBreakdown } from './StudioBreakdown';
 import { ActivityFeed } from './ActivityFeed';
-import { STATUS_LABELS, formatDays, formatDaysLabel } from './profile-constants';
+import { useStatusLabels, formatDays, formatDaysLabel } from './profile-constants';
 import { FavouriteCard } from './ProfileCharts';
-import { pluralize, type UserProfile } from '@shiroani/shared';
+import { type UserProfile } from '@shiroani/shared';
 
 interface ProfileDashboardProps {
   profile: UserProfile;
@@ -23,6 +24,8 @@ interface ProfileDashboardProps {
  * present — favourite anime.
  */
 export function ProfileDashboard({ profile, onShare }: ProfileDashboardProps) {
+  const { t, i18n } = useTranslation('profile');
+  const STATUS_LABELS = useStatusLabels();
   const { statistics: stats } = profile;
   const clearProfile = useProfileStore(s => s.clearProfile);
   const fetchProfile = useProfileStore(s => s.fetchProfile);
@@ -66,7 +69,7 @@ export function ProfileDashboard({ profile, onShare }: ProfileDashboardProps) {
 
         {/* Library status rings */}
         <section>
-          <SectionHead>Podział biblioteki</SectionHead>
+          <SectionHead>{t('dashboard.sections.libraryBreakdown')}</SectionHead>
           <div className="flex gap-5 items-center flex-wrap">
             {statusRings.map(ring => (
               <ProgressRing
@@ -79,23 +82,42 @@ export function ProfileDashboard({ profile, onShare }: ProfileDashboardProps) {
             ))}
             <div className="flex-1 min-w-[220px] px-3.5 text-[12px] text-foreground/75 leading-[1.6] space-y-1">
               <div>
-                Obejrzałeś łącznie{' '}
-                <b className="text-foreground font-bold tabular-nums">
-                  {stats.episodesWatched.toLocaleString('pl-PL').replace(/,/g, ' ')} odcinków
-                </b>
+                <Trans
+                  i18nKey="dashboard.summary.watched"
+                  t={t}
+                  values={{
+                    episodes: stats.episodesWatched
+                      .toLocaleString(i18n.language)
+                      .replace(/,/g, ' '),
+                  }}
+                  components={{ 1: <b className="text-foreground font-bold tabular-nums" /> }}
+                />
               </div>
               <div>
-                To ok.{' '}
-                <b className="text-[oklch(0.8_0.14_70)] font-bold tabular-nums">
-                  {formatDays(stats.minutesWatched)} {formatDaysLabel(stats.minutesWatched)}
-                </b>{' '}
-                przed ekranem
+                <Trans
+                  i18nKey="dashboard.summary.screenTime"
+                  t={t}
+                  values={{
+                    value: formatDays(stats.minutesWatched),
+                    unit: formatDaysLabel(stats.minutesWatched),
+                  }}
+                  components={{
+                    1: <b className="text-[oklch(0.8_0.14_70)] font-bold tabular-nums" />,
+                  }}
+                />
               </div>
               {topYear && (
                 <div>
-                  Ulubiony rok:{' '}
-                  <b className="text-primary font-bold tabular-nums">{topYear.year}</b> ·{' '}
-                  {topYear.count} {pluralize(topYear.count, 'tytuł', 'tytuły', 'tytułów')}
+                  <Trans
+                    i18nKey="dashboard.summary.favoriteYear"
+                    t={t}
+                    values={{
+                      year: topYear.year,
+                      count: topYear.count,
+                      titles: t('dashboard.titles', { count: topYear.count }),
+                    }}
+                    components={{ 1: <b className="text-primary font-bold tabular-nums" /> }}
+                  />
                 </div>
               )}
             </div>
@@ -105,18 +127,18 @@ export function ProfileDashboard({ profile, onShare }: ProfileDashboardProps) {
         {/* Genre + studio breakdowns */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5">
           <section>
-            <SectionHead>Ulubione gatunki</SectionHead>
+            <SectionHead>{t('dashboard.sections.favoriteGenres')}</SectionHead>
             <GenreBreakdown genres={stats.genres} />
           </section>
           <section>
-            <SectionHead>Ulubione studia</SectionHead>
+            <SectionHead>{t('dashboard.sections.favoriteStudios')}</SectionHead>
             <StudioBreakdown studios={stats.studios} />
           </section>
         </div>
 
         {/* Recent activity (placeholder — no backend data yet) */}
         <section>
-          <SectionHead>Ostatnia aktywność</SectionHead>
+          <SectionHead>{t('dashboard.sections.recentActivity')}</SectionHead>
           <ActivityFeed />
         </section>
 
@@ -125,7 +147,7 @@ export function ProfileDashboard({ profile, onShare }: ProfileDashboardProps) {
             lives behind the sidebar's "Eksportuj kartę PNG" button). */}
         {profile.favourites.length > 0 && (
           <section>
-            <SectionHead>Ulubione anime</SectionHead>
+            <SectionHead>{t('dashboard.sections.favorites')}</SectionHead>
             <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide -mx-1 px-1">
               {profile.favourites.map(fav => (
                 <FavouriteCard key={fav.id} fav={fav} />

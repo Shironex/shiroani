@@ -1,0 +1,33 @@
+{
+  "mascotAlt": "Maskotka ShiroAni",
+  "subtitle": {
+    "loading": "白アニ · twoje anime",
+    "updating": "aktualizacja · trwa instalacja",
+    "updatingTarget": "aktualizacja · {{target}}",
+    "errorOffline": "brak połączenia · tryb offline",
+    "errorGeneric": "coś poszło nie tak · spróbuj ponownie"
+  },
+  "error": {
+    "offline": "Nie możemy połączyć się z AniList. Spróbuj ponownie za chwilę.",
+    "generic": "Coś niespodziewanie przerwało uruchamianie aplikacji.",
+    "close": "Zamknij",
+    "retry": "Ponów"
+  },
+  "status": {
+    "installing": "Instalacja",
+    "newVersionFallback": "nowa wersja",
+    "restarting": "uruchamianie ponowne..."
+  },
+  "messages": {
+    "stretching": "Shiro-chan się przeciąga~ nyaa...",
+    "remote": "Szukam pilota do odcinków...",
+    "planning": "Shiro rysuje plan na dziś...",
+    "cookies": "Podkradamy ciastka z kuchni...",
+    "checking": "Shiro sprawdza co nowego...",
+    "nap": "Jeszcze jedna drzemka... zzz",
+    "almost": "Shiro-chan już prawie gotowa!",
+    "plushies": "Układamy pluszaki na kanapie...",
+    "butterfly": "Shiro goni motylka... zaraz wracam!",
+    "tea": "Nastawiamy czajnik na herbatkę..."
+  }
+}

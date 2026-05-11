@@ -1,4 +1,5 @@
 import { memo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { Pin, Trash2 } from 'lucide-react';
 import type { DiaryEntry } from '@shiroani/shared';
@@ -39,6 +40,7 @@ const DiaryEntryCard = memo(function DiaryEntryCard({
   onRemove,
   onTogglePin,
 }: DiaryEntryCardProps) {
+  const { t } = useTranslation('diary');
   const gradient = entry.coverGradient
     ? (DIARY_GRADIENTS[entry.coverGradient]?.css ?? DEFAULT_GRADIENT)
     : DEFAULT_GRADIENT;
@@ -87,7 +89,7 @@ const DiaryEntryCard = memo(function DiaryEntryCard({
               e.stopPropagation();
               onTogglePin(entry);
             }}
-            aria-label={entry.isPinned ? 'Odepnij' : 'Przypnij'}
+            aria-label={entry.isPinned ? t('card.unpin') : t('card.pin')}
             className={cn(
               'p-1.5 rounded-md transition-colors',
               entry.isPinned
@@ -102,7 +104,7 @@ const DiaryEntryCard = memo(function DiaryEntryCard({
               e.stopPropagation();
               onRemove(entry);
             }}
-            aria-label="Usuń"
+            aria-label={t('card.remove')}
             className="p-1.5 rounded-md bg-black/20 text-white/70 hover:bg-red-500/40 hover:text-white transition-colors"
           >
             <Trash2 className="w-3 h-3" />
@@ -119,7 +121,7 @@ const DiaryEntryCard = memo(function DiaryEntryCard({
 
         {/* Title */}
         <h3 className="text-sm font-semibold text-foreground truncate group-hover/card:text-primary transition-colors">
-          {entry.title || 'Bez tytułu'}
+          {entry.title || t('untitled')}
         </h3>
 
         {/* Content preview */}

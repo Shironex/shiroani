@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Palette,
   Image as ImageIcon,
@@ -17,6 +18,7 @@ import {
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { tDynamic } from '@/lib/i18n';
 import { IS_WINDOWS, IS_MAC, IS_ELECTRON } from '@/lib/platform';
 import { KanjiWatermark } from '@/components/shared/KanjiWatermark';
 import { ViewHeader } from '@/components/shared/ViewHeader';
@@ -55,8 +57,10 @@ type SectionGroup = 'app' | 'appearance' | 'integrations' | 'data' | 'advanced';
 
 interface SectionDef {
   id: SettingsSection;
-  label: string;
-  subtitle: string;
+  /** i18n key for the label under `settings:nav.{labelKey}` */
+  labelKey: string;
+  /** i18n key for the subtitle under `settings:nav.{subtitleKey}` */
+  subtitleKey: string;
   group: SectionGroup;
   Icon: LucideIcon;
 }
@@ -64,115 +68,116 @@ interface SectionDef {
 const ALL_SECTIONS: SectionDef[] = [
   {
     id: 'general',
-    label: 'Ogólne',
-    subtitle: 'Podstawowe ustawienia aplikacji',
+    labelKey: 'general',
+    subtitleKey: 'generalSubtitle',
     group: 'app',
     Icon: Settings,
   },
   {
     id: 'browser',
-    label: 'Przeglądarka',
-    subtitle: 'Ustawienia wbudowanej przeglądarki',
+    labelKey: 'browser',
+    subtitleKey: 'browserSubtitle',
     group: 'app',
     Icon: Globe,
   },
   {
     id: 'notifications',
-    label: 'Powiadomienia',
-    subtitle: 'Nowe odcinki i harmonogram emisji',
+    labelKey: 'notifications',
+    subtitleKey: 'notificationsSubtitle',
     group: 'app',
     Icon: Bell,
   },
   {
     id: 'themes',
-    label: 'Motywy',
-    subtitle: 'Paleta kolorów i skala czytelności',
+    labelKey: 'themes',
+    subtitleKey: 'themesSubtitle',
     group: 'appearance',
     Icon: Palette,
   },
   {
     id: 'background',
-    label: 'Tło',
-    subtitle: 'Własny obraz tła i regulacja rozmycia',
+    labelKey: 'background',
+    subtitleKey: 'backgroundSubtitle',
     group: 'appearance',
     Icon: ImageIcon,
   },
   {
     id: 'dock',
-    label: 'Dock',
-    subtitle: 'Pozycja i zachowanie paska nawigacji',
+    labelKey: 'dock',
+    subtitleKey: 'dockSubtitle',
     group: 'appearance',
     Icon: LayoutGrid,
   },
   {
     id: 'views',
-    label: 'Widoki',
-    subtitle: 'Widoczność sekcji w docku',
+    labelKey: 'views',
+    subtitleKey: 'viewsSubtitle',
     group: 'appearance',
     Icon: Eye,
   },
   {
     id: 'discord',
-    label: 'Discord',
-    subtitle: 'Rich Presence: pokaż znajomym, co oglądasz',
+    labelKey: 'discord',
+    subtitleKey: 'discordSubtitle',
     group: 'integrations',
     Icon: MessageCircle,
   },
   {
     id: 'mascot',
-    label: 'Maskotka',
-    subtitle: 'Animowana maskotka chibi na pulpicie',
+    labelKey: 'mascot',
+    subtitleKey: 'mascotSubtitle',
     group: 'integrations',
     Icon: Cat,
   },
   {
     id: 'data',
-    label: 'Dane',
-    subtitle: 'Eksport i import danych aplikacji',
+    labelKey: 'data',
+    subtitleKey: 'dataSubtitle',
     group: 'data',
     Icon: Database,
   },
   {
     id: 'updates',
-    label: 'Aktualizacje',
-    subtitle: 'Wersja i kanał aktualizacji',
+    labelKey: 'updates',
+    subtitleKey: 'updatesSubtitle',
     group: 'data',
     Icon: Download,
   },
   {
     id: 'suite',
-    label: 'Rodzina',
-    subtitle: 'Inne aplikacje, które warto sprawdzić',
+    labelKey: 'suite',
+    subtitleKey: 'suiteSubtitle',
     group: 'data',
     Icon: Boxes,
   },
   {
     id: 'about',
-    label: 'O aplikacji',
-    subtitle: 'Historia, wersja i logi',
+    labelKey: 'about',
+    subtitleKey: 'aboutSubtitle',
     group: 'data',
     Icon: Info,
   },
   {
     id: 'developer',
-    label: 'Deweloper',
-    subtitle: 'Narzędzia debugowania i diagnostyka',
+    labelKey: 'developer',
+    subtitleKey: 'developerSubtitle',
     group: 'advanced',
     Icon: Terminal,
   },
 ];
 
-const GROUP_LABELS: Record<SectionGroup, string> = {
-  app: 'Aplikacja',
-  appearance: 'Wygląd',
-  integrations: 'Integracje',
-  data: 'Dane',
-  advanced: 'Zaawansowane',
+const GROUP_LABEL_KEYS: Record<SectionGroup, string> = {
+  app: 'groupApp',
+  appearance: 'groupAppearance',
+  integrations: 'groupIntegrations',
+  data: 'groupData',
+  advanced: 'groupAdvanced',
 };
 
 const GROUP_ORDER: SectionGroup[] = ['app', 'appearance', 'integrations', 'data', 'advanced'];
 
 export function SettingsView() {
+  const { t, i18n } = useTranslation('settings');
   const [activeSection, setActiveSection] = useState<SettingsSection>(
     IS_ELECTRON ? 'general' : 'themes'
   );
@@ -215,22 +220,20 @@ export function SettingsView() {
   }, []);
 
   const currentSection = sections.find(s => s.id === activeSection) ?? sections[0];
+  const currentLabel = tDynamic(i18n, `settings:nav.${currentSection.labelKey}`);
+  const currentSubtitle = tDynamic(i18n, `settings:nav.${currentSection.subtitleKey}`);
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden animate-fade-in relative">
-      <ViewHeader
-        icon={currentSection.Icon}
-        title={currentSection.label}
-        subtitle={currentSection.subtitle}
-      />
+      <ViewHeader icon={currentSection.Icon} title={currentLabel} subtitle={currentSubtitle} />
 
       {/* ── Body: sidebar + main scroll area ────────────────────────── */}
       <div className="flex-1 flex min-h-0">
         {/* Sidebar navigation */}
         <aside
-          className="w-[220px] shrink-0 border-r border-border-glass overflow-y-auto pt-4 pb-20 px-3"
+          className="min-w-[220px] max-w-[280px] w-fit shrink-0 border-r border-border-glass overflow-y-auto pt-4 pb-20 px-3"
           role="tablist"
-          aria-label="Sekcje ustawień"
+          aria-label={t('nav.ariaSections')}
         >
           {GROUP_ORDER.map(group => {
             const items = grouped[group];
@@ -238,7 +241,7 @@ export function SettingsView() {
             return (
               <div key={group} className="mb-1.5">
                 <div className="px-2.5 pt-2 pb-1 font-mono text-[9px] uppercase tracking-[0.2em] text-muted-foreground/80">
-                  {GROUP_LABELS[group]}
+                  {tDynamic(i18n, `settings:nav.${GROUP_LABEL_KEYS[group]}`)}
                 </div>
                 {items.map(section => {
                   const Icon = section.Icon;
@@ -271,7 +274,9 @@ export function SettingsView() {
                           isActive ? 'opacity-100' : 'opacity-85'
                         )}
                       />
-                      <span className="truncate">{section.label}</span>
+                      <span className="truncate">
+                        {tDynamic(i18n, `settings:nav.${section.labelKey}`)}
+                      </span>
                     </button>
                   );
                 })}
@@ -281,11 +286,7 @@ export function SettingsView() {
         </aside>
 
         {/* Main section content */}
-        <div
-          className="flex-1 relative overflow-hidden"
-          role="tabpanel"
-          aria-label={currentSection.label}
-        >
+        <div className="flex-1 relative overflow-hidden" role="tabpanel" aria-label={currentLabel}>
           {/* Decorative kanji watermark — 設 (setsu: settings/establish).
               Lives outside the scroll container so its negative offsets don't
               contribute to scrollbars on either axis. */}

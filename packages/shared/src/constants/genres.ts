@@ -46,3 +46,35 @@ export const ANIME_GENRE_LABELS_PL: Record<AnimeGenre, string> = {
   Supernatural: 'Nadprzyrodzone',
   Thriller: 'Thriller',
 };
+
+/** English display labels for the genre picker UI */
+export const ANIME_GENRE_LABELS_EN: Record<AnimeGenre, string> = {
+  Action: 'Action',
+  Adventure: 'Adventure',
+  Comedy: 'Comedy',
+  Drama: 'Drama',
+  Ecchi: 'Ecchi',
+  Fantasy: 'Fantasy',
+  Horror: 'Horror',
+  'Mahou Shoujo': 'Mahou Shoujo',
+  Mecha: 'Mecha',
+  Music: 'Music',
+  Mystery: 'Mystery',
+  Psychological: 'Psychological',
+  Romance: 'Romance',
+  'Sci-Fi': 'Sci-Fi',
+  'Slice of Life': 'Slice of Life',
+  Sports: 'Sports',
+  Supernatural: 'Supernatural',
+  Thriller: 'Thriller',
+};
+
+/**
+ * Resolve a genre's display label for the active UI language. Falls back
+ * to English when the language code isn't recognized — matches the
+ * renderer's `DEFAULT_LANGUAGE` and keeps the picker readable for
+ * unsupported locales.
+ */
+export function getAnimeGenreLabel(genre: AnimeGenre, lang: string): string {
+  return lang === 'pl' ? ANIME_GENRE_LABELS_PL[genre] : ANIME_GENRE_LABELS_EN[genre];
+}

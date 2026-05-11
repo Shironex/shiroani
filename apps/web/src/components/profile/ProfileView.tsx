@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { User, RefreshCw, ExternalLink, Share2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -34,6 +35,7 @@ const TAB_ORDER: ProfileTab[] = ['anilist', 'app'];
  * the cached payload fresh in the background.
  */
 export function ProfileView() {
+  const { t } = useTranslation('profile');
   const username = useProfileStore(s => s.username);
   const profile = useProfileStore(s => s.profile);
   const isLoading = useProfileStore(s => s.isLoading);
@@ -54,12 +56,12 @@ export function ProfileView() {
 
   const subtitle =
     tab === 'app'
-      ? 'Lokalnie · czas spędzony w ShiroAni'
+      ? t('view.subtitleApp')
       : profile
-        ? `AniList · @${profile.name.toLowerCase()}`
+        ? t('view.subtitleAniListConnected', { handle: profile.name.toLowerCase() })
         : username
-          ? `AniList · @${username.toLowerCase()}`
-          : 'Podłącz konto AniList, żeby zobaczyć statystyki';
+          ? t('view.subtitleAniListConnected', { handle: username.toLowerCase() })
+          : t('view.subtitleAniListConnect');
 
   const canShare = Boolean(profile && !statsEmpty);
   const isAniListTab = tab === 'anilist';
@@ -68,7 +70,7 @@ export function ProfileView() {
     <div className="flex-1 flex flex-col overflow-hidden animate-fade-in relative">
       <ViewHeader
         icon={User}
-        title="Mój profil"
+        title={t('view.title')}
         subtitle={subtitle}
         actions={
           <>
@@ -80,9 +82,9 @@ export function ProfileView() {
                 className="w-8 h-8"
                 onClick={() => fetchProfile()}
                 disabled={isLoading}
-                tooltip="Odśwież"
+                tooltip={t('view.actions.refresh')}
                 tooltipSide="bottom"
-                aria-label="Odśwież profil"
+                aria-label={t('view.actions.refreshAria')}
               >
                 <RefreshCw className={cn('w-3.5 h-3.5', isLoading && 'animate-spin')} />
               </TooltipButton>
@@ -93,9 +95,9 @@ export function ProfileView() {
                 size="icon"
                 className="w-8 h-8"
                 onClick={() => setShareOpen(true)}
-                tooltip="Udostępnij jako PNG"
+                tooltip={t('view.actions.share')}
                 tooltipSide="bottom"
-                aria-label="Udostępnij profil jako PNG"
+                aria-label={t('view.actions.shareAria')}
               >
                 <Share2 className="w-3.5 h-3.5" />
               </TooltipButton>
@@ -111,7 +113,7 @@ export function ProfileView() {
                 )}
               >
                 <ExternalLink className="w-3.5 h-3.5" />
-                Otwórz AniList
+                {t('view.actions.openAniList')}
               </Button>
             )}
           </>
@@ -141,11 +143,9 @@ export function ProfileView() {
           ) : statsEmpty ? (
             <div className="flex-1 flex items-center justify-center">
               <div className="text-center space-y-2">
-                <p className="text-sm text-muted-foreground">
-                  Ten użytkownik ma prywatne statystyki
-                </p>
+                <p className="text-sm text-muted-foreground">{t('view.private.title')}</p>
                 <Button variant="outline" size="sm" onClick={() => clearProfile()}>
-                  Zmień użytkownika
+                  {t('view.private.changeUser')}
                 </Button>
               </div>
             </div>
@@ -163,6 +163,7 @@ export function ProfileView() {
 }
 
 function TabSwitcher({ tab, onChange }: { tab: ProfileTab; onChange: (next: ProfileTab) => void }) {
+  const { t } = useTranslation('profile');
   const refs = useRef<Record<ProfileTab, HTMLButtonElement | null>>({ anilist: null, app: null });
 
   const onArrow = (e: React.KeyboardEvent<HTMLDivElement>) => {
@@ -178,7 +179,7 @@ function TabSwitcher({ tab, onChange }: { tab: ProfileTab; onChange: (next: Prof
   return (
     <div
       role="tablist"
-      aria-label="Źródło statystyk profilu"
+      aria-label={t('view.tabs.ariaLabel')}
       onKeyDown={onArrow}
       className={cn(
         'inline-flex items-center gap-0.5 p-0.5 rounded-lg',
@@ -194,7 +195,7 @@ function TabSwitcher({ tab, onChange }: { tab: ProfileTab; onChange: (next: Prof
         active={tab === 'anilist'}
         onClick={() => onChange('anilist')}
       >
-        Z AniList
+        {t('view.tabs.anilist')}
       </TabButton>
       <TabButton
         ref={el => {
@@ -205,7 +206,7 @@ function TabSwitcher({ tab, onChange }: { tab: ProfileTab; onChange: (next: Prof
         active={tab === 'app'}
         onClick={() => onChange('app')}
       >
-        W aplikacji
+        {t('view.tabs.app')}
       </TabButton>
     </div>
   );

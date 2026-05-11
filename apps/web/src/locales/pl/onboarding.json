@@ -1,0 +1,160 @@
+{
+  "wizard": {
+    "ariaLabel": "Kreator pierwszego uruchomienia",
+    "progressAria": "Postęp konfiguracji",
+    "stepDotAria": "Krok {{number}}: {{id}}",
+    "skip": "Pomiń konfigurację",
+    "back": "Wstecz",
+    "next": "Dalej",
+    "finish": "Otwórz bibliotekę",
+    "chip": {
+      "welcome_one": "Witaj · Krok {{count}} z {{total}}",
+      "welcome_other": "Witaj · Krok {{count}} z {{total}}",
+      "step_one": "Krok {{count}} z {{total}}",
+      "step_other": "Krok {{count}} z {{total}}",
+      "summary": "Podsumowanie · {{count}} z {{total}}"
+    }
+  },
+  "step": {
+    "language": {
+      "headline": "Zacznijmy od <1>najprostszego</1>.",
+      "description": "Cześć, jestem <1>Shiro</1>. Przeprowadzę cię przez sześć krótkich kroków, zajmie ci to minutę. Wszystko zmienisz później w ustawieniach.",
+      "marker": "Krok <1>01 · Start</1> · wybierz język",
+      "title": "Język interfejsu",
+      "hint": "Wybierz język aplikacji. Zmienisz go potem w ustawieniach.",
+      "groupAria": "Język interfejsu",
+      "pl": {
+        "description": "Polski interfejs"
+      },
+      "en": {
+        "description": "Interfejs po angielsku"
+      },
+      "footnote": "✦ Kolejne języki dodamy w przyszłych aktualizacjach"
+    },
+    "name": {
+      "headline": "Jak mam się do Ciebie <1>zwracać</1>?",
+      "description": "Użyję tego imienia w powitaniu na nowej karcie i wszędzie tam, gdzie aplikacja zwraca się do ciebie. Możesz pominąć ten krok, zmienisz to później w ustawieniach.",
+      "marker": "Krok <1>02 · Imię</1> · personalizacja",
+      "title": "Twoje imię",
+      "hint": "Pseudonim, zdrobnienie, co ci pasuje. Imię zostaje tylko na twoim urządzeniu.",
+      "placeholder": "np. Aleks",
+      "ariaLabel": "Twoje imię",
+      "maxChars": "max {{count}} znaków",
+      "footnote": "✦ Jeśli zostawisz puste i podłączysz AniList, Shiro użyje twojego nicku stamtąd"
+    },
+    "theme": {
+      "headline": "Wybierz <1>paletę</1>, która pasuje do Twojej pory oglądania.",
+      "description": "Ciemne motywy sprawdzają się wieczorem. <1>Paper</1> łagodniejszy dla oczu rano. Zmienisz kiedy chcesz, zapisuje się od razu.",
+      "marker": "Krok <1>03 · Wygląd</1> · paleta",
+      "title": "Motywy",
+      "groupDark": "Ciemne",
+      "groupLight": "Jasne"
+    },
+    "background": {
+      "headline": "Ustaw <1>atmosferę</1>: twoje ulubione key-arty w tle.",
+      "description": "Wrzuć obraz lub GIF, zrobimy z niego rozmyte tło dla biblioteki i harmonogramu. Możesz też zostać przy domyślnym: <1>bez tła</1>.",
+      "marker": "Krok <1>04 · Atmosfera</1> · tło aplikacji",
+      "title": "Tło aplikacji"
+    },
+    "dock": {
+      "headline": "Gdzie <1>postawić</1> dock? Pod ręką, ale nie na drodze.",
+      "description": "Pływająca pigułka z ikonami domyślnie siedzi na dole, ale możesz przypiąć ją do dowolnej krawędzi. Podgląd masz po prawej.",
+      "marker": "Krok <1>05 · Układ</1> · dock nawigacyjny",
+      "title": "Dock",
+      "edge": {
+        "bottom": "Dół",
+        "top": "Góra",
+        "left": "Lewo",
+        "right": "Prawo"
+      },
+      "autoHide": {
+        "title": "Automatyczne ukrywanie",
+        "description": "Chowa się do ikony, pokazuje po najechaniu"
+      },
+      "showLabels": {
+        "title": "Pokaż etykiety",
+        "description": "Nazwy widoczne pod ikonami"
+      },
+      "draggable": {
+        "title": "Przeciąganie",
+        "description": "Zmiana pozycji docka przeciąganiem"
+      }
+    },
+    "discord": {
+      "headline": "Pokaż znajomym, <1>co oglądasz</1>.",
+      "description": "ShiroAni pokaże aktualny odcinek na twoim profilu Discord. Dla małych projektów rozpoznawalność to dużo, ale jeśli wolisz prywatność, zostaw to wyłączone.",
+      "marker": "Krok <1>06 · Integracje</1> · Discord RPC",
+      "title": "Rich Presence",
+      "desktopOnly": "Dostępne tylko w wersji desktopowej",
+      "toggle": {
+        "title": "Włącz integrację",
+        "description": "Pokazuj aktywność ShiroAni na profilu"
+      },
+      "preview": {
+        "watching": "Ogląda anime",
+        "off": "Wyłączone",
+        "appName": "ShiroAni",
+        "exampleTitle": "Frieren: Beyond Journey's End",
+        "exampleEpisode": "Odc. 28 · 00:42"
+      },
+      "saved": "Zapisano",
+      "footnote": "✦ Szablony statusu dostosujesz potem w ustawieniach"
+    },
+    "adblock": {
+      "headline": "Na koniec: <1>czysty</1> odcinek bez reklam.",
+      "description": "Wbudowana przeglądarka blokuje reklamy i trackery na stronach streamingowych (<1>EasyList + EasyPrivacy</1>). Wyjątki ustawisz dla konkretnych domen.",
+      "marker": "Krok <1>07 · Finisz</1> · blokowanie reklam",
+      "title": "Blokowanie reklam",
+      "desktopOnly": "Dostępne tylko w wersji desktopowej",
+      "toggle": {
+        "title": "Blokowanie reklam",
+        "description": "EasyList + EasyPrivacy · 98 200 reguł"
+      },
+      "blockedListAria": "Blokowane elementy",
+      "blocked": {
+        "ads": "Reklamy graficzne (banner / popup)",
+        "trackers": "Trackery analityczne",
+        "videoAds": "Reklamy w odtwarzaczu wideo",
+        "cookieWalls": "Cookie walls",
+        "exceptions": "Własne wyjątki domen"
+      },
+      "footnote": "✦ Listę wyjątków dodasz później w ustawieniach przeglądarki"
+    },
+    "summary": {
+      "headline": "Wszystko <1>zapięte</1>. Czas oglądać.",
+      "description": "Siedem ustawień za nami, wszystko zapisane u ciebie na komputerze. <1>Shiro-chan</1> będzie na dole ekranu, gdyby była ci potrzebna.",
+      "marker": "Podsumowanie · <1>twoja konfiguracja</1>",
+      "title": "Wszystko gotowe!",
+      "intro": "Oto twoje wybory. Wszystko zmienisz później w ustawieniach.",
+      "row": {
+        "language": "Język",
+        "theme": "Motyw",
+        "background": "Tło",
+        "dock": "Dock",
+        "discord": "Discord RPC",
+        "adblock": "Adblock"
+      },
+      "languages": {
+        "pl": "Polski",
+        "en": "Angielski"
+      },
+      "background": {
+        "custom": "Własne · {{percent}}% rozmycia",
+        "none": "Bez tła"
+      },
+      "dock": {
+        "edge": {
+          "bottom": "Dół",
+          "top": "Góra",
+          "left": "Lewo",
+          "right": "Prawo"
+        },
+        "autoHide": "{{edge}} · auto-ukrywanie"
+      },
+      "value": {
+        "on": "ON",
+        "off": "OFF"
+      }
+    }
+  }
+}

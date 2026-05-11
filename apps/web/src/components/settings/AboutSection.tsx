@@ -1,3 +1,4 @@
+import { useTranslation, Trans } from 'react-i18next';
 import { FolderOpen, Globe, Heart, History, Sparkles } from 'lucide-react';
 import { APP_NAME } from '@shiroani/shared';
 import { APP_LOGO_URL } from '@/lib/constants';
@@ -12,13 +13,14 @@ interface AboutSectionProps {
 }
 
 export function AboutSection({ version }: AboutSectionProps) {
+  const { t } = useTranslation('settings');
   const resetOnboarding = useOnboardingStore(s => s.reset);
 
   const heroIcon = (
     <div className="w-[42px] h-[42px] rounded-xl bg-primary/10 border border-border-glass flex items-center justify-center overflow-hidden flex-shrink-0">
       <img
         src={APP_LOGO_URL}
-        alt="Logo ShiroAni"
+        alt={t('about.logoAlt')}
         className="w-9 h-9 object-contain"
         draggable={false}
       />
@@ -28,9 +30,7 @@ export function AboutSection({ version }: AboutSectionProps) {
   const heroSubtitle = (
     <span className="inline-flex flex-wrap items-center gap-2">
       <PillTag variant="accent">v{version || '...'}</PillTag>
-      <span className="text-[11.5px] text-muted-foreground">
-        Przeglądarka · tracker anime w jednym miejscu
-      </span>
+      <span className="text-[11.5px] text-muted-foreground">{t('about.tagline')}</span>
     </span>
   );
 
@@ -41,7 +41,7 @@ export function AboutSection({ version }: AboutSectionProps) {
         <div className="flex flex-wrap items-center gap-2">
           <Button size="sm" onClick={resetOnboarding}>
             <Sparkles className="w-3.5 h-3.5" />
-            Uruchom kreator ponownie
+            {t('about.rerunOnboarding')}
           </Button>
           <Button
             variant="outline"
@@ -50,7 +50,7 @@ export function AboutSection({ version }: AboutSectionProps) {
             onClick={() => window.open('https://github.com/Shironex/shiroani', '_blank')}
           >
             <Globe className="w-3.5 h-3.5" />
-            GitHub
+            {t('about.github')}
           </Button>
           <Button
             variant="outline"
@@ -59,37 +59,35 @@ export function AboutSection({ version }: AboutSectionProps) {
             onClick={() => useAppStore.getState().navigateTo('changelog')}
           >
             <History className="w-3.5 h-3.5" />
-            Zobacz historię zmian
+            {t('about.openChangelog')}
           </Button>
         </div>
         <p className="text-[11.5px] text-muted-foreground/80 leading-relaxed">
-          Po kliknięciu kreator uruchomi się od razu, a Shiro-chan przeprowadzi Cię jeszcze raz!
+          {t('about.onboardingHint')}
         </p>
       </SettingsCard>
 
       {/* Story */}
       <SettingsCard
         icon={Heart}
-        title="Historia"
-        subtitle="Od autora. Po prostu chciałem takiej aplikacji."
+        title={t('about.story.title')}
+        subtitle={t('about.story.subtitle')}
       >
         <div className="space-y-2.5 text-[13px] leading-[1.7] text-foreground/85">
           <p>
-            ShiroAni zrobiłem, bo chciałem mieć wszystko do oglądania anime w jednym miejscu.{' '}
-            <b className="font-bold text-primary">
-              Przeglądarka, biblioteka, harmonogram, pamiętnik
-            </b>
-            , po prostu jedno przytulne miejsce.
+            <Trans
+              i18nKey="about.story.p1"
+              t={t}
+              components={{ 1: <b className="font-bold text-primary" /> }}
+            />
           </p>
+          <p>{t('about.story.p2')}</p>
           <p>
-            Z czasem zacząłem dodawać coraz więcej rzeczy: maskotki, motywy, powiadomienia i po
-            prostu świetnie się przy tym bawiłem. W pewnym momencie pomyślałem: czemu nie udostępnić
-            tego innym?
-          </p>
-          <p>
-            Chodzi o to, żeby każdy miał swój własny, fajny sposób oglądania anime. I żeby dało się
-            przy okazji pogadać o ulubionych seriach z innymi osobami, w dobrej{' '}
-            <b className="font-bold text-primary">społeczności</b>.
+            <Trans
+              i18nKey="about.story.p3"
+              t={t}
+              components={{ 1: <b className="font-bold text-primary" /> }}
+            />
           </p>
         </div>
       </SettingsCard>
@@ -98,8 +96,8 @@ export function AboutSection({ version }: AboutSectionProps) {
       {window.electronAPI?.app?.openLogsFolder && (
         <SettingsCard
           icon={FolderOpen}
-          title="Logi aplikacji"
-          subtitle="Otwórz folder z logami aplikacji w eksploratorze."
+          title={t('about.logs.title')}
+          subtitle={t('about.logs.subtitle')}
           tone="muted"
         >
           <Button
@@ -109,7 +107,7 @@ export function AboutSection({ version }: AboutSectionProps) {
             onClick={() => window.electronAPI?.app?.openLogsFolder()}
           >
             <FolderOpen className="w-3.5 h-3.5" />
-            Otwórz folder logów
+            {t('about.logs.action')}
           </Button>
         </SettingsCard>
       )}

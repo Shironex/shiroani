@@ -5,17 +5,26 @@ export interface NavItem {
   label: string;
 }
 
-/** All navigation views in display order. Source of truth for the dock + settings toggles. */
+/**
+ * All navigation views in display order. Source of truth for the dock +
+ * settings toggles.
+ *
+ * The `label` is the **English canonical fallback** — consumers must
+ * resolve the user-visible string via `t('nav:link.<id>', { defaultValue:
+ * item.label })`. The fallback is only rendered when the translation is
+ * missing, so keeping it in English matches `DEFAULT_LANGUAGE` in
+ * `@shiroani/shared`.
+ */
 export const ALL_NAV_ITEMS: NavItem[] = [
-  { id: 'browser', label: 'Przeglądarka' },
-  { id: 'library', label: 'Biblioteka' },
-  { id: 'discover', label: 'Odkrywaj' },
-  { id: 'diary', label: 'Dziennik' },
-  { id: 'schedule', label: 'Harmonogram' },
-  { id: 'feed', label: 'Aktualności' },
-  { id: 'profile', label: 'Profil' },
-  { id: 'changelog', label: 'Historia' },
-  { id: 'settings', label: 'Ustawienia' },
+  { id: 'browser', label: 'Browser' },
+  { id: 'library', label: 'Library' },
+  { id: 'discover', label: 'Discover' },
+  { id: 'diary', label: 'Diary' },
+  { id: 'schedule', label: 'Schedule' },
+  { id: 'feed', label: 'News' },
+  { id: 'profile', label: 'Profile' },
+  { id: 'changelog', label: 'History' },
+  { id: 'settings', label: 'Settings' },
 ];
 
 /** Views that cannot be hidden — settings is the escape hatch back into the toggle UI. */

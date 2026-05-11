@@ -1,6 +1,9 @@
+import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
+import type { TFunction } from 'i18next';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import type { AppStatsSnapshot } from '@shiroani/shared';
-import { formatPolishDuration } from '@/lib/stats-conversions';
+import { formatDuration } from '@/lib/stats-conversions';
 
 interface ActivityHeatmapProps {
   snapshot: AppStatsSnapshot;
@@ -14,21 +17,33 @@ interface ActivityHeatmapProps {
   metric?: 'active' | 'anime';
 }
 
-const POLISH_WEEKDAYS = ['pn.', 'wt.', 'śr.', 'czw.', 'pt.', 'sob.', 'nd.'] as const;
-const POLISH_MONTHS = [
-  'sty',
-  'lut',
-  'mar',
-  'kwi',
-  'maj',
-  'cze',
-  'lip',
-  'sie',
-  'wrz',
-  'paź',
-  'lis',
-  'gru',
-] as const;
+/**
+ * Build localized short-form weekday and month label arrays for the
+ * heatmap axis (9px text, so we lean on the locale's short style and
+ * trim trailing dots/whitespace to keep the ticks tight).
+ *
+ * Anchors a known Mon→Sun and Jan→Dec window so `Intl.DateTimeFormat`
+ * produces stable, ordered output regardless of the runtime's wall
+ * clock.
+ */
+function buildHeatmapLabels(locale: string): { weekdays: string[]; months: string[] } {
+  const weekdayFmt = new Intl.DateTimeFormat(locale, { weekday: 'short' });
+  const monthFmt = new Intl.DateTimeFormat(locale, { month: 'short' });
+
+  // 2024-01-01 was a Monday — walk a full Mon→Sun week from there.
+  const weekdays: string[] = [];
+  for (let i = 0; i < 7; i++) {
+    weekdays.push(weekdayFmt.format(new Date(2024, 0, 1 + i)).trim());
+  }
+
+  // Jan→Dec across any non-leap year — using day 15 avoids DST ambiguity.
+  const months: string[] = [];
+  for (let m = 0; m < 12; m++) {
+    months.push(monthFmt.format(new Date(2024, m, 15)).trim());
+  }
+
+  return { weekdays, months };
+}
 
 /** Local YYYY-MM-DD — must match the tracker's day-bucket key format. */
 function localDayKey(date: Date): string {
@@ -71,6 +86,7 @@ function buildHeatmap(
   byDay: Record<string, { appActiveSeconds: number; animeWatchSeconds: number }>,
   weeks: number,
   metric: 'active' | 'anime',
+  monthLabelStrings: readonly string[],
   today: Date = new Date()
 ): HeatmapData {
   const todayKey = localDayKey(today);
@@ -129,7 +145,7 @@ function buildHeatmap(
   weekCols.forEach((week, idx) => {
     const monday = week[0].date;
     if (monday.getMonth() !== prevMonth) {
-      monthLabels.set(idx, POLISH_MONTHS[monday.getMonth()]);
+      monthLabels.set(idx, monthLabelStrings[monday.getMonth()]);
       prevMonth = monday.getMonth();
     }
   });
@@ -148,13 +164,8 @@ const LEVEL_BG: Record<0 | 1 | 2 | 3 | 4, string> = {
   4: 'bg-[oklch(from_var(--primary)_l_c_h/0.85)] border-[oklch(from_var(--primary)_l_c_h/0.85)]',
 };
 
-const METRIC_LABEL: Record<'active' | 'anime', string> = {
-  active: 'aktywności',
-  anime: 'oglądania anime',
-};
-
-function formatTooltipDate(date: Date): string {
-  return date.toLocaleDateString('pl-PL', {
+function formatTooltipDate(date: Date, locale: string): string {
+  return date.toLocaleDateString(locale, {
     weekday: 'long',
     day: 'numeric',
     month: 'long',
@@ -173,9 +184,19 @@ function formatTooltipDate(date: Date): string {
  *    portals are mount-on-demand, so the off-screen DOM cost is constant.
  */
 export function ActivityHeatmap({ snapshot, weeks = 12, metric = 'active' }: ActivityHeatmapProps) {
+  const { t, i18n } = useTranslation('profile');
+  // Locale-driven short labels for the y-axis (weekdays) + month-strip
+  // header. Memoized on language so we don't rebuild Intl formatters on
+  // every render — the actual heatmap cells stay un-memoized because
+  // `snapshot.byDay` reference-changes on each store refresh.
+  const { weekdays: localizedWeekdays, months: localizedMonths } = useMemo(
+    () => buildHeatmapLabels(i18n.language || 'en'),
+    [i18n.language]
+  );
   // 84 cells × cheap arithmetic — useMemo wouldn't help since `snapshot.byDay`
   // is a fresh object reference on every store refresh.
-  const data = buildHeatmap(snapshot.byDay, weeks, metric);
+  const data = buildHeatmap(snapshot.byDay, weeks, metric, localizedMonths);
+  const metricLabel = t(`appPanel.heatmap.metric.${metric}`);
 
   return (
     <TooltipProvider delayDuration={120}>
@@ -199,8 +220,8 @@ export function ActivityHeatmap({ snapshot, weeks = 12, metric = 'active' }: Act
             className="grid grid-rows-7 gap-[3px] font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground/80 pt-px"
             aria-hidden="true"
           >
-            {POLISH_WEEKDAYS.map((label, idx) => (
-              <div key={label} className="h-3 leading-3">
+            {localizedWeekdays.map((label, idx) => (
+              <div key={`${label}-${idx}`} className="h-3 leading-3">
                 {idx % 2 === 1 ? label : ''}
               </div>
             ))}
@@ -209,28 +230,31 @@ export function ActivityHeatmap({ snapshot, weeks = 12, metric = 'active' }: Act
           {/* Cell grid */}
           <div
             role="grid"
-            aria-label={`Mapa ${METRIC_LABEL[metric]} z ostatnich ${weeks} tygodni`}
+            aria-label={t('appPanel.heatmap.ariaLabel', { metric: metricLabel, weeks })}
             className="grid gap-[3px]"
             style={{ gridTemplateColumns: `repeat(${data.weeks.length}, 12px)` }}
           >
             {data.weeks.map((week, weekIdx) => (
               <div key={weekIdx} role="row" className="grid grid-rows-7 gap-[3px]">
-                {week.map(cell => (
-                  <Tooltip key={cell.key}>
-                    <TooltipTrigger asChild>
-                      <div
-                        role="gridcell"
-                        aria-label={tooltipText(cell, metric)}
-                        className={`w-3 h-3 rounded-[3px] border ${LEVEL_BG[cell.level]} ${
-                          cell.isFuture ? 'opacity-30' : ''
-                        }`}
-                      />
-                    </TooltipTrigger>
-                    <TooltipContent side="top" className="text-[11px]">
-                      {tooltipText(cell, metric)}
-                    </TooltipContent>
-                  </Tooltip>
-                ))}
+                {week.map(cell => {
+                  const text = tooltipText(cell, metric, t, i18n.language);
+                  return (
+                    <Tooltip key={cell.key}>
+                      <TooltipTrigger asChild>
+                        <div
+                          role="gridcell"
+                          aria-label={text}
+                          className={`w-3 h-3 rounded-[3px] border ${LEVEL_BG[cell.level]} ${
+                            cell.isFuture ? 'opacity-30' : ''
+                          }`}
+                        />
+                      </TooltipTrigger>
+                      <TooltipContent side="top" className="text-[11px]">
+                        {text}
+                      </TooltipContent>
+                    </Tooltip>
+                  );
+                })}
               </div>
             ))}
           </div>
@@ -238,7 +262,7 @@ export function ActivityHeatmap({ snapshot, weeks = 12, metric = 'active' }: Act
 
         {/* Legend */}
         <div className="flex items-center gap-2 pl-7 font-mono text-[9.5px] uppercase tracking-[0.16em] text-muted-foreground">
-          <span>mniej</span>
+          <span>{t('appPanel.heatmap.less')}</span>
           {[0, 1, 2, 3, 4].map(level => (
             <span
               key={level}
@@ -246,20 +270,26 @@ export function ActivityHeatmap({ snapshot, weeks = 12, metric = 'active' }: Act
               aria-hidden="true"
             />
           ))}
-          <span>więcej</span>
+          <span>{t('appPanel.heatmap.more')}</span>
         </div>
       </div>
     </TooltipProvider>
   );
 }
 
-function tooltipText(cell: Cell, metric: 'active' | 'anime'): string {
+function tooltipText(
+  cell: Cell,
+  metric: 'active' | 'anime',
+  t: TFunction<'profile'>,
+  locale: string
+): string {
+  const date = formatTooltipDate(cell.date, locale);
   if (cell.isFuture) {
-    return `${formatTooltipDate(cell.date)} — jeszcze przed nami`;
+    return t('appPanel.heatmap.tooltip.future', { date });
   }
   if (cell.seconds <= 0) {
-    return `${formatTooltipDate(cell.date)} — bez aktywności`;
+    return t('appPanel.heatmap.tooltip.empty', { date });
   }
-  const label = metric === 'active' ? 'aktywnie' : 'z anime';
-  return `${formatTooltipDate(cell.date)} — ${formatPolishDuration(cell.seconds)} ${label}`;
+  const value = formatDuration(cell.seconds);
+  return t(`appPanel.heatmap.tooltip.${metric}`, { date, value });
 }

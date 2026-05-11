@@ -1,3 +1,4 @@
+import { Trans, useTranslation } from 'react-i18next';
 import { Sparkles } from 'lucide-react';
 import { StepLayout } from '../StepLayout';
 import { BackgroundPanel } from '@/components/shared/BackgroundPanel';
@@ -11,28 +12,25 @@ import { BackgroundPanel } from '@/components/shared/BackgroundPanel';
  * applying CSS custom properties to the document.
  */
 export function BackgroundStep() {
+  const { t } = useTranslation('onboarding');
+  const emPrimary = <em className="not-italic text-primary italic" />;
+  const bStrong = <b className="font-semibold text-foreground" />;
+  const bPrimary = <b className="font-bold text-primary" />;
+
   return (
     <StepLayout
       kanji="景"
       headline={
-        <>
-          Ustaw <em className="not-italic text-primary italic">atmosferę</em>: twoje ulubione
-          key-arty w tle.
-        </>
+        <Trans ns="onboarding" i18nKey="step.background.headline" components={{ 1: emPrimary }} />
       }
       description={
-        <>
-          Wrzuć obraz lub GIF, zrobimy z niego rozmyte tło dla biblioteki i harmonogramu. Możesz też
-          zostać przy domyślnym: <b className="font-semibold text-foreground">bez tła</b>.
-        </>
+        <Trans ns="onboarding" i18nKey="step.background.description" components={{ 1: bStrong }} />
       }
       stepMarker={
-        <>
-          Krok <b className="font-bold text-primary">04 · Atmosfera</b> · tło aplikacji
-        </>
+        <Trans ns="onboarding" i18nKey="step.background.marker" components={{ 1: bPrimary }} />
       }
       stepIcon={<Sparkles className="h-5 w-5" />}
-      stepTitle="Tło aplikacji"
+      stepTitle={t('step.background.title')}
     >
       <BackgroundPanel variant="onboarding" />
     </StepLayout>

@@ -1,4 +1,5 @@
 import { memo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { Bell, BellRing } from 'lucide-react';
 import { TooltipButton } from '@/components/ui/tooltip-button';
@@ -21,6 +22,7 @@ const SubscribeBellButton = memo(function SubscribeBellButton({
   iconClassName = 'w-3.5 h-3.5',
   tooltipSide = 'top',
 }: SubscribeBellButtonProps) {
+  const { t } = useTranslation('schedule');
   const mediaId = anime.media.id;
   const { isSubscribed, toggle } = useNotificationToggle(mediaId, anime);
 
@@ -35,7 +37,7 @@ const SubscribeBellButton = memo(function SubscribeBellButton({
         isSubscribed && 'opacity-100',
         className
       )}
-      tooltip={isSubscribed ? 'Wyłącz powiadomienia' : 'Włącz powiadomienia'}
+      tooltip={isSubscribed ? t('subscribe.disable') : t('subscribe.enable')}
       tooltipSide={tooltipSide}
       onClick={toggle}
     >

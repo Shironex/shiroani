@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { MASCOT_WAVE_URL, MASCOT_SLEEP_URL } from '@/lib/constants';
 import { SpinnerRing } from '@/components/ui/spinner-ring';
 import { cn } from '@/lib/utils';
@@ -23,8 +24,8 @@ type VariantConfig = {
   showRing: boolean;
   wordmarkEmClass: string;
   subClass: string;
-  /** Default fallback sub text when the caller doesn't supply a target. */
-  defaultSub: string;
+  /** i18n key under `splash:subtitle.*` for the default fallback sub. */
+  defaultSubKey: 'loading' | 'updating' | 'errorOffline';
 };
 
 const VARIANT_CONFIG: Record<SplashVariant, VariantConfig> = {
@@ -35,7 +36,7 @@ const VARIANT_CONFIG: Record<SplashVariant, VariantConfig> = {
     showRing: true,
     wordmarkEmClass: 'text-primary',
     subClass: 'text-muted-foreground/80',
-    defaultSub: '白アニ · twoje anime',
+    defaultSubKey: 'loading',
   },
   updating: {
     tone: 'info',
@@ -44,7 +45,7 @@ const VARIANT_CONFIG: Record<SplashVariant, VariantConfig> = {
     showRing: true,
     wordmarkEmClass: 'text-[var(--status-info)]',
     subClass: 'text-[color:oklch(from_var(--status-info)_l_c_h/0.85)]',
-    defaultSub: 'aktualizacja · trwa instalacja',
+    defaultSubKey: 'updating',
   },
   error: {
     tone: 'destructive',
@@ -53,7 +54,7 @@ const VARIANT_CONFIG: Record<SplashVariant, VariantConfig> = {
     showRing: false,
     wordmarkEmClass: 'text-destructive',
     subClass: 'text-destructive/85',
-    defaultSub: 'brak połączenia · tryb offline',
+    defaultSubKey: 'errorOffline',
   },
 };
 
@@ -92,6 +93,7 @@ function looksLikeNetworkError(message: string | null | undefined): boolean {
 }
 
 export function SplashHero({ variant = 'loading', errorMessage, updatingTarget }: SplashHeroProps) {
+  const { t } = useTranslation('splash');
   const config = VARIANT_CONFIG[variant];
   const isError = variant === 'error';
   const isUpdating = variant === 'updating';
@@ -99,17 +101,18 @@ export function SplashHero({ variant = 'loading', errorMessage, updatingTarget }
   const subText = (() => {
     if (isError) {
       return looksLikeNetworkError(errorMessage)
-        ? config.defaultSub
-        : 'coś poszło nie tak · spróbuj ponownie';
+        ? t(`subtitle.${config.defaultSubKey}`)
+        : t('subtitle.errorGeneric');
     }
-    if (isUpdating && updatingTarget) return `aktualizacja · ${updatingTarget}`;
-    return config.defaultSub;
+    if (isUpdating && updatingTarget)
+      return t('subtitle.updatingTarget', { target: updatingTarget });
+    return t(`subtitle.${config.defaultSubKey}`);
   })();
 
   const mascotImg = (
     <img
       src={config.mascot}
-      alt="Maskotka ShiroAni"
+      alt={t('mascotAlt')}
       className={cn(
         'w-36 h-36 object-contain drop-shadow-lg',
         config.animateMascot && 'animate-[splash-pulse_2.4s_ease-in-out_infinite]'
@@ -140,9 +143,7 @@ export function SplashHero({ variant = 'loading', errorMessage, updatingTarget }
 
       {isError && (
         <p className="max-w-sm text-sm leading-relaxed text-muted-foreground animate-[splash-fade-up_0.6s_ease-out_0.4s_both]">
-          {looksLikeNetworkError(errorMessage)
-            ? 'Nie możemy połączyć się z AniList. Spróbuj ponownie za chwilę.'
-            : 'Coś niespodziewanie przerwało uruchamianie aplikacji.'}
+          {looksLikeNetworkError(errorMessage) ? t('error.offline') : t('error.generic')}
         </p>
       )}
     </div>

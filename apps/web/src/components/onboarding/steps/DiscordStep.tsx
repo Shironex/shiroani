@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { Trans, useTranslation } from 'react-i18next';
 import { Check, MessageCircle } from 'lucide-react';
 import { StepLayout } from '../StepLayout';
 import { SettingsToggleRow } from '@/components/settings/SettingsCard';
@@ -13,6 +14,7 @@ import { APP_LOGO_URL } from '@/lib/constants';
  * `window.electronAPI` isn't available (web/dev preview).
  */
 export function DiscordStep() {
+  const { t } = useTranslation('onboarding');
   const [enabled, setEnabled] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -45,38 +47,30 @@ export function DiscordStep() {
     }
   }, []);
 
+  const emPrimary = <em className="not-italic text-primary italic" />;
+  const bPrimary = <b className="font-bold text-primary" />;
+
   return (
     <StepLayout
       kanji="絆"
       headline={
-        <>
-          Pokaż znajomym, <em className="not-italic text-primary italic">co oglądasz</em>.
-        </>
+        <Trans ns="onboarding" i18nKey="step.discord.headline" components={{ 1: emPrimary }} />
       }
-      description={
-        <>
-          ShiroAni pokaże aktualny odcinek na twoim profilu Discord. Dla małych projektów
-          rozpoznawalność to dużo, ale jeśli wolisz prywatność, zostaw to wyłączone.
-        </>
-      }
+      description={t('step.discord.description')}
       stepMarker={
-        <>
-          Krok <b className="font-bold text-primary">06 · Integracje</b> · Discord RPC
-        </>
+        <Trans ns="onboarding" i18nKey="step.discord.marker" components={{ 1: bPrimary }} />
       }
       stepIcon={<MessageCircle className="h-5 w-5" />}
-      stepTitle="Rich Presence"
+      stepTitle={t('step.discord.title')}
     >
       <div className="flex flex-col gap-3 rounded-2xl border border-border-glass bg-foreground/[0.02] p-4">
-        {!IS_ELECTRON && (
-          <p className="text-xs text-amber-500">Dostępne tylko w wersji desktopowej</p>
-        )}
+        {!IS_ELECTRON && <p className="text-xs text-amber-500">{t('step.discord.desktopOnly')}</p>}
 
         <div className="border-b border-border-glass pb-3">
           <SettingsToggleRow
             id="onb-discord-label"
-            title="Włącz integrację"
-            description="Pokazuj aktywność ShiroAni na profilu"
+            title={t('step.discord.toggle.title')}
+            description={t('step.discord.toggle.description')}
             checked={enabled}
             onCheckedChange={handleToggle}
             disabled={saving || !IS_ELECTRON}
@@ -86,7 +80,7 @@ export function DiscordStep() {
         {/* Mock Discord card */}
         <div className="rounded-xl border border-white/5 bg-[oklch(0.18_0.022_260)] p-3.5 text-[oklch(0.96_0.01_260)]">
           <div className="mb-2 font-mono text-[9px] font-semibold uppercase tracking-[0.2em] text-[oklch(0.7_0.02_260)]">
-            {enabled ? 'Ogląda anime' : 'Wyłączone'}
+            {enabled ? t('step.discord.preview.watching') : t('step.discord.preview.off')}
           </div>
           <div className="flex gap-2.5">
             <div
@@ -106,13 +100,13 @@ export function DiscordStep() {
               />
             </div>
             <div className="min-w-0 flex-1">
-              <b className="block text-[13px] font-bold">ShiroAni</b>
+              <b className="block text-[13px] font-bold">{t('step.discord.preview.appName')}</b>
               <p className="truncate text-[11.5px] text-[oklch(0.85_0.015_260)]">
-                {enabled ? "Frieren: Beyond Journey's End" : 'Wyłączone'}
+                {enabled ? t('step.discord.preview.exampleTitle') : t('step.discord.preview.off')}
               </p>
               {enabled && (
                 <small className="block font-mono text-[10px] text-[oklch(0.7_0.02_260)]">
-                  Odc. 28 · 00:42
+                  {t('step.discord.preview.exampleEpisode')}
                 </small>
               )}
             </div>
@@ -122,13 +116,13 @@ export function DiscordStep() {
         {saved && (
           <p className="flex items-center gap-1 font-mono text-[10.5px] text-primary animate-fade-in">
             <Check className="h-3 w-3" />
-            Zapisano
+            {t('step.discord.saved')}
           </p>
         )}
       </div>
 
       <p className="font-mono text-[10.5px] uppercase tracking-[0.18em] text-muted-foreground">
-        ✦ Szablony statusu dostosujesz potem w ustawieniach
+        {t('step.discord.footnote')}
       </p>
     </StepLayout>
   );

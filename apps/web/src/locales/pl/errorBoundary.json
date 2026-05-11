@@ -1,0 +1,9 @@
+{
+  "brand": "ShiroAni",
+  "kicker": "coś poszło nie tak",
+  "description": "Wystąpił nieoczekiwany błąd. Spróbuj wrócić do poprzedniego ekranu albo zrestartuj aplikację.",
+  "technicalDetails": "Szczegóły techniczne",
+  "restart": "Zrestartuj aplikację",
+  "retry": "Spróbuj ponownie",
+  "mascotAlt": "Maskotka ShiroAni — śpi"
+}

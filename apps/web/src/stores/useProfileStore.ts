@@ -4,6 +4,7 @@ import { AnimeEvents, createLogger } from '@shiroani/shared';
 import type { UserProfile } from '@shiroani/shared';
 import { emitWithErrorHandling } from '@/lib/socket';
 import { electronStoreGet, electronStoreSet } from '@/lib/electron-store';
+import i18n from '@/lib/i18n';
 
 const logger = createLogger('ProfileStore');
 
@@ -79,7 +80,7 @@ export const useProfileStore = create<ProfileStore>()(
                 {
                   profile: null,
                   isLoading: false,
-                  error: 'Nie znaleziono użytkownika na AniList',
+                  error: i18n.t('profile:errors.userNotFound'),
                 },
                 undefined,
                 'profile/notFound'
@@ -89,7 +90,7 @@ export const useProfileStore = create<ProfileStore>()(
           .catch((err: Error) => {
             logger.error('Profile fetch failed:', err.message);
             const msg = err.message.includes('rate limit')
-              ? 'Zbyt wiele zapytań — odczekaj chwilę'
+              ? i18n.t('profile:errors.rateLimited')
               : err.message;
             set({ isLoading: false, error: msg }, undefined, 'profile/error');
           });

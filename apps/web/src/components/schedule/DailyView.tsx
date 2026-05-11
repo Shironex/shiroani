@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Calendar } from 'lucide-react';
 import { AiringEntry } from './AiringEntry';
 import { getSlotStatus, isToday as isTodayFn } from './schedule-utils';
@@ -80,6 +81,7 @@ function formatHourLabel(h: number): string {
  * on the correct y even when the axis is non-uniform.
  */
 export function DailyView({ entries, day, onAnimeClick }: DailyViewProps) {
+  const { t, i18n } = useTranslation('schedule');
   const scrollRef = useRef<HTMLDivElement | null>(null);
   // 30 s cadence keeps the live-now line and countdowns fresh.
   const now = useNowSeconds(30_000);
@@ -232,8 +234,8 @@ export function DailyView({ entries, day, onAnimeClick }: DailyViewProps) {
     // `now` is in deps via the closure — reading Date.now() inside keeps the
     // label fresh on every 30 s tick without needing an extra memo input.
     void now;
-    return new Date().toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' });
-  }, [isToday, now]);
+    return new Date().toLocaleTimeString(i18n.language, { hour: '2-digit', minute: '2-digit' });
+  }, [isToday, now, i18n.language]);
 
   // Auto-scroll once per day, as soon as entries are ready — the live-now
   // indicator (or the first slot) comes into view without the user chasing it.
@@ -254,10 +256,8 @@ export function DailyView({ entries, day, onAnimeClick }: DailyViewProps) {
           <Calendar className="w-6 h-6 opacity-30" />
         </div>
         <div className="text-center space-y-1">
-          <p className="text-sm font-medium text-foreground/70">Nic tego dnia nie leci</p>
-          <p className="text-xs text-muted-foreground/50">
-            Sprawdź inny dzień albo widok tygodniowy
-          </p>
+          <p className="text-sm font-medium text-foreground/70">{t('daily.emptyTitle')}</p>
+          <p className="text-xs text-muted-foreground/50">{t('daily.emptySubtitle')}</p>
         </div>
       </div>
     );
@@ -307,7 +307,7 @@ export function DailyView({ entries, day, onAnimeClick }: DailyViewProps) {
                 >
                   <div className="flex-1 border-t border-dashed border-border-glass/60" />
                   <span className="font-mono text-[9.5px] uppercase tracking-[0.18em] text-muted-foreground/50 whitespace-nowrap">
-                    {b.endHour - b.startHour}h przerwy
+                    {t('daily.gapHours', { hours: b.endHour - b.startHour })}
                   </span>
                   <div className="flex-1 border-t border-dashed border-border-glass/60" />
                 </div>
@@ -327,7 +327,7 @@ export function DailyView({ entries, day, onAnimeClick }: DailyViewProps) {
           {nowTop != null && (
             <div
               role="presentation"
-              aria-label={`Teraz, ${nowLabel}`}
+              aria-label={t('daily.nowLabel', { time: nowLabel })}
               className="absolute left-0 right-0 z-[3] pointer-events-none"
               style={{ top: `${nowTop}px`, height: '2px' }}
             >
@@ -344,7 +344,7 @@ export function DailyView({ entries, day, onAnimeClick }: DailyViewProps) {
                   }}
                 />
                 <span className="absolute right-0 top-1/2 -translate-y-1/2 font-mono text-[10px] tracking-[0.16em] font-bold text-primary bg-background/90 px-1.5 py-[2px] rounded">
-                  TERAZ · {nowLabel}
+                  {t('daily.nowMarker', { time: nowLabel })}
                 </span>
               </div>
             </div>
@@ -378,7 +378,7 @@ export function DailyView({ entries, day, onAnimeClick }: DailyViewProps) {
           {/* Legend fallback if nothing is live right now. */}
           {isToday && nowTop == null && (
             <div className="absolute right-0 top-2 text-[10px] font-mono tracking-[0.12em] uppercase text-muted-foreground/60">
-              brak emisji w tej chwili
+              {t('daily.noAiringsNow')}
             </div>
           )}
         </div>

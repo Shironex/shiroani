@@ -1,4 +1,5 @@
 import { useEffect, useCallback, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Rss, RefreshCw, Inbox, CheckCheck, Bookmark } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -8,14 +9,13 @@ import { KanjiWatermark } from '@/components/shared/KanjiWatermark';
 import { useFeedStore, getFilteredItems } from '@/stores/useFeedStore';
 import { useFeedBookmarksStore } from '@/stores/useFeedBookmarksStore';
 import { useNavigateToBrowser } from '@/hooks/useNavigateToBrowser';
-import { pluralize } from '@shiroani/shared';
 import type { FeedCategory, FeedItem, FeedLanguage } from '@shiroani/shared';
 import { FeedHero } from './FeedHero';
 import { FeedListItem } from './FeedListItem';
 import { FeedSidebar } from './FeedSidebar';
 import { FeedReaderModal } from './FeedReaderModal';
 import { FeedLoadingAnimation } from './FeedLoadingAnimation';
-import { CATEGORY_LABELS, LANGUAGE_LABELS } from './feed-constants';
+import { useCategoryLabels, useLanguageLabels } from './feed-constants';
 
 // Extract stable action references outside the component
 const {
@@ -58,18 +58,27 @@ export function getFeedViewState({
   return 'content';
 }
 
-// Category filter pills drawn under ViewHeader search
-const CATEGORY_FILTER_OPTIONS = (
-  Object.entries(CATEGORY_LABELS) as [FeedCategory | 'all', string][]
-)
-  .filter(([key]) => key !== 'community')
-  .map(([value, label]) => ({ value, label }));
-
-const LANGUAGE_FILTER_OPTIONS = (
-  Object.entries(LANGUAGE_LABELS) as [FeedLanguage | 'all', string][]
-).map(([value, label]) => ({ value, label }));
-
 export function FeedView() {
+  const { t } = useTranslation('feed');
+  const categoryLabels = useCategoryLabels();
+  const languageLabels = useLanguageLabels();
+  const CATEGORY_FILTER_OPTIONS = useMemo(
+    () =>
+      (Object.entries(categoryLabels) as [FeedCategory | 'all', string][])
+        .filter(([key]) => key !== 'community')
+        .map(([value, label]) => ({ value, label })),
+    [categoryLabels]
+  );
+  const LANGUAGE_FILTER_OPTIONS = useMemo(
+    () =>
+      (Object.entries(languageLabels) as [FeedLanguage | 'all', string][]).map(
+        ([value, label]) => ({
+          value,
+          label,
+        })
+      ),
+    [languageLabels]
+  );
   const items = useFeedStore(getFilteredItems);
   const sources = useFeedStore(s => s.sources);
   const total = useFeedStore(s => s.total);
@@ -199,11 +208,13 @@ export function FeedView() {
 
   const subtitle = useMemo(() => {
     const sourceCount = sources.filter(s => s.enabled).length;
-    const totalLabel =
-      total > 0 ? `${total} ${pluralize(total, 'wpis', 'wpisy', 'wpisów')}` : 'Brak wpisów';
+    const totalLabel = total > 0 ? t('summary.entries', { count: total }) : t('summary.noEntries');
     if (sourceCount === 0) return totalLabel;
-    return `${totalLabel} · ${sourceCount} ${pluralize(sourceCount, 'źródło', 'źródła', 'źródeł')}`;
-  }, [sources, total]);
+    return t('summary.withSources', {
+      entries: totalLabel,
+      sources: t('summary.sources', { count: sourceCount }),
+    });
+  }, [sources, total, t]);
 
   const viewState = getFeedViewState({
     itemsCount: items.length,
@@ -226,11 +237,11 @@ export function FeedView() {
       {/* View header — title / search / category tabs */}
       <ViewHeader
         icon={Rss}
-        title="Aktualności"
+        title={t('title')}
         subtitle={subtitle}
         searchQuery={searchQuery}
         onSearchChange={handleSearchChange}
-        searchPlaceholder="Szukaj artykułów..."
+        searchPlaceholder={t('searchPlaceholder')}
         filters={CATEGORY_FILTER_OPTIONS}
         activeFilter={categoryFilter}
         onFilterChange={handleCategoryFilterChange}
@@ -242,7 +253,7 @@ export function FeedView() {
             <div
               className="flex items-center gap-0.5 rounded-lg bg-white/[0.04] border border-white/[0.06] p-0.5"
               role="group"
-              aria-label="Widok"
+              aria-label={t('viewToggle.ariaLabel')}
             >
               <button
                 type="button"
@@ -255,7 +266,7 @@ export function FeedView() {
                     : 'text-muted-foreground/80 hover:text-foreground'
                 )}
               >
-                Wszystkie
+                {t('viewToggle.all')}
               </button>
               <button
                 type="button"
@@ -269,7 +280,7 @@ export function FeedView() {
                 )}
               >
                 <Bookmark className="w-3 h-3" />
-                <span>Zakładki</span>
+                <span>{t('viewToggle.bookmarks')}</span>
                 {bookmarks.size > 0 && (
                   <span
                     className={cn(
@@ -289,7 +300,7 @@ export function FeedView() {
             <div
               className="flex items-center gap-0.5 rounded-lg bg-white/[0.04] border border-white/[0.06] p-0.5"
               role="group"
-              aria-label="Język"
+              aria-label={t('language.ariaLabel')}
             >
               {LANGUAGE_FILTER_OPTIONS.map(({ value, label }) => (
                 <button
@@ -317,7 +328,7 @@ export function FeedView() {
               className="w-8 h-8"
               onClick={() => markAllRead()}
               disabled={feedView === 'bookmarks' || visibleItems.length === 0}
-              tooltip="Oznacz wszystkie jako przeczytane"
+              tooltip={t('actions.markAllRead')}
             >
               <CheckCheck className="w-4 h-4" />
             </TooltipButton>
@@ -333,17 +344,12 @@ export function FeedView() {
               )}
               onClick={() => refreshFeeds()}
               disabled={isRefreshing}
-              tooltip="Odśwież źródła"
+              tooltip={t('actions.refresh')}
             >
               <RefreshCw className={cn('w-4 h-4', isRefreshing && 'animate-spin')} />
               {lastRefreshNewCount !== null && lastRefreshNewCount > 0 && (
                 <span
-                  aria-label={pluralize(
-                    lastRefreshNewCount,
-                    'nowy wpis',
-                    'nowe wpisy',
-                    'nowych wpisów'
-                  )}
+                  aria-label={t('newCount', { count: lastRefreshNewCount })}
                   className={cn(
                     'absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full',
                     'bg-primary text-[9px] font-bold leading-none grid place-items-center',
@@ -374,7 +380,7 @@ export function FeedView() {
                 <Rss className="w-10 h-10 text-destructive/60" />
                 <p className="text-sm text-center max-w-xs">{error}</p>
                 <Button variant="outline" size="sm" onClick={() => fetchItems()}>
-                  Spróbuj ponownie
+                  {t('actions.tryAgain')}
                 </Button>
               </div>
             ) : feedView === 'all' && viewState === 'empty' ? (
@@ -383,10 +389,8 @@ export function FeedView() {
                   <Inbox className="w-8 h-8 text-muted-foreground/40" />
                 </div>
                 <div className="text-center space-y-1">
-                  <p className="text-sm font-medium text-foreground/70">Brak aktualności</p>
-                  <p className="text-xs text-muted-foreground/50">
-                    Brak wpisów dla wybranych filtrów
-                  </p>
+                  <p className="text-sm font-medium text-foreground/70">{t('empty.title')}</p>
+                  <p className="text-xs text-muted-foreground/50">{t('empty.subtitle')}</p>
                 </div>
                 <Button
                   variant="outline"
@@ -395,13 +399,13 @@ export function FeedView() {
                   onClick={() => refreshFeeds()}
                 >
                   <RefreshCw className="w-3.5 h-3.5 mr-1.5" />
-                  Odśwież
+                  {t('actions.refresh')}
                 </Button>
               </div>
             ) : (
               <div
                 role="region"
-                aria-label="Aktualności"
+                aria-label={t('regionLabel')}
                 className={cn(
                   'px-6 pt-4 pb-16 gap-4 grid',
                   'grid-cols-1 xl:grid-cols-[minmax(0,1fr)_300px]'
@@ -415,9 +419,11 @@ export function FeedView() {
                     <div className="flex flex-col items-center justify-center py-12 gap-3 text-muted-foreground">
                       <Inbox className="w-8 h-8 opacity-40" />
                       <div className="text-center space-y-1">
-                        <p className="text-sm font-medium text-foreground/70">Brak zakładek</p>
+                        <p className="text-sm font-medium text-foreground/70">
+                          {t('empty.noBookmarksTitle')}
+                        </p>
                         <p className="text-xs text-muted-foreground/50">
-                          Kliknij ikonę zakładki w czytniku artykułu.
+                          {t('empty.noBookmarksSubtitle')}
                         </p>
                       </div>
                     </div>
@@ -425,9 +431,11 @@ export function FeedView() {
                     <div className="flex flex-col items-center justify-center py-12 gap-3 text-muted-foreground">
                       <Inbox className="w-8 h-8 opacity-40" />
                       <div className="text-center space-y-1">
-                        <p className="text-sm font-medium text-foreground/70">Brak wyników</p>
+                        <p className="text-sm font-medium text-foreground/70">
+                          {t('empty.noResultsTitle')}
+                        </p>
                         <p className="text-xs text-muted-foreground/50">
-                          Nie znaleziono artykułów dla „{searchQuery}"
+                          {t('empty.noResultsSubtitle', { query: searchQuery })}
                         </p>
                       </div>
                     </div>
@@ -461,10 +469,10 @@ export function FeedView() {
                         {isLoading ? (
                           <>
                             <RefreshCw className="w-3.5 h-3.5 mr-1.5 animate-spin" />
-                            Ładowanie...
+                            {t('actions.loadingMore')}
                           </>
                         ) : (
-                          'Pokaż więcej'
+                          t('actions.loadMore')
                         )}
                       </Button>
                     </div>

@@ -1,6 +1,8 @@
+import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Film } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { DAY_NAMES_SHORT } from '@/lib/constants';
+import { getDayNamesShort } from '@/lib/constants';
 import { formatTime, getAnimeTitle, type SlotStatus } from './schedule-utils';
 import { ScheduleDayColumn } from './ScheduleDayColumn';
 import { SubscribeBellButton } from './SubscribeBellButton';
@@ -30,6 +32,8 @@ export function TimetableView({
   schedule,
   onAnimeClick,
 }: TimetableViewProps) {
+  const { i18n, t } = useTranslation('schedule');
+  const dayNamesShort = useMemo(() => getDayNamesShort(), [i18n.language]);
   const weekData = useWeekData(weekDays, getEntriesForDay, schedule);
   const now = useNowSeconds(60_000);
 
@@ -42,10 +46,10 @@ export function TimetableView({
             <ScheduleDayColumn
               key={day}
               day={day}
-              label={DAY_NAMES_SHORT[idx]}
+              label={dayNamesShort[idx]}
               entries={dayEntries}
               now={now}
-              emptyLabel="brak plakatów"
+              emptyLabel={t('timetable.emptyLabel')}
               listClassName="space-y-2"
               emptyStateClassName="py-10"
               emptyIconClassName="w-6 h-6"
@@ -55,6 +59,8 @@ export function TimetableView({
                   anime={anime}
                   status={status}
                   onClick={onAnimeClick}
+                  episodeLabel={t('timetable.episodeShort', { episode: anime.episode })}
+                  liveLabel={t('timetable.live')}
                 />
               )}
             />
@@ -71,9 +77,11 @@ interface PosterCardProps {
   anime: AiringAnime;
   status: SlotStatus;
   onClick?: (anime: AiringAnime) => void;
+  episodeLabel: string;
+  liveLabel: string;
 }
 
-function PosterCard({ anime, status, onClick }: PosterCardProps) {
+function PosterCard({ anime, status, onClick, episodeLabel, liveLabel }: PosterCardProps) {
   const title = getAnimeTitle(anime.media);
   // Prefer high-res cover for the hero treatment
   const coverUrl = anime.media.coverImage.large || anime.media.coverImage.medium;
@@ -142,7 +150,7 @@ function PosterCard({ anime, status, onClick }: PosterCardProps) {
           {formatTime(anime.airingAt)}
         </span>
         <span className="inline-flex font-mono text-[9px] tracking-[0.05em] px-[5px] py-[2px] rounded bg-black/60 text-white">
-          EP {anime.episode}
+          {episodeLabel}
         </span>
       </div>
 
@@ -159,7 +167,9 @@ function PosterCard({ anime, status, onClick }: PosterCardProps) {
           {title}
         </p>
         {isLive && (
-          <p className="mt-[2px] font-mono text-[8.5px] tracking-[0.1em] text-white/90">▶ TERAZ</p>
+          <p className="mt-[2px] font-mono text-[8.5px] tracking-[0.1em] text-white/90">
+            {liveLabel}
+          </p>
         )}
       </div>
     </div>

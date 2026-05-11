@@ -118,6 +118,23 @@ jobs:
       - name: Run web tests
         run: pnpm --filter @shiroani/web test
 
+  check-locales:
+    name: Check Locale Parity
+    needs: [changes]
+    if: needs.changes.outputs.web == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup
+        uses: ./.github/actions/setup
+        with:
+          install: 'false'
+
+      - name: Check locale parity
+        run: pnpm check:locales
+
   test-desktop:
     name: Test Desktop
     needs: [changes]
@@ -181,7 +198,7 @@ jobs:
   ci-result:
     name: CI Result
     if: always()
-    needs: [lint, typecheck, test-web, test-desktop, test-bot, landing]
+    needs: [lint, typecheck, test-web, check-locales, test-desktop, test-bot, landing]
     runs-on: ubuntu-latest
     steps:
       - name: Check CI outcome

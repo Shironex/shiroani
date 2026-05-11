@@ -1,0 +1,214 @@
+{
+  "view": {
+    "title": "Mój profil",
+    "watermarkAria": "Profil",
+    "subtitleApp": "Lokalnie · czas spędzony w ShiroAni",
+    "subtitleAniListConnected": "AniList · @{{handle}}",
+    "subtitleAniListConnect": "Podłącz konto AniList, żeby zobaczyć statystyki",
+    "tabs": {
+      "anilist": "Z AniList",
+      "app": "W aplikacji",
+      "ariaLabel": "Źródło statystyk profilu"
+    },
+    "actions": {
+      "refresh": "Odśwież",
+      "refreshAria": "Odśwież profil",
+      "share": "Udostępnij jako PNG",
+      "shareAria": "Udostępnij profil jako PNG",
+      "openAniList": "Otwórz AniList"
+    },
+    "private": {
+      "title": "Ten użytkownik ma prywatne statystyki",
+      "changeUser": "Zmień użytkownika"
+    }
+  },
+  "setup": {
+    "title": "Podłącz profil AniList",
+    "description": "Wpisz nazwę użytkownika z AniList, żeby zobaczyć swoje statystyki",
+    "placeholder": "Nazwa użytkownika AniList",
+    "submit": "Połącz"
+  },
+  "sidebar": {
+    "connectedBadge": "AniList · podłączono",
+    "memberSince": "od {{date}}",
+    "shiroAniBadge": "W ShiroAni · {{value}}",
+    "summaryHeading": "Podsumowanie",
+    "stats": {
+      "anime": "Anime",
+      "episodes": "Odcinki",
+      "meanScore": "Śr. ocena"
+    },
+    "actions": {
+      "refresh": "Odśwież profil",
+      "exportPng": "Eksportuj kartę jako PNG",
+      "disconnect": "Odłącz konto AniList"
+    },
+    "days_one": "{{count}} dzień",
+    "days_few": "{{count}} dni",
+    "days_many": "{{count}} dni",
+    "days_other": "{{count}} dni"
+  },
+  "dashboard": {
+    "sections": {
+      "libraryBreakdown": "Podział biblioteki",
+      "favoriteGenres": "Ulubione gatunki",
+      "favoriteStudios": "Ulubione studia",
+      "recentActivity": "Ostatnia aktywność",
+      "favorites": "Ulubione anime"
+    },
+    "summary": {
+      "watched": "Obejrzałeś łącznie <1>{{episodes}} odcinków</1>",
+      "screenTime": "To ok. <1>{{value}} {{unit}}</1> przed ekranem",
+      "favoriteYear": "Ulubiony rok: <1>{{year}}</1> · {{count}} {{titles}}"
+    },
+    "titles_one": "tytuł",
+    "titles_few": "tytuły",
+    "titles_many": "tytułów",
+    "titles_other": "tytułów"
+  },
+  "stats": {
+    "completed": "Ukończone",
+    "completedSub": "obejrzane w całości",
+    "current": "Oglądam",
+    "currentSub": "w trakcie",
+    "planning": "Planowane",
+    "planningSub": "w kolejce do obejrzenia",
+    "meanScore": "Śr. ocena",
+    "meanScoreSub": "ze wszystkich ocenionych"
+  },
+  "rings": {
+    "labels": {
+      "current": "Oglądam",
+      "completed": "Ukończone",
+      "planning": "Planowane",
+      "dropped": "Porzucone",
+      "paused": "Wstrzymane",
+      "repeating": "Powtarzam"
+    }
+  },
+  "genres": {
+    "empty": "Brak danych o gatunkach."
+  },
+  "studios": {
+    "empty": "Brak danych o studiach."
+  },
+  "activityFeed": {
+    "title": "Ostatnia aktywność",
+    "description": "Historia scrobbli, zmian statusów i ocen z AniList pojawi się tu, gdy rozszerzymy synchronizację profilu.",
+    "tag": "WKRÓTCE"
+  },
+  "appPanel": {
+    "heroTag": "Twój czas z ShiroAni",
+    "footer": "{{days}} z ShiroAni · {{sessions}}",
+    "hero": {
+      "primary": "Spędziłeś tu {{duration}} — to {{yardstick}}",
+      "secondary": "Aktywnie {{active}} · {{watch}} z anime",
+      "primaryEmpty": "Twoja podróż dopiero się zaczyna · zostań tu chwilę dłużej",
+      "secondaryEmpty": "0 minut aktywności · czekamy na pierwszą sesję",
+      "duration": {
+        "seconds_one": "{{count}} sekunda",
+        "seconds_few": "{{count}} sekundy",
+        "seconds_many": "{{count}} sekund",
+        "seconds_other": "{{count}} sekund",
+        "minutes_one": "{{count}} minuta",
+        "minutes_few": "{{count}} minuty",
+        "minutes_many": "{{count}} minut",
+        "minutes_other": "{{count}} minut",
+        "hours_one": "{{count}} godzina",
+        "hours_few": "{{count}} godziny",
+        "hours_many": "{{count}} godzin",
+        "hours_other": "{{count}} godzin",
+        "daysOnly_one": "{{count}} dzień",
+        "daysOnly_few": "{{count}} dni",
+        "daysOnly_many": "{{count}} dni",
+        "daysOnly_other": "{{count}} dni",
+        "hoursAndMinutes": "{{hours}} {{minutes}}",
+        "daysAndHours": "{{days}} {{hours}}"
+      },
+      "yardstick": {
+        "empty": "Jeszcze nie starczyło na pierwszy odcinek {{title}}",
+        "fullSeries_one": "{{count}} raz cały {{title}}",
+        "fullSeries_few": "{{count}} razy cały {{title}}",
+        "fullSeries_many": "{{count}} razy cały {{title}}",
+        "fullSeries_other": "{{count}} razy cały {{title}}",
+        "episodes_one": "{{count}} odcinek {{title}}",
+        "episodes_few": "{{count}} odcinki {{title}}",
+        "episodes_many": "{{count}} odcinków {{title}}",
+        "episodes_other": "{{count}} odcinków {{title}}"
+      }
+    },
+    "days_one": "{{count}} dzień",
+    "days_few": "{{count}} dni",
+    "days_many": "{{count}} dni",
+    "days_other": "{{count}} dni",
+    "sessions_one": "{{count}} sesja",
+    "sessions_few": "{{count}} sesje",
+    "sessions_many": "{{count}} sesji",
+    "sessions_other": "{{count}} sesji",
+    "counters": {
+      "open": "Otwarta aplikacja",
+      "openSub": "kiedy okno jest na ekranie",
+      "active": "Aktywnie",
+      "activeSub": "okno z fokusem, bez bezczynności",
+      "anime": "Z anime",
+      "animeSub": "przeglądarka na rozpoznanej stronie"
+    },
+    "heatmap": {
+      "title": "Aktywność z ostatnich 12 tygodni",
+      "caption": "Każda kratka to jeden dzień. Intensywność pokazuje, ile aktywnego czasu spędziłeś w aplikacji.",
+      "ariaLabel": "Mapa {{metric}} z ostatnich {{weeks}} tygodni",
+      "metric": {
+        "active": "aktywności",
+        "anime": "oglądania anime"
+      },
+      "less": "mniej",
+      "more": "więcej",
+      "tooltip": {
+        "future": "{{date}} — jeszcze przed nami",
+        "empty": "{{date}} — bez aktywności",
+        "active": "{{date}} — {{value}} aktywnie",
+        "anime": "{{date}} — {{value}} z anime"
+      }
+    },
+    "streak": {
+      "current": "Aktualna seria",
+      "longest": "Najdłuższa"
+    },
+    "reset": {
+      "action": "Wyczyść statystyki",
+      "hint": "Wszystko liczy się lokalnie — żaden licznik nie opuszcza twojego komputera.",
+      "dialog": {
+        "title": "Wyczyścić statystyki?",
+        "description": "Wszystkie lokalne liczniki czasu zostaną usunięte. Nie da się tego cofnąć.",
+        "confirm": "Wyczyść"
+      }
+    }
+  },
+  "errors": {
+    "userNotFound": "Nie znaleziono użytkownika na AniList",
+    "rateLimited": "Zbyt wiele zapytań — odczekaj chwilę"
+  },
+  "share": {
+    "title": "Udostępnij profil",
+    "description": "Karta profilu w formacie PNG, gotowa do wrzucenia na Discorda",
+    "previewAlt": "Podgląd karty profilu",
+    "copyToClipboard": "Kopiuj do schowka",
+    "copied": "Skopiowano!",
+    "saveAsPng": "Zapisz jako PNG",
+    "saved": "Zapisano!",
+    "errors": {
+      "render": "Nie udało się wygenerować karty profilu",
+      "clipboard": "Nie udało się skopiować do schowka",
+      "save": "Nie udało się zapisać pliku"
+    }
+  },
+  "card": {
+    "genres": "GATUNKI",
+    "scoreDistribution": "ROZKŁAD OCEN",
+    "studios": "STUDIA",
+    "epShort": "odc",
+    "daysShort": "dni",
+    "hoursShort": "godz"
+  },
+  "avatarAlt": "Awatar użytkownika {{name}}"
+}

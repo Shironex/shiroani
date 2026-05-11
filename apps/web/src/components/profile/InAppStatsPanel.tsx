@@ -1,14 +1,14 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Trash2, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { pluralize } from '@shiroani/shared';
 import {
   startAppStatsPolling,
   stopAppStatsPolling,
   useAppStatsStore,
 } from '@/stores/useAppStatsStore';
-import { buildHeroLine, daysSinceCreated, formatPolishDuration } from '@/lib/stats-conversions';
+import { buildHeroLine, daysSinceCreated, formatDuration } from '@/lib/stats-conversions';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import { ActivityHeatmap } from './ActivityHeatmap';
 
@@ -17,6 +17,7 @@ import { ActivityHeatmap } from './ActivityHeatmap';
  * tracker via the `app-stats:*` IPC channels and refreshed on a 60s poll.
  */
 export function InAppStatsPanel() {
+  const { t } = useTranslation('profile');
   const snapshot = useAppStatsStore(s => s.snapshot);
   const reset = useAppStatsStore(s => s.reset);
   const [resetOpen, setResetOpen] = useState(false);
@@ -31,6 +32,8 @@ export function InAppStatsPanel() {
   const days = daysSinceCreated(snapshot);
   const hero = buildHeroLine(snapshot);
   const { totals } = snapshot;
+  const daysLabel = t('appPanel.days', { count: days });
+  const sessionsLabel = t('appPanel.sessions', { count: totals.sessionCount });
 
   return (
     <div className="flex-1 overflow-y-auto px-7 pt-6 pb-24 flex flex-col gap-6">
@@ -43,47 +46,45 @@ export function InAppStatsPanel() {
       >
         <div className="font-mono text-[9.5px] uppercase tracking-[0.22em] text-muted-foreground mb-3 flex items-center gap-2">
           <Sparkles className="w-3 h-3 text-primary" />
-          <span>Twój czas z ShiroAni</span>
+          <span>{t('appPanel.heroTag')}</span>
         </div>
         <h2 className="font-sans font-extrabold text-[22px] leading-[1.25] tracking-[-0.02em] text-foreground">
           {hero.primary}
         </h2>
         <p className="mt-2 text-[13px] text-foreground/75">{hero.secondary}</p>
         <div className="mt-4 pt-3 border-t border-border-glass/40 font-mono text-[10.5px] uppercase tracking-[0.18em] text-foreground/60">
-          {pluralize(days, 'dzień', 'dni', 'dni')} z ShiroAni ·{' '}
-          {pluralize(totals.sessionCount, 'sesja', 'sesje', 'sesji')}
+          {t('appPanel.footer', { days: daysLabel, sessions: sessionsLabel })}
         </div>
       </section>
 
       {/* ── Counter cards ──────────────────────────────────── */}
       <section className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <CounterCard
-          label="Otwarta aplikacja"
-          value={formatPolishDuration(totals.appOpenSeconds)}
-          sub="kiedy okno jest na ekranie"
+          label={t('appPanel.counters.open')}
+          value={formatDuration(totals.appOpenSeconds)}
+          sub={t('appPanel.counters.openSub')}
         />
         <CounterCard
-          label="Aktywnie"
-          value={formatPolishDuration(totals.appActiveSeconds)}
-          sub="okno z fokusem, bez bezczynności"
+          label={t('appPanel.counters.active')}
+          value={formatDuration(totals.appActiveSeconds)}
+          sub={t('appPanel.counters.activeSub')}
           tone="accent"
         />
         <CounterCard
-          label="Z anime"
-          value={formatPolishDuration(totals.animeWatchSeconds)}
-          sub="przeglądarka na rozpoznanej stronie"
+          label={t('appPanel.counters.anime')}
+          value={formatDuration(totals.animeWatchSeconds)}
+          sub={t('appPanel.counters.animeSub')}
           tone="gold"
         />
       </section>
 
       {/* ── Activity heatmap ───────────────────────────────── */}
       <section>
-        <SectionHead>Aktywność z ostatnich 12 tygodni</SectionHead>
+        <SectionHead>{t('appPanel.heatmap.title')}</SectionHead>
         <div className="px-4 py-4 rounded-xl border border-border-glass bg-foreground/[0.025]">
           <ActivityHeatmap snapshot={snapshot} weeks={12} metric="active" />
           <p className="mt-3 text-[11.5px] text-muted-foreground/80">
-            Każda kratka to jeden dzień. Intensywność pokazuje, ile aktywnego czasu spędziłeś w
-            aplikacji.
+            {t('appPanel.heatmap.caption')}
           </p>
         </div>
       </section>
@@ -92,13 +93,13 @@ export function InAppStatsPanel() {
       {snapshot.currentStreak.days > 0 && (
         <section className="px-5 py-4 rounded-xl border border-border-glass bg-foreground/[0.025] flex flex-wrap items-baseline gap-x-6 gap-y-2">
           <Stat
-            label="Aktualna seria"
-            value={pluralize(snapshot.currentStreak.days, 'dzień', 'dni', 'dni')}
+            label={t('appPanel.streak.current')}
+            value={t('appPanel.days', { count: snapshot.currentStreak.days })}
             tone="accent"
           />
           <Stat
-            label="Najdłuższa"
-            value={pluralize(snapshot.longestStreak.days, 'dzień', 'dni', 'dni')}
+            label={t('appPanel.streak.longest')}
+            value={t('appPanel.days', { count: snapshot.longestStreak.days })}
           />
         </section>
       )}
@@ -115,19 +116,19 @@ export function InAppStatsPanel() {
           )}
         >
           <Trash2 className="w-3.5 h-3.5" />
-          Wyczyść statystyki
+          {t('appPanel.reset.action')}
         </Button>
         <p className="mt-2 text-[11px] text-muted-foreground/70 leading-relaxed">
-          Wszystko liczy się lokalnie — żaden licznik nie opuszcza twojego komputera.
+          {t('appPanel.reset.hint')}
         </p>
       </section>
 
       <ConfirmDialog
         open={resetOpen}
         onOpenChange={setResetOpen}
-        title="Wyczyścić statystyki?"
-        description="Wszystkie lokalne liczniki czasu zostaną usunięte. Nie da się tego cofnąć."
-        confirmLabel="Wyczyść"
+        title={t('appPanel.reset.dialog.title')}
+        description={t('appPanel.reset.dialog.description')}
+        confirmLabel={t('appPanel.reset.dialog.confirm')}
         onConfirm={() => {
           void reset();
           setResetOpen(false);

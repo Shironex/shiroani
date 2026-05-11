@@ -1,6 +1,7 @@
 import * as React from 'react';
 import type { LucideIcon } from 'lucide-react';
 import { Sparkles } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 
 /**
@@ -21,10 +22,12 @@ export function ComingSoonPlaceholder({
   icon: Icon = Sparkles,
   title,
   description,
-  tag = 'WKRÓTCE',
+  tag,
   className,
   ...props
 }: ComingSoonPlaceholderProps) {
+  const { t } = useTranslation('nav');
+  const finalTag = tag ?? t('comingSoon.tag');
   return (
     <div
       className={cn(
@@ -46,7 +49,7 @@ export function ComingSoonPlaceholder({
       </div>
       <div className="relative flex flex-col gap-2">
         <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.22em] text-primary">
-          {tag}
+          {finalTag}
         </span>
         <h3 className="font-serif text-xl font-bold tracking-tight text-foreground">{title}</h3>
         {description ? (

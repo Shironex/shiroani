@@ -1,4 +1,5 @@
 import { memo, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Shuffle,
   ChevronLeft,
@@ -47,6 +48,9 @@ export const RandomShowcaseCard = memo(function RandomShowcaseCard({
   onOpenDetails,
   onAddToLibrary,
 }: RandomShowcaseCardProps) {
+  // Re-render on language change so showcase meta labels refresh.
+  useTranslation('anilist');
+  const { t } = useTranslation('discover');
   const meta = buildShowcaseMeta(media);
   const showRomaji = media.title.romaji && media.title.romaji !== meta.title;
 
@@ -74,7 +78,7 @@ export const RandomShowcaseCard = memo(function RandomShowcaseCard({
         <button
           type="button"
           onClick={onPrev}
-          aria-label="Poprzednie"
+          aria-label={t('random.previous')}
           className="md:hidden p-2 rounded-full bg-background/60 hover:bg-background/90 transition-colors"
         >
           <ChevronLeft className="w-4 h-4" />
@@ -166,7 +170,7 @@ export const RandomShowcaseCard = memo(function RandomShowcaseCard({
         <button
           type="button"
           onClick={onNext}
-          aria-label="Następne"
+          aria-label={t('random.next')}
           className="md:hidden p-2 rounded-full bg-background/60 hover:bg-background/90 transition-colors"
         >
           <ChevronRight className="w-4 h-4" />
@@ -177,8 +181,8 @@ export const RandomShowcaseCard = memo(function RandomShowcaseCard({
       <div className="relative z-[1] flex flex-col min-w-0">
         {/* Tag row — FEATURE + library + format/year */}
         <div className="flex flex-wrap items-center gap-1.5">
-          <PillTag variant="accent">Losowe</PillTag>
-          {inLibrary && <PillTag variant="green">W bibliotece</PillTag>}
+          <PillTag variant="accent">{t('random.featuredTag')}</PillTag>
+          {inLibrary && <PillTag variant="green">{t('random.inLibraryTag')}</PillTag>}
           {meta.formatLabel && <PillTag variant="muted">{meta.formatLabel}</PillTag>}
           {meta.yearLabel && <PillTag variant="muted">{meta.yearLabel}</PillTag>}
         </div>
@@ -203,12 +207,12 @@ export const RandomShowcaseCard = memo(function RandomShowcaseCard({
         {/* Meta row — mono, News-hero style */}
         <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-[10.5px] uppercase tracking-[0.1em] text-muted-foreground">
           <span className="text-primary/90 font-semibold">
-            {index + 1} / {total}
+            {t('random.indexFormat', { index: index + 1, total })}
           </span>
           {media.episodes && (
             <>
               <span aria-hidden>·</span>
-              <span>{media.episodes} odc.</span>
+              <span>{t('card.episodeCount', { count: media.episodes })}</span>
             </>
           )}
           {meta.statusLabel && (
@@ -244,12 +248,12 @@ export const RandomShowcaseCard = memo(function RandomShowcaseCard({
         <div className="mt-auto pt-5 flex items-center flex-wrap gap-2">
           <Button size="sm" onClick={onNext} disabled={isLoading} className="gap-1.5">
             <Shuffle className="w-3.5 h-3.5" />
-            Przetasuj
+            {t('random.shuffle')}
           </Button>
           {onAddToLibrary && !inLibrary && (
             <Button size="sm" variant="outline" onClick={onAddToLibrary} className="gap-1.5">
               <Plus className="w-3.5 h-3.5" />
-              Dodaj do biblioteki
+              {t('random.addToLibrary')}
             </Button>
           )}
           <TooltipButton
@@ -257,10 +261,10 @@ export const RandomShowcaseCard = memo(function RandomShowcaseCard({
             variant="outline"
             onClick={onRefetch}
             disabled={isLoading}
-            tooltip="Odśwież propozycje z AniList"
+            tooltip={t('random.refreshTooltip')}
             tooltipSide="top"
             className="px-2"
-            aria-label="Odśwież propozycje"
+            aria-label={t('random.refreshAria')}
           >
             <RefreshCw className={cn('w-3.5 h-3.5', isLoading && 'animate-spin')} />
           </TooltipButton>
@@ -270,7 +274,7 @@ export const RandomShowcaseCard = memo(function RandomShowcaseCard({
             <button
               type="button"
               onClick={onPrev}
-              aria-label="Poprzednie"
+              aria-label={t('random.previous')}
               className="p-1.5 rounded-lg bg-background/40 hover:bg-background/70 border border-border-glass transition-colors"
             >
               <ChevronLeft className="w-4 h-4" />
@@ -278,7 +282,7 @@ export const RandomShowcaseCard = memo(function RandomShowcaseCard({
             <button
               type="button"
               onClick={onNext}
-              aria-label="Następne"
+              aria-label={t('random.next')}
               className="p-1.5 rounded-lg bg-background/40 hover:bg-background/70 border border-border-glass transition-colors"
             >
               <ChevronRight className="w-4 h-4" />
@@ -286,7 +290,7 @@ export const RandomShowcaseCard = memo(function RandomShowcaseCard({
           </div>
         </div>
         <p className="mt-2 font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground/50 hidden sm:block">
-          ← → przełącza
+          {t('random.keyboardHint')}
         </p>
       </div>
     </div>

@@ -1,4 +1,5 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { Trans, useTranslation } from 'react-i18next';
 import {
   Languages,
   Palette,
@@ -9,6 +10,7 @@ import {
   PartyPopper,
 } from 'lucide-react';
 import { StepLayout } from '../StepLayout';
+import { isSupportedLanguage } from '@shiroani/shared';
 import { getThemeOption } from '@/lib/theme';
 import { useSettingsStore } from '@/stores/useSettingsStore';
 import { useBackgroundStore } from '@/stores/useBackgroundStore';
@@ -19,11 +21,15 @@ import { useCustomThemeStore } from '@/stores/useCustomThemeStore';
 /**
  * Step 07 · Summary.
  *
- * Pure confirmation screen — reads every store the wizard touched and echoes
- * the user's selections back. No mutations, no API calls. The "Zaczynamy!"
- * CTA lives in the wizard chrome (wired to `onComplete`).
+ * Read-only confirmation screen — reflects every store the wizard touched.
+ * Discord RPC state lives in main-process electron-store, so it's loaded via
+ * `electronAPI.discordRpc.getSettings()` rather than a renderer store. The
+ * "Zaczynamy!" CTA lives in the wizard chrome (wired to `onComplete`).
  */
+const UNKNOWN = '—';
+
 export function SummaryStep() {
+  const { t, i18n } = useTranslation('onboarding');
   const theme = useSettingsStore(s => s.theme);
   const customThemes = useCustomThemeStore(s => s.customThemes);
   const customBackground = useBackgroundStore(s => s.customBackground);
@@ -32,42 +38,70 @@ export function SummaryStep() {
   const autoHide = useDockStore(s => s.autoHide);
   const adblockEnabled = useBrowserStore(s => s.adblockEnabled);
 
+  // Discord RPC state lives in main-process electron-store; mirror DiscordStep's
+  // load pattern. Stays `null` until the IPC settles or when the API is missing
+  // (web preview / pre-IPC-ready), in which case the row renders "—".
+  const [discordEnabled, setDiscordEnabled] = useState<boolean | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    window.electronAPI?.discordRpc
+      ?.getSettings()
+      .then((s: { enabled?: boolean } | null) => {
+        if (cancelled) return;
+        if (s && typeof s.enabled === 'boolean') setDiscordEnabled(s.enabled);
+      })
+      .catch(() => {
+        // Electron API unavailable — leave as null so the row falls back to "—"
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const languageValue = useMemo(() => {
+    const lng = i18n.language;
+    if (!isSupportedLanguage(lng)) return UNKNOWN;
+    return t(`step.summary.languages.${lng}`);
+  }, [i18n.language, t]);
+
   const themeLabel = useMemo(() => {
     const opt = getThemeOption(theme, customThemes);
     return opt?.label ?? theme;
   }, [theme, customThemes]);
 
   const backgroundLabel = customBackground
-    ? `Własne · ${Math.round((backgroundBlur / 20) * 100)}% rozmycia`
-    : 'Bez tła';
+    ? t('step.summary.background.custom', { percent: Math.round((backgroundBlur / 20) * 100) })
+    : t('step.summary.background.none');
 
   const dockLabel = useMemo(() => {
-    const edgeName =
-      edge === 'bottom' ? 'Dół' : edge === 'left' ? 'Lewo' : edge === 'right' ? 'Prawo' : 'Góra';
-    return autoHide ? `${edgeName} · auto-ukrywanie` : edgeName;
-  }, [edge, autoHide]);
+    const edgeName = t(`step.summary.dock.edge.${edge}`);
+    return autoHide ? t('step.summary.dock.autoHide', { edge: edgeName }) : edgeName;
+  }, [edge, autoHide, t]);
+
+  const discordValue =
+    discordEnabled === null
+      ? UNKNOWN
+      : discordEnabled
+        ? t('step.summary.value.on')
+        : t('step.summary.value.off');
+
+  const emPrimary = <em className="not-italic text-primary italic" />;
+  const bStrong = <b className="font-semibold text-foreground" />;
+  const bPrimary = <b className="font-bold text-primary" />;
 
   return (
     <StepLayout
       kanji="完"
       headline={
-        <>
-          Wszystko <em className="not-italic text-primary italic">zapięte</em>. Czas oglądać.
-        </>
+        <Trans ns="onboarding" i18nKey="step.summary.headline" components={{ 1: emPrimary }} />
       }
       description={
-        <>
-          Siedem ustawień za nami, wszystko zapisane u ciebie na komputerze.{' '}
-          <b className="font-semibold text-foreground">Shiro-chan</b> będzie na dole ekranu, gdyby
-          była ci potrzebna.
-        </>
+        <Trans ns="onboarding" i18nKey="step.summary.description" components={{ 1: bStrong }} />
       }
       stepMarker={
-        <>
-          Podsumowanie · <b className="font-bold text-primary">twoja konfiguracja</b>
-        </>
+        <Trans ns="onboarding" i18nKey="step.summary.marker" components={{ 1: bPrimary }} />
       }
-      stepTitle="Wszystko gotowe!"
+      stepTitle={t('step.summary.title')}
       stepIcon={
         <span
           className="grid h-10 w-10 place-items-center rounded-full border border-primary/35 bg-primary/15 text-primary animate-[splash-bounce-in_0.5s_cubic-bezier(0.34,1.56,0.64,1)_both]"
@@ -78,24 +112,40 @@ export function SummaryStep() {
       }
     >
       <p className="max-w-[34ch] text-[13px] leading-relaxed text-muted-foreground">
-        Oto twoje wybory. Wszystko zmienisz później w ustawieniach.
+        {t('step.summary.intro')}
       </p>
 
       <div className="flex flex-col gap-2">
-        <SummaryRow icon={<Languages className="h-4 w-4" />} label="Język" value="PL" />
-        <SummaryRow icon={<Palette className="h-4 w-4" />} label="Motyw" value={themeLabel} />
-        <SummaryRow icon={<Sparkles className="h-4 w-4" />} label="Tło" value={backgroundLabel} />
-        <SummaryRow icon={<LayoutGrid className="h-4 w-4" />} label="Dock" value={dockLabel} />
+        <SummaryRow
+          icon={<Languages className="h-4 w-4" />}
+          label={t('step.summary.row.language')}
+          value={languageValue}
+        />
+        <SummaryRow
+          icon={<Palette className="h-4 w-4" />}
+          label={t('step.summary.row.theme')}
+          value={themeLabel}
+        />
+        <SummaryRow
+          icon={<Sparkles className="h-4 w-4" />}
+          label={t('step.summary.row.background')}
+          value={backgroundLabel}
+        />
+        <SummaryRow
+          icon={<LayoutGrid className="h-4 w-4" />}
+          label={t('step.summary.row.dock')}
+          value={dockLabel}
+        />
         <SummaryRow
           icon={<MessageCircle className="h-4 w-4" />}
-          label="Discord RPC"
-          value="ON"
-          highlight
+          label={t('step.summary.row.discord')}
+          value={discordValue}
+          highlight={discordEnabled === true}
         />
         <SummaryRow
           icon={<Shield className="h-4 w-4" />}
-          label="Adblock"
-          value={adblockEnabled ? 'ON' : 'OFF'}
+          label={t('step.summary.row.adblock')}
+          value={adblockEnabled ? t('step.summary.value.on') : t('step.summary.value.off')}
           highlight={adblockEnabled}
         />
       </div>

@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useRef, type KeyboardEvent, type RefObject } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   ArrowLeft,
   ArrowRight,
@@ -56,6 +57,7 @@ export function BrowserToolbar({
   onAddToLibrary,
   urlInputRef: externalUrlInputRef,
 }: BrowserToolbarProps) {
+  const { t } = useTranslation('browser');
   const internalUrlInputRef = useRef<HTMLInputElement>(null);
   const urlInputRef = externalUrlInputRef ?? internalUrlInputRef;
 
@@ -106,7 +108,7 @@ export function BrowserToolbar({
           )}
           onClick={onGoBack}
           disabled={!canGoBack}
-          tooltip="Wstecz"
+          tooltip={t('toolbar.back')}
           tooltipSide="bottom"
         >
           <ArrowLeft className="w-4 h-4" />
@@ -122,7 +124,7 @@ export function BrowserToolbar({
           )}
           onClick={onGoForward}
           disabled={!canGoForward}
-          tooltip="Dalej"
+          tooltip={t('toolbar.forward')}
           tooltipSide="bottom"
         >
           <ArrowRight className="w-4 h-4" />
@@ -136,7 +138,7 @@ export function BrowserToolbar({
             'bg-foreground/[0.03] border border-border-glass'
           )}
           onClick={onReload}
-          tooltip={isLoading ? 'Ładowanie' : 'Odśwież'}
+          tooltip={isLoading ? t('toolbar.loading') : t('toolbar.reload')}
           tooltipSide="bottom"
         >
           {isLoading ? (
@@ -167,8 +169,8 @@ export function BrowserToolbar({
           onKeyDown={handleUrlSubmit}
           onFocus={handleUrlFocus}
           onBlur={handleUrlBlur}
-          placeholder="Wpisz adres albo szukaj"
-          aria-label="Pasek adresu"
+          placeholder={t('urlBar.placeholder')}
+          aria-label={t('urlBar.ariaLabel')}
           className={cn(
             'h-6 min-w-0 flex-1 px-0 text-[12.5px]',
             'bg-transparent border-0 rounded-none',
@@ -186,7 +188,7 @@ export function BrowserToolbar({
           className="size-[30px] rounded-[8px] text-muted-foreground hover:text-primary"
           onClick={onAddToLibrary}
           disabled={!hasActiveTab}
-          tooltip="Dodaj do biblioteki"
+          tooltip={t('toolbar.addToLibrary')}
           tooltipSide="bottom"
         >
           <BookmarkPlus className="w-4 h-4" />
@@ -197,7 +199,7 @@ export function BrowserToolbar({
           size="icon"
           className="size-[30px] rounded-[8px] text-muted-foreground hover:text-foreground"
           onClick={onGoHome}
-          tooltip="Strona główna"
+          tooltip={t('toolbar.home')}
           tooltipSide="bottom"
         >
           <Home className="w-4 h-4" />

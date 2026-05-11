@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Terminal, SquareCode, ClipboardCopy, ScrollText, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { SettingsCard, SettingsToggleRow } from '@/components/settings/SettingsCard';
@@ -7,6 +8,7 @@ import { useSettingsStore } from '@/stores/useSettingsStore';
 import { copyDiagnosticsToClipboard } from '@/lib/diagnostics';
 
 export function DeveloperSection() {
+  const { t } = useTranslation('settings');
   const devModeEnabled = useSettingsStore(s => s.devModeEnabled);
   const setDevModeEnabled = useSettingsStore(s => s.setDevModeEnabled);
   const [logsDialogOpen, setLogsDialogOpen] = useState(false);
@@ -23,14 +25,14 @@ export function DeveloperSection() {
     <div className="space-y-4">
       <SettingsCard
         icon={Terminal}
-        title="Tryb deweloperski"
-        subtitle="Narzędzia debugowania. Przydają się, kiedy chcesz zgłosić błąd lub zajrzeć pod maskę."
+        title={t('developer.card.title')}
+        subtitle={t('developer.card.subtitle')}
         tone="muted"
       >
         <SettingsToggleRow
           id="dev-mode-label"
-          title="Włącz tryb deweloperski"
-          description="Włącza DevTools, podgląd logów i eksport diagnostyki."
+          title={t('developer.toggleTitle')}
+          description={t('developer.toggleDescription')}
           checked={devModeEnabled}
           onCheckedChange={setDevModeEnabled}
         />
@@ -44,7 +46,7 @@ export function DeveloperSection() {
               className="justify-start gap-2 text-[12px]"
             >
               <SquareCode className="w-3.5 h-3.5" />
-              Narzędzia deweloperskie
+              {t('developer.devtools')}
             </Button>
             <Button
               variant="outline"
@@ -57,7 +59,9 @@ export function DeveloperSection() {
               ) : (
                 <ClipboardCopy className="w-3.5 h-3.5" />
               )}
-              {diagnosticsCopied ? 'Skopiowano' : 'Kopiuj diagnostykę'}
+              {diagnosticsCopied
+                ? t('developer.diagnosticsCopied')
+                : t('developer.copyDiagnostics')}
             </Button>
             <Button
               variant="outline"
@@ -66,7 +70,7 @@ export function DeveloperSection() {
               className="justify-start gap-2 text-[12px]"
             >
               <ScrollText className="w-3.5 h-3.5" />
-              Pokaż logi
+              {t('developer.showLogs')}
             </Button>
           </div>
         )}

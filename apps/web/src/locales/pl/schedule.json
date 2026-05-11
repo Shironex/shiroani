@@ -1,0 +1,103 @@
+{
+  "title": "Harmonogram",
+  "regionLabel": "Harmonogram anime",
+  "summary": {
+    "noAirings": "Brak emisji",
+    "episodes_one": "{{count}} odcinek",
+    "episodes_few": "{{count}} odcinki",
+    "episodes_many": "{{count}} odcinków",
+    "episodes_other": "{{count}} odcinków"
+  },
+  "modes": {
+    "ariaLabel": "Tryb widoku harmonogramu",
+    "daily": {
+      "label": "Dzień",
+      "tooltip": "Dzień: oś czasu"
+    },
+    "weekly": {
+      "label": "Tydzień",
+      "tooltip": "Tydzień: siatka"
+    },
+    "timetable": {
+      "label": "Plakaty",
+      "tooltip": "Plakaty: tablica"
+    }
+  },
+  "nav": {
+    "previousDay": "Poprzedni dzień",
+    "nextDay": "Następny dzień",
+    "previousWeek": "Poprzedni tydzień",
+    "nextWeek": "Następny tydzień",
+    "today": "Dziś"
+  },
+  "legend": {
+    "live": "Na żywo",
+    "upcoming": "Nadchodzące",
+    "watched": "Obejrzane"
+  },
+  "daily": {
+    "emptyTitle": "Nic tego dnia nie leci",
+    "emptySubtitle": "Sprawdź inny dzień albo widok tygodniowy",
+    "gapHours": "{{hours}}h przerwy",
+    "noAiringsNow": "brak emisji w tej chwili",
+    "nowLabel": "Teraz, {{time}}",
+    "nowMarker": "TERAZ · {{time}}"
+  },
+  "weekly": {
+    "emptyLabel": "brak emisji",
+    "now": "teraz"
+  },
+  "timetable": {
+    "emptyLabel": "brak plakatów",
+    "live": "▶ TERAZ",
+    "episodeShort": "EP {{episode}}"
+  },
+  "entry": {
+    "live": "Na żywo",
+    "watched": "Obejrzano",
+    "soon": "Wkrótce",
+    "liveBadge": "NA ŻYWO",
+    "watch": "Oglądaj",
+    "ariaLabel": "{{title}}, {{time}}",
+    "todayMarker": "{{day}} · TERAZ"
+  },
+  "dialog": {
+    "studios": "Studia",
+    "genres": "Gatunki",
+    "tags": "Tagi",
+    "description": "Opis",
+    "characters": "Postacie",
+    "staff": "Twórcy",
+    "related": "Powiązane",
+    "trailer": "Zwiastun",
+    "trailerTitle": "Zwiastun",
+    "streaming": "Gdzie oglądać",
+    "openOnAniList": "Otwórz w AniList",
+    "expand": "Rozwiń",
+    "collapse": "Zwiń",
+    "startDate": "Start",
+    "endDate": "Koniec",
+    "nextEpisode": {
+      "episode": "Odc. {{episode}}",
+      "in": "za"
+    },
+    "minutesShort": "min",
+    "episodesShort": "odc."
+  },
+  "subscribe": {
+    "enable": "Włącz powiadomienia",
+    "disable": "Wyłącz powiadomienia"
+  },
+  "weekday": {
+    "todaySuffix": "dziś"
+  },
+  "dayShort": {
+    "sun": "nd",
+    "mon": "pn",
+    "tue": "wt",
+    "wed": "śr",
+    "thu": "cz",
+    "fri": "pt",
+    "sat": "so"
+  }
+}

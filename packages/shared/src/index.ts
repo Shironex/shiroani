@@ -45,3 +45,6 @@ export * from './schemas';
 
 // AniList error classification
 export * from './anilist-errors';
+
+// i18n contract (supported languages, storage keys)
+export * from './i18n';

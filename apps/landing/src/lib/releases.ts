@@ -3,16 +3,19 @@
  *
  * Release data is sourced from the shared `@shiroani/changelog` package —
  * the single source of truth, also consumed by the in-app view in
- * `apps/web`. This file keeps the field names the landing UI was built
- * against (`dateShort`, `slug`) and exposes a `currentVersion()` helper
- * used by the hero, navbar, footer and suite tagline.
+ * `apps/web`. That package is bilingual (PL + EN); this adapter takes a
+ * `locale` and flattens each release to one language, keeping the field
+ * names the landing UI was built against (`dateShort`, `slug`).
+ *
+ * `currentVersion()` returns the locale-neutral version string and stays
+ * argument-free (used by the hero, navbar, footer and suite tagline).
+ * `getReleases(locale)` is the localized list; `releases` is the PL list
+ * kept for callers that only need locale-neutral fields (e.g. `Download.astro`
+ * reads `releases[0].version` / `.dateShort`).
  */
-import {
-  RELEASES,
-  type Category as SharedCategory,
-  type CategoryKind,
-  type Release as SharedRelease,
-} from '@shiroani/changelog';
+import { localizeReleases, RELEASES, type CategoryKind, type Locale } from '@shiroani/changelog';
+
+export type { Locale };
 
 export type CategorySlug = CategoryKind;
 
@@ -34,28 +37,28 @@ export interface Release {
   categories: ReleaseCategory[];
 }
 
-function adaptCategory(category: SharedCategory): ReleaseCategory {
-  return {
-    slug: category.kind,
-    label: category.label,
-    entries: [...category.entries],
-  };
+/** Localized release list for the changelog page. */
+export function getReleases(locale: Locale = 'pl'): Release[] {
+  return localizeReleases(locale).map(r => ({
+    version: r.version,
+    date: r.date,
+    dateShort: r.shortDate,
+    title: r.title,
+    description: r.description,
+    type: r.type,
+    categories: r.categories.map(c => ({
+      slug: c.kind,
+      label: c.label,
+      entries: c.entries,
+    })),
+  }));
 }
 
-function adaptRelease(release: SharedRelease): Release {
-  return {
-    version: release.version,
-    date: release.date,
-    dateShort: release.shortDate,
-    title: release.title,
-    description: release.description,
-    type: release.type,
-    categories: release.categories.map(adaptCategory),
-  };
-}
+/** PL release list — kept for callers that only need locale-neutral fields. */
+export const releases: Release[] = getReleases('pl');
 
-export const releases: Release[] = RELEASES.map(adaptRelease);
+/** Locale-neutral version of the topmost release. */
+export const currentVersion = (): string => RELEASES[0].version;
 
-export const currentVersion = (): string => releases[0].version;
-
+/** PL view of the topmost release. */
 export const latestRelease: Release = releases[0];

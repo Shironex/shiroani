@@ -1,4 +1,6 @@
 import { useState, useEffect, useLayoutEffect, useCallback, useMemo, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
+import type { TFunction } from 'i18next';
 import { createPortal } from 'react-dom';
 import { useShallow } from 'zustand/react/shallow';
 import { Globe, Columns2 } from 'lucide-react';
@@ -39,6 +41,8 @@ const {
 interface PaneRendererProps {
   node: BrowserNode;
   activePaneId: string | null;
+  /** Bound `t` instance for the `browser` namespace, threaded so renderNode stays pure. */
+  t: TFunction<'browser'>;
   /**
    * Id of the enclosing SplitNode, or null when this leaf sits at the top
    * level. Drives whether the per-pane chrome bar with the unsplit button
@@ -91,6 +95,7 @@ function slotKeyForTab(node: BrowserNode): string {
 }
 
 function PaneChrome({ leaf, parentSplitId }: { leaf: BrowserLeafNode; parentSplitId: string }) {
+  const { t } = useTranslation('browser');
   return (
     <div
       className={cn(
@@ -104,7 +109,7 @@ function PaneChrome({ leaf, parentSplitId }: { leaf: BrowserLeafNode; parentSpli
       ) : (
         <Globe className="w-3 h-3 shrink-0 opacity-60" />
       )}
-      <span className="truncate flex-1">{leaf.title || 'Nowa karta'}</span>
+      <span className="truncate flex-1">{leaf.title || t('tabs.newTab')}</span>
       <TooltipButton
         variant="ghost"
         size="icon"
@@ -113,7 +118,7 @@ function PaneChrome({ leaf, parentSplitId }: { leaf: BrowserLeafNode; parentSpli
           e.stopPropagation();
           unsplitTab(parentSplitId);
         }}
-        tooltip="Rozdziel"
+        tooltip={t('tabs.unsplit')}
         tooltipSide="bottom"
       >
         <Columns2 className="w-3 h-3" />
@@ -123,7 +128,7 @@ function PaneChrome({ leaf, parentSplitId }: { leaf: BrowserLeafNode; parentSpli
 }
 
 function renderNode(props: PaneRendererProps): JSX.Element {
-  const { node, activePaneId, parentSplitId, onPaneClick, onNewTabNavigate } = props;
+  const { node, activePaneId, parentSplitId, onPaneClick, onNewTabNavigate, t } = props;
 
   if (node.kind === 'leaf') {
     const isFocused = node.id === activePaneId;
@@ -133,7 +138,7 @@ function renderNode(props: PaneRendererProps): JSX.Element {
       <div
         key={node.id}
         role="region"
-        aria-label={showChrome ? 'Panel przeglądarki' : 'Karta przeglądarki'}
+        aria-label={showChrome ? t('tabs.region.pane') : t('tabs.region.tab')}
         onMouseDownCapture={() => onPaneClick(node.id)}
         className={cn(
           'relative h-full w-full overflow-hidden flex flex-col',
@@ -159,8 +164,15 @@ function renderNode(props: PaneRendererProps): JSX.Element {
 }
 
 function renderSplit(split: BrowserSplitNode, props: PaneRendererProps): JSX.Element {
-  const { activePaneId, onSplitterStart, onSplitterEnd, resizing, onPaneClick, onNewTabNavigate } =
-    props;
+  const {
+    activePaneId,
+    onSplitterStart,
+    onSplitterEnd,
+    resizing,
+    onPaneClick,
+    onNewTabNavigate,
+    t,
+  } = props;
   const direction = split.orientation;
   const leftPercent = Math.max(20, Math.min(80, split.ratio * 100));
   const rightPercent = 100 - leftPercent;
@@ -191,6 +203,7 @@ function renderSplit(split: BrowserSplitNode, props: PaneRendererProps): JSX.Ele
           onSplitterEnd,
           onPaneClick,
           onNewTabNavigate,
+          t,
         })}
       </ResizablePanel>
       <ResizableHandle
@@ -209,6 +222,7 @@ function renderSplit(split: BrowserSplitNode, props: PaneRendererProps): JSX.Ele
           onSplitterEnd,
           onPaneClick,
           onNewTabNavigate,
+          t,
         })}
       </ResizablePanel>
     </ResizablePanelGroup>
@@ -222,6 +236,7 @@ function renderSplit(split: BrowserSplitNode, props: PaneRendererProps): JSX.Ele
  * leaves render <BrowserWebview>, splits render a ResizablePanelGroup.
  */
 export function BrowserView() {
+  const { t } = useTranslation('browser');
   // Granular selectors: only re-render when these specific slices change
   const tabs = useBrowserStore(useShallow(s => s.tabs));
   const activeTabId = useBrowserStore(s => s.activeTabId);
@@ -326,12 +341,12 @@ export function BrowserView() {
     unregisterWebview(activePane.id);
     updateTabState(activePane.id, {
       url: NEW_TAB_URL,
-      title: 'Nowa karta',
+      title: t('tabs.newTab'),
       isLoading: false,
       canGoBack: false,
       canGoForward: false,
     });
-  }, [activePane]);
+  }, [activePane, t]);
 
   const handlePaneClick = useCallback((paneId: string) => {
     useBrowserStore.getState().focusPane(paneId);
@@ -517,7 +532,7 @@ export function BrowserView() {
         {tabs.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-muted-foreground gap-4">
             <Globe className="w-16 h-16 opacity-20" />
-            <p className="text-sm">Kliknij +, żeby otworzyć nową kartę</p>
+            <p className="text-sm">{t('tabs.empty.cta')}</p>
           </div>
         ) : (
           <>
@@ -535,6 +550,7 @@ export function BrowserView() {
                   onSplitterEnd: handleSplitterEnd,
                   onPaneClick: handlePaneClick,
                   onNewTabNavigate: handleNewTabNavigate,
+                  t,
                 })}
               </div>
             ))}

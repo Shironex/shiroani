@@ -16,7 +16,7 @@ export function EmptyState({ icon: Icon, title, subtitle, action }: EmptyStatePr
       </div>
       <div className="text-center space-y-1.5">
         <p className="text-sm font-medium text-foreground/70">{title}</p>
-        <p className="text-xs text-muted-foreground/60 max-w-[240px]">{subtitle}</p>
+        <p className="text-xs text-muted-foreground/60 max-w-[320px]">{subtitle}</p>
       </div>
       {action && (
         <Button

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { ProgressBar } from '@/components/shared/ProgressBar';
 import type { SplashVariant } from './SplashHero';
@@ -53,6 +54,7 @@ export function SplashFooter({
   onRetry,
   onClose,
 }: SplashFooterProps) {
+  const { t } = useTranslation('splash');
   const isError = variant === 'error' || Boolean(error);
   const isUpdating = variant === 'updating';
   const showProgress = !isError;
@@ -102,14 +104,14 @@ export function SplashFooter({
               onClick={onClose}
               className="rounded-[7px] border border-foreground/10 bg-foreground/5 px-3.5 py-1.5 text-[11.5px] font-semibold text-foreground/85 hover:bg-foreground/10 cursor-pointer"
             >
-              Zamknij
+              {t('error.close')}
             </button>
             <button
               type="button"
               onClick={onRetry}
               className="rounded-[7px] bg-primary px-3.5 py-1.5 text-[11.5px] font-semibold text-primary-foreground hover:bg-primary/90 cursor-pointer"
             >
-              Ponów
+              {t('error.retry')}
             </button>
           </div>
         ) : (

@@ -21,13 +21,23 @@ export function pluralize(count: number, one: string, few: string, many: string)
 }
 
 /**
- * Format a date string to Polish locale.
+ * Format a date string in the given BCP-47 locale.
+ *
+ * Locale resolution lives at the call site — `packages/shared` cannot depend
+ * on the renderer's i18next instance, so callers in `apps/web` are expected
+ * to pass `i18n.language`. Other surfaces (bot, landing, main process) can
+ * pass a fixed locale or the surface's own resolved language.
  *
  * @param dateStr - Date string parseable by `new Date()` (e.g. "2024-01-15")
- * @param format - 'short' for abbreviated month ("15 sty 2024"), 'long' for full month ("15 stycznia 2024")
+ * @param locale - BCP-47 locale tag (e.g. `'pl'`, `'en'`, `'pl-PL'`)
+ * @param format - 'short' for abbreviated month, 'long' for full month
  */
-export function formatDate(dateStr: string, format: 'short' | 'long' = 'long'): string {
-  return new Date(dateStr).toLocaleDateString('pl-PL', {
+export function formatDate(
+  dateStr: string,
+  locale: string,
+  format: 'short' | 'long' = 'long'
+): string {
+  return new Date(dateStr).toLocaleDateString(locale, {
     day: 'numeric',
     month: format,
     year: 'numeric',

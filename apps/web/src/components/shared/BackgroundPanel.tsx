@@ -1,5 +1,6 @@
 import { Image as ImageIcon, RotateCcw, Trash2 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { useBackgroundStore } from '@/stores/useBackgroundStore';
@@ -34,6 +35,7 @@ export function BackgroundPanel({
   removeLabel,
   className,
 }: BackgroundPanelProps) {
+  const { t } = useTranslation('settings');
   const customBackground = useBackgroundStore(s => s.customBackground);
   const backgroundOpacity = useBackgroundStore(s => s.backgroundOpacity);
   const backgroundBlur = useBackgroundStore(s => s.backgroundBlur);
@@ -44,7 +46,7 @@ export function BackgroundPanel({
 
   const isOnboarding = variant === 'onboarding';
   const RemoveIconFinal = RemoveIcon ?? (isOnboarding ? RotateCcw : Trash2);
-  const removeLabelFinal = removeLabel ?? (isOnboarding ? 'Resetuj' : 'Usuń tło');
+  const removeLabelFinal = removeLabel ?? (isOnboarding ? t('panel.reset') : t('panel.remove'));
 
   const opacityPct = Math.round(backgroundOpacity * 100);
   const blurDisplay = isOnboarding
@@ -68,9 +70,9 @@ export function BackgroundPanel({
       >
         <span className="pointer-events-none absolute inset-0 bg-black/20" aria-hidden="true" />
         <span className="relative z-[2] font-serif text-base font-bold text-white drop-shadow-lg">
-          Własne tło
+          {t('panel.labelCustom')}
           <small className="block font-mono text-[9px] font-medium uppercase tracking-[0.2em] text-white/70">
-            Własne
+            {t('panel.labelCustomTag')}
           </small>
         </span>
       </div>
@@ -83,9 +85,9 @@ export function BackgroundPanel({
         }}
       >
         <span className="font-serif text-base font-bold text-white/95 drop-shadow-lg">
-          Brak tła
+          {t('panel.labelEmpty')}
           <small className="block text-center font-mono text-[9px] font-medium uppercase tracking-[0.2em] text-white/60">
-            Domyślne
+            {t('panel.labelDefault')}
           </small>
         </span>
       </div>
@@ -95,7 +97,7 @@ export function BackgroundPanel({
       {customBackground ? (
         <img
           src={customBackground}
-          alt="Podgląd tła"
+          alt={t('panel.previewAlt')}
           className="w-full h-full object-cover"
           draggable={false}
         />
@@ -109,9 +111,11 @@ export function BackgroundPanel({
         />
       )}
       <div className="absolute bottom-2.5 left-3 font-serif text-[13px] font-bold text-white drop-shadow">
-        {customBackground ? 'Własne tło' : 'Domyślne'}
+        {customBackground ? t('panel.labelCustom') : t('panel.labelDefault')}
         <span className="block font-mono text-[9px] font-normal tracking-[0.16em] uppercase text-white/75 mt-0.5">
-          {customBackground ? 'USTAWIONE' : 'SAKURA TWILIGHT'}
+          {customBackground
+            ? t('panel.labelSet').toUpperCase()
+            : t('panel.labelDefaultTag').toUpperCase()}
         </span>
       </div>
     </div>
@@ -131,7 +135,7 @@ export function BackgroundPanel({
         onClick={pickBackground}
       >
         <ImageIcon className="w-4 h-4" />
-        Wybierz obraz
+        {t('panel.pickImage')}
       </Button>
       {customBackground && (
         <Button
@@ -152,7 +156,7 @@ export function BackgroundPanel({
     (isOnboarding ? (
       <div className="flex flex-col gap-2.5">
         <OnboardingSliderRow
-          label="Rozmycie"
+          label={t('panel.blur')}
           value={backgroundBlur}
           max={20}
           step={1}
@@ -161,7 +165,7 @@ export function BackgroundPanel({
           disabled={slidersDisabled}
         />
         <OnboardingSliderRow
-          label="Przyciemnienie"
+          label={t('panel.dim')}
           value={backgroundOpacity}
           max={1}
           step={0.01}
@@ -175,7 +179,7 @@ export function BackgroundPanel({
         <div>
           <div className="flex items-center justify-between mb-2">
             <label id="bg-opacity-label" className="text-[13px] font-semibold text-foreground">
-              Przezroczystość
+              {t('panel.opacity')}
             </label>
             <span className="font-mono text-[11px] font-semibold text-primary tabular-nums">
               {opacityPct}%
@@ -194,7 +198,7 @@ export function BackgroundPanel({
         <div>
           <div className="flex items-center justify-between mb-2">
             <label id="bg-blur-label" className="text-[13px] font-semibold text-foreground">
-              Rozmycie
+              {t('panel.blur')}
             </label>
             <span className="font-mono text-[11px] font-semibold text-primary tabular-nums">
               {blurDisplay}

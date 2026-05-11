@@ -1,4 +1,5 @@
 import { memo, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 import { EmptyState } from '@/components/shared/EmptyState';
@@ -23,6 +24,7 @@ export const RandomDiscoveryPanel = memo(function RandomDiscoveryPanel({
   onCardClick,
   onError,
 }: RandomDiscoveryPanelProps) {
+  const { t } = useTranslation('discover');
   const pool = useDiscoverStore(s => s.randomShuffled);
   const included = useDiscoverStore(s => s.randomIncludedGenres);
   const excluded = useDiscoverStore(s => s.randomExcludedGenres);
@@ -39,31 +41,34 @@ export const RandomDiscoveryPanel = memo(function RandomDiscoveryPanel({
     useDiscoverStore.getState().setRandomGenres(inc, exc);
   }, []);
 
-  const handleAddToLibrary = useCallback((media: DiscoverMedia) => {
-    const title = getTitle(media.title);
-    const entries = useLibraryStore.getState().entries;
-    const alreadyByAnilist = entries.some(e => e.anilistId === media.id);
-    const alreadyByTitle = entries.some(e => e.title.toLowerCase() === title.toLowerCase());
-    if (alreadyByAnilist || alreadyByTitle) {
-      toast.error('To anime jest już w bibliotece');
-      return;
-    }
-    try {
-      useLibraryStore.getState().addToLibrary({
-        anilistId: media.id,
-        title,
-        titleRomaji: media.title.romaji,
-        titleNative: media.title.native,
-        coverImage:
-          media.coverImage.large || media.coverImage.extraLarge || media.coverImage.medium,
-        episodes: media.episodes,
-        status: 'plan_to_watch',
-      });
-      toast.success('Dodano do biblioteki', { description: title });
-    } catch {
-      toast.error('Nie udało się dodać do biblioteki');
-    }
-  }, []);
+  const handleAddToLibrary = useCallback(
+    (media: DiscoverMedia) => {
+      const title = getTitle(media.title);
+      const entries = useLibraryStore.getState().entries;
+      const alreadyByAnilist = entries.some(e => e.anilistId === media.id);
+      const alreadyByTitle = entries.some(e => e.title.toLowerCase() === title.toLowerCase());
+      if (alreadyByAnilist || alreadyByTitle) {
+        toast.error(t('toast.alreadyInLibrary'));
+        return;
+      }
+      try {
+        useLibraryStore.getState().addToLibrary({
+          anilistId: media.id,
+          title,
+          titleRomaji: media.title.romaji,
+          titleNative: media.title.native,
+          coverImage:
+            media.coverImage.large || media.coverImage.extraLarge || media.coverImage.medium,
+          episodes: media.episodes,
+          status: 'plan_to_watch',
+        });
+        toast.success(t('toast.addedToLibrary'), { description: title });
+      } catch {
+        toast.error(t('toast.addFailed'));
+      }
+    },
+    [t]
+  );
 
   if (error) {
     return <AniListErrorState error={error} onRetry={onError} />;
@@ -83,8 +88,8 @@ export const RandomDiscoveryPanel = memo(function RandomDiscoveryPanel({
       ) : pool.length === 0 ? (
         <EmptyState
           icon={Sparkles}
-          title="Brak propozycji"
-          subtitle="Wybierz inne gatunki lub spróbuj ponownie."
+          title={t('random.emptyTitle')}
+          subtitle={t('random.emptySubtitle')}
         />
       ) : current ? (
         <div className="relative">

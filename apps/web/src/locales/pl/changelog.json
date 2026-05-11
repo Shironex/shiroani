@@ -1,0 +1,22 @@
+{
+  "latestBadge": "v{{version}} · najnowsza",
+  "headline": "Co <1>nowego</1>?",
+  "subtitle": "Historia zmian w ShiroAni: funkcja po funkcji, poprawka po poprawce.",
+  "filter": {
+    "label": "Filtr",
+    "all": "Wszystkie",
+    "major": "Większe wydania",
+    "minor": "Patche"
+  },
+  "jump": {
+    "label": "Skocz do",
+    "ariaLabel": "Przeskocz do wersji"
+  },
+  "release": {
+    "latest": "Najnowsza"
+  },
+  "origin": {
+    "label": "Początek · 2026",
+    "tagline": "„a co, gdyby śledzenie anime było wygodne?\""
+  }
+}

@@ -1,23 +1,145 @@
 ---
 import BaseHead from '../components/BaseHead.astro';
+import type { SupportedLanguage } from '../lib/i18n';
 
 interface Props {
   title: string;
   description?: string;
+  titleKey?: string;
+  descriptionKey?: string;
+  lang?: SupportedLanguage;
 }
 
-const { title, description } = Astro.props;
+const { title, description, titleKey, descriptionKey, lang = 'pl' } = Astro.props;
 ---
 
 <!doctype html>
-<html lang="pl" data-theme="plum">
+<html lang={lang} data-theme="plum">
   <head>
-    <BaseHead title={title} description={description} />
+    <BaseHead
+      title={title}
+      description={description}
+      titleKey={titleKey}
+      descriptionKey={descriptionKey}
+      lang={lang}
+    />
   </head>
   <body>
-    <a href="#main" class="skip-link">Przejdź do treści</a>
+    <a href="#main" class="skip-link" data-i18n="layout.skipToContent">Skip to content</a>
     <div class="atm" aria-hidden="true"></div>
     <div class="grain" aria-hidden="true"></div>
     <slot />
+
+    <script>
+      // Inline dictionary swap. Values are author-controlled build-time strings
+      // (not user input), so direct innerHTML assignments are safe here.
+      import {
+        translations,
+        DEFAULT_LANGUAGE,
+        LANGUAGE_STORAGE_KEY,
+        isSupportedLanguage,
+        type SupportedLanguage,
+      } from '../lib/i18n';
+
+      type LandingWindow = Window & {
+        __shiroaniLandingTranslations?: Record<SupportedLanguage, Record<string, string>>;
+        __shiroaniLandingLang?: SupportedLanguage;
+      };
+      const landingWindow = window as LandingWindow;
+      landingWindow.__shiroaniLandingTranslations = translations;
+
+      function getStoredLang(): SupportedLanguage {
+        try {
+          const stored = localStorage.getItem(LANGUAGE_STORAGE_KEY);
+          if (isSupportedLanguage(stored)) return stored;
+        } catch {
+          /* ignore — localStorage may be unavailable in private mode */
+        }
+        // First-visit fallback: trust the SSR `<html lang>` the page was
+        // rendered with. The route already chose the language (`/` → pl,
+        // `/en/` → en), so overwriting it from a hardcoded default would
+        // flash the wrong language on first paint.
+        const ssrLang = document.documentElement.lang;
+        return isSupportedLanguage(ssrLang) ? ssrLang : DEFAULT_LANGUAGE;
+      }
+
+      function applyTranslations(lang: SupportedLanguage) {
+        const dict = translations[lang];
+        if (!dict) return;
+
+        document.documentElement.lang = lang;
+        landingWindow.__shiroaniLandingLang = lang;
+
+        document.querySelectorAll<HTMLElement>('[data-i18n]').forEach((el) => {
+          const key = el.dataset.i18n;
+          if (key && dict[key] != null) el.textContent = dict[key];
+        });
+
+        document.querySelectorAll<HTMLElement>('[data-i18n-html]').forEach((el) => {
+          const key = el.dataset.i18nHtml;
+          if (key && dict[key] != null) {
+            // Trusted build-time string from the dictionary; safe to inject.
+            el.innerHTML = dict[key];
+          }
+        });
+
+        document.querySelectorAll<HTMLElement>('[data-i18n-alt]').forEach((el) => {
+          const key = el.dataset.i18nAlt;
+          if (key && dict[key] != null) el.setAttribute('alt', dict[key]);
+        });
+
+        document.querySelectorAll<HTMLElement>('[data-i18n-aria-label]').forEach((el) => {
+          const key = el.dataset.i18nAriaLabel;
+          if (key && dict[key] != null) el.setAttribute('aria-label', dict[key]);
+        });
+
+        document.querySelectorAll<HTMLElement>('[data-i18n-title]').forEach((el) => {
+          const key = el.dataset.i18nTitle;
+          if (key && dict[key] != null) el.setAttribute('title', dict[key]);
+        });
+
+        document.querySelectorAll<HTMLMetaElement>('meta[data-i18n-content]').forEach((el) => {
+          const key = el.dataset.i18nContent;
+          if (key && dict[key] != null) el.setAttribute('content', dict[key]);
+        });
+
+        const titleEl = document.querySelector<HTMLTitleElement>('title[data-i18n-text]');
+        if (titleEl) {
+          const key = titleEl.dataset.i18nText;
+          if (key && dict[key] != null) {
+            titleEl.textContent = dict[key];
+            document.title = dict[key];
+          }
+        }
+
+        document.querySelectorAll<HTMLButtonElement>('[data-lang-toggle]').forEach((btn) => {
+          btn.textContent = lang === 'en' ? 'PL' : 'EN';
+          const nextKey = lang === 'en' ? 'nav.switchLanguageToPl' : 'nav.switchLanguageToEn';
+          if (dict[nextKey] != null) btn.setAttribute('aria-label', dict[nextKey]);
+        });
+
+        document.dispatchEvent(new CustomEvent('shiroani:lang-change', { detail: { lang } }));
+      }
+
+      function initI18n() {
+        applyTranslations(getStoredLang());
+
+        document.querySelectorAll<HTMLButtonElement>('[data-lang-toggle]').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            const current = getStoredLang();
+            const next: SupportedLanguage = current === 'en' ? 'pl' : 'en';
+            try {
+              localStorage.setItem(LANGUAGE_STORAGE_KEY, next);
+            } catch {
+              /* ignore */
+            }
+            applyTranslations(next);
+          });
+        });
+      }
+
+      initI18n();
+      document.addEventListener('astro:page-load', initI18n);
+    </script>
   </body>
 </html>

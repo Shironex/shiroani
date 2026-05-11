@@ -16,25 +16,26 @@ import { ImportDialog } from '@/components/shared/ImportDialog';
 import { ViewHeader } from '@/components/shared/ViewHeader';
 import { EmptyState } from '@/components/shared/EmptyState';
 import { KanjiWatermark } from '@/components/shared/KanjiWatermark';
+import { useTranslation } from 'react-i18next';
+import { tDynamic } from '@/lib/i18n';
 import { useDiaryStore, getFilteredDiaryEntries } from '@/stores/useDiaryStore';
 import { DiaryEntryGrid } from './DiaryEntryGrid';
 import { DiaryTimeline } from './DiaryTimeline';
 import { DiarySidebar } from './DiarySidebar';
 import { DiaryEditor } from './DiaryEditor';
-import { pluralize } from '@shiroani/shared';
 import type { DiaryEntry } from '@shiroani/shared';
 import type { DiarySortBy } from '@/stores/useDiaryStore';
 
 const DIARY_FILTER_OPTIONS = [
-  { value: 'all' as const, label: 'Wszystkie' },
-  { value: 'pinned' as const, label: 'Przypięte' },
-  { value: 'with_anime' as const, label: 'Z anime' },
+  { value: 'all' as const, labelKey: 'filter.all' },
+  { value: 'pinned' as const, labelKey: 'filter.pinned' },
+  { value: 'with_anime' as const, labelKey: 'filter.withAnime' },
 ];
 
 const DIARY_SORT_OPTIONS = [
-  { value: 'createdAt', label: 'Data utworzenia' },
-  { value: 'updatedAt', label: 'Data edycji' },
-  { value: 'title', label: 'Tytuł' },
+  { value: 'createdAt', labelKey: 'sort.createdAt' },
+  { value: 'updatedAt', labelKey: 'sort.updatedAt' },
+  { value: 'title', labelKey: 'sort.title' },
 ] as const;
 
 const {
@@ -69,6 +70,7 @@ const {
  * is preserved exactly as before the redesign.
  */
 export function DiaryView() {
+  const { t, i18n } = useTranslation('diary');
   const entries = useDiaryStore(s => s.entries);
   const activeFilter = useDiaryStore(s => s.activeFilter);
   const searchQuery = useDiaryStore(s => s.searchQuery);
@@ -109,10 +111,16 @@ export function DiaryView() {
     [entries, activeFilter, searchQuery, sortBy, sortOrder]
   );
 
-  const subtitle =
-    entries.length > 0
-      ? `${entries.length} ${pluralize(entries.length, 'wpis', 'wpisy', 'wpisów')}`
-      : undefined;
+  const subtitle = entries.length > 0 ? t('subtitle', { count: entries.length }) : undefined;
+
+  const localizedFilterOptions = useMemo(
+    () =>
+      DIARY_FILTER_OPTIONS.map(opt => ({
+        value: opt.value,
+        label: tDynamic(i18n, `diary:${opt.labelKey}`),
+      })),
+    [i18n, i18n.language]
+  );
 
   const isEmpty = filteredEntries.length === 0;
 
@@ -137,12 +145,12 @@ export function DiaryView() {
       {/* Header */}
       <ViewHeader
         icon={NotebookPen}
-        title="Dziennik"
+        title={t('title')}
         subtitle={subtitle}
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
-        searchPlaceholder="Szukaj w dzienniku…"
-        filters={DIARY_FILTER_OPTIONS}
+        searchPlaceholder={t('searchPlaceholder')}
+        filters={localizedFilterOptions}
         activeFilter={activeFilter}
         onFilterChange={setFilter}
         viewMode={viewMode}
@@ -150,13 +158,13 @@ export function DiaryView() {
         actions={
           <>
             <Select value={sortBy} onValueChange={handleSortChange}>
-              <SelectTrigger className="w-[170px] h-8 text-xs bg-background/40 border-border-glass focus:bg-background/60 transition-colors">
+              <SelectTrigger className="min-w-[170px] max-w-full h-8 text-xs bg-background/40 border-border-glass focus:bg-background/60 transition-colors">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
                 {DIARY_SORT_OPTIONS.map(option => (
                   <SelectItem key={option.value} value={option.value} className="text-xs">
-                    {option.label}
+                    {tDynamic(i18n, `diary:${option.labelKey}`)}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -166,7 +174,7 @@ export function DiaryView() {
               size="icon"
               className="w-8 h-8"
               onClick={toggleSortOrder}
-              tooltip={sortOrder === 'asc' ? 'Rosnąco' : 'Malejąco'}
+              tooltip={sortOrder === 'asc' ? t('sort.ascending') : t('sort.descending')}
             >
               <ArrowUpDown
                 className={cn('w-4 h-4 transition-transform', sortOrder === 'asc' && 'rotate-180')}
@@ -175,7 +183,7 @@ export function DiaryView() {
             <div className="w-px h-4 bg-border/50 mx-1" />
             <Button size="sm" className="h-8 gap-1.5 text-xs" onClick={() => openEditor()}>
               <Plus className="w-3.5 h-3.5" />
-              Nowy wpis
+              {t('actions.newEntry')}
             </Button>
             <div className="w-px h-4 bg-border/50 mx-1" />
             <TooltipButton
@@ -183,7 +191,7 @@ export function DiaryView() {
               size="icon"
               className="w-8 h-8"
               onClick={() => setIsExportOpen(true)}
-              tooltip="Eksportuj"
+              tooltip={t('actions.export')}
             >
               <Download className="w-4 h-4" />
             </TooltipButton>
@@ -192,7 +200,7 @@ export function DiaryView() {
               size="icon"
               className="w-8 h-8"
               onClick={() => setIsImportOpen(true)}
-              tooltip="Importuj"
+              tooltip={t('actions.import')}
             >
               <Upload className="w-4 h-4" />
             </TooltipButton>
@@ -222,19 +230,21 @@ export function DiaryView() {
                       <SearchX className="w-7 h-7 opacity-40" />
                     </div>
                     <div className="text-center space-y-1.5">
-                      <p className="text-sm font-medium text-foreground/70">Brak wyników</p>
+                      <p className="text-sm font-medium text-foreground/70">
+                        {t('empty.noResults')}
+                      </p>
                       <p className="text-xs text-muted-foreground/60 max-w-[200px]">
-                        Spróbuj innych słów albo zmień filtr
+                        {t('empty.noResultsHint')}
                       </p>
                     </div>
                   </div>
                 ) : (
                   <EmptyState
                     icon={NotebookPen}
-                    title="Dziennik jest jeszcze pusty"
-                    subtitle="Zapisuj wrażenia z odcinków, recenzje i notatki"
+                    title={t('empty.title')}
+                    subtitle={t('empty.subtitle')}
                     action={{
-                      label: 'Napisz pierwszy wpis',
+                      label: t('empty.action'),
                       icon: Plus,
                       onClick: () => openEditor(),
                     }}
@@ -276,8 +286,10 @@ export function DiaryView() {
         onOpenChange={open => {
           if (!open) setEntryToRemove(null);
         }}
-        title="Usuń wpis"
-        description={`Czy na pewno chcesz usunąć "${entryToRemove?.title || 'Bez tytułu'}" z dziennika?`}
+        title={t('remove.title')}
+        description={t('remove.description', {
+          title: entryToRemove?.title || t('untitled'),
+        })}
         onConfirm={() => {
           if (entryToRemove) {
             removeEntry(entryToRemove.id);

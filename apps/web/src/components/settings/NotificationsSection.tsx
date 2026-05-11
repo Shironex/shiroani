@@ -1,4 +1,5 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
+import { Trans, useTranslation } from 'react-i18next';
 import { Bell, X, BellRing, Info } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import {
@@ -10,14 +11,6 @@ import { TooltipButton } from '@/components/ui/tooltip-button';
 import { useNotificationStore } from '@/stores/useNotificationStore';
 import { IS_WINDOWS } from '@/lib/platform';
 import type { NotificationSettings } from '@shiroani/shared';
-
-const LEAD_TIME_OPTIONS = [
-  { value: '0', label: 'Dokładnie o godzinie emisji' },
-  { value: '5', label: '5 minut' },
-  { value: '15', label: '15 minut' },
-  { value: '30', label: '30 minut' },
-  { value: '60', label: '1 godzina' },
-];
 
 interface NotifFormData {
   enabled: boolean;
@@ -54,6 +47,7 @@ function saveToMain(data: NotifFormData) {
 }
 
 export function NotificationsSection() {
+  const { t } = useTranslation('settings');
   const [data, setData] = useState<NotifFormData>(defaultNotifData);
   const [loaded, setLoaded] = useState(false);
 
@@ -108,38 +102,50 @@ export function NotificationsSection() {
     if (!notifLoaded) loadSubscriptions();
   }, [notifLoaded, loadSubscriptions]);
 
+  // Re-derive options on language change so the select labels update.
+  const leadTimeOptions = useMemo(
+    () => [
+      { value: '0', label: t('notifications.leadTime.options.exact') },
+      { value: '5', label: t('notifications.leadTime.options.min5') },
+      { value: '15', label: t('notifications.leadTime.options.min15') },
+      { value: '30', label: t('notifications.leadTime.options.min30') },
+      { value: '60', label: t('notifications.leadTime.options.h1') },
+    ],
+    [t]
+  );
+
   if (!loaded) return null;
 
   return (
     <div className="space-y-4">
       <SettingsCard
         icon={Bell}
-        title="Powiadomienia"
-        subtitle="Informacje o nowych odcinkach i emisjach na żywo."
+        title={t('notifications.card.title')}
+        subtitle={t('notifications.card.subtitle')}
       >
         <SettingsToggleRow
           id="notif-enabled-label"
-          title="Powiadomienia o odcinkach"
-          description="Wysyłaj powiadomienie, gdy leci nowy odcinek śledzonego anime."
+          title={t('notifications.enabled.title')}
+          description={t('notifications.enabled.description')}
           checked={data.enabled}
           onCheckedChange={v => updateAndSave({ enabled: v })}
         />
 
         <SettingsSelectRow
           divider
-          title="Powiadom przed emisją"
-          description="Ile minut przed emisją wysłać powiadomienie"
+          title={t('notifications.leadTime.title')}
+          description={t('notifications.leadTime.description')}
           value={data.leadTime}
           onValueChange={v => updateAndSave({ leadTime: v })}
           disabled={!data.enabled}
-          options={LEAD_TIME_OPTIONS}
+          options={leadTimeOptions}
         />
 
         <SettingsToggleRow
           divider
           id="notif-quiet-label"
-          title="Cisza nocna"
-          description="Wstrzymaj powiadomienia w wybranych godzinach"
+          title={t('notifications.quietHours.title')}
+          description={t('notifications.quietHours.description')}
           checked={data.quietHoursEnabled}
           onCheckedChange={v => updateAndSave({ quietHoursEnabled: v })}
           disabled={!data.enabled}
@@ -149,7 +155,7 @@ export function NotificationsSection() {
           <div className="flex items-center gap-3 pl-0">
             <div className="flex items-center gap-1.5">
               <label htmlFor="quiet-start" className="text-[11.5px] text-muted-foreground">
-                Od
+                {t('notifications.quietHours.from')}
               </label>
               <input
                 id="quiet-start"
@@ -161,7 +167,7 @@ export function NotificationsSection() {
             </div>
             <div className="flex items-center gap-1.5">
               <label htmlFor="quiet-end" className="text-[11.5px] text-muted-foreground">
-                Do
+                {t('notifications.quietHours.to')}
               </label>
               <input
                 id="quiet-end"
@@ -177,8 +183,8 @@ export function NotificationsSection() {
         <SettingsToggleRow
           divider
           id="notif-sound-label"
-          title="Dźwięk systemowy"
-          description="Dźwięk przy nowym powiadomieniu."
+          title={t('notifications.useSystemSound.title')}
+          description={t('notifications.useSystemSound.description')}
           checked={data.useSystemSound}
           onCheckedChange={v => updateAndSave({ useSystemSound: v })}
           disabled={!data.enabled}
@@ -190,9 +196,11 @@ export function NotificationsSection() {
         <div className="flex items-start gap-3 rounded-xl border border-border-glass bg-background/40 px-4 py-3 text-[11.5px] leading-relaxed text-muted-foreground">
           <Info className="w-4 h-4 text-muted-foreground/80 mt-0.5 shrink-0" />
           <p>
-            Na Windowsie po zamknięciu aplikacji nadchodzące powiadomienia planowane są przez
-            polecenie PowerShell w tle.{' '}
-            <b className="font-semibold text-foreground">Nic nie musisz robić.</b>
+            <Trans
+              i18nKey="notifications.windowsInfo"
+              ns="settings"
+              components={{ 1: <b className="font-semibold text-foreground" /> }}
+            />
           </p>
         </div>
       )}
@@ -200,13 +208,13 @@ export function NotificationsSection() {
       {/* Subscriptions list */}
       <SettingsCard
         icon={BellRing}
-        title="Subskrypcje"
-        subtitle="Anime, z których chcesz otrzymywać powiadomienia."
+        title={t('notifications.subscriptions.title')}
+        subtitle={t('notifications.subscriptions.subtitle')}
         tone="gold"
       >
         {subscriptions.length === 0 ? (
           <div className="rounded-lg border border-border-glass bg-background/30 px-4 py-3 text-center text-[12px] text-muted-foreground">
-            Brak subskrypcji. Dodaj anime z harmonogramu, klikając ikonę dzwonka.
+            {t('notifications.subscriptions.empty')}
           </div>
         ) : (
           <div className="space-y-2">
@@ -239,7 +247,7 @@ export function NotificationsSection() {
                   variant="ghost"
                   size="icon"
                   className="w-7 h-7 shrink-0 text-muted-foreground hover:text-destructive"
-                  tooltip="Usuń subskrypcję"
+                  tooltip={t('notifications.subscriptions.remove')}
                   onClick={() => unsubscribe(sub.anilistId)}
                 >
                   <X className="w-3.5 h-3.5" />

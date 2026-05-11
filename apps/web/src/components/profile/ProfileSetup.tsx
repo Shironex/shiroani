@@ -1,10 +1,12 @@
 import { useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { User, RefreshCw } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useProfileStore } from '@/stores/useProfileStore';
 
 export function ProfileSetup() {
+  const { t } = useTranslation('profile');
   const [input, setInput] = useState('');
   const setUsername = useProfileStore(s => s.setUsername);
   const isLoading = useProfileStore(s => s.isLoading);
@@ -25,9 +27,9 @@ export function ProfileSetup() {
           <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto">
             <User className="w-7 h-7 text-primary" />
           </div>
-          <h2 className="text-lg font-semibold text-foreground">Podłącz profil AniList</h2>
+          <h2 className="text-lg font-semibold text-foreground">{t('setup.title')}</h2>
           <p className="text-sm text-muted-foreground/70 leading-relaxed">
-            Wpisz nazwę użytkownika z AniList, żeby zobaczyć swoje statystyki
+            {t('setup.description')}
           </p>
         </div>
 
@@ -35,7 +37,7 @@ export function ProfileSetup() {
           <Input
             value={input}
             onChange={e => setInput(e.target.value)}
-            placeholder="Nazwa użytkownika AniList"
+            placeholder={t('setup.placeholder')}
             className="h-10 text-sm bg-background/60 border-border-glass text-center"
             autoFocus
           />
@@ -44,7 +46,7 @@ export function ProfileSetup() {
             disabled={!input.trim() || isLoading}
             className="w-full h-9 text-sm"
           >
-            {isLoading ? <RefreshCw className="w-4 h-4 animate-spin" /> : 'Połącz'}
+            {isLoading ? <RefreshCw className="w-4 h-4 animate-spin" /> : t('setup.submit')}
           </Button>
         </form>
 

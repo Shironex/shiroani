@@ -1,0 +1,594 @@
+{
+  "app": {
+    "languageTitle": "Language",
+    "languageDesc": "Choose the display language for the app"
+  },
+  "updates": {
+    "justNow": "just now",
+    "today": "today {{time}}",
+    "card": {
+      "title": "App version",
+      "subtitleStable": "Current version and update channel.",
+      "subtitleMac": "Current ShiroAni version."
+    },
+    "channelLabel": "Update channel",
+    "channelStableUpper": "STABLE CHANNEL",
+    "channelBetaUpper": "BETA CHANNEL",
+    "channelStable": "Stable",
+    "channelBeta": "Beta",
+    "channelLockedNote": "You can't change channels while updating.",
+    "channelDescription": "The stable channel only gets updates after testing. Beta may contain bugs.",
+    "macUnsignedNote": "Auto-updates don't work on macOS yet because the app isn't code-signed. Download the latest version manually from GitHub Releases or Discord.",
+    "openReleases": "Open GitHub Releases",
+    "checkForUpdates": "Check for updates",
+    "download": "Download",
+    "installAndRestart": "Install and restart",
+    "lastChecked": "Last checked: {{label}}",
+    "downgradeWarning": "This is a <1>downgrade</1> — installing it will replace your current library with an older format. Make sure you have a backup.",
+    "downloadProgressAria": "Download progress",
+    "status": {
+      "idle": "No new updates",
+      "checking": "Checking...",
+      "available": "Update available: {{version}}",
+      "downloading": "Downloading · {{transferred}}/{{total}}",
+      "downloadingPct": "Downloading · {{percent}}%",
+      "downloadingFallback": "Downloading...",
+      "ready": "Update ready to install",
+      "awaitingArtifacts": "Release is uploading — download will start automatically.",
+      "errorReleasePending": "Release in progress — try again in a moment.",
+      "errorPrefix": "Error: {{message}}",
+      "unknownError": "Unknown error"
+    },
+    "changelogPreview": {
+      "title": "Changelog",
+      "subtitle": "What's new in this version.",
+      "shortLabels": {
+        "new": "New",
+        "fix": "Fix",
+        "polish": "Polish",
+        "security": "Sec."
+      }
+    }
+  },
+  "notifications": {
+    "card": {
+      "title": "Notifications",
+      "subtitle": "Stay informed about new episodes and live airings."
+    },
+    "enabled": {
+      "title": "Episode notifications",
+      "description": "Send a notification when a new episode of a tracked anime airs."
+    },
+    "leadTime": {
+      "title": "Notify before airing",
+      "description": "How many minutes before airing to send the notification",
+      "options": {
+        "exact": "Exactly at airing time",
+        "min5": "5 minutes",
+        "min15": "15 minutes",
+        "min30": "30 minutes",
+        "h1": "1 hour"
+      }
+    },
+    "quietHours": {
+      "title": "Quiet hours",
+      "description": "Pause notifications during the selected hours",
+      "from": "From",
+      "to": "To"
+    },
+    "useSystemSound": {
+      "title": "System sound",
+      "description": "Play a sound when a new notification arrives."
+    },
+    "windowsInfo": "On Windows, when the app is closed, upcoming notifications are scheduled by a background PowerShell command. <1>You don't need to do anything.</1>",
+    "subscriptions": {
+      "title": "Subscriptions",
+      "subtitle": "Anime you want to receive notifications for.",
+      "empty": "No subscriptions. Add an anime from the schedule by clicking the bell icon.",
+      "remove": "Remove subscription"
+    }
+  },
+  "general": {
+    "profileCard": {
+      "title": "Profile",
+      "subtitle": "The name used in the new-tab greeting. Stays on this device."
+    },
+    "displayName": {
+      "title": "Your name",
+      "description": "Leave empty and Shiro will use your AniList nickname (if linked).",
+      "placeholder": "e.g. Alex"
+    },
+    "appCard": {
+      "title": "General app settings",
+      "subtitle": "App behaviour at system startup and during data refresh."
+    },
+    "autoLaunch": {
+      "title": "Launch at system startup",
+      "description": "Automatically open ShiroAni after you log in."
+    },
+    "feedRefreshOnStartup": {
+      "title": "Refresh RSS at app startup",
+      "description": "When off, news only loads when you visit the News view or refresh manually. Takes effect on next launch."
+    },
+    "restartCallout": "Some system changes require restarting the app. <1>Your data is safe.</1>"
+  },
+  "themes": {
+    "readability": {
+      "title": "Readability",
+      "subtitle": "Tune the text and UI scale to your screen.",
+      "macHint": "On macOS, 105–110% usually works best, especially on Retina displays."
+    },
+    "palette": {
+      "title": "Color theme",
+      "subtitle": "Pick a palette: your own or from the library.",
+      "import": "Import"
+    },
+    "custom": {
+      "label": "Custom",
+      "newAria": "New theme",
+      "newButton": "New theme",
+      "cloneAria": "Clone {{label}} theme",
+      "editAria": "Edit theme",
+      "exportAria": "Export theme",
+      "deleteAria": "Delete theme"
+    },
+    "groupDark": "Dark",
+    "groupLight": "Light",
+    "deleteDialog": {
+      "title": "Delete theme?",
+      "description": "Theme \"{{label}}\" will be permanently deleted. This cannot be undone."
+    },
+    "toast": {
+      "deleted": "Theme deleted",
+      "notFound": "Theme not found",
+      "exported": "Theme exported",
+      "exportFailed": "Failed to export theme",
+      "invalidFile": "Invalid file format",
+      "limitReached": "Theme limit reached ({{limit}})",
+      "imported": "Theme imported",
+      "importFailed": "Failed to import theme"
+    },
+    "editor": {
+      "newTitle": "New theme",
+      "editTitle": "Edit theme",
+      "newDescription": "Create a new theme",
+      "editDescription": "Change settings for your custom theme",
+      "name": "Name",
+      "namePlaceholder": "My theme",
+      "dark": "Dark",
+      "baseTheme": "Base theme",
+      "defaultName": "My theme",
+      "cloneNamePrefix": "Copy of: {{label}}",
+      "groups": {
+        "main": "Main colors",
+        "cardsMenus": "Cards and menus",
+        "sidebar": "Sidebar",
+        "borders": "Borders",
+        "statuses": "Statuses",
+        "shadows": "Shadows"
+      },
+      "reset": "Reset",
+      "cancel": "Cancel",
+      "save": "Save",
+      "toast": {
+        "nameRequired": "Theme name cannot be empty",
+        "saved": "Theme saved",
+        "changesSaved": "Changes saved"
+      }
+    }
+  },
+  "background": {
+    "card": {
+      "title": "App background",
+      "subtitle": "Set a custom image or GIF as the interface background."
+    }
+  },
+  "panel": {
+    "previewAlt": "Background preview",
+    "labelCustom": "Custom background",
+    "labelCustomTag": "Custom",
+    "labelDefault": "Default",
+    "labelDefaultTag": "Sakura twilight",
+    "labelSet": "Set",
+    "labelEmpty": "No background",
+    "pickImage": "Pick image",
+    "remove": "Remove background",
+    "reset": "Reset",
+    "opacity": "Opacity",
+    "blur": "Blur",
+    "dim": "Dim"
+  },
+  "dock": {
+    "position": {
+      "title": "Dock position",
+      "subtitle": "Pick a screen edge. The preview on the right reacts to changes.",
+      "edgeTitle": "Edge",
+      "edgeDescription": "Which screen edge to pin the dock to.",
+      "edgeAria": "Dock edge",
+      "edges": {
+        "bottom": "Bottom",
+        "top": "Top",
+        "left": "Left",
+        "right": "Right"
+      },
+      "resetTitle": "Position on edge",
+      "resetDescription": "Restore the dock to the centre of the edge if you dragged it away.",
+      "resetAction": "Reset position"
+    },
+    "behavior": {
+      "title": "Behaviour",
+      "subtitle": "How the dock reacts to the cursor and whether you can move it.",
+      "autoHide": {
+        "title": "Auto-hide",
+        "description": "Dock collapses to an icon and expands when you hover."
+      },
+      "showLabels": {
+        "title": "Show labels",
+        "description": "Display names under the navigation icons."
+      },
+      "draggable": {
+        "title": "Draggable",
+        "description": "Allow moving the dock by dragging."
+      }
+    }
+  },
+  "views": {
+    "card": {
+      "title": "View visibility",
+      "subtitle": "Hide sections you don't use. Settings is always available."
+    },
+    "alwaysOn": "(always)"
+  },
+  "browser": {
+    "adblock": {
+      "card": {
+        "title": "Ad blocking",
+        "subtitle": "Built-in ad blocker for the ShiroAni browser."
+      },
+      "toggleTitle": "Block ads",
+      "toggleDescription": "Block ads in the built-in browser (EasyList + EasyPrivacy)",
+      "categories": {
+        "graphic": "Graphic / pop-up ads",
+        "trackers": "Analytics trackers",
+        "videoAds": "Video player ads"
+      },
+      "categoryBlocked": "Blocked",
+      "categoryDisabled": "Disabled",
+      "exceptions": "Exceptions",
+      "exceptionsCount": "{{count}} / {{max}}",
+      "addPlaceholder": "e.g. example.com",
+      "addAria": "Add domain to exceptions list",
+      "addButton": "Add",
+      "emptyExceptions": "No exceptions. Ads are blocked on every site.",
+      "listAria": "Exception domains list",
+      "removeAria": "Remove {{host}} from exceptions list",
+      "exceptionsHint": "Adblock is disabled on the listed domains. Cosmetic filters still apply."
+    },
+    "popups": {
+      "card": {
+        "title": "Pop-ups",
+        "subtitle": "Control pop-up windows opened by sites."
+      },
+      "toggleTitle": "Block pop-ups",
+      "toggleDescription": "OAuth windows (Google, Discord) are always allowed."
+    },
+    "tabs": {
+      "card": {
+        "title": "Tab behaviour",
+        "subtitle": "Manage tabs and browsing history."
+      },
+      "restoreTitle": "Restore tabs after restart",
+      "restoreDescription": "Remembers open tabs between sessions.",
+      "splitTitle": "Split tabs",
+      "splitDescription": "Drag a tab onto another to open them side by side.",
+      "trackTitle": "Save browsing history",
+      "trackDescription": "Local history. Never sent anywhere."
+    },
+    "general": {
+      "card": {
+        "title": "Web browser",
+        "subtitle": "General behaviour of the built-in browser."
+      },
+      "description": "ShiroAni uses an embedded Chromium. Browsing data is stored locally and never leaves your device."
+    }
+  },
+  "discord": {
+    "main": {
+      "title": "Discord Rich Presence",
+      "subtitle": "Connect to Discord and show your activity to friends.",
+      "enableAria": "Enable Discord Rich Presence",
+      "showDetailsTitle": "Show anime titles",
+      "showDetailsDescription": "Display the watching anime title on Discord.",
+      "showTimeTitle": "Show elapsed time",
+      "showTimeDescription": "Show how many minutes you've been watching.",
+      "useTemplatesTitle": "Custom templates",
+      "useTemplatesDescription": "Customize the status text for each activity",
+      "save": "Save",
+      "saved": "Saved"
+    },
+    "preview": {
+      "title": "Preview",
+      "subtitle": "How your status will look on Discord.",
+      "playingHeader": "Watching anime",
+      "elapsed": "Elapsed 00:42:15",
+      "anilistButton": "Show on AniList"
+    },
+    "editor": {
+      "title": "Status templates",
+      "subtitle": "Edit the text for each activity type",
+      "activityType": "Activity type",
+      "line1": "Line 1 (description)",
+      "line2": "Line 2 (state)",
+      "line1Placeholder": "e.g. Watching anime",
+      "line2Placeholder": "e.g. {anime_title}",
+      "toggles": {
+        "duration": "Duration",
+        "cover": "Anime cover",
+        "anilistButton": "AniList button"
+      },
+      "variablesLabel": "Available variables:",
+      "resetDefaults": "Restore defaults"
+    },
+    "template": {
+      "watching": {
+        "details": "Watching anime"
+      },
+      "browsing": {
+        "details": "Browsing"
+      },
+      "library": {
+        "details": "Browsing library"
+      },
+      "diary": {
+        "details": "Writing in diary"
+      },
+      "schedule": {
+        "details": "Checking schedule"
+      },
+      "settings": {
+        "details": "Configuring settings"
+      },
+      "idle": {
+        "details": "Idle"
+      }
+    },
+    "activityLabel": {
+      "watching": "Watching anime",
+      "browsing": "Browsing",
+      "library": "Library",
+      "diary": "Diary",
+      "schedule": "Schedule",
+      "settings": "Settings",
+      "idle": "Idle"
+    },
+    "templateVariable": {
+      "animeTitle": "Anime title",
+      "episode": "Episode number",
+      "siteName": "Site name",
+      "libraryCount": "Library count"
+    },
+    "info": "Discord status only works while the Discord client is running on your computer. Friends will see what you're doing in ShiroAni on your Discord profile."
+  },
+  "mascot": {
+    "card": {
+      "title": "Desktop mascot",
+      "subtitle": "Animated chibi mascot on your desktop with a system tray icon.",
+      "enableAria": "Enable mascot"
+    },
+    "size": "Mascot size",
+    "sizeAria": "Mascot size",
+    "sprite": {
+      "title": "Custom sprite",
+      "description": "PNG, JPG, GIF or WEBP · max 10 MB · 2048×2048 px. Animated GIFs render as a single frame.",
+      "change": "Change",
+      "pick": "Pick sprite",
+      "reset": "Reset",
+      "errorFallback": "Failed to load sprite"
+    },
+    "scaleMode": {
+      "title": "Sprite scaling",
+      "description": "How to fit the image into the square mascot window",
+      "options": {
+        "contain": "Fit (preserve aspect)",
+        "cover": "Fill (crop edges)",
+        "stretch": "Stretch"
+      }
+    },
+    "visibility": {
+      "title": "Visibility mode",
+      "description": "When the mascot should appear on the desktop",
+      "options": {
+        "always": "Always visible",
+        "trayOnly": "Only when window is minimised"
+      }
+    },
+    "lock": {
+      "title": "Lock position",
+      "description": "Prevent accidental dragging of the mascot."
+    },
+    "animation": {
+      "title": "Mascot animation",
+      "description": "Soft up-down sway. Disable to keep the mascot still."
+    },
+    "resetPosition": {
+      "title": "Reset position",
+      "description": "Move the mascot back to its default spot (bottom-right corner)",
+      "action": "Reset"
+    }
+  },
+  "data": {
+    "export": {
+      "card": {
+        "title": "Export data",
+        "subtitle": "Save all app data to a JSON file."
+      },
+      "scope": {
+        "library": "Library",
+        "diary": "Diary",
+        "settings": "Settings",
+        "settingsValue": "All",
+        "titles_one": "{{count}} title",
+        "titles_few": "{{count}} titles",
+        "titles_many": "{{count}} titles",
+        "titles_other": "{{count}} titles",
+        "entries_one": "{{count}} entry",
+        "entries_few": "{{count}} entries",
+        "entries_many": "{{count}} entries",
+        "entries_other": "{{count}} entries"
+      },
+      "action": "Export everything"
+    },
+    "import": {
+      "card": {
+        "title": "Import data",
+        "subtitle": "Load data from a JSON file."
+      },
+      "warning": "<1>Heads up:</1> import will overwrite existing data. It's best to export a backup first.",
+      "action": "Pick a JSON file"
+    },
+    "danger": {
+      "title": "Delete all data",
+      "subtitle": "Permanently deletes all data — cannot be undone.",
+      "description": "You'll lose your library, diary, subscriptions and settings. This can't be undone.",
+      "action": "Delete all data"
+    }
+  },
+  "about": {
+    "logoAlt": "ShiroAni logo",
+    "tagline": "Browser · anime tracker in one place",
+    "rerunOnboarding": "Rerun setup wizard",
+    "onboardingHint": "After clicking, the wizard launches right away and Shiro-chan walks you through it again!",
+    "github": "GitHub",
+    "openChangelog": "View changelog",
+    "story": {
+      "title": "Story",
+      "subtitle": "From the author. I just wanted an app like this.",
+      "p1": "I built ShiroAni because I wanted everything for watching anime in one place. <1>Browser, library, schedule, diary</1>, just one cosy place.",
+      "p2": "Over time I kept adding more: mascots, themes, notifications, and I had a great time doing it. At some point I thought: why not share it with others?",
+      "p3": "The idea is for everyone to have their own, fun way to watch anime. And to chat about favourite series with others, in a great <1>community</1>."
+    },
+    "logs": {
+      "title": "App logs",
+      "subtitle": "Open the app log folder in your file explorer.",
+      "action": "Open logs folder"
+    }
+  },
+  "developer": {
+    "card": {
+      "title": "Developer mode",
+      "subtitle": "Debugging tools. Useful when reporting a bug or peeking under the hood."
+    },
+    "toggleTitle": "Enable developer mode",
+    "toggleDescription": "Enables DevTools, log viewer, and diagnostics export.",
+    "devtools": "DevTools",
+    "copyDiagnostics": "Copy diagnostics",
+    "diagnosticsCopied": "Copied",
+    "showLogs": "Show logs"
+  },
+  "logs": {
+    "title": "Log viewer",
+    "descriptionBuffer": "Last {{count}} {{entries}} from the app buffer. Stored only in memory, never sent anywhere.",
+    "descriptionTruncated": "Showing the last {{limit}} of {{total}} entries from the file.",
+    "descriptionFile": "{{count}} {{entries}} from the log file.",
+    "source": {
+      "buffer": "Buffer",
+      "today": "Today's file",
+      "archive": "Archive"
+    },
+    "filePicker": {
+      "label": "File:",
+      "noFiles": "No files",
+      "placeholder": "Pick a log file"
+    },
+    "filterAria": "Level filter",
+    "levelLabel": "Level:",
+    "runtimeLevelAria": "Log level",
+    "levelChanged": "changed",
+    "level": {
+      "all": "All",
+      "error": "Error",
+      "warn": "Warn",
+      "info": "Info",
+      "debug": "Debug"
+    },
+    "searchPlaceholder": "Search logs…",
+    "searchAria": "Search logs",
+    "pause": "Pause",
+    "resume": "Resume",
+    "newCount_one": "+{{count}} new",
+    "newCount_other": "+{{count}} new",
+    "copyAll": "Copy all",
+    "copied": "Copied",
+    "export": "Export",
+    "clear": "Clear",
+    "loading": "Loading file…",
+    "fileError": "Failed to load log file.",
+    "logsUnavailable": "Log file access is unavailable in this environment.",
+    "noFilesError": "No log files on disk.",
+    "emptyBuffer": "Buffer is empty.",
+    "emptyFile": "File contains no entries.",
+    "noFilterMatches": "No entries match the filter.",
+    "showMoreData": "Expand data",
+    "showLessData": "Collapse data",
+    "newEntries": "New entries",
+    "unknownError": "Unknown error.",
+    "entries_one": "entry",
+    "entries_few": "entries",
+    "entries_many": "entries",
+    "entries_other": "entries"
+  },
+  "suite": {
+    "card": {
+      "title": "App family",
+      "subtitle": "Other small apps I make. Maybe you'll find something useful. They're all free."
+    },
+    "available": "Available",
+    "openCta": "Check out {{name}}",
+    "shiranami": {
+      "tagline": "A haven for music",
+      "description": "A calm player for your local library: playlists, internet radio, synced lyrics, and YouTube downloads. Perfect in the background while watching an episode or catching up on manga.",
+      "previewAlt": "Library view in the Shiranami app"
+    },
+    "kireimanga": {
+      "tagline": "Manga reader",
+      "description": "A comfy reader with a chapter library, bookmarks, import, and night mode. Your series wait in one quiet place.",
+      "previewAlt": "Library view in the KireiManga app"
+    }
+  },
+  "nav": {
+    "groupApp": "App",
+    "groupAppearance": "Appearance",
+    "groupIntegrations": "Integrations",
+    "groupData": "Data",
+    "groupAdvanced": "Advanced",
+    "ariaSections": "Settings sections",
+    "general": "General",
+    "generalSubtitle": "Basic app settings",
+    "browser": "Browser",
+    "browserSubtitle": "Built-in browser settings",
+    "notifications": "Notifications",
+    "notificationsSubtitle": "New episodes and airing schedule",
+    "themes": "Themes",
+    "themesSubtitle": "Color palette and readability scale",
+    "background": "Background",
+    "backgroundSubtitle": "Custom background image and blur control",
+    "dock": "Dock",
+    "dockSubtitle": "Position and behaviour of the navigation bar",
+    "views": "Views",
+    "viewsSubtitle": "Section visibility in the dock",
+    "discord": "Discord",
+    "discordSubtitle": "Rich Presence: show friends what you're watching",
+    "mascot": "Mascot",
+    "mascotSubtitle": "Animated chibi mascot on the desktop",
+    "data": "Data",
+    "dataSubtitle": "Export and import app data",
+    "updates": "Updates",
+    "updatesSubtitle": "Version and update channel",
+    "suite": "Family",
+    "suiteSubtitle": "Other apps worth checking out",
+    "about": "About",
+    "aboutSubtitle": "Story, version and logs",
+    "developer": "Developer",
+    "developerSubtitle": "Debug tools and diagnostics"
+  }
+}

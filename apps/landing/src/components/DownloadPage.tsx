@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { GITHUB_RELEASES_API_URL, GITHUB_RELEASES_URL } from '@shiroani/shared';
 import { currentVersion } from '../lib/releases';
+import { useLandingLang } from '../lib/useLandingLang';
+import { t as translate, type SupportedLanguage } from '../lib/i18n';
 
 type Platform = 'win' | 'mac';
 
@@ -19,14 +21,14 @@ interface ReleaseData {
 
 interface PlatformSpec {
   key: Platform;
-  label: string;
+  labelKey: string;
   extension: string;
   pattern: RegExp;
 }
 
 const PLATFORMS: PlatformSpec[] = [
-  { key: 'win', label: 'Windows', extension: '.exe', pattern: /\.exe$/i },
-  { key: 'mac', label: 'macOS', extension: '.dmg', pattern: /\.dmg$/i },
+  { key: 'win', labelKey: 'dlp.platform.win', extension: '.exe', pattern: /\.exe$/i },
+  { key: 'mac', labelKey: 'dlp.platform.mac', extension: '.dmg', pattern: /\.dmg$/i },
 ];
 
 // Electron-builder ships filenames like "ShiroAni-0.5.0-arm64.dmg" or
@@ -56,8 +58,8 @@ function formatBytes(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-function formatReleaseDate(iso: string): string {
-  return new Intl.DateTimeFormat('pl-PL', {
+function formatReleaseDate(iso: string, locale: string): string {
+  return new Intl.DateTimeFormat(locale, {
     day: 'numeric',
     month: 'long',
     year: 'numeric',
@@ -76,7 +78,16 @@ const MacIcon = () => (
   </svg>
 );
 
-export function DownloadPage() {
+function formatTemplate(template: string, vars: Record<string, string>): string {
+  return template.replace(/\{(\w+)\}/g, (_, name: string) =>
+    name in vars ? vars[name] : `{${name}}`
+  );
+}
+
+export function DownloadPage({ lang: initialLang }: { lang?: SupportedLanguage } = {}) {
+  const lang = useLandingLang(initialLang);
+  const t = (key: string) => translate(key, lang);
+
   const fallbackVersion = currentVersion();
   const [release, setRelease] = useState<ReleaseData | null>(null);
   const [error, setError] = useState(false);
@@ -123,7 +134,7 @@ export function DownloadPage() {
   }, []);
 
   const version = release?.tag_name?.replace(/^v/i, '') || fallbackVersion;
-  const releasedOn = release ? formatReleaseDate(release.published_at) : null;
+  const releasedOn = release ? formatReleaseDate(release.published_at, t('dlp.dateLocale')) : null;
 
   return (
     <>
@@ -133,31 +144,31 @@ export function DownloadPage() {
         </div>
         <span className="eyebrow">
           <span className="blip" aria-hidden="true"></span>v{version}
-          {releasedOn && <> · wydanie z {releasedOn}</>}
+          {releasedOn && (
+            <>
+              {' '}
+              · {t('dlp.eyebrow.released')} {releasedOn}
+            </>
+          )}
         </span>
         <h1>
-          Pobierz <em>ShiroAni</em>.
+          {t('dlp.heading.lead')} <em>{t('dlp.heading.em')}</em>
+          {t('dlp.heading.tail')}
         </h1>
-        <p className="sub">
-          Za darmo, bez konta, bez reklam. Na Windowsie aktualizuje się sama. Żadna wersja nie jest
-          jeszcze podpisana, szczegóły o SmartScreen i macOS znajdziesz niżej.
-        </p>
+        <p className="sub">{t('dlp.sub')}</p>
       </header>
 
-      <section className="dlp-body" aria-label="Pobieranie">
+      <section className="dlp-body" aria-label={t('dlp.aria.section')}>
         {error ? (
           <div className="dlp-error">
-            <p>
-              Nie udało się pobrać informacji o najnowszej wersji. Plik znajdziesz w wydaniach na
-              GitHubie.
-            </p>
+            <p>{t('dlp.error.message')}</p>
             <a
               href={GITHUB_RELEASES_URL}
               target="_blank"
               rel="noopener noreferrer"
               className="dlp-btn dlp-btn-primary"
             >
-              Otwórz GitHub Releases <span aria-hidden="true">↗</span>
+              {t('dlp.error.cta')} <span aria-hidden="true">↗</span>
             </a>
           </div>
         ) : (
@@ -168,9 +179,14 @@ export function DownloadPage() {
               const href = asset?.browser_download_url ?? GITHUB_RELEASES_URL;
               const external = !asset;
               const size = asset ? formatBytes(asset.size) : null;
+              const platformLabel = t(p.labelKey);
               const ariaLabel = asset
-                ? `Pobierz ${p.label}, ${p.extension}, ${size}`
-                : `Otwórz stronę wydania dla ${p.label}`;
+                ? formatTemplate(t('dlp.aria.download'), {
+                    platform: platformLabel,
+                    ext: p.extension,
+                    size: size ?? '',
+                  })
+                : formatTemplate(t('dlp.aria.openRelease'), { platform: platformLabel });
               return (
                 <a
                   key={p.key}
@@ -188,8 +204,8 @@ export function DownloadPage() {
                   </span>
                   <div className="pbody">
                     <div className="pn">
-                      {p.label}
-                      {isPrimary && <span className="pbadge">Twój system</span>}
+                      {platformLabel}
+                      {isPrimary && <span className="pbadge">{t('dlp.your')}</span>}
                     </div>
                     <div className="ps">
                       {release && asset && size ? (
@@ -198,9 +214,9 @@ export function DownloadPage() {
                           {parseArch(asset.name) && <> · {parseArch(asset.name)}</>} · {size}
                         </>
                       ) : release && !asset ? (
-                        <>Brak pliku dla tej platformy, zajrzyj do wydania</>
+                        <>{t('dlp.notAvailable')}</>
                       ) : (
-                        <span className="pskel">wczytywanie…</span>
+                        <span className="pskel">{t('dlp.loading')}</span>
                       )}
                     </div>
                   </div>
@@ -214,53 +230,51 @@ export function DownloadPage() {
         )}
 
         <div className="dlp-sr" role="status" aria-live="polite">
-          {downloaded ? `Pobieranie ${downloaded === 'win' ? 'Windows' : 'macOS'} rozpoczęte.` : ''}
+          {downloaded
+            ? formatTemplate(t('dlp.sr.started'), {
+                platform: downloaded === 'win' ? t('dlp.platform.win') : t('dlp.platform.mac'),
+              })
+            : ''}
         </div>
 
         <div className="dlp-notes">
           <aside className="dlp-note">
             <div className="nhead">
               <span className="ndot" aria-hidden="true"></span>
-              Windows · SmartScreen
+              {t('dlp.note.win.title')}
             </div>
             <p>
-              Instalator nie ma certyfikatu EV, więc Windows SmartScreen wyświetli ostrzeżenie{' '}
-              <b>„System Windows ochronił Twój komputer"</b>. Kliknij <b>Więcej informacji</b>, a
-              potem <b>Uruchom mimo to</b>.
+              {t('dlp.note.win.body.lead')} <b>{t('dlp.note.win.body.warn')}</b>
+              {t('dlp.note.win.body.tail')} <b>{t('dlp.note.win.body.more')}</b>
+              {t('dlp.note.win.body.then')} <b>{t('dlp.note.win.body.run')}</b>
+              {t('dlp.note.win.body.dot')}
             </p>
-            <p className="nmeta">
-              Po instalacji aplikacja aktualizuje się sama. Ostrzeżenie zobaczysz tylko przy
-              pierwszym uruchomieniu.
-            </p>
+            <p className="nmeta">{t('dlp.note.win.meta')}</p>
           </aside>
 
           <aside className="dlp-note">
             <div className="nhead">
               <span className="ndot" aria-hidden="true"></span>
-              macOS · po każdym pobraniu
+              {t('dlp.note.mac.title')}
             </div>
             <p>
-              Aplikacja nie ma certyfikatu Apple, więc macOS zablokuje ją przy pierwszym
-              uruchomieniu. Po przeniesieniu ShiroAni do folderu <b>Applications</b> wklej w
-              terminalu:
+              {t('dlp.note.mac.body.lead')} <b>{t('dlp.note.mac.body.applications')}</b>{' '}
+              {t('dlp.note.mac.body.tail')}
             </p>
             <div className="ncode">
               <code>{MAC_QUARANTINE_CMD}</code>
-              <button type="button" onClick={onCopyCmd} aria-label="Skopiuj komendę">
-                {copied ? 'Skopiowano' : 'Kopiuj'}
+              <button type="button" onClick={onCopyCmd} aria-label={t('dlp.note.mac.copyAria')}>
+                {copied ? t('dlp.note.mac.copied') : t('dlp.note.mac.copy')}
               </button>
             </div>
-            <p className="nmeta">
-              Powtarzaj tę komendę po każdej aktualizacji. macOS oznacza kwarantanną każdy świeżo
-              pobrany plik.
-            </p>
+            <p className="nmeta">{t('dlp.note.mac.meta')}</p>
           </aside>
         </div>
 
         <div className="dlp-links">
           <a href="/changelog" className="dlp-btn">
             <span aria-hidden="true">≡</span>
-            <span>Lista zmian</span>
+            <span>{t('dlp.links.changelog')}</span>
           </a>
           <a
             href={release?.html_url ?? GITHUB_RELEASES_URL}
@@ -269,7 +283,7 @@ export function DownloadPage() {
             className="dlp-btn"
           >
             <span aria-hidden="true">↗</span>
-            <span>Pełne wydanie na GitHubie</span>
+            <span>{t('dlp.links.fullRelease')}</span>
           </a>
         </div>
       </section>

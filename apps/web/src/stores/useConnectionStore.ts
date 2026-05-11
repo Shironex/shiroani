@@ -8,6 +8,7 @@ import {
   type WsThrottledPayload,
 } from '@shiroani/shared';
 import { getSocket } from '@/lib/socket';
+import i18n from '@/lib/i18n';
 
 const logger = createLogger('ConnectionStore');
 
@@ -119,7 +120,7 @@ export const useConnectionStore = create<ConnectionStore>()(
 
         throttledHandler = (payload: WsThrottledPayload) => {
           logger.warn(`Rate limited on "${payload.event}" — retry in ${payload.retryAfter}ms`);
-          toast.warning('Zbyt wiele zapytań — poczekaj chwilę', {
+          toast.warning(i18n.t('nav:connection.toast.throttled'), {
             duration: 4000,
           });
         };

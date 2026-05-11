@@ -1,4 +1,5 @@
 import { memo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { SlidersHorizontal } from 'lucide-react';
 import { GenrePicker } from '@/components/discover/GenrePicker';
 
@@ -15,6 +16,7 @@ export const RandomFiltersPanel = memo(function RandomFiltersPanel({
   disabled,
   onChange,
 }: RandomFiltersPanelProps) {
+  const { t } = useTranslation('discover');
   const [open, setOpen] = useState(true);
   const hasFilters = included.length > 0 || excluded.length > 0;
 
@@ -29,7 +31,7 @@ export const RandomFiltersPanel = memo(function RandomFiltersPanel({
         <div className="flex items-center gap-2">
           <SlidersHorizontal className="w-3.5 h-3.5 text-primary" />
           <span className="font-mono text-[10px] uppercase tracking-[0.18em] font-semibold text-foreground/90">
-            Gatunki
+            {t('genres.title')}
           </span>
           {hasFilters && (
             <span className="text-2xs text-muted-foreground">
@@ -40,15 +42,12 @@ export const RandomFiltersPanel = memo(function RandomFiltersPanel({
           )}
         </div>
         <span className="font-mono text-[9.5px] uppercase tracking-[0.14em] text-muted-foreground/70">
-          {open ? 'Zwiń' : 'Rozwiń'}
+          {open ? t('genres.collapse') : t('genres.expand')}
         </span>
       </button>
       {open && (
         <div className="px-4 pb-3 pt-1 space-y-2 border-t border-border-glass/60">
-          <p className="text-2xs text-muted-foreground/70 leading-relaxed">
-            Kliknij, aby wybrać. Kliknij ponownie, aby wykluczyć. Trzeci klik czyści wybór. Wybrane
-            gatunki łączą się przez „i".
-          </p>
+          <p className="text-2xs text-muted-foreground/70 leading-relaxed">{t('genres.hint')}</p>
           <GenrePicker
             included={included}
             excluded={excluded}

@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import { Search, SearchX, LayoutGrid, List } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
 import { TooltipButton } from '@/components/ui/tooltip-button';
@@ -50,13 +51,15 @@ export function ViewHeader<T extends string = string>({
   actions,
   searchQuery,
   onSearchChange,
-  searchPlaceholder = 'Szukaj...',
+  searchPlaceholder,
   filters,
   activeFilter,
   onFilterChange,
   viewMode,
   onViewModeChange,
 }: ViewHeaderProps<T>) {
+  const { t } = useTranslation('nav');
+  const finalSearchPlaceholder = searchPlaceholder ?? t('header.searchPlaceholder');
   const showSearch = onSearchChange !== undefined;
   const showFilters = filters !== undefined && filters.length > 0;
   const showSecondRow = showSearch || showFilters;
@@ -98,7 +101,7 @@ export function ViewHeader<T extends string = string>({
                   viewMode === 'grid' && 'bg-primary/15 text-primary hover:bg-primary/15'
                 )}
                 onClick={() => onViewModeChange('grid')}
-                tooltip="Widok siatki"
+                tooltip={t('header.viewModeGrid')}
               >
                 <LayoutGrid className="w-4 h-4" />
               </TooltipButton>
@@ -110,7 +113,7 @@ export function ViewHeader<T extends string = string>({
                   viewMode === 'list' && 'bg-primary/15 text-primary hover:bg-primary/15'
                 )}
                 onClick={() => onViewModeChange('list')}
-                tooltip="Widok listy"
+                tooltip={t('header.viewModeList')}
               >
                 <List className="w-4 h-4" />
               </TooltipButton>
@@ -128,13 +131,13 @@ export function ViewHeader<T extends string = string>({
               <Input
                 value={searchQuery ?? ''}
                 onChange={e => onSearchChange?.(e.target.value)}
-                placeholder={searchPlaceholder}
+                placeholder={finalSearchPlaceholder}
                 className="pl-8 h-8 text-sm"
               />
               {searchQuery && (
                 <button
                   onClick={() => onSearchChange?.('')}
-                  aria-label="Wyczyść wyszukiwanie"
+                  aria-label={t('header.clearSearch')}
                   className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground/50 hover:text-foreground/70 transition-colors"
                 >
                   <SearchX className="w-3.5 h-3.5" />

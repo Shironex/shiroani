@@ -1,3 +1,4 @@
+import { Trans, useTranslation } from 'react-i18next';
 import { LayoutGrid } from 'lucide-react';
 import { StepLayout } from '../StepLayout';
 import { SettingsToggleRow } from '@/components/settings/SettingsCard';
@@ -14,6 +15,7 @@ import { useDockPreviewItems } from '@/hooks/useDockPreviewItems';
  * position before they commit to it.
  */
 export function DockStep() {
+  const { t } = useTranslation('onboarding');
   const edge = useDockStore(s => s.edge);
   const setEdge = useDockStore(s => s.setEdge);
   const dockItems = useDockPreviewItems();
@@ -24,58 +26,64 @@ export function DockStep() {
   const draggable = useDockStore(s => s.draggable);
   const setDraggable = useDockStore(s => s.setDraggable);
 
+  const emPrimary = <em className="not-italic text-primary italic" />;
+  const bPrimary = <b className="font-bold text-primary" />;
+
   return (
     <StepLayout
       kanji="位"
       headline={
-        <>
-          Gdzie <em className="not-italic text-primary italic">postawić</em> dock? Pod ręką, ale nie
-          na drodze.
-        </>
+        <Trans ns="onboarding" i18nKey="step.dock.headline" components={{ 1: emPrimary }} />
       }
-      description={
-        <>
-          Pływająca pigułka z ikonami domyślnie siedzi na dole, ale możesz przypiąć ją do dowolnej
-          krawędzi. Podgląd masz po prawej.
-        </>
-      }
-      stepMarker={
-        <>
-          Krok <b className="font-bold text-primary">05 · Układ</b> · dock nawigacyjny
-        </>
-      }
+      description={t('step.dock.description')}
+      stepMarker={<Trans ns="onboarding" i18nKey="step.dock.marker" components={{ 1: bPrimary }} />}
       stepIcon={<LayoutGrid className="h-5 w-5" />}
-      stepTitle="Dock"
+      stepTitle={t('step.dock.title')}
     >
       <div className="space-y-3 rounded-2xl border border-border-glass bg-foreground/[0.02] p-4">
         <DockStage edge={edge} items={dockItems} />
         <div className="grid grid-cols-4 gap-1.5">
-          <EdgePill edge="bottom" current={edge} onSelect={setEdge} label="Dół" />
-          <EdgePill edge="top" current={edge} onSelect={setEdge} label="Góra" />
-          <EdgePill edge="left" current={edge} onSelect={setEdge} label="Lewo" />
-          <EdgePill edge="right" current={edge} onSelect={setEdge} label="Prawo" />
+          <EdgePill
+            edge="bottom"
+            current={edge}
+            onSelect={setEdge}
+            label={t('step.dock.edge.bottom')}
+          />
+          <EdgePill edge="top" current={edge} onSelect={setEdge} label={t('step.dock.edge.top')} />
+          <EdgePill
+            edge="left"
+            current={edge}
+            onSelect={setEdge}
+            label={t('step.dock.edge.left')}
+          />
+          <EdgePill
+            edge="right"
+            current={edge}
+            onSelect={setEdge}
+            label={t('step.dock.edge.right')}
+          />
         </div>
       </div>
 
       <div className="flex flex-col gap-2">
         <SettingsToggleRow
           id="onb-dock-autohide"
-          title="Automatyczne ukrywanie"
-          description="Chowa się do ikony, pokazuje po najechaniu"
+          title={t('step.dock.autoHide.title')}
+          description={t('step.dock.autoHide.description')}
           checked={autoHide}
           onCheckedChange={setAutoHide}
         />
         <SettingsToggleRow
           id="onb-dock-labels"
-          title="Pokaż etykiety"
-          description="Nazwy widoczne pod ikonami"
+          title={t('step.dock.showLabels.title')}
+          description={t('step.dock.showLabels.description')}
           checked={showLabels}
           onCheckedChange={setShowLabels}
         />
         <SettingsToggleRow
           id="onb-dock-drag"
-          title="Przeciąganie"
-          description="Zmiana pozycji docka przeciąganiem"
+          title={t('step.dock.draggable.title')}
+          description={t('step.dock.draggable.description')}
           checked={draggable}
           onCheckedChange={setDraggable}
         />

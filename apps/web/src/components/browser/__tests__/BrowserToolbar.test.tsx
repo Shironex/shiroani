@@ -1,5 +1,6 @@
 import { render, screen } from '@/test/test-utils';
 import { vi } from 'vitest';
+import i18n from '@/lib/i18n';
 import { BrowserToolbar } from '../BrowserToolbar';
 
 const mockSetAddressBarFocused = vi.fn();
@@ -48,7 +49,10 @@ function getButtons() {
 }
 
 function getUrlInput() {
-  return screen.getByPlaceholderText('Wpisz adres albo szukaj');
+  // Resolve through i18n so the assertion follows the active locale's
+  // source of truth (EN under the test setup) instead of pinning to a
+  // hardcoded copy string.
+  return screen.getByPlaceholderText(i18n.t('browser:urlBar.placeholder'));
 }
 
 describe('BrowserToolbar', () => {

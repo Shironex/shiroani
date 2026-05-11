@@ -1,0 +1,86 @@
+{
+  "title": "News",
+  "regionLabel": "News",
+  "searchPlaceholder": "Search articles...",
+  "viewToggle": {
+    "ariaLabel": "View",
+    "all": "All",
+    "bookmarks": "Bookmarks"
+  },
+  "language": {
+    "ariaLabel": "Language"
+  },
+  "category": {
+    "all": "All",
+    "news": "News",
+    "episodes": "Episodes",
+    "reviews": "Reviews",
+    "community": "Community"
+  },
+  "languageLabel": {
+    "all": "All",
+    "en": "English",
+    "pl": "Polish"
+  },
+  "actions": {
+    "markAllRead": "Mark all as read",
+    "refresh": "Refresh sources",
+    "loadMore": "Show more",
+    "loadingMore": "Loading...",
+    "tryAgain": "Try again"
+  },
+  "summary": {
+    "noEntries": "No entries",
+    "entries_one": "{{count}} entry",
+    "entries_few": "{{count}} entries",
+    "entries_many": "{{count}} entries",
+    "entries_other": "{{count}} entries",
+    "sources_one": "{{count}} source",
+    "sources_few": "{{count}} sources",
+    "sources_many": "{{count}} sources",
+    "sources_other": "{{count}} sources",
+    "withSources": "{{entries}} · {{sources}}"
+  },
+  "newCount_one": "{{count}} new entry",
+  "newCount_few": "{{count}} new entries",
+  "newCount_many": "{{count}} new entries",
+  "newCount_other": "{{count}} new entries",
+  "empty": {
+    "title": "No news",
+    "subtitle": "No entries match the current filters",
+    "noResultsTitle": "No results",
+    "noResultsSubtitle": "No articles found for „{{query}}\"",
+    "noBookmarksTitle": "No bookmarks",
+    "noBookmarksSubtitle": "Click the bookmark icon in the article reader."
+  },
+  "loading": "Loading news",
+  "hero": {
+    "featured": "Featured"
+  },
+  "item": {
+    "openExternalAria": "Open in browser: {{title}}"
+  },
+  "sidebar": {
+    "mySources": "My sources",
+    "allSources": "All sources",
+    "trending": "Most active",
+    "trendingPeriod": "7 days",
+    "activityAria": "{{name}} activity",
+    "entries_one": "{{count}} entry",
+    "entries_few": "{{count}} entries",
+    "entries_many": "{{count}} entries",
+    "entries_other": "{{count}} entries"
+  },
+  "reader": {
+    "close": "Close",
+    "readerLabel": "Reader",
+    "addBookmark": "Save for later",
+    "removeBookmark": "Remove bookmark",
+    "copyLink": "Copy link",
+    "openExternal": "Open in browser",
+    "readFull": "Read full article",
+    "previewUnavailable": "Preview unavailable. Open the article in a browser to read the full content.",
+    "related": "Related",
+    "ariaDescribed": "Article from {{source}} · {{published}}"
+  }
+}

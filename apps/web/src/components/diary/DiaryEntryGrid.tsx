@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { Pin } from 'lucide-react';
 import type { DiaryEntry } from '@shiroani/shared';
@@ -19,6 +20,7 @@ export function DiaryEntryGrid({
   onRemove,
   onTogglePin,
 }: DiaryEntryGridProps) {
+  const { t } = useTranslation('diary');
   if (viewMode === 'grid') {
     return (
       <div className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-3">
@@ -74,7 +76,7 @@ export function DiaryEntryGrid({
                   <Pin className="w-3 h-3 text-primary fill-primary rotate-45 shrink-0" />
                 )}
                 <h3 className="text-sm font-medium truncate group-hover/list-item:text-primary transition-colors">
-                  {entry.title || 'Bez tytułu'}
+                  {entry.title || t('untitled')}
                 </h3>
               </div>
               <p className="text-xs text-muted-foreground/60 mt-0.5 truncate">

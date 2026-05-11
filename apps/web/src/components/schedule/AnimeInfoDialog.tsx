@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -25,11 +26,11 @@ import {
   formatTimeUntilAiring,
 } from '@/lib/anime-utils';
 import {
-  ANILIST_FORMAT_LABELS,
-  ANILIST_STATUS_LABELS,
-  ANILIST_SOURCE_LABELS,
-  ANILIST_SEASON_LABELS,
-  ANILIST_RELATION_LABELS,
+  getAnilistFormatLabel,
+  getAnilistStatusLabel,
+  getAnilistSourceLabel,
+  getAnilistSeasonLabel,
+  getAnilistRelationLabel,
 } from '@/lib/constants';
 import { emitAsync } from '@/lib/socketHelpers';
 import { useNavigateToBrowser } from '@/hooks/useNavigateToBrowser';
@@ -82,6 +83,10 @@ interface AnimeInfoDialogProps {
 }
 
 export function AnimeInfoDialog({ anime, open, onOpenChange }: AnimeInfoDialogProps) {
+  // Subscribe to language changes so the imperative anilist label getters
+  // re-evaluate on the next render when the user switches language.
+  const { i18n } = useTranslation('anilist');
+  const { t } = useTranslation('schedule');
   const [details, setDetails] = useState<AnimeDetail | null>(null);
   const [loading, setLoading] = useState(false);
   const [descExpanded, setDescExpanded] = useState(false);
@@ -262,28 +267,26 @@ export function AnimeInfoDialog({ anime, open, onOpenChange }: AnimeInfoDialogPr
 
           {/* Info badges */}
           <div className="flex flex-wrap gap-1.5">
-            {format && <Badge variant="outline">{ANILIST_FORMAT_LABELS[format] ?? format}</Badge>}
-            {status && <Badge variant="outline">{ANILIST_STATUS_LABELS[status] ?? status}</Badge>}
+            {format && <Badge variant="outline">{getAnilistFormatLabel(format)}</Badge>}
+            {status && <Badge variant="outline">{getAnilistStatusLabel(status)}</Badge>}
             {details?.source && (
-              <Badge variant="outline">
-                {ANILIST_SOURCE_LABELS[details.source] ?? details.source}
-              </Badge>
+              <Badge variant="outline">{getAnilistSourceLabel(details.source)}</Badge>
             )}
             {details?.season && details?.seasonYear && (
               <Badge variant="outline">
-                {ANILIST_SEASON_LABELS[details.season] ?? details.season} {details.seasonYear}
+                {getAnilistSeasonLabel(details.season)} {details.seasonYear}
               </Badge>
             )}
             {episodes && (
               <Badge variant="outline" className="gap-1">
                 <Tv className="w-3 h-3" />
-                {episodes} odc.
+                {episodes} {t('dialog.episodesShort')}
               </Badge>
             )}
             {details?.duration && (
               <Badge variant="outline" className="gap-1">
                 <Clock className="w-3 h-3" />
-                {details.duration} min
+                {details.duration} {t('dialog.minutesShort')}
               </Badge>
             )}
           </div>
@@ -295,8 +298,12 @@ export function AnimeInfoDialog({ anime, open, onOpenChange }: AnimeInfoDialogPr
               <div className="flex items-center gap-2 p-2.5 rounded-lg bg-primary/5 border border-primary/10">
                 <Play className="w-4 h-4 text-primary shrink-0" />
                 <span className="text-sm">
-                  <span className="font-medium">Odc. {details.nextAiringEpisode.episode}</span>
-                  <span className="text-muted-foreground"> za </span>
+                  <span className="font-medium">
+                    {t('dialog.nextEpisode.episode', {
+                      episode: details.nextAiringEpisode.episode,
+                    })}
+                  </span>
+                  <span className="text-muted-foreground"> {t('dialog.nextEpisode.in')} </span>
                   <span className="font-medium text-primary">
                     {formatTimeUntilAiring(details.nextAiringEpisode.timeUntilAiring!)}
                   </span>
@@ -307,7 +314,9 @@ export function AnimeInfoDialog({ anime, open, onOpenChange }: AnimeInfoDialogPr
           {/* Studios */}
           {mainStudios.length > 0 && (
             <div>
-              <h3 className="text-xs font-medium text-muted-foreground mb-1">Studia</h3>
+              <h3 className="text-xs font-medium text-muted-foreground mb-1">
+                {t('dialog.studios')}
+              </h3>
               <p className="text-sm font-medium">{mainStudios.join(', ')}</p>
             </div>
           )}
@@ -315,7 +324,9 @@ export function AnimeInfoDialog({ anime, open, onOpenChange }: AnimeInfoDialogPr
           {/* Genres */}
           {genres.length > 0 && (
             <div>
-              <h3 className="text-xs font-medium text-muted-foreground mb-1.5">Gatunki</h3>
+              <h3 className="text-xs font-medium text-muted-foreground mb-1.5">
+                {t('dialog.genres')}
+              </h3>
               <div className="flex flex-wrap gap-1">
                 {genres.map(genre => (
                   <Badge key={genre} variant="secondary" className="text-xs">
@@ -329,7 +340,9 @@ export function AnimeInfoDialog({ anime, open, onOpenChange }: AnimeInfoDialogPr
           {/* Tags */}
           {nonSpoilerTags.length > 0 && (
             <div>
-              <h3 className="text-xs font-medium text-muted-foreground mb-1.5">Tagi</h3>
+              <h3 className="text-xs font-medium text-muted-foreground mb-1.5">
+                {t('dialog.tags')}
+              </h3>
               <div className="flex flex-wrap gap-1">
                 {nonSpoilerTags.map(tag => (
                   <Badge key={tag.id} variant="outline" className="text-2xs">
@@ -352,7 +365,9 @@ export function AnimeInfoDialog({ anime, open, onOpenChange }: AnimeInfoDialogPr
             </div>
           ) : cleanDescription ? (
             <div>
-              <h3 className="text-xs font-medium text-muted-foreground mb-1.5">Opis</h3>
+              <h3 className="text-xs font-medium text-muted-foreground mb-1.5">
+                {t('dialog.description')}
+              </h3>
               <p
                 className={cn(
                   'text-sm text-foreground/80 leading-relaxed whitespace-pre-line',
@@ -370,11 +385,11 @@ export function AnimeInfoDialog({ anime, open, onOpenChange }: AnimeInfoDialogPr
                 >
                   {descExpanded ? (
                     <>
-                      <ChevronUp className="w-3 h-3" /> Zwiń
+                      <ChevronUp className="w-3 h-3" /> {t('dialog.collapse')}
                     </>
                   ) : (
                     <>
-                      <ChevronDown className="w-3 h-3" /> Rozwiń
+                      <ChevronDown className="w-3 h-3" /> {t('dialog.expand')}
                     </>
                   )}
                 </Button>
@@ -383,27 +398,39 @@ export function AnimeInfoDialog({ anime, open, onOpenChange }: AnimeInfoDialogPr
           ) : null}
 
           {/* Dates */}
-          {details && (formatFuzzyDate(details.startDate) || formatFuzzyDate(details.endDate)) && (
-            <div className="flex gap-6">
-              {formatFuzzyDate(details.startDate) && (
-                <div>
-                  <h3 className="text-xs font-medium text-muted-foreground mb-0.5">Start</h3>
-                  <p className="text-sm tabular-nums">{formatFuzzyDate(details.startDate)}</p>
-                </div>
-              )}
-              {formatFuzzyDate(details.endDate) && (
-                <div>
-                  <h3 className="text-xs font-medium text-muted-foreground mb-0.5">Koniec</h3>
-                  <p className="text-sm tabular-nums">{formatFuzzyDate(details.endDate)}</p>
-                </div>
-              )}
-            </div>
-          )}
+          {details &&
+            (formatFuzzyDate(details.startDate, i18n.language) ||
+              formatFuzzyDate(details.endDate, i18n.language)) && (
+              <div className="flex gap-6">
+                {formatFuzzyDate(details.startDate, i18n.language) && (
+                  <div>
+                    <h3 className="text-xs font-medium text-muted-foreground mb-0.5">
+                      {t('dialog.startDate')}
+                    </h3>
+                    <p className="text-sm tabular-nums">
+                      {formatFuzzyDate(details.startDate, i18n.language)}
+                    </p>
+                  </div>
+                )}
+                {formatFuzzyDate(details.endDate, i18n.language) && (
+                  <div>
+                    <h3 className="text-xs font-medium text-muted-foreground mb-0.5">
+                      {t('dialog.endDate')}
+                    </h3>
+                    <p className="text-sm tabular-nums">
+                      {formatFuzzyDate(details.endDate, i18n.language)}
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
 
           {/* Characters */}
           {details?.characters?.edges && details.characters.edges.length > 0 && (
             <div>
-              <h3 className="text-xs font-medium text-muted-foreground mb-2">Postacie</h3>
+              <h3 className="text-xs font-medium text-muted-foreground mb-2">
+                {t('dialog.characters')}
+              </h3>
               <div className="grid grid-cols-2 gap-2">
                 {details.characters.edges.slice(0, 6).map(char => (
                   <PersonCard
@@ -420,7 +447,9 @@ export function AnimeInfoDialog({ anime, open, onOpenChange }: AnimeInfoDialogPr
           {/* Staff */}
           {details?.staff?.edges && details.staff.edges.length > 0 && (
             <div>
-              <h3 className="text-xs font-medium text-muted-foreground mb-2">Twórcy</h3>
+              <h3 className="text-xs font-medium text-muted-foreground mb-2">
+                {t('dialog.staff')}
+              </h3>
               <div className="grid grid-cols-2 gap-2">
                 {details.staff.edges.slice(0, 4).map(staff => (
                   <PersonCard
@@ -437,7 +466,9 @@ export function AnimeInfoDialog({ anime, open, onOpenChange }: AnimeInfoDialogPr
           {/* Relations */}
           {details?.relations?.edges && details.relations.edges.length > 0 && (
             <div>
-              <h3 className="text-xs font-medium text-muted-foreground mb-2">Powiązane</h3>
+              <h3 className="text-xs font-medium text-muted-foreground mb-2">
+                {t('dialog.related')}
+              </h3>
               <div className="flex gap-2 overflow-x-auto pb-1">
                 {details.relations.edges.slice(0, 8).map(rel => (
                   <div
@@ -455,7 +486,7 @@ export function AnimeInfoDialog({ anime, open, onOpenChange }: AnimeInfoDialogPr
                       <div className="w-full aspect-[3/4] rounded-lg bg-muted border border-border/50" />
                     )}
                     <p className="text-2xs text-primary mt-1">
-                      {ANILIST_RELATION_LABELS[rel.relationType] ?? rel.relationType}
+                      {getAnilistRelationLabel(rel.relationType)}
                     </p>
                     <p className="text-2xs font-medium truncate mt-0.5">
                       {rel.node.title.romaji ?? rel.node.title.english}
@@ -469,11 +500,13 @@ export function AnimeInfoDialog({ anime, open, onOpenChange }: AnimeInfoDialogPr
           {/* Trailer */}
           {details?.trailer?.id && details.trailer.site === 'youtube' && (
             <div>
-              <h3 className="text-xs font-medium text-muted-foreground mb-2">Zwiastun</h3>
+              <h3 className="text-xs font-medium text-muted-foreground mb-2">
+                {t('dialog.trailer')}
+              </h3>
               <div className="relative aspect-video rounded-lg overflow-hidden border border-border/50">
                 <iframe
                   src={`https://www.youtube.com/embed/${details.trailer.id}`}
-                  title="Zwiastun"
+                  title={t('dialog.trailerTitle')}
                   className="absolute inset-0 w-full h-full"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen
@@ -485,7 +518,9 @@ export function AnimeInfoDialog({ anime, open, onOpenChange }: AnimeInfoDialogPr
           {/* Streaming links */}
           {streamingLinks.length > 0 && (
             <div>
-              <h3 className="text-xs font-medium text-muted-foreground mb-1.5">Gdzie oglądać</h3>
+              <h3 className="text-xs font-medium text-muted-foreground mb-1.5">
+                {t('dialog.streaming')}
+              </h3>
               <div className="flex flex-wrap gap-1.5">
                 {streamingLinks.map(link => (
                   <Button
@@ -519,7 +554,7 @@ export function AnimeInfoDialog({ anime, open, onOpenChange }: AnimeInfoDialogPr
                   onOpenChange(false);
                 }}
               >
-                Otwórz w AniList
+                {t('dialog.openOnAniList')}
                 <ExternalLink className="w-3 h-3" />
               </Button>
             </div>

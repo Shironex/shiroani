@@ -1,9 +1,10 @@
 import { memo, useCallback, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Check, Film, Plus, Star } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { PillTag } from '@/components/ui/pill-tag';
 import { formatScore } from '@/lib/anime-utils';
-import { ANILIST_FORMAT_LABELS, ANILIST_STATUS_LABELS } from '@/lib/constants';
+import { getAnilistFormatLabel, getAnilistStatusLabel } from '@/lib/constants';
 import type { DiscoverMedia } from '@/stores/useDiscoverStore';
 
 interface DiscoverCardProps {
@@ -23,6 +24,9 @@ const DiscoverCard = memo(function DiscoverCard({
   onClick,
   onAddToLibrary,
 }: DiscoverCardProps) {
+  // Re-render on language change so the format/status label getters refresh.
+  useTranslation('anilist');
+  const { t } = useTranslation('discover');
   const [imgError, setImgError] = useState(false);
 
   const handleKeyDown = useCallback(
@@ -47,10 +51,10 @@ const DiscoverCard = memo(function DiscoverCard({
 
   const coverUrl = media.coverImage.large || media.coverImage.extraLarge || media.coverImage.medium;
   const title = getTitle(media.title);
-  const formatLabel = media.format ? (ANILIST_FORMAT_LABELS[media.format] ?? media.format) : null;
-  const statusLabel = media.status ? (ANILIST_STATUS_LABELS[media.status] ?? media.status) : null;
+  const formatLabel = media.format ? getAnilistFormatLabel(media.format) : null;
+  const statusLabel = media.status ? getAnilistStatusLabel(media.status) : null;
 
-  const episodeInfo = media.episodes ? `${media.episodes} odc.` : null;
+  const episodeInfo = media.episodes ? t('card.episodeCount', { count: media.episodes }) : null;
   const subtitle = [episodeInfo, statusLabel].filter(Boolean).join(' \u00B7 ');
 
   return (
@@ -83,7 +87,9 @@ const DiscoverCard = memo(function DiscoverCard({
             <div className="w-10 h-10 rounded-xl bg-background/30 flex items-center justify-center">
               <Film className="w-5 h-5 text-muted-foreground/40" />
             </div>
-            <span className="text-muted-foreground/50 text-2xs font-medium">Brak okładki</span>
+            <span className="text-muted-foreground/50 text-2xs font-medium">
+              {t('card.noCover')}
+            </span>
           </div>
         )}
 
@@ -159,7 +165,7 @@ const DiscoverCard = memo(function DiscoverCard({
               type="button"
               onClick={handleAddClick}
               disabled={inLibrary}
-              aria-label={inLibrary ? 'W bibliotece' : 'Dodaj do biblioteki'}
+              aria-label={inLibrary ? t('card.inLibraryAria') : t('card.addToLibrary')}
               className={cn(
                 'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[8px]',
                 'text-[11.5px] font-bold shadow-[0_6px_16px_-6px_oklch(0_0_0/0.7)]',
@@ -171,12 +177,13 @@ const DiscoverCard = memo(function DiscoverCard({
             >
               {inLibrary ? (
                 <>
-                  <Check className="w-3.5 h-3.5" />W bibliotece
+                  <Check className="w-3.5 h-3.5" />
+                  {t('card.inLibrary')}
                 </>
               ) : (
                 <>
                   <Plus className="w-3.5 h-3.5" />
-                  Dodaj
+                  {t('card.add')}
                 </>
               )}
             </button>

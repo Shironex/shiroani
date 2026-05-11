@@ -1,7 +1,7 @@
 import { memo, useCallback, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ArrowLeft, ExternalLink, Share2, Bookmark } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { timeAgo } from '@shiroani/shared';
 import type { FeedItem } from '@shiroani/shared';
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -9,7 +9,8 @@ import { TooltipButton } from '@/components/ui/tooltip-button';
 import { PillTag } from '@/components/ui/pill-tag';
 import { hostFromUrl } from '@/lib/url-utils';
 import { useFeedBookmarksStore } from '@/stores/useFeedBookmarksStore';
-import { CATEGORY_LABELS } from './feed-constants';
+import { useCategoryLabels } from './feed-constants';
+import { useTimeAgo } from './useTimeAgo';
 
 interface FeedReaderModalProps {
   item: FeedItem | null;
@@ -92,6 +93,9 @@ export const FeedReaderModal = memo(function FeedReaderModal({
   onOpenRelated,
   onOpenExternal,
 }: FeedReaderModalProps) {
+  const { t } = useTranslation('feed');
+  const categoryLabels = useCategoryLabels();
+  const timeAgo = useTimeAgo();
   const handleClose = useCallback(() => onOpenChange(false), [onOpenChange]);
 
   // Preserve legacy fallback of rendering the raw URL when parsing fails.
@@ -131,7 +135,7 @@ export const FeedReaderModal = memo(function FeedReaderModal({
       >
         <DialogTitle className="sr-only">{item.title}</DialogTitle>
         <DialogDescription className="sr-only">
-          {`Artykuł z ${item.sourceName} · ${publishedLabel}`}
+          {t('reader.ariaDescribed', { source: item.sourceName, published: publishedLabel })}
         </DialogDescription>
 
         {/* Top bar */}
@@ -141,7 +145,7 @@ export const FeedReaderModal = memo(function FeedReaderModal({
             size="icon"
             className="w-8 h-8"
             onClick={handleClose}
-            tooltip="Zamknij"
+            tooltip={t('reader.close')}
           >
             <ArrowLeft className="w-4 h-4" />
           </TooltipButton>
@@ -162,7 +166,7 @@ export const FeedReaderModal = memo(function FeedReaderModal({
               {domain}
             </span>
             <span className="font-mono text-[8.5px] tracking-[0.14em] uppercase px-1.5 py-[2px] rounded bg-primary/15 text-primary">
-              Czytnik
+              {t('reader.readerLabel')}
             </span>
           </div>
 
@@ -172,7 +176,7 @@ export const FeedReaderModal = memo(function FeedReaderModal({
               size="icon"
               className={cn('w-8 h-8', bookmarked && 'text-primary')}
               onClick={handleToggleBookmark}
-              tooltip={bookmarked ? 'Usuń z zakładek' : 'Zapisz na później'}
+              tooltip={bookmarked ? t('reader.removeBookmark') : t('reader.addBookmark')}
               aria-pressed={bookmarked}
             >
               <Bookmark className={cn('w-4 h-4', bookmarked && 'fill-current')} />
@@ -186,7 +190,7 @@ export const FeedReaderModal = memo(function FeedReaderModal({
                   void navigator.clipboard.writeText(item.url);
                 }
               }}
-              tooltip="Kopiuj link"
+              tooltip={t('reader.copyLink')}
             >
               <Share2 className="w-4 h-4" />
             </TooltipButton>
@@ -197,7 +201,7 @@ export const FeedReaderModal = memo(function FeedReaderModal({
               onClick={() => onOpenExternal(item)}
             >
               <ExternalLink className="w-3 h-3" />
-              Otwórz w przeglądarce
+              {t('reader.openExternal')}
             </Button>
           </div>
         </div>
@@ -248,7 +252,7 @@ export const FeedReaderModal = memo(function FeedReaderModal({
           {/* Content */}
           <div className="px-6 sm:px-8 pt-6 pb-10 max-w-[680px] mx-auto">
             <div className="flex items-center gap-1.5 mb-3 flex-wrap">
-              <PillTag variant="accent">{CATEGORY_LABELS[item.sourceCategory]}</PillTag>
+              <PillTag variant="accent">{categoryLabels[item.sourceCategory]}</PillTag>
               <PillTag
                 variant="muted"
                 style={{
@@ -303,7 +307,7 @@ export const FeedReaderModal = memo(function FeedReaderModal({
               </div>
             ) : (
               <p className="text-[13.5px] leading-[1.75] text-muted-foreground/80">
-                Podgląd niedostępny. Otwórz artykuł w przeglądarce, aby przeczytać całość.
+                {t('reader.previewUnavailable')}
               </p>
             )}
 
@@ -317,14 +321,14 @@ export const FeedReaderModal = memo(function FeedReaderModal({
                 onClick={() => onOpenExternal(item)}
               >
                 <ExternalLink className="w-3.5 h-3.5 mr-1.5" />
-                Czytaj pełny artykuł
+                {t('reader.readFull')}
               </Button>
             </div>
 
             {relatedFiltered.length > 0 && (
               <div className="mt-8">
                 <div className="font-mono text-[9px] tracking-[0.2em] uppercase text-muted-foreground/60 mb-2.5">
-                  Powiązane
+                  {t('reader.related')}
                 </div>
                 <ul className="flex flex-col gap-2">
                   {relatedFiltered.map(rel => (
@@ -360,7 +364,7 @@ export const FeedReaderModal = memo(function FeedReaderModal({
                         </div>
                         <div className="flex flex-col justify-center min-w-0">
                           <div className="font-mono text-[8.5px] tracking-[0.14em] uppercase text-primary mb-0.5">
-                            {CATEGORY_LABELS[rel.sourceCategory]}
+                            {categoryLabels[rel.sourceCategory]}
                           </div>
                           <div className="text-[12px] font-semibold leading-[1.3] text-foreground/90 line-clamp-2 group-hover:text-primary transition-colors">
                             {rel.title}

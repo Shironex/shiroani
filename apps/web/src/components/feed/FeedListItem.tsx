@@ -1,10 +1,11 @@
 import { memo, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Rss, ExternalLink } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { timeAgo } from '@shiroani/shared';
 import type { FeedItem } from '@shiroani/shared';
 import { PillTag } from '@/components/ui/pill-tag';
-import { CATEGORY_LABELS } from './feed-constants';
+import { useCategoryLabels } from './feed-constants';
+import { useTimeAgo } from './useTimeAgo';
 
 interface FeedListItemProps {
   item: FeedItem;
@@ -54,6 +55,9 @@ export const FeedListItem = memo(function FeedListItem({
   onOpen,
   onOpenExternal,
 }: FeedListItemProps) {
+  const { t } = useTranslation('feed');
+  const categoryLabels = useCategoryLabels();
+  const timeAgo = useTimeAgo();
   const published = item.publishedAt ? timeAgo(item.publishedAt) : timeAgo(item.createdAt);
 
   return (
@@ -86,7 +90,7 @@ export const FeedListItem = memo(function FeedListItem({
             {item.sourceName}
           </PillTag>
           <PillTag variant={item.sourceCategory === 'reviews' ? 'gold' : 'muted'}>
-            {CATEGORY_LABELS[item.sourceCategory]}
+            {categoryLabels[item.sourceCategory]}
           </PillTag>
           {item.sourceLanguage === 'pl' && (
             <span className="font-mono text-[9.5px] tracking-[0.1em] uppercase text-muted-foreground/70">
@@ -146,7 +150,7 @@ export const FeedListItem = memo(function FeedListItem({
             'opacity-0 group-hover:opacity-100',
             'focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary'
           )}
-          aria-label={`Otwórz w przeglądarce: ${item.title}`}
+          aria-label={t('item.openExternalAria', { title: item.title })}
         >
           <ExternalLink className="w-3.5 h-3.5" />
         </button>

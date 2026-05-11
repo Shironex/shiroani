@@ -1,0 +1,64 @@
+{
+  "title": "Przeglądaj",
+  "subtitle": "Popularne, sezonowe i losowe",
+  "searchPlaceholder": "Szukaj anime...",
+  "tabs": {
+    "trending": "Na czasie",
+    "popular": "Popularne",
+    "seasonal": "Sezonowe",
+    "random": "Losowe"
+  },
+  "search": {
+    "resultsLabel": "Wyniki wyszukiwania",
+    "clear": "Wyczyść"
+  },
+  "empty": {
+    "noResultsTitle": "Brak wyników",
+    "noResultsSubtitle": "Spróbuj innej frazy",
+    "noAnimeTitle": "Brak anime",
+    "noAnimeSubtitle": "Nie udało się pobrać anime."
+  },
+  "card": {
+    "noCover": "Brak okładki",
+    "episodeCount": "{{count}} odc.",
+    "addToLibrary": "Dodaj do biblioteki",
+    "inLibraryAria": "W bibliotece",
+    "inLibrary": "W bibliotece",
+    "add": "Dodaj"
+  },
+  "genres": {
+    "title": "Gatunki",
+    "expand": "Rozwiń",
+    "collapse": "Zwiń",
+    "hint": "Kliknij, aby wybrać. Kliknij ponownie, aby wykluczyć. Trzeci klik czyści wybór. Wybrane gatunki łączą się przez „i\".",
+    "stateIncluded": "wybrane",
+    "stateExcluded": "wykluczone",
+    "stateNeutral": "neutralne",
+    "labelTemplate": "{{genre}}: {{state}}"
+  },
+  "random": {
+    "emptyTitle": "Brak propozycji",
+    "emptySubtitle": "Wybierz inne gatunki lub spróbuj ponownie.",
+    "featuredTag": "Losowe",
+    "inLibraryTag": "W bibliotece",
+    "shuffle": "Przetasuj",
+    "addToLibrary": "Dodaj do biblioteki",
+    "refreshTooltip": "Odśwież propozycje z AniList",
+    "refreshAria": "Odśwież propozycje",
+    "previous": "Poprzednie",
+    "next": "Następne",
+    "previousLabel": "Poprzednie",
+    "nextLabel": "Następne",
+    "previousArrow": "← Poprzednie",
+    "nextArrow": "Następne →",
+    "peekLabel": "{{direction}}: {{title}}",
+    "keyboardHint": "← → przełącza",
+    "indexFormat": "{{index}} / {{total}}"
+  },
+  "toast": {
+    "alreadyInLibrary": "To anime jest już w bibliotece",
+    "addedToLibrary": "Dodano do biblioteki",
+    "addFailed": "Nie udało się dodać do biblioteki",
+    "rateLimited": "Zbyt wiele zapytań — odczekaj chwilę i spróbuj ponownie"
+  }
+}

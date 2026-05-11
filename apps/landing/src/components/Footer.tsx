@@ -1,7 +1,24 @@
+import { translations, DEFAULT_LANGUAGE, type SupportedLanguage } from '../lib/i18n';
 import { currentVersion } from '../lib/releases';
+import { useLandingLang } from '../lib/useLandingLang';
 
-export function Footer() {
+interface FooterProps {
+  /** Page's SSR `<html lang>`. Defaults to PL; `/en/*` pages pass `lang="en"`
+   *  so the server-rendered footer text and links match the route. The
+   *  client-side language swap still re-renders on `shiroani:lang-change`. */
+  lang?: SupportedLanguage;
+}
+
+export function Footer({ lang: initialLang }: FooterProps = {}) {
   const version = currentVersion();
+  const lang = useLandingLang(initialLang);
+  const t = (key: string) =>
+    translations[lang]?.[key] ?? translations[DEFAULT_LANGUAGE]?.[key] ?? key;
+  // Keep in-site links inside the active locale's route tree (PL is un-prefixed,
+  // EN lives under `/en/...`) so crawlers and no-JS visitors can traverse it.
+  const prefix = lang === 'en' ? '/en' : '';
+  const href = (path: string) => `${prefix}${path}`;
+  const year = new Date().getFullYear();
   return (
     <footer className="ft">
       <div className="ft-inner">
@@ -22,10 +39,7 @@ export function Footer() {
               <small>SHIRO·ANI · v{version}</small>
             </div>
           </div>
-          <p>
-            Shiro-chan wciąż rośnie. Apka jest na wczesnym etapie, ale z każdym wydaniem robi się
-            przytulniej.
-          </p>
+          <p>{t('footer.blurb')}</p>
           <div className="s">
             <a
               href="https://github.com/Shironex/shiroani"
@@ -50,25 +64,25 @@ export function Footer() {
           </div>
         </div>
         <div className="ft-col">
-          <h4>Produkt</h4>
-          <a href="/#funkcje">Funkcje</a>
-          <a href="/#podglad">Podgląd</a>
-          <a href="/#pobierz">Pobierz</a>
+          <h4>{t('footer.col.product')}</h4>
+          <a href={href('/#funkcje')}>{t('footer.link.features')}</a>
+          <a href={href('/#podglad')}>{t('footer.link.preview')}</a>
+          <a href={href('/#pobierz')}>{t('footer.link.download')}</a>
         </div>
         <div className="ft-col">
-          <h4>Zasoby</h4>
-          <a href="/changelog">Lista zmian</a>
-          <a href="/#faq">FAQ</a>
+          <h4>{t('footer.col.resources')}</h4>
+          <a href={href('/changelog')}>{t('footer.link.changelog')}</a>
+          <a href={href('/#faq')}>{t('footer.link.faq')}</a>
           <a href="https://github.com/Shironex/shiroani" target="_blank" rel="noopener noreferrer">
-            GitHub
+            {t('footer.link.github')}
           </a>
           <a href="https://discord.gg/M3ujRdUJpn" target="_blank" rel="noopener noreferrer">
-            Discord
+            {t('footer.link.discord')}
           </a>
         </div>
         <div className="ft-col">
-          <h4>Rodzina</h4>
-          <a href="/#suite">ShiroAni</a>
+          <h4>{t('footer.col.suite')}</h4>
+          <a href={href('/#suite')}>ShiroAni</a>
           <a href="https://shiranami.app" target="_blank" rel="noopener noreferrer">
             Shiranami ↗
           </a>
@@ -78,8 +92,10 @@ export function Footer() {
         </div>
       </div>
       <div className="ft-btm">
-        <div>© {new Date().getFullYear()} Shironex · Wszelkie prawa zastrzeżone</div>
-        <div>白 · アニ · Made with ♥ in Poland</div>
+        <div>
+          © {year} Shironex · {t('footer.copyright')}
+        </div>
+        <div>{t('footer.tagline')}</div>
       </div>
     </footer>
   );

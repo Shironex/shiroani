@@ -1,5 +1,7 @@
+import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { DIARY_GRADIENTS } from '@/lib/diary-constants';
+import { tDynamic } from '@/lib/i18n';
 import type { DiaryGradient } from '@shiroani/shared';
 
 interface GradientPickerProps {
@@ -22,6 +24,7 @@ export function GradientPicker({
   stacked = false,
   className,
 }: GradientPickerProps) {
+  const { t, i18n } = useTranslation('diary');
   return (
     <div
       className={cn(
@@ -31,11 +34,12 @@ export function GradientPicker({
       )}
     >
       <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-        Okładka
+        {t('editor.cover')}
       </span>
       <div className={cn('flex flex-wrap gap-1.5', stacked && 'w-full')}>
-        {Object.entries(DIARY_GRADIENTS).map(([key, { label, css }]) => {
+        {Object.entries(DIARY_GRADIENTS).map(([key, { labelKey, css }]) => {
           const active = value === key;
+          const label = tDynamic(i18n, `diary:${labelKey}`);
           return (
             <button
               key={key}
@@ -61,7 +65,7 @@ export function GradientPicker({
             onClick={() => onChange(undefined)}
             className="ml-1 font-mono text-[10px] uppercase tracking-[0.15em] text-muted-foreground/70 hover:text-foreground/80 transition-colors"
           >
-            wyczyść
+            {t('gradient.clear')}
           </button>
         )}
       </div>

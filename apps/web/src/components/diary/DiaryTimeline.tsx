@@ -1,34 +1,11 @@
 import { memo, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
+import type { TFunction } from 'i18next';
 import { Pin, Trash2, Link as LinkIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { PillTag } from '@/components/ui/pill-tag';
 import { DIARY_GRADIENTS, MOOD_EMOJI, MOOD_ICONS } from '@/lib/diary-constants';
 import type { DiaryEntry } from '@shiroani/shared';
-
-const WEEKDAYS_PL = [
-  'niedziela',
-  'poniedziałek',
-  'wtorek',
-  'środa',
-  'czwartek',
-  'piątek',
-  'sobota',
-];
-
-const MONTHS_PL = [
-  'stycznia',
-  'lutego',
-  'marca',
-  'kwietnia',
-  'maja',
-  'czerwca',
-  'lipca',
-  'sierpnia',
-  'września',
-  'października',
-  'listopada',
-  'grudnia',
-];
 
 function isSameDay(a: Date, b: Date) {
   return (
@@ -44,28 +21,34 @@ function dayKeyFor(dateStr: string): string {
 }
 
 /**
- * Formats a day-group heading like "DZIŚ · 19.04 · PIĄTEK" to match the mock's
- * section labels. Returns plain text so the caller controls styling.
+ * Formats a day-group heading like "Dziś · 19.04 · piątek" / "Today · 04/19 · Friday".
+ * Date components use Intl.DateTimeFormat under the active locale; weekday and
+ * full-date variants follow shape conventions of the locale.
  */
-function formatDayHeader(dateStr: string): string {
+function formatDayHeader(dateStr: string, t: TFunction<'diary'>, locale: string): string {
   const d = new Date(dateStr);
   const now = new Date();
   const yesterday = new Date(now);
   yesterday.setDate(now.getDate() - 1);
 
-  const prefix = isSameDay(d, now) ? 'Dziś' : isSameDay(d, yesterday) ? 'Wczoraj' : null;
+  const prefix = isSameDay(d, now)
+    ? t('timeline.today')
+    : isSameDay(d, yesterday)
+      ? t('timeline.yesterday')
+      : null;
 
-  const dm = `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}`;
-  const weekday = WEEKDAYS_PL[d.getDay()];
+  const weekday = new Intl.DateTimeFormat(locale, { weekday: 'long' }).format(d);
 
   if (prefix) {
+    const dm = new Intl.DateTimeFormat(locale, { day: '2-digit', month: '2-digit' }).format(d);
     return `${prefix} · ${dm} · ${weekday}`;
   }
-  return `${d.getDate()} ${MONTHS_PL[d.getMonth()]} · ${weekday}`;
+  const dayMonth = new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'long' }).format(d);
+  return `${dayMonth} · ${weekday}`;
 }
 
-function formatTime(dateStr: string): string {
-  return new Date(dateStr).toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' });
+function formatTime(dateStr: string, locale: string): string {
+  return new Date(dateStr).toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' });
 }
 
 interface TipTapNode {
@@ -96,7 +79,7 @@ interface DayGroup {
   entries: DiaryEntry[];
 }
 
-function groupByDay(entries: DiaryEntry[]): DayGroup[] {
+function groupByDay(entries: DiaryEntry[], t: TFunction<'diary'>, locale: string): DayGroup[] {
   const groups = new Map<string, DayGroup>();
   for (const entry of entries) {
     const key = dayKeyFor(entry.createdAt);
@@ -106,7 +89,7 @@ function groupByDay(entries: DiaryEntry[]): DayGroup[] {
     } else {
       groups.set(key, {
         key,
-        header: formatDayHeader(entry.createdAt),
+        header: formatDayHeader(entry.createdAt, t, locale),
         entries: [entry],
       });
     }
@@ -137,7 +120,8 @@ export function DiaryTimeline({
   onTogglePin,
   className,
 }: DiaryTimelineProps) {
-  const groups = useMemo(() => groupByDay(entries), [entries]);
+  const { t, i18n } = useTranslation('diary');
+  const groups = useMemo(() => groupByDay(entries, t, i18n.language), [entries, t, i18n.language]);
 
   return (
     <div className={cn('flex flex-col gap-6', className)}>
@@ -192,10 +176,11 @@ const DiaryListCard = memo(function DiaryListCard({
   onRemove,
   onTogglePin,
 }: DiaryListCardProps) {
+  const { t, i18n } = useTranslation('diary');
   const preview = extractPreview(entry.contentJson);
   const moodEmoji = entry.mood ? MOOD_EMOJI[entry.mood] : undefined;
   const MoodIcon = entry.mood ? MOOD_ICONS[entry.mood] : null;
-  const time = formatTime(entry.createdAt);
+  const time = formatTime(entry.createdAt, i18n.language);
 
   const gradient = entry.coverGradient
     ? (DIARY_GRADIENTS[entry.coverGradient]?.css ??
@@ -256,12 +241,12 @@ const DiaryListCard = memo(function DiaryListCard({
             <div className="flex items-center gap-2">
               {entry.isPinned && (
                 <Pin
-                  aria-label="Przypięte"
+                  aria-label={t('card.pinned')}
                   className="size-3 shrink-0 rotate-45 fill-primary text-primary"
                 />
               )}
               <h3 className="truncate text-[14.5px] font-bold leading-snug text-foreground">
-                {entry.title || 'Bez tytułu'}
+                {entry.title || t('untitled')}
               </h3>
               {moodEmoji && (
                 <span className="text-[15px] leading-none" aria-hidden="true">
@@ -297,7 +282,7 @@ const DiaryListCard = memo(function DiaryListCard({
                   e.stopPropagation();
                   onTogglePin(entry);
                 }}
-                aria-label={entry.isPinned ? 'Odepnij' : 'Przypnij'}
+                aria-label={entry.isPinned ? t('card.unpin') : t('card.pin')}
                 className={cn(
                   'rounded-md p-1.5 text-muted-foreground transition-colors',
                   'hover:bg-accent/60 hover:text-foreground',
@@ -312,7 +297,7 @@ const DiaryListCard = memo(function DiaryListCard({
                   e.stopPropagation();
                   onRemove(entry);
                 }}
-                aria-label="Usuń"
+                aria-label={t('card.remove')}
                 className={cn(
                   'rounded-md p-1.5 text-muted-foreground transition-colors',
                   'hover:bg-destructive/15 hover:text-destructive'

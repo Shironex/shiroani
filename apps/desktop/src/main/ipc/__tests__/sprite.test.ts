@@ -212,7 +212,7 @@ describe('registerSpriteHandlers', () => {
       await expect(
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (ipcMain as any).__invoke('overlay:pick-sprite')
-      ).rejects.toThrow(/Nieobsługiwany format/i);
+      ).rejects.toThrow(/unsupported file format|nieobsługiwany format/i);
     });
 
     it('rejects when magic bytes do not match the extension', async () => {
@@ -228,7 +228,7 @@ describe('registerSpriteHandlers', () => {
       await expect(
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (ipcMain as any).__invoke('overlay:pick-sprite')
-      ).rejects.toThrow(/prawidłowym obrazem|rozszerzenia/);
+      ).rejects.toThrow(/valid image|match its extension|prawidłowym obrazem|rozszerzenia/i);
     });
 
     it('rejects images larger than the dimension cap', async () => {
@@ -243,7 +243,7 @@ describe('registerSpriteHandlers', () => {
       await expect(
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (ipcMain as any).__invoke('overlay:pick-sprite')
-      ).rejects.toThrow(/maks\. 2048×2048/);
+      ).rejects.toThrow(/2048×2048/);
     });
   });
 

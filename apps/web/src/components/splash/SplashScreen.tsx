@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { IS_ELECTRON } from '@/lib/platform';
 import { KanjiWatermark } from '@/components/shared/KanjiWatermark';
@@ -20,21 +21,25 @@ const MESSAGE_ROTATE_MS = 1400;
  */
 const MESSAGE_ROTATE_DELAY_MS = SPINNER_DELAY_MS * 2;
 
-const LOADING_MESSAGES = [
-  'Shiro-chan się przeciąga~ nyaa...',
-  'Szukam pilota do odcinków...',
-  'Shiro rysuje plan na dziś...',
-  'Podkradamy ciastka z kuchni...',
-  'Shiro sprawdza co nowego...',
-  'Jeszcze jedna drzemka... zzz',
-  'Shiro-chan już prawie gotowa!',
-  'Układamy pluszaki na kanapie...',
-  'Shiro goni motylka... zaraz wracam!',
-  'Nastawiamy czajnik na herbatkę...',
-];
+/**
+ * Loading-message keys under `splash:messages.*`. Indexes are stable so the
+ * random rotation maths still works after locale switches.
+ */
+const LOADING_MESSAGE_KEYS = [
+  'stretching',
+  'remote',
+  'planning',
+  'cookies',
+  'checking',
+  'nap',
+  'almost',
+  'plushies',
+  'butterfly',
+  'tea',
+] as const;
 
 function randomStartIndex() {
-  return Math.floor(Math.random() * LOADING_MESSAGES.length);
+  return Math.floor(Math.random() * LOADING_MESSAGE_KEYS.length);
 }
 
 const VARIANT_KANJI: Record<SplashVariant, string> = {
@@ -50,6 +55,7 @@ interface SplashScreenProps {
 }
 
 export function SplashScreen({ ready, error, onDismissed }: SplashScreenProps) {
+  const { t } = useTranslation('splash');
   const [minTimeElapsed, setMinTimeElapsed] = useState(false);
   const [showSpinner, setShowSpinner] = useState(false);
   const [isDismissing, setIsDismissing] = useState(false);
@@ -87,7 +93,7 @@ export function SplashScreen({ ready, error, onDismissed }: SplashScreenProps) {
     let interval: ReturnType<typeof setInterval> | null = null;
     const start = setTimeout(() => {
       interval = setInterval(
-        () => setMessageIndex(i => (i + 1) % LOADING_MESSAGES.length),
+        () => setMessageIndex(i => (i + 1) % LOADING_MESSAGE_KEYS.length),
         MESSAGE_ROTATE_MS
       );
     }, MESSAGE_ROTATE_DELAY_MS);
@@ -119,18 +125,23 @@ export function SplashScreen({ ready, error, onDismissed }: SplashScreenProps) {
     return () => clearTimeout(timer);
   }, [shouldDismiss, onDismissed]);
 
+  const message = useMemo(
+    () => t(`messages.${LOADING_MESSAGE_KEYS[messageIndex]}`),
+    [messageIndex, t]
+  );
+
   if (!isVisible) return null;
 
   const statusText: SplashStatusText | null =
     variant === 'updating'
       ? {
-          action: 'Instalacja',
-          target: updateInfo?.version ? `v${updateInfo.version}` : 'nowa wersja',
+          action: t('status.installing'),
+          target: updateInfo?.version ? `v${updateInfo.version}` : t('status.newVersionFallback'),
         }
       : null;
 
   const metaRight =
-    variant === 'updating' ? 'uruchamianie ponowne...' : version ? `v${version}` : null;
+    variant === 'updating' ? t('status.restarting') : version ? `v${version}` : null;
 
   return (
     <div
@@ -167,7 +178,7 @@ export function SplashScreen({ ready, error, onDismissed }: SplashScreenProps) {
       <SplashFooter
         variant={variant}
         showSpinner={showSpinner}
-        message={LOADING_MESSAGES[messageIndex]}
+        message={message}
         messageKey={messageIndex}
         statusText={statusText}
         progressValue={null}

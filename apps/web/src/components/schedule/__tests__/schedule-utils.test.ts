@@ -1,13 +1,34 @@
-import { describe, it, expect } from 'vitest';
-import { formatTime, formatDate, addDays, isToday } from '../schedule-utils';
+import { afterEach, describe, it, expect } from 'vitest';
+import {
+  formatTime,
+  formatDate,
+  formatDayHeading,
+  formatWeekRange,
+  addDays,
+  isToday,
+} from '../schedule-utils';
 import { getAnimeTitle, getCoverUrl } from '@/lib/anime-utils';
-import type { AiringAnime } from '@shiroani/shared';
+import i18n from '@/lib/i18n';
+import type { AiringAnime, SupportedLanguage } from '@shiroani/shared';
+
+/** Run `fn` with i18n forced to `lang`; restore the previous language after. */
+async function withLocale<T>(lang: SupportedLanguage, fn: () => T | Promise<T>): Promise<T> {
+  const previous = i18n.language;
+  await i18n.changeLanguage(lang);
+  try {
+    return await fn();
+  } finally {
+    await i18n.changeLanguage(previous);
+  }
+}
 
 describe('formatTime', () => {
   it('formats a unix timestamp to HH:MM', () => {
-    // The output is locale-dependent (pl-PL), so just check the format
+    // Output is locale-dependent — `formatTime` reads `i18n.language`,
+    // which is EN under the test setup. EN renders 12h ("01:00 AM"); PL
+    // would render 24h ("01:00"). Assert the format shape, not the locale.
     const result = formatTime(1704067200); // 2024-01-01 00:00 UTC
-    expect(result).toMatch(/^\d{2}:\d{2}$/);
+    expect(result).toMatch(/^\d{1,2}:\d{2}(\s?(AM|PM))?$/i);
   });
 
   it('returns a string for any valid timestamp', () => {
@@ -19,7 +40,9 @@ describe('formatTime', () => {
 describe('formatDate', () => {
   it('returns a human-readable date string', () => {
     const result = formatDate('2024-01-15');
-    // pl-PL locale: "15 stycznia 2024"
+    // `formatDate` now follows `i18n.language` (EN under the test setup
+    // → "January 15, 2024"). Assert the numeric components only so the
+    // test stays locale-tolerant.
     expect(result).toContain('2024');
     expect(result).toContain('15');
   });
@@ -28,6 +51,56 @@ describe('formatDate', () => {
     const result = formatDate('2024-12-31');
     expect(result).toContain('31');
     expect(result).toContain('2024');
+  });
+});
+
+describe('locale-parametrized formatters', () => {
+  afterEach(async () => {
+    await i18n.changeLanguage('en');
+  });
+
+  it('formatDate renders a different month string in PL vs EN', async () => {
+    const en = await withLocale('en', () => formatDate('2024-01-15'));
+    const pl = await withLocale('pl', () => formatDate('2024-01-15'));
+    // Both should contain the year and day, but the month name diverges:
+    // EN → "January", PL → "stycznia".
+    expect(en).toContain('January');
+    expect(pl.toLowerCase()).toContain('stycznia');
+    expect(en).not.toBe(pl);
+  });
+
+  it('formatDayHeading uses the active locale for weekday + month', async () => {
+    const en = await withLocale('en', () => formatDayHeading('2024-01-15'));
+    const pl = await withLocale('pl', () => formatDayHeading('2024-01-15'));
+    // 2024-01-15 is a Monday. We delegate to a single `Intl.DateTimeFormat`
+    // call so the parts follow locale conventions and Polish gets the
+    // correct genitive month form ("stycznia"), not the nominative
+    // ("styczeń") that a manual `{ month: 'long' }` produced.
+    expect(en).toContain('Monday');
+    expect(en).toContain('January');
+    expect(pl).toContain('Poniedziałek');
+    expect(pl.toLowerCase()).toContain('stycznia');
+  });
+
+  it('formatWeekRange uses the active locale for the month name', async () => {
+    const en = await withLocale('en', () => formatWeekRange('2024-04-15', '2024-04-21'));
+    const pl = await withLocale('pl', () => formatWeekRange('2024-04-15', '2024-04-21'));
+    expect(en).toContain('April');
+    // `formatRange` uses the genitive in Polish ("kwietnia"), which is
+    // the correct natural form for "15–21 of April".
+    expect(pl.toLowerCase()).toContain('kwietnia');
+    expect(en).not.toBe(pl);
+  });
+
+  it('formatTime distinguishes EN 12h from PL 24h output', async () => {
+    // 2024-01-01 13:00 UTC == 14:00 in CET / 1:00 PM in EN clock systems.
+    const ts = Math.floor(Date.UTC(2024, 0, 1, 13, 0, 0) / 1000);
+    const en = await withLocale('en', () => formatTime(ts));
+    const pl = await withLocale('pl', () => formatTime(ts));
+    // EN renders an AM/PM marker; PL is 24-hour. The shape diverges
+    // regardless of the runner's TZ, which is what we assert here.
+    expect(en).toMatch(/AM|PM/i);
+    expect(pl).not.toMatch(/AM|PM/i);
   });
 });
 

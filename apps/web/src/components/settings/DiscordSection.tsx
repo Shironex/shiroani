@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { MessageCircle, Check, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
@@ -6,32 +7,82 @@ import { SettingsCard, SettingsToggleRow } from '@/components/settings/SettingsC
 import { DiscordPreview } from '@/components/settings/DiscordPreview';
 import { DiscordTemplateEditor } from '@/components/settings/DiscordTemplateEditor';
 import { substitutePreview } from '@/lib/discord-utils';
-import type { DiscordRpcSettings, DiscordActivityType } from '@shiroani/shared';
-import { DEFAULT_DISCORD_TEMPLATES } from '@shiroani/shared';
+import { tDynamic } from '@/lib/i18n';
+import type {
+  DiscordRpcSettings,
+  DiscordActivityType,
+  DiscordPresenceTemplate,
+  DiscordPresenceTemplates,
+} from '@shiroani/shared';
+import {
+  DEFAULT_DISCORD_TEMPLATES,
+  DISCORD_ACTIVITY_TYPES,
+  resolveLocalizedTemplateField,
+} from '@shiroani/shared';
+
+/**
+ * Convert a template that may still contain `@@i18n:<key>` sentinels (i.e. a
+ * fresh default the user has never edited) into a fully resolved template
+ * whose strings are in the active UI language. User-customised strings pass
+ * through unchanged because they no longer carry the sentinel.
+ *
+ * Resolved here once at hydrate / reset time so the editor inputs show real
+ * copy, and so persisting the settings stores resolved strings (not key
+ * references) in electron-store. Subsequent runtime presence emission in main
+ * reads those persisted strings directly.
+ */
+function resolveTemplate(
+  template: DiscordPresenceTemplate,
+  translate: (key: string) => string
+): DiscordPresenceTemplate {
+  return {
+    ...template,
+    details: resolveLocalizedTemplateField(template.details, translate),
+    state: resolveLocalizedTemplateField(template.state, translate),
+  };
+}
+
+function resolveTemplates(
+  templates: DiscordPresenceTemplates,
+  translate: (key: string) => string
+): DiscordPresenceTemplates {
+  const resolved = {} as DiscordPresenceTemplates;
+  for (const type of DISCORD_ACTIVITY_TYPES) {
+    resolved[type] = resolveTemplate(templates[type], translate);
+  }
+  return resolved;
+}
 
 export function DiscordSection() {
+  const { t, i18n } = useTranslation('settings');
   const [settings, setSettings] = useState<DiscordRpcSettings | null>(null);
   const [saved, setSaved] = useState(false);
   const [selectedActivity, setSelectedActivity] = useState<DiscordActivityType>('watching');
 
   useEffect(() => {
     let mounted = true;
+    // Resolve sentinel-prefixed default fields the moment we hydrate so the
+    // editor inputs show real copy in the active UI language. Saved user
+    // overrides are passed through unchanged. The sentinels reference keys
+    // inside the `settings` namespace, so we look them up there.
+    const translate = (key: string) => tDynamic(i18n, `settings:${key}`);
     window.electronAPI?.discordRpc?.getSettings().then((s: DiscordRpcSettings) => {
       if (!mounted) return;
       if (s) {
+        const merged: DiscordPresenceTemplates = s.templates
+          ? { ...DEFAULT_DISCORD_TEMPLATES, ...s.templates }
+          : { ...DEFAULT_DISCORD_TEMPLATES };
         setSettings({
           ...s,
           useCustomTemplates: s.useCustomTemplates ?? false,
-          templates: s.templates
-            ? { ...DEFAULT_DISCORD_TEMPLATES, ...s.templates }
-            : { ...DEFAULT_DISCORD_TEMPLATES },
+          templates: resolveTemplates(merged, translate),
         });
       }
     });
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [i18n]);
 
   const updateField = useCallback(
     <K extends keyof DiscordRpcSettings>(key: K, value: DiscordRpcSettings[K]) => {
@@ -64,17 +115,21 @@ export function DiscordSection() {
   }, [settings]);
 
   const handleResetTemplate = useCallback(() => {
+    const translate = (key: string) => tDynamic(i18n, `settings:${key}`);
     setSettings(prev => {
       if (!prev) return prev;
       return {
         ...prev,
         templates: {
           ...prev.templates,
-          [selectedActivity]: { ...DEFAULT_DISCORD_TEMPLATES[selectedActivity] },
+          [selectedActivity]: resolveTemplate(
+            DEFAULT_DISCORD_TEMPLATES[selectedActivity],
+            translate
+          ),
         },
       };
     });
-  }, [selectedActivity]);
+  }, [selectedActivity, i18n]);
 
   const currentTemplate =
     settings?.templates?.[selectedActivity] ?? DEFAULT_DISCORD_TEMPLATES[selectedActivity];
@@ -95,11 +150,11 @@ export function DiscordSection() {
   const mainCard = (
     <SettingsCard
       icon={MessageCircle}
-      title="Discord Rich Presence"
-      subtitle="Połącz z Discordem i pokaż swoją aktywność znajomym."
+      title={t('discord.main.title')}
+      subtitle={t('discord.main.subtitle')}
       headerAccessory={
         <Switch
-          aria-label="Włącz Discord Rich Presence"
+          aria-label={t('discord.main.enableAria')}
           checked={settings.enabled}
           onCheckedChange={v => updateField('enabled', v)}
         />
@@ -109,8 +164,8 @@ export function DiscordSection() {
         <>
           <SettingsToggleRow
             id="discord-details-label"
-            title="Pokaż tytuły anime"
-            description="Wyświetlaj tytuł oglądanego anime na Discordzie"
+            title={t('discord.main.showDetailsTitle')}
+            description={t('discord.main.showDetailsDescription')}
             checked={settings.showAnimeDetails}
             onCheckedChange={v => updateField('showAnimeDetails', v)}
             disabled={!settings.enabled}
@@ -119,8 +174,8 @@ export function DiscordSection() {
           <SettingsToggleRow
             divider
             id="discord-time-label"
-            title="Pokaż czas"
-            description="Pokazuj, od ilu minut coś oglądasz."
+            title={t('discord.main.showTimeTitle')}
+            description={t('discord.main.showTimeDescription')}
             checked={settings.showElapsedTime}
             onCheckedChange={v => updateField('showElapsedTime', v)}
             disabled={!settings.enabled}
@@ -131,8 +186,8 @@ export function DiscordSection() {
       <SettingsToggleRow
         divider={!settings.useCustomTemplates}
         id="discord-templates-label"
-        title="Własne szablony"
-        description="Dostosuj tekst statusu dla każdej aktywności"
+        title={t('discord.main.useTemplatesTitle')}
+        description={t('discord.main.useTemplatesDescription')}
         checked={settings.useCustomTemplates}
         onCheckedChange={v => updateField('useCustomTemplates', v)}
         disabled={!settings.enabled}
@@ -141,7 +196,7 @@ export function DiscordSection() {
       <div>
         <Button size="sm" onClick={handleSave}>
           {saved ? <Check className="h-4 w-4" /> : null}
-          {saved ? 'Zapisano' : 'Zapisz'}
+          {saved ? t('discord.main.saved') : t('discord.main.save')}
         </Button>
       </div>
     </SettingsCard>
@@ -150,8 +205,8 @@ export function DiscordSection() {
   const previewCard = (
     <SettingsCard
       icon={MessageCircle}
-      title="Podgląd"
-      subtitle="Tak będzie wyglądał Twój status na Discordzie."
+      title={t('discord.preview.title')}
+      subtitle={t('discord.preview.subtitle')}
       tone="blue"
     >
       <DiscordPreview
@@ -178,10 +233,7 @@ export function DiscordSection() {
   const infoCallout = (
     <div className="flex items-start gap-3 rounded-xl border border-border-glass bg-background/40 px-4 py-3 text-[11.5px] leading-relaxed text-muted-foreground">
       <Info className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground/80" />
-      <p>
-        Status na Discordzie działa tylko, gdy klient Discord jest uruchomiony na komputerze. Na
-        Twoim profilu Discord znajomi zobaczą, co robisz w ShiroAni.
-      </p>
+      <p>{t('discord.info')}</p>
     </div>
   );
 

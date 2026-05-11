@@ -1,11 +1,62 @@
-import { toLocalDate, formatDate } from '@shiroani/shared';
+import { toLocalDate, formatDate as sharedFormatDate } from '@shiroani/shared';
+import i18n from '@/lib/i18n';
 
-export { formatDate };
 export { getAnimeTitle, getCoverUrl } from '@/lib/anime-utils';
+
+/** Resolve the active UI locale, falling back to the OS locale. */
+function activeLocale(): string {
+  return i18n.language || (typeof navigator !== 'undefined' ? navigator.language : 'en');
+}
+
+/**
+ * Locale-aware wrapper around the shared `formatDate` helper. Re-exported so
+ * tests and other schedule helpers can format dates without re-importing
+ * `i18n` everywhere.
+ */
+export function formatDate(dateStr: string, format: 'short' | 'long' = 'long'): string {
+  return sharedFormatDate(dateStr, activeLocale(), format);
+}
+
+// Cache `Intl.DateTimeFormat` instances per locale + option-shape. Schedule
+// headers render dozens of slots per re-render and the locale is identical
+// across them; constructing a fresh formatter per call was wasteful.
+const timeFormatters = new Map<string, Intl.DateTimeFormat>();
+function getTimeFormatter(locale: string): Intl.DateTimeFormat {
+  let f = timeFormatters.get(locale);
+  if (!f) {
+    f = new Intl.DateTimeFormat(locale, { hour: '2-digit', minute: '2-digit' });
+    timeFormatters.set(locale, f);
+  }
+  return f;
+}
+
+const dayHeadingFormatters = new Map<string, Intl.DateTimeFormat>();
+function getDayHeadingFormatter(locale: string): Intl.DateTimeFormat {
+  let f = dayHeadingFormatters.get(locale);
+  if (!f) {
+    f = new Intl.DateTimeFormat(locale, {
+      weekday: 'long',
+      month: 'long',
+      day: 'numeric',
+    });
+    dayHeadingFormatters.set(locale, f);
+  }
+  return f;
+}
+
+const weekRangeFormatters = new Map<string, Intl.DateTimeFormat>();
+function getWeekRangeFormatter(locale: string): Intl.DateTimeFormat {
+  let f = weekRangeFormatters.get(locale);
+  if (!f) {
+    f = new Intl.DateTimeFormat(locale, { month: 'long', day: 'numeric' });
+    weekRangeFormatters.set(locale, f);
+  }
+  return f;
+}
 
 export function formatTime(timestamp: number): string {
   const d = new Date(timestamp * 1000);
-  return d.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' });
+  return getTimeFormatter(activeLocale()).format(d);
 }
 
 export function addDays(dateStr: string, days: number): string {
@@ -53,36 +104,36 @@ export function formatCountdown(airingAt: number, nowSeconds: number): string {
 }
 
 /**
- * Short "day + date" label for day-timeline header (e.g. "Piątek, 19 kwietnia").
- * Falls back to `formatDate` when Intl fails.
+ * Short "day + date" label for day-timeline header (e.g. "Friday, April 19"
+ * in en-US, "piątek, 19 kwietnia" in pl-PL).
+ *
+ * Uses a single `Intl.DateTimeFormat` call so part ordering follows the
+ * locale and Polish gets the correct genitive month form ("kwietnia",
+ * not nominative "kwiecień"). Falls back to `formatDate` when Intl fails.
  */
 export function formatDayHeading(dateStr: string): string {
   try {
     const [y, m, d] = dateStr.split('-').map(Number);
     const dt = new Date(y, m - 1, d);
-    const weekday = dt.toLocaleDateString('pl-PL', { weekday: 'long' });
-    const day = dt.getDate();
-    const month = dt.toLocaleDateString('pl-PL', { month: 'long' });
-    const cap = weekday.charAt(0).toUpperCase() + weekday.slice(1);
-    return `${cap}, ${day} ${month}`;
+    const formatted = getDayHeadingFormatter(activeLocale()).format(dt);
+    return formatted.charAt(0).toUpperCase() + formatted.slice(1);
   } catch {
     return formatDate(dateStr);
   }
 }
 
-/** Range label for week views, e.g. "15–21 kwietnia". */
+/**
+ * Range label for week views, e.g. "April 15 – 21" (en-US) or
+ * "15–21 kwietnia" (pl-PL). Delegates to `formatRange` so part ordering
+ * and the range separator follow the locale automatically.
+ */
 export function formatWeekRange(first: string, last: string): string {
   try {
     const [y1, m1, d1] = first.split('-').map(Number);
     const [y2, m2, d2] = last.split('-').map(Number);
     const start = new Date(y1, m1 - 1, d1);
     const end = new Date(y2, m2 - 1, d2);
-    const monthStart = start.toLocaleDateString('pl-PL', { month: 'long' });
-    const monthEnd = end.toLocaleDateString('pl-PL', { month: 'long' });
-    if (monthStart === monthEnd && y1 === y2) {
-      return `${start.getDate()}–${end.getDate()} ${monthEnd}`;
-    }
-    return `${start.getDate()} ${monthStart} – ${end.getDate()} ${monthEnd}`;
+    return getWeekRangeFormatter(activeLocale()).formatRange(start, end);
   } catch {
     return `${formatDate(first)} – ${formatDate(last)}`;
   }

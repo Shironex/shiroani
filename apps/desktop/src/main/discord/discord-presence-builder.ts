@@ -4,9 +4,20 @@ import type {
   DiscordPresenceTemplate,
   DiscordActivityType,
 } from '@shiroani/shared';
-import { DEFAULT_DISCORD_TEMPLATES, LANDING_URL } from '@shiroani/shared';
+import {
+  DEFAULT_DISCORD_TEMPLATES,
+  LANDING_URL,
+  resolveLocalizedTemplateField,
+} from '@shiroani/shared';
+import { t, type MainTranslationKey } from '../i18n-strings';
 
-const LANDING_BUTTON = { label: 'Pobierz ShiroAni', url: LANDING_URL } as const;
+/**
+ * Build the "Download ShiroAni" rich-presence button. Resolved at call time
+ * (not module init) so the label honours the user's current UI language.
+ */
+function landingButton() {
+  return { label: t('discord.buttonDownload'), url: LANDING_URL };
+}
 
 const MAX_FIELD_LENGTH = 128;
 
@@ -51,8 +62,20 @@ function buildFromTemplate(
   const template: DiscordPresenceTemplate =
     settings.templates?.[activityType] ?? DEFAULT_DISCORD_TEMPLATES[activityType];
 
-  const details = substituteVariables(template.details, activity);
-  const state = substituteVariables(template.state, activity);
+  // `template.details` / `template.state` may carry the i18n sentinel
+  // (`@@i18n:<key>`) when the field still holds a fresh default that the user
+  // never customised. Resolve through main's `t()` so the active UI language
+  // wins, and only then run variable substitution. User-customised strings
+  // pass through `resolveLocalizedTemplateField` unchanged.
+  const localizedDetails = resolveLocalizedTemplateField(template.details, key =>
+    t(key as MainTranslationKey)
+  );
+  const localizedState = resolveLocalizedTemplateField(template.state, key =>
+    t(key as MainTranslationKey)
+  );
+
+  const details = substituteVariables(localizedDetails, activity);
+  const state = substituteVariables(localizedState, activity);
 
   let largeImageKey = 'shiroani';
   let largeImageText = 'ShiroAni';
@@ -67,12 +90,12 @@ function buildFromTemplate(
   // AniList button when template allows it
   if (template.showButton && activity.anilistId) {
     buttons.push({
-      label: 'Pokaż na AniList',
+      label: t('discord.buttonAniList'),
       url: `https://anilist.co/anime/${activity.anilistId}`,
     });
   }
 
-  buttons.push({ ...LANDING_BUTTON });
+  buttons.push(landingButton());
 
   const presence: Record<string, unknown> = {
     details: details || undefined,
@@ -104,30 +127,30 @@ function buildLegacy(
 
   switch (activity.view) {
     case 'library':
-      details = 'Przeglądanie biblioteki';
+      details = t('discord.browsingLibrary');
       if (activity.libraryCount !== undefined) {
-        state = `${activity.libraryCount} anime`;
+        state = t('discord.libraryCount', { count: activity.libraryCount });
       }
       break;
 
     case 'diary':
-      details = 'Pisanie w dzienniku';
+      details = t('discord.writingDiary');
       if (settings.showAnimeDetails && activity.animeTitle) {
         state = activity.animeTitle;
       }
       break;
 
     case 'schedule':
-      details = 'Sprawdzanie harmonogramu';
+      details = t('discord.checkingSchedule');
       break;
 
     case 'settings':
-      details = 'Konfiguracja ustawień';
+      details = t('discord.configuringSettings');
       break;
 
     case 'browser':
       if (settings.showAnimeDetails && activity.animeTitle) {
-        details = 'Ogląda anime';
+        details = t('discord.watchingAnime');
         state = activity.animeTitle;
         if (activity.animeCoverUrl) {
           largeImageKey = activity.animeCoverUrl;
@@ -135,21 +158,21 @@ function buildLegacy(
         }
         if (activity.anilistId) {
           buttons.push({
-            label: 'Pokaż na AniList',
+            label: t('discord.buttonAniList'),
             url: `https://anilist.co/anime/${activity.anilistId}`,
           });
         }
       } else {
-        details = 'Przeglądanie';
+        details = t('discord.browsing');
       }
       break;
 
     default:
-      details = 'Korzysta z ShiroAni';
+      details = t('discord.usingApp');
       break;
   }
 
-  buttons.push({ ...LANDING_BUTTON });
+  buttons.push(landingButton());
 
   const presence: Record<string, unknown> = {
     details,

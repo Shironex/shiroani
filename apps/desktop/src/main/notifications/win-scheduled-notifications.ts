@@ -1,10 +1,7 @@
 import { execFile } from 'child_process';
 import type { AiringAnime, NotificationSettings } from '@shiroani/shared';
-import {
-  computeUpcomingNotifications,
-  getTitle,
-  buildNotificationBody,
-} from '../../modules/notifications/notification-logic';
+import { computeUpcomingNotifications } from '../../modules/notifications/notification-logic';
+import { resolveAnimeTitle, buildLocalizedNotificationBody } from './notification-strings';
 import { createMainLogger } from '../logging/logger';
 
 const logger = createMainLogger('WinScheduledNotifications');
@@ -100,9 +97,9 @@ export async function scheduleToastsOnQuit(
   ];
 
   for (const { airing, deliveryTime } of upcoming) {
-    const title = getTitle(airing.media);
+    const title = resolveAnimeTitle(airing.media);
     const minutesLeft = Math.round((airing.airingAt - deliveryTime.getTime() / 1000) / 60);
-    const body = buildNotificationBody(airing.episode, minutesLeft);
+    const body = buildLocalizedNotificationBody(airing.episode, minutesLeft);
     const xml = buildToastXml(title, body);
     const dateStr = formatPowerShellDate(deliveryTime);
     const tag = `${airing.media.id}_${airing.episode}`;

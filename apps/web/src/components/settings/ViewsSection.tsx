@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Eye } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Switch } from '@/components/ui/switch';
 import { useDockStore } from '@/stores/useDockStore';
 import type { ActiveView } from '@/stores/useAppStore';
@@ -9,6 +10,7 @@ import { DockStage } from '@/components/shared/DockStage';
 import { useDockPreviewItems } from '@/hooks/useDockPreviewItems';
 
 export function ViewsSection() {
+  const { t } = useTranslation(['settings', 'nav']);
   const edge = useDockStore(s => s.edge);
   const hiddenViews = useDockStore(s => s.hiddenViews);
   const toggleViewVisibility = useDockStore(s => s.toggleViewVisibility);
@@ -19,8 +21,8 @@ export function ViewsSection() {
   return (
     <SettingsCard
       icon={Eye}
-      title="Widoczność widoków"
-      subtitle="Ukryj sekcje, których nie używasz. Ustawienia są zawsze dostępne."
+      title={t('settings:views.card.title')}
+      subtitle={t('settings:views.card.subtitle')}
     >
       <DockStage edge={edge} items={dockItems} height={140} />
 
@@ -29,6 +31,9 @@ export function ViewsSection() {
           const alwaysOn = ALWAYS_VISIBLE_VIEWS.has(item.id);
           const visible = alwaysOn || !hiddenViews.includes(item.id);
           const labelId = `view-visibility-${item.id}`;
+          // Translate the nav-item label by id; fall back to the constant's
+          // raw label if the i18n key is missing.
+          const label = t(`nav:link.${item.id}`, { defaultValue: item.label });
           return (
             <div
               key={item.id}
@@ -39,10 +44,10 @@ export function ViewsSection() {
               className="flex items-center justify-between rounded-lg border border-border-glass/70 bg-background/30 px-3 py-2 transition-colors duration-150 hover:border-border-glass"
             >
               <span className="text-[12px] font-medium text-foreground" id={labelId}>
-                {item.label}
+                {label}
                 {alwaysOn && (
                   <span className="ml-2 text-2xs font-normal text-muted-foreground/70">
-                    (zawsze)
+                    {t('settings:views.alwaysOn')}
                   </span>
                 )}
               </span>

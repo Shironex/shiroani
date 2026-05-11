@@ -57,9 +57,10 @@ describe('buildShowcaseMeta', () => {
     expect(buildShowcaseMeta(makeMedia({ bannerImage: 'banner.jpg' })).banner).toBe('banner.jpg');
     expect(buildShowcaseMeta(makeMedia()).banner).toBe('xl.jpg');
   });
-  it('translates known season + year to Polish', () => {
+  it('translates known season + year via the active locale', () => {
     const meta = buildShowcaseMeta(makeMedia({ season: 'SPRING', seasonYear: 2026 }));
-    expect(meta.yearLabel).toBe('Wiosna 2026');
+    // Tests boot i18n in EN — anilist:season.spring = "Spring".
+    expect(meta.yearLabel).toBe('Spring 2026');
   });
   it('falls back to year alone when season is missing', () => {
     const meta = buildShowcaseMeta(makeMedia({ seasonYear: 2024 }));
@@ -68,10 +69,11 @@ describe('buildShowcaseMeta', () => {
   it('returns null yearLabel when neither season nor year present', () => {
     expect(buildShowcaseMeta(makeMedia()).yearLabel).toBeNull();
   });
-  it('translates known format and status to Polish labels', () => {
+  it('translates known format and status via the active locale', () => {
     const meta = buildShowcaseMeta(makeMedia({ format: 'MOVIE', status: 'FINISHED' }));
-    expect(meta.formatLabel).toBe('Film');
-    expect(meta.statusLabel).toBe('Zakończone');
+    // EN: anilist:format.movie / anilist:status.finished.
+    expect(meta.formatLabel).toBe('Movie');
+    expect(meta.statusLabel).toBe('Finished');
   });
   it('passes through unknown format/status verbatim', () => {
     const meta = buildShowcaseMeta(makeMedia({ format: 'WEIRD_FORMAT', status: 'WEIRD_STATUS' }));

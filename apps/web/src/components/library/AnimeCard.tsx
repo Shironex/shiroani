@@ -1,10 +1,12 @@
 import { memo, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Play, Pencil, Trash2, Film, Star } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { PillTag } from '@/components/ui/pill-tag';
 import { CountdownBadge } from '@/components/library/CountdownBadge';
 import type { AnimeEntry } from '@shiroani/shared';
-import { STATUS_CONFIG } from '@/lib/constants';
+import { STATUS_LABEL_KEY } from '@/lib/constants';
+import { tDynamic } from '@/lib/i18n';
 
 interface AnimeCardProps {
   entry: AnimeEntry;
@@ -21,6 +23,7 @@ const AnimeCard = memo(function AnimeCard({
   onContinue,
   onRemove,
 }: AnimeCardProps) {
+  const { t, i18n } = useTranslation(['library', 'status', 'common']);
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
       if (e.key === 'Enter' || e.key === ' ') {
@@ -32,8 +35,8 @@ const AnimeCard = memo(function AnimeCard({
   );
 
   const progressText = entry.episodes
-    ? `Odc. ${entry.currentEpisode}/${entry.episodes}`
-    : `Odc. ${entry.currentEpisode}`;
+    ? t('common:episodeProgress', { current: entry.currentEpisode, total: entry.episodes })
+    : t('common:episodeProgressNoTotal', { current: entry.currentEpisode });
 
   const progressPercent = entry.episodes
     ? Math.min(100, Math.round((entry.currentEpisode / entry.episodes) * 100))
@@ -44,7 +47,7 @@ const AnimeCard = memo(function AnimeCard({
   const showProgress = !!entry.episodes && entry.episodes > 0 && (isWatching || isCompleted);
 
   // Status badge (top-left). completed -> green, watching -> accent, dropped/on_hold -> muted.
-  const statusLabel = STATUS_CONFIG[entry.status].label;
+  const statusLabel = tDynamic(i18n, `status:${STATUS_LABEL_KEY[entry.status]}`);
   const statusVariant: 'accent' | 'green' | 'muted' = isCompleted
     ? 'green'
     : isWatching
@@ -55,7 +58,7 @@ const AnimeCard = memo(function AnimeCard({
     <div
       role="button"
       tabIndex={0}
-      aria-label={`${entry.title}, ${statusLabel}`}
+      aria-label={t('library:card.ariaLabel', { title: entry.title, status: statusLabel })}
       className={cn(
         'group relative rounded-[10px] overflow-hidden cursor-pointer',
         'border border-border-glass bg-card/60',
@@ -80,7 +83,9 @@ const AnimeCard = memo(function AnimeCard({
             <div className="w-10 h-10 rounded-xl bg-background/30 flex items-center justify-center">
               <Film className="w-5 h-5 text-muted-foreground/40" />
             </div>
-            <span className="text-muted-foreground/50 text-2xs font-medium">Brak okładki</span>
+            <span className="text-muted-foreground/50 text-2xs font-medium">
+              {t('library:card.noCover')}
+            </span>
           </div>
         )}
 
@@ -95,8 +100,11 @@ const AnimeCard = memo(function AnimeCard({
         />
 
         {/* Status pill — top-left */}
-        <div className="absolute top-2 left-2 z-[2]">
-          <PillTag variant={statusVariant} className="shadow-[0_1px_4px_oklch(0_0_0/0.5)]">
+        <div className="absolute top-2 left-2 z-[2] max-w-[calc(100%-52px)] overflow-hidden">
+          <PillTag
+            variant={statusVariant}
+            className="shadow-[0_1px_4px_oklch(0_0_0/0.5)] truncate max-w-full"
+          >
             {statusLabel}
           </PillTag>
         </div>
@@ -171,7 +179,7 @@ const AnimeCard = memo(function AnimeCard({
                 e.stopPropagation();
                 onContinue(entry);
               }}
-              aria-label="Kontynuuj"
+              aria-label={t('library:card.continue')}
               className={cn(
                 'w-8 h-8 rounded-full bg-primary text-primary-foreground shadow-md',
                 'flex items-center justify-center',
@@ -187,7 +195,7 @@ const AnimeCard = memo(function AnimeCard({
               e.stopPropagation();
               onSelect(entry);
             }}
-            aria-label="Edytuj"
+            aria-label={t('library:card.edit')}
             className={cn(
               'w-8 h-8 rounded-full bg-accent text-accent-foreground shadow-md',
               'flex items-center justify-center',
@@ -203,7 +211,7 @@ const AnimeCard = memo(function AnimeCard({
                 e.stopPropagation();
                 onRemove(entry);
               }}
-              aria-label="Usuń"
+              aria-label={t('library:card.remove')}
               className={cn(
                 'w-8 h-8 rounded-full bg-destructive text-destructive-foreground shadow-md',
                 'flex items-center justify-center',

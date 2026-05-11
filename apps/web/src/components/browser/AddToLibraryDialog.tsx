@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Dialog,
   DialogContent,
@@ -22,7 +23,7 @@ import { useBrowserStore } from '@/stores/useBrowserStore';
 import { getWebview } from '@/components/browser/webviewRefs';
 import { toast } from 'sonner';
 import type { AnimeStatus } from '@shiroani/shared';
-import { STATUS_OPTIONS } from '@/lib/constants';
+import { getStatusOptions } from '@/lib/constants';
 import { SCRAPE_METADATA_SCRIPT } from '@/lib/scrape-metadata';
 import { useDialogStateMachine } from '@/hooks/useDialogStateMachine';
 
@@ -36,6 +37,8 @@ interface AddToLibraryDialogProps {
 type AddToLibraryStep = { step: 'fetching' } | { step: 'ready' };
 
 export function AddToLibraryDialog({ open, onOpenChange, url, title }: AddToLibraryDialogProps) {
+  const { t, i18n } = useTranslation('browser');
+  const statusOptions = useMemo(() => getStatusOptions(), [i18n.language]);
   const { addToLibrary } = useLibraryStore();
 
   const [editableTitle, setEditableTitle] = useState('');
@@ -103,7 +106,7 @@ export function AddToLibraryDialog({ open, onOpenChange, url, title }: AddToLibr
 
   const handleAdd = useCallback(() => {
     if (!editableTitle.trim()) {
-      toast.error('Tytuł nie może być pusty');
+      toast.error(t('addDialog.toast.titleEmpty'));
       return;
     }
 
@@ -113,7 +116,7 @@ export function AddToLibraryDialog({ open, onOpenChange, url, title }: AddToLibr
     );
     const urlMatch = url && entries.some(e => e.resumeUrl && e.resumeUrl === url);
     if (titleMatch || urlMatch) {
-      toast.error('To anime jest już w bibliotece');
+      toast.error(t('addDialog.toast.duplicate'));
       return;
     }
 
@@ -127,13 +130,13 @@ export function AddToLibraryDialog({ open, onOpenChange, url, title }: AddToLibr
         resumeUrl: url || undefined,
       });
 
-      toast.success('Dodano do biblioteki', {
+      toast.success(t('addDialog.toast.added'), {
         description: editableTitle.trim(),
       });
 
       onOpenChange(false);
     } catch {
-      toast.error('Nie udało się dodać do biblioteki');
+      toast.error(t('addDialog.toast.failed'));
     }
   }, [
     editableTitle,
@@ -144,6 +147,7 @@ export function AddToLibraryDialog({ open, onOpenChange, url, title }: AddToLibr
     url,
     addToLibrary,
     onOpenChange,
+    t,
   ]);
 
   return (
@@ -152,16 +156,16 @@ export function AddToLibraryDialog({ open, onOpenChange, url, title }: AddToLibr
         <DialogHeader className="min-w-0">
           <DialogTitle className="flex items-center gap-2">
             <BookmarkPlus className="w-5 h-5 text-primary" />
-            Dodaj do biblioteki
+            {t('addDialog.title')}
           </DialogTitle>
-          <DialogDescription>Zapisz tę stronę w bibliotece, żeby do niej wrócić.</DialogDescription>
+          <DialogDescription>{t('addDialog.description')}</DialogDescription>
         </DialogHeader>
 
         <div className="min-w-0 space-y-4 py-2">
           {/* Cover image preview + URL */}
           <div className="space-y-1.5">
             <label htmlFor="add-lib-cover" className="text-xs font-medium text-muted-foreground">
-              Okładka
+              {t('addDialog.cover.label')}
             </label>
             <div className="flex items-start gap-3">
               {/* Thumbnail preview */}
@@ -171,7 +175,7 @@ export function AddToLibraryDialog({ open, onOpenChange, url, title }: AddToLibr
                 ) : coverImage ? (
                   <img
                     src={coverImage}
-                    alt="Okładka"
+                    alt={t('addDialog.cover.alt')}
                     className="w-full h-full object-cover"
                     onError={() => setCoverImage('')}
                   />
@@ -184,15 +188,15 @@ export function AddToLibraryDialog({ open, onOpenChange, url, title }: AddToLibr
                   id="add-lib-cover"
                   value={coverImage}
                   onChange={e => setCoverImage(e.target.value)}
-                  placeholder="URL okładki"
+                  placeholder={t('addDialog.cover.placeholder')}
                   className="h-7 text-xs truncate"
                 />
                 <p className="text-[10px] text-muted-foreground/50">
                   {isFetchingCover
-                    ? 'Pobieranie okładki'
+                    ? t('addDialog.cover.fetchingHint')
                     : coverImage
-                      ? 'Pobrano ze strony'
-                      : 'Wklej URL lub zostaw puste'}
+                      ? t('addDialog.cover.fetchedHint')
+                      : t('addDialog.cover.emptyHint')}
                 </p>
               </div>
             </div>
@@ -200,11 +204,13 @@ export function AddToLibraryDialog({ open, onOpenChange, url, title }: AddToLibr
 
           {/* URL display */}
           <div className="space-y-1.5">
-            <label className="text-xs font-medium text-muted-foreground">Adres URL</label>
+            <label className="text-xs font-medium text-muted-foreground">
+              {t('addDialog.url.label')}
+            </label>
             <div className="flex items-center gap-2 px-3 py-2 rounded-md bg-muted/50 border border-border min-w-0 overflow-hidden">
               <Link2 className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
               <span className="text-xs text-muted-foreground truncate">
-                {url || 'Brak adresu URL'}
+                {url || t('addDialog.url.empty')}
               </span>
             </div>
           </div>
@@ -212,13 +218,13 @@ export function AddToLibraryDialog({ open, onOpenChange, url, title }: AddToLibr
           {/* Title input */}
           <div className="space-y-1.5">
             <label htmlFor="add-lib-title" className="text-xs font-medium text-muted-foreground">
-              Tytuł
+              {t('addDialog.titleField.label')}
             </label>
             <Input
               id="add-lib-title"
               value={editableTitle}
               onChange={e => setEditableTitle(e.target.value)}
-              placeholder="Tytuł"
+              placeholder={t('addDialog.titleField.placeholder')}
               className="h-8 text-sm"
               autoFocus
             />
@@ -227,14 +233,14 @@ export function AddToLibraryDialog({ open, onOpenChange, url, title }: AddToLibr
           {/* Status select */}
           <div className="space-y-1.5">
             <label htmlFor="add-lib-status" className="text-xs font-medium text-muted-foreground">
-              Status
+              {t('addDialog.status.label')}
             </label>
             <Select value={status} onValueChange={v => setStatus(v as AnimeStatus)}>
               <SelectTrigger id="add-lib-status" className="h-8">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {STATUS_OPTIONS.map(opt => (
+                {statusOptions.map(opt => (
                   <SelectItem key={opt.value} value={opt.value}>
                     {opt.label}
                   </SelectItem>
@@ -250,7 +256,7 @@ export function AddToLibraryDialog({ open, onOpenChange, url, title }: AddToLibr
                 htmlFor="add-lib-current-ep"
                 className="text-xs font-medium text-muted-foreground"
               >
-                Ostatni odcinek
+                {t('addDialog.episodes.current')}
               </label>
               <Input
                 id="add-lib-current-ep"
@@ -268,7 +274,7 @@ export function AddToLibraryDialog({ open, onOpenChange, url, title }: AddToLibr
                 htmlFor="add-lib-total-ep"
                 className="text-xs font-medium text-muted-foreground"
               >
-                Liczba odcinków
+                {t('addDialog.episodes.total')}
               </label>
               <Input
                 id="add-lib-total-ep"
@@ -286,11 +292,11 @@ export function AddToLibraryDialog({ open, onOpenChange, url, title }: AddToLibr
 
         <DialogFooter className="min-w-0">
           <Button variant="outline" size="sm" onClick={() => onOpenChange(false)}>
-            Anuluj
+            {t('actions.cancel', { ns: 'common' })}
           </Button>
           <Button size="sm" onClick={handleAdd} disabled={!editableTitle.trim()}>
             <BookmarkPlus className="w-4 h-4" />
-            Dodaj
+            {t('addDialog.submit')}
           </Button>
         </DialogFooter>
       </DialogContent>

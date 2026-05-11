@@ -1,24 +1,68 @@
 ---
+import { translations, type SupportedLanguage } from '../lib/i18n';
+
 interface Props {
   id?: string;
   num: string;
+  /** Polish-authored fallback values; used when no translation key resolves
+   *  for the active SSR `lang`. The matching `*Key` props are still emitted
+   *  as `data-i18n` attributes so client-side language toggles keep working. */
   eyebrow: string;
   title: string;
   em?: string;
   titleSuffix?: string;
   meta: string;
+  eyebrowKey?: string;
+  titleKey?: string;
+  emKey?: string;
+  titleSuffixKey?: string;
+  metaKey?: string;
+  /** Active SSR language. Defaults to PL since `/` is the canonical PL page;
+   *  `/en/index.astro` passes `lang="en"` so the EN page emits English HTML
+   *  before any JS runs (crawlers, no-JS, pre-hydration paint all see EN). */
+  lang?: SupportedLanguage;
 }
 
-const { id, num, eyebrow, title, em, titleSuffix, meta } = Astro.props;
+const {
+  id,
+  num,
+  eyebrow,
+  title,
+  em,
+  titleSuffix,
+  meta,
+  eyebrowKey,
+  titleKey,
+  emKey,
+  titleSuffixKey,
+  metaKey,
+  lang = 'pl',
+} = Astro.props;
+
+const dict = translations[lang] ?? {};
+function resolve(key: string | undefined, fallback: string): string {
+  if (!key) return fallback;
+  const value = dict[key];
+  return value != null ? value : fallback;
+}
+
+const resolvedEyebrow = resolve(eyebrowKey, eyebrow);
+const resolvedTitle = resolve(titleKey, title);
+const resolvedEm = em !== undefined ? resolve(emKey, em) : undefined;
+const resolvedTitleSuffix =
+  titleSuffix !== undefined ? resolve(titleSuffixKey, titleSuffix) : undefined;
+const resolvedMeta = resolve(metaKey, meta);
 ---
 
 <div class="divider" id={id}>
   <div class="n">{num}</div>
   <div class="t">
-    <small>{eyebrow}</small>
-    {title}
-    {em && <em>{em}</em>}
-    {titleSuffix}
+    <small data-i18n={eyebrowKey}>{resolvedEyebrow}</small>
+    <span data-i18n={titleKey}>{resolvedTitle}</span>
+    {resolvedEm !== undefined && <em data-i18n={emKey}>{resolvedEm}</em>}
+    {resolvedTitleSuffix !== undefined && (
+      <span data-i18n={titleSuffixKey}>{resolvedTitleSuffix}</span>
+    )}
   </div>
-  <div class="meta" set:html={meta}></div>
+  <div class="meta" data-i18n-html={metaKey} set:html={resolvedMeta}></div>
 </div>

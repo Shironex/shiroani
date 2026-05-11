@@ -1,0 +1,86 @@
+{
+  "title": "Aktualności",
+  "regionLabel": "Aktualności",
+  "searchPlaceholder": "Szukaj artykułów...",
+  "viewToggle": {
+    "ariaLabel": "Widok",
+    "all": "Wszystkie",
+    "bookmarks": "Zakładki"
+  },
+  "language": {
+    "ariaLabel": "Język"
+  },
+  "category": {
+    "all": "Wszystko",
+    "news": "Wiadomości",
+    "episodes": "Odcinki",
+    "reviews": "Recenzje",
+    "community": "Społeczność"
+  },
+  "languageLabel": {
+    "all": "Wszystkie",
+    "en": "Angielski",
+    "pl": "Polski"
+  },
+  "actions": {
+    "markAllRead": "Oznacz wszystkie jako przeczytane",
+    "refresh": "Odśwież źródła",
+    "loadMore": "Pokaż więcej",
+    "loadingMore": "Ładowanie...",
+    "tryAgain": "Spróbuj ponownie"
+  },
+  "summary": {
+    "noEntries": "Brak wpisów",
+    "entries_one": "{{count}} wpis",
+    "entries_few": "{{count}} wpisy",
+    "entries_many": "{{count}} wpisów",
+    "entries_other": "{{count}} wpisów",
+    "sources_one": "{{count}} źródło",
+    "sources_few": "{{count}} źródła",
+    "sources_many": "{{count}} źródeł",
+    "sources_other": "{{count}} źródeł",
+    "withSources": "{{entries}} · {{sources}}"
+  },
+  "newCount_one": "{{count}} nowy wpis",
+  "newCount_few": "{{count}} nowe wpisy",
+  "newCount_many": "{{count}} nowych wpisów",
+  "newCount_other": "{{count}} nowych wpisów",
+  "empty": {
+    "title": "Brak aktualności",
+    "subtitle": "Brak wpisów dla wybranych filtrów",
+    "noResultsTitle": "Brak wyników",
+    "noResultsSubtitle": "Nie znaleziono artykułów dla „{{query}}\"",
+    "noBookmarksTitle": "Brak zakładek",
+    "noBookmarksSubtitle": "Kliknij ikonę zakładki w czytniku artykułu."
+  },
+  "loading": "Ładowanie aktualności",
+  "hero": {
+    "featured": "Wyróżnione"
+  },
+  "item": {
+    "openExternalAria": "Otwórz w przeglądarce: {{title}}"
+  },
+  "sidebar": {
+    "mySources": "Moje źródła",
+    "allSources": "Wszystkie źródła",
+    "trending": "Najaktywniejsze",
+    "trendingPeriod": "7 dni",
+    "activityAria": "Aktywność {{name}}",
+    "entries_one": "{{count}} wpis",
+    "entries_few": "{{count}} wpisy",
+    "entries_many": "{{count}} wpisów",
+    "entries_other": "{{count}} wpisów"
+  },
+  "reader": {
+    "close": "Zamknij",
+    "readerLabel": "Czytnik",
+    "addBookmark": "Zapisz na później",
+    "removeBookmark": "Usuń z zakładek",
+    "copyLink": "Kopiuj link",
+    "openExternal": "Otwórz w przeglądarce",
+    "readFull": "Czytaj pełny artykuł",
+    "previewUnavailable": "Podgląd niedostępny. Otwórz artykuł w przeglądarce, aby przeczytać całość.",
+    "related": "Powiązane",
+    "ariaDescribed": "Artykuł z {{source}} · {{published}}"
+  }
+}

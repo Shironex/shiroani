@@ -1,0 +1,158 @@
+{
+  "title": "Dziennik",
+  "subtitle_one": "{{count}} wpis",
+  "subtitle_few": "{{count}} wpisy",
+  "subtitle_many": "{{count}} wpisów",
+  "subtitle_other": "{{count}} wpisów",
+  "searchPlaceholder": "Szukaj w dzienniku…",
+  "filter": {
+    "all": "Wszystkie",
+    "pinned": "Przypięte",
+    "withAnime": "Z anime"
+  },
+  "sort": {
+    "createdAt": "Data utworzenia",
+    "updatedAt": "Data edycji",
+    "title": "Tytuł",
+    "ascending": "Rosnąco",
+    "descending": "Malejąco"
+  },
+  "actions": {
+    "newEntry": "Nowy wpis",
+    "export": "Eksportuj",
+    "import": "Importuj"
+  },
+  "untitled": "Bez tytułu",
+  "empty": {
+    "noResults": "Brak wyników",
+    "noResultsHint": "Spróbuj innych słów albo zmień filtr",
+    "title": "Dziennik jest jeszcze pusty",
+    "subtitle": "Zapisuj wrażenia z odcinków, recenzje i notatki",
+    "action": "Napisz pierwszy wpis"
+  },
+  "card": {
+    "pin": "Przypnij",
+    "unpin": "Odepnij",
+    "remove": "Usuń",
+    "pinned": "Przypięte"
+  },
+  "timeline": {
+    "today": "Dziś",
+    "yesterday": "Wczoraj"
+  },
+  "remove": {
+    "title": "Usuń wpis",
+    "description": "Czy na pewno chcesz usunąć \"{{title}}\" z dziennika?"
+  },
+  "editor": {
+    "regionEdit": "Edytor wpisu dziennika",
+    "regionNew": "Nowy wpis dziennika",
+    "cover": "Okładka",
+    "linkedAnime": "Powiązane anime",
+    "mood": "Nastrój",
+    "tags": "Tagi",
+    "addTag": "+ Dodaj tag",
+    "addTagAriaLabel": "Dodaj tag",
+    "removeTagAriaLabel": "Usuń tag {{tag}}",
+    "back": "Powrót do dziennika",
+    "backShort": "Wstecz",
+    "editingBadge": "● edycja",
+    "newBadge": "● nowy wpis",
+    "titlePlaceholder": "Tytuł wpisu…",
+    "titleAriaLabel": "Tytuł wpisu",
+    "cancel": "Anuluj",
+    "save": "Zapisz",
+    "create": "Dodaj wpis",
+    "pinEntry": "Przypnij wpis",
+    "unpinEntry": "Odepnij wpis",
+    "moodLabel": "Nastrój",
+    "footerMarkdown": "Markdown",
+    "footerPinned": "Przypięte",
+    "footerCount": "{{count}} / {{max}} znaków",
+    "placeholder": "Zacznij pisać…",
+    "defaultTitle": "Bez tytułu"
+  },
+  "toolbar": {
+    "undo": "Cofnij",
+    "redo": "Ponów",
+    "heading1": "Nagłówek 1",
+    "heading2": "Nagłówek 2",
+    "heading3": "Nagłówek 3",
+    "bold": "Pogrubienie",
+    "italic": "Kursywa",
+    "strike": "Przekreślenie",
+    "bulletList": "Lista",
+    "orderedList": "Lista numerowana",
+    "blockquote": "Cytat",
+    "codeBlock": "Blok kodu",
+    "horizontalRule": "Linia pozioma"
+  },
+  "gradient": {
+    "clear": "wyczyść",
+    "sakura": "Sakura",
+    "twilight": "Zmierzch",
+    "ocean": "Ocean",
+    "matcha": "Matcha",
+    "amber": "Bursztyn",
+    "coral": "Koral",
+    "mist": "Mgła",
+    "lavender": "Lawenda",
+    "mint": "Mięta",
+    "cyber": "Cyber",
+    "starlight": "Gwiazdy",
+    "peach": "Brzoskwinia"
+  },
+  "mood": {
+    "great": "Świetnie",
+    "good": "Dobrze",
+    "neutral": "Neutralnie",
+    "bad": "Słabo",
+    "terrible": "Okropnie"
+  },
+  "sidebar": {
+    "currentStreak": "Aktualny streak",
+    "dayInRow_one": "dzień z rzędu",
+    "dayInRow_few": "dni z rzędu",
+    "dayInRow_many": "dni z rzędu",
+    "dayInRow_other": "dni z rzędu",
+    "streakNoteEmpty": "Dodaj dziś wpis, a ruszysz ze streakiem.",
+    "streakNoteRecord": "Rekord osobisty! Nie zatrzymuj się. Kolejny cel to {{target}} dni.",
+    "streakNoteProgress": "Twój rekord: {{longest}} {{longestUnit}}. Do celu ({{target}}) brakuje {{remaining}} {{remainingUnit}}.",
+    "dayUnit_one": "dzień",
+    "dayUnit_few": "dni",
+    "dayUnit_many": "dni",
+    "dayUnit_other": "dni",
+    "goalLabel": "cel · {{target}} dni",
+    "stats": {
+      "totalEntries": "wpisów łącznie",
+      "thisMonth": "w tym miesiącu",
+      "thisMonthSub_one": "wpis",
+      "thisMonthSub_few": "wpisy",
+      "thisMonthSub_many": "wpisów",
+      "thisMonthSub_other": "wpisów",
+      "longestStreak": "rekord streak",
+      "longestStreakSub_one": "dzień",
+      "longestStreakSub_few": "dni",
+      "longestStreakSub_many": "dni",
+      "longestStreakSub_other": "dni",
+      "linkedToAnime": "z anime",
+      "linkedToAnimeSub_one": "połączenie",
+      "linkedToAnimeSub_few": "połączenia",
+      "linkedToAnimeSub_many": "połączeń",
+      "linkedToAnimeSub_other": "połączeń"
+    },
+    "activity": {
+      "label": "Aktywność",
+      "label52w": "Aktywność · 52 tyg.",
+      "less": "mniej",
+      "more": "więcej",
+      "emptyTag": "PUSTO",
+      "emptyTitle": "Brak aktywności",
+      "emptyDescription": "Napisz pierwszy wpis, żeby zobaczyć heatmapę."
+    },
+    "topTags": "Popularne tagi",
+    "topTagsHint": "Dodaj tagi do wpisów, żeby śledzić tematy.",
+    "genres": "Gatunki",
+    "studios": "Studia"
+  }
+}
