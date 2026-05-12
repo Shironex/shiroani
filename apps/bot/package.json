@@ -27,7 +27,7 @@
     "@shiroani/shared": "workspace:*",
     "discord.js": "^14.26.4",
     "ioredis": "^5.10.1",
-    "necord": "^6.13.0",
+    "necord": "^6.14.0",
     "nestjs-pino": "^4.6.1",
     "pg": "^8.16.0",
     "pino": "^10.3.1",
