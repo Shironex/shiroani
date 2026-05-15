@@ -87,20 +87,17 @@ Needs a local `playwright` install or `PLAYWRIGHT_PATH` pointing at one. `LANGS=
 The landing page hero is followed by a short Remotion-rendered video reel cycling through the in-app screenshots. It lives in `apps/landing-demo/` and reads from the same `assets/screenshots/<lang>/` PNGs that the READMEs use, so refreshing the screenshots covers half the work.
 
 ```bash
-# Render both locales (MP4 + JPG poster) into apps/landing/public/demo/
-pnpm --filter @shiroani/landing-demo render --quick
+# Render both locales (MP4 + JPG + AVIF poster) into apps/landing/public/demo/
+pnpm --filter @shiroani/landing-demo render
 
 # Single locale
-pnpm --filter @shiroani/landing-demo render -- --quick --lang=en
-
-# Add WebM alongside MP4 (slower, smaller bytes on Chrome/Firefox)
-pnpm --filter @shiroani/landing-demo render
+pnpm --filter @shiroani/landing-demo render -- --lang=en
 
 # Iterate on the composition visually
 pnpm --filter @shiroani/landing-demo studio
 ```
 
-`--quick` skips the VP9 WebM pass — H.264 MP4 already plays in every browser, so WebM is purely a bandwidth optimization. The renderer downloads a headless Chrome shell on first run (~115 MB, cached).
+Only MP4/H.264 is produced — Remotion's VP9 encoder emitted WebM files with broken stream metadata Chrome refused to decode (`level: -99`, `color_range: pc`), and MP4 plays in every browser anyway. The renderer downloads a headless Chrome shell on first run (~115 MB, cached).
 
 ## Releases & versioning
 

@@ -9,13 +9,12 @@ interface Props {
 const { lang = 'pl' } = Astro.props;
 const tt = (key: string) => t(key, lang);
 
-const webmEn = '/demo/shiroani-demo.en.webm';
-const webmPl = '/demo/shiroani-demo.pl.webm';
 const mp4En = '/demo/shiroani-demo.en.mp4';
 const mp4Pl = '/demo/shiroani-demo.pl.mp4';
 const posterEn = '/demo/shiroani-demo.en.jpg';
 const posterPl = '/demo/shiroani-demo.pl.jpg';
 
+const mp4 = lang === 'en' ? mp4En : mp4Pl;
 const poster = lang === 'en' ? posterEn : posterPl;
 ---
 
@@ -40,12 +39,11 @@ const poster = lang === 'en' ? posterEn : posterPl;
       <video
         class="demo-video"
         data-demo-video
-        data-webm-pl={webmPl}
-        data-webm-en={webmEn}
         data-mp4-pl={mp4Pl}
         data-mp4-en={mp4En}
         data-poster-pl={posterPl}
         data-poster-en={posterEn}
+        src={mp4}
         poster={poster}
         muted
         loop
@@ -53,12 +51,7 @@ const poster = lang === 'en' ? posterEn : posterPl;
         preload="none"
         aria-label={tt('demo.video.label')}
         data-i18n-aria-label="demo.video.label"
-      >
-        <!-- WebM/VP9 first — Chrome, Firefox, Android pick this (~30% smaller) -->
-        <source src={lang === 'en' ? webmEn : webmPl} type="video/webm" data-demo-source-webm />
-        <!-- MP4/H.264 fallback — Safari and any browser without VP9 support -->
-        <source src={lang === 'en' ? mp4En : mp4Pl} type="video/mp4" data-demo-source-mp4 />
-      </video>
+      ></video>
     </div>
 
     <p class="demo-foot" data-i18n="demo.foot">{tt('demo.foot')}</p>
@@ -191,17 +184,11 @@ const poster = lang === 'en' ? posterEn : posterPl;
   // who land on /en and toggle back to PL via the dock route alias.
   function syncDemo(lang: string) {
     if (!video) return;
-    const nextWebm = lang === 'en' ? video.dataset.webmEn : video.dataset.webmPl;
     const nextMp4 = lang === 'en' ? video.dataset.mp4En : video.dataset.mp4Pl;
     const nextPoster = lang === 'en' ? video.dataset.posterEn : video.dataset.posterPl;
 
-    const webmSource = video.querySelector<HTMLSourceElement>('[data-demo-source-webm]');
-    const mp4Source = video.querySelector<HTMLSourceElement>('[data-demo-source-mp4]');
-    const currentMp4 = mp4Source?.getAttribute('src');
-
-    if (nextMp4 && currentMp4 !== nextMp4) {
-      if (webmSource && nextWebm) webmSource.setAttribute('src', nextWebm);
-      if (mp4Source) mp4Source.setAttribute('src', nextMp4);
+    if (nextMp4 && video.getAttribute('src') !== nextMp4) {
+      video.setAttribute('src', nextMp4);
       if (nextPoster) video.setAttribute('poster', nextPoster);
       video.load();
       video.play().catch(() => {

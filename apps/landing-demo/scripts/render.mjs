@@ -1,12 +1,16 @@
 /**
- * Render the landing demo reel in both locales, into both H.264 MP4 and
- * VP9 WebM, plus a poster JPEG + AVIF. Output lands directly in the landing
- * site's public folder so Astro picks it up on next build.
+ * Render the landing demo reel in both locales, into H.264 MP4 plus a
+ * JPEG + AVIF poster. Output lands directly in the landing site's public
+ * folder so Astro picks it up on next build.
+ *
+ * We used to also emit VP9 WebM, but Remotion's VP9 encoder produced
+ * containers with invalid stream metadata (level: -99, color_range: pc,
+ * color_space: bt470bg) that Chrome refused to decode. MP4/H.264 plays
+ * in every browser including iOS Safari, so we kept the simple path.
  *
  * Usage:
  *   pnpm --filter @shiroani/landing-demo render
  *   pnpm --filter @shiroani/landing-demo render -- --lang=en   # single locale
- *   pnpm --filter @shiroani/landing-demo render -- --quick      # skip WebM
  */
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -27,8 +31,6 @@ const outDir = path.resolve(root, '../landing/public/demo');
 
 const args = new Set(process.argv.slice(2));
 const langArg = [...args].find((a) => a.startsWith('--lang='))?.split('=')[1];
-// --quick skips WebM; without it both MP4 and WebM are produced.
-const quick = args.has('--quick');
 
 // Explicit allow-list so that --lang=de errors immediately rather than
 // silently rendering Polish content into shiroani-demo.de.mp4.
@@ -71,29 +73,10 @@ async function main() {
       crf: 20,
       pixelFormat: 'yuv420p',
       x264Preset: 'slow',
-      // muted: true skips the audio track entirely. audioCodec: null only
-      // picks a default codec — it does NOT disable audio. WebM/VP9 was
-      // shipping a malformed Opus stream (duration=N/A) that Chrome
-      // refused to decode; without muted: true the MP4 has a silent AAC
-      // track which we also don't need.
+      // muted: true skips the audio track entirely.
       muted: true,
       chromiumOptions: { gl: 'swangle' },
     });
-
-    // WebM/VP9 is produced by default; pass --quick to skip it.
-    if (!quick) {
-      const webmOut = path.join(outDir, `shiroani-demo.${lang}.webm`);
-      console.log(`[demo-reel] rendering WebM → ${webmOut}`);
-      await renderMedia({
-        composition,
-        serveUrl,
-        codec: 'vp9',
-        outputLocation: webmOut,
-        crf: 32,
-        muted: true,
-        chromiumOptions: { gl: 'swangle' },
-      });
-    }
 
     const posterOut = path.join(outDir, `shiroani-demo.${lang}.jpg`);
     console.log(`[demo-reel] rendering poster → ${posterOut}`);
