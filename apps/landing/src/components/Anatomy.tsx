@@ -1,7 +1,12 @@
 import { useState } from 'react';
-import screenshotLibrary from '../assets/screenshot_library.webp';
-import screenshotSchedule from '../assets/screenshot_schedule.webp';
-import screenshotNewtab from '../assets/screenshot_newtab.webp';
+// Three of the four anatomy screenshots are byte-identical to images
+// Features.astro already imports under different names. Sharing the import
+// keeps Vite's content-dedup from picking different canonical URLs for the
+// SSR <img> vs the hydrated React state — that mismatch was making the
+// image collapse on first paint in production.
+import libraryView from '../assets/library_view.webp';
+import scheduleView from '../assets/schedule_view.webp';
+import onboarding from '../assets/onboarding.webp';
 import screenshotSettings from '../assets/screenshot_settings.webp';
 import type { SupportedLanguage } from '../lib/i18n';
 import { useT } from '../lib/useLandingLang';
@@ -14,7 +19,7 @@ const ANA: Record<
   { src: string; titleKey: string; labelKey: string; viewLabelKey: string; pins: Pin[] }
 > = {
   library: {
-    src: screenshotLibrary.src,
+    src: libraryView.src,
     titleKey: 'anatomy.title.library',
     labelKey: 'anatomy.tab.library',
     viewLabelKey: 'anatomy.viewLabel.library',
@@ -36,7 +41,7 @@ const ANA: Record<
     ],
   },
   schedule: {
-    src: screenshotSchedule.src,
+    src: scheduleView.src,
     titleKey: 'anatomy.title.schedule',
     labelKey: 'anatomy.tab.schedule',
     viewLabelKey: 'anatomy.viewLabel.schedule',
@@ -62,7 +67,7 @@ const ANA: Record<
     ],
   },
   newtab: {
-    src: screenshotNewtab.src,
+    src: onboarding.src,
     titleKey: 'anatomy.title.newtab',
     labelKey: 'anatomy.tab.newtab',
     viewLabelKey: 'anatomy.viewLabel.newtab',
