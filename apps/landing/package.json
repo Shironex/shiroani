@@ -7,7 +7,8 @@
     "dev": "astro dev --port 3000",
     "build": "astro build",
     "preview": "astro preview",
-    "check": "astro check"
+    "check": "astro check",
+    "test": "node --test tests/**/*.spec.js"
   },
   "dependencies": {
     "@shiroani/changelog": "workspace:*",

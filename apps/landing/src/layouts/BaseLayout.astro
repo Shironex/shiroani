@@ -48,6 +48,12 @@ const { title, description, titleKey, descriptionKey, lang = 'pl' } = Astro.prop
       const landingWindow = window as LandingWindow;
       landingWindow.__shiroaniLandingTranslations = translations;
 
+      // Pairs of [pl-route, en-route] that have dedicated SSR locale siblings.
+      const localeRoutes: Array<[string, string]> = [
+        ['/changelog', '/en/changelog'],
+        ['/download', '/en/download'],
+      ];
+
       function getStoredLang(): SupportedLanguage {
         try {
           const stored = localStorage.getItem(LANGUAGE_STORAGE_KEY);
@@ -61,6 +67,24 @@ const { title, description, titleKey, descriptionKey, lang = 'pl' } = Astro.prop
         // flash the wrong language on first paint.
         const ssrLang = document.documentElement.lang;
         return isSupportedLanguage(ssrLang) ? ssrLang : DEFAULT_LANGUAGE;
+      }
+
+      function rewriteLocalizedLinks(lang: SupportedLanguage) {
+        document.querySelectorAll<HTMLAnchorElement>('a[href]').forEach((a) => {
+          // Only rewrite same-origin anchors.
+          if (a.origin !== location.origin) return;
+          const path = a.pathname;
+          for (const [pl, en] of localeRoutes) {
+            if (lang === 'en' && path === pl) {
+              a.href = en;
+              break;
+            }
+            if (lang !== 'en' && path === en) {
+              a.href = pl;
+              break;
+            }
+          }
+        });
       }
 
       function applyTranslations(lang: SupportedLanguage) {
@@ -118,6 +142,8 @@ const { title, description, titleKey, descriptionKey, lang = 'pl' } = Astro.prop
           if (dict[nextKey] != null) btn.setAttribute('aria-label', dict[nextKey]);
         });
 
+        rewriteLocalizedLinks(lang);
+
         document.dispatchEvent(new CustomEvent('shiroani:lang-change', { detail: { lang } }));
       }
 
@@ -133,6 +159,23 @@ const { title, description, titleKey, descriptionKey, lang = 'pl' } = Astro.prop
             } catch {
               /* ignore */
             }
+
+            // Routes that have a dedicated locale sibling must navigate so
+            // their SSR-rendered content (release cards, etc.) re-renders in
+            // the chosen language. The in-place swap can't reach plain-text
+            // nodes that carry no data-i18n hook.
+            const { pathname } = location;
+            for (const [pl, en] of localeRoutes) {
+              if (next === 'en' && pathname === pl) {
+                location.assign(en);
+                return;
+              }
+              if (next === 'pl' && pathname === en) {
+                location.assign(pl);
+                return;
+              }
+            }
+
             applyTranslations(next);
           });
         });
