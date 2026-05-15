@@ -133,10 +133,107 @@ export function localizeReleases(locale: Locale): ResolvedRelease[] {
 
 export const RELEASES: readonly Release[] = [
   {
+    version: '0.10.0',
+    shortDate: '15.05.2026',
+    type: 'major',
+    latest: true,
+    pl: {
+      date: '15 maja 2026',
+      title: 'Aplikacja po angielsku i polsku',
+      description:
+        'Cała aplikacja oraz strona startowa są teraz dostępne po angielsku i po polsku — można przełączyć w ustawieniach lub w stopce strony, a przy pierwszym uruchomieniu język dobiera się sam pod ustawienia systemu. Daty, godziny, „X minut temu", rozmiary plików i dni tygodnia szanują wybrany język. Do tego mniej zużycia RAM-u przy długich sesjach i drobne poprawki.',
+      categories: [
+        {
+          kind: 'feature',
+          label: 'Pełna obsługa angielskiego',
+          entries: [
+            'Cała aplikacja przetłumaczona na angielski — widoki, ustawienia, powiadomienia systemowe, ikona w zasobniku, okna dialogowe i Discord Rich Presence',
+            'Przełącznik języka w Ustawieniach → Wygląd oraz w stopce strony startowej',
+            'Przy pierwszym uruchomieniu aplikacja sama wybiera polski lub angielski na podstawie języka systemu',
+            'Strona startowa wczytuje się od razu w odpowiednim języku, bez krótkiego mignięcia po polsku',
+            'Daty, „X minut temu", rozmiary plików, godziny w harmonogramie i dni tygodnia są zawsze zgodne z wybranym językiem',
+            'Historia zmian w aplikacji renderuje się w aktywnym języku',
+          ],
+        },
+        {
+          kind: 'polish',
+          label: 'Mniej zużycia RAM-u',
+          entries: [
+            'Wewnętrzne bufory mają teraz limit i samoczynnie czyszczą stare wpisy zamiast rosnąć w nieskończoność',
+            'Posprzątane „wycieki" nasłuchów, timerów i obserwerów, które utrzymywały się po zamknięciu okien',
+            'Buforowane formatery dat i liczb — mniej pracy przy każdym renderowaniu list',
+          ],
+        },
+        {
+          kind: 'fix',
+          label: 'Poprawki',
+          entries: [
+            'Aktualizator nie myli się już, gdy plik instalatora jest jeszcze publikowany tuż po wydaniu — czeka i pobiera, zamiast pokazywać błąd',
+            'Cały obszar krzyżyka w kafelkach skrótów nowej karty jest klikalny, nie tylko sama ikona',
+            'Onboarding pokazuje rzeczywisty stan języka i Discorda w ekranie podsumowania',
+          ],
+        },
+        {
+          kind: 'security',
+          label: 'Bezpieczeństwo',
+          entries: [
+            'Załatane luki w bibliotekach pomocniczych (hono, fast-uri, devalue, yaml)',
+            'Aktualizacja silnika Electron i kilku narzędzi deweloperskich',
+          ],
+        },
+      ],
+    },
+    en: {
+      date: 'May 15, 2026',
+      title: 'The app in English and Polish',
+      description:
+        'The whole app and the website are now available in English and Polish — switch in Settings or the website footer, and on the first launch the language is picked from your system settings. Dates, times, “X minutes ago”, file sizes and weekday names all respect the chosen language. Plus less RAM use during long sessions and a few smaller fixes.',
+      categories: [
+        {
+          kind: 'feature',
+          label: 'Full English support',
+          entries: [
+            'The whole app is now translated to English — views, settings, system notifications, the tray icon, dialogs and Discord Rich Presence',
+            'A language switch in Settings → Appearance and in the website footer',
+            'On first launch the app picks Polish or English based on your system language',
+            'The website loads in the right language right away, without a brief flash of the wrong one',
+            'Dates, “X minutes ago”, file sizes, schedule times and weekday names always match the chosen language',
+            'The in-app changelog renders in the active language',
+          ],
+        },
+        {
+          kind: 'polish',
+          label: 'Less RAM use',
+          entries: [
+            'Internal caches now have a size cap and clean themselves up instead of growing forever',
+            'Cleaned-up “leaks” from listeners, timers and observers that lingered after windows closed',
+            'Date and number formatters are cached — less work on every list render',
+          ],
+        },
+        {
+          kind: 'fix',
+          label: 'Fixes',
+          entries: [
+            'The updater no longer trips up when the installer file is still being published right after a release — it waits and downloads instead of showing an error',
+            'The whole X area on new-tab quick-access tiles is clickable, not just the icon itself',
+            'Onboarding now shows the real language and Discord state on the summary screen',
+          ],
+        },
+        {
+          kind: 'security',
+          label: 'Security',
+          entries: [
+            'Patched vulnerabilities in helper libraries (hono, fast-uri, devalue, yaml)',
+            'Engine bump for Electron and a few development tools',
+          ],
+        },
+      ],
+    },
+  },
+  {
     version: '0.9.0',
     shortDate: '02.05.2026',
     type: 'minor',
-    latest: true,
     pl: {
       date: '2 maja 2026',
       title: 'Własna maskotka i przełącznik animacji bujania',
