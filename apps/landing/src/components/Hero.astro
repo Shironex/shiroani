@@ -1,5 +1,5 @@
 ---
-import { currentVersion } from '../lib/releases';
+import { currentVersion, getReleases } from '../lib/releases';
 import { t, type SupportedLanguage } from '../lib/i18n';
 
 interface Props {
@@ -11,6 +11,13 @@ interface Props {
 const { lang = 'pl' } = Astro.props;
 const tt = (key: string) => t(key, lang);
 const version = currentVersion();
+// Eyebrow rides the latest changelog headline so it stays accurate
+// release-over-release instead of going stale like the previous hardcoded
+// "Floating dock now available" copy. Both locales are emitted so the
+// in-place language toggle (see BaseLayout) can swap without a navigation.
+const latestHeadline = getReleases(lang)[0].title;
+const latestHeadlinePl = getReleases('pl')[0].title;
+const latestHeadlineEn = getReleases('en')[0].title;
 
 const libraryCards = [
   { cls: 'c1', title: 'Frieren', ep: '8/28', badge: { text: 'ON AIR', cls: 'live' }, progress: 28 },
@@ -25,7 +32,7 @@ const libraryCards = [
 <section class="hero">
   <div class="hero-grid">
     <div>
-      <span class="eyebrow"><span class="blip"></span>v{version} · <span data-i18n="hero.eyebrow">{tt('hero.eyebrow')}</span></span>
+      <span class="eyebrow"><span class="blip"></span>v{version} · <span data-release-headline data-headline-pl={latestHeadlinePl} data-headline-en={latestHeadlineEn}>{latestHeadline}</span></span>
       <h1>
         <span data-i18n="hero.headline.lead">{tt('hero.headline.lead')}</span>
         <span class="kanji" data-i18n="hero.headline.kanji">{tt('hero.headline.kanji')}</span>
@@ -133,3 +140,28 @@ const libraryCards = [
     </div>
   </div>
 </section>
+
+<script>
+  // Keep the hero eyebrow in sync with the in-place language toggle.
+  // The headline can't ride the static translations dict because it comes
+  // from the changelog package at build time, so we read both locales off
+  // data attributes and swap on the lang-change event from BaseLayout.
+  function syncEyebrow(lang: string) {
+    const el = document.querySelector<HTMLElement>('[data-release-headline]');
+    if (!el) return;
+    const next = lang === 'en' ? el.dataset.headlineEn : el.dataset.headlinePl;
+    if (next) el.textContent = next;
+  }
+
+  function init() {
+    syncEyebrow(document.documentElement.lang || 'pl');
+  }
+
+  document.addEventListener('shiroani:lang-change', (e) => {
+    const detail = (e as CustomEvent<{ lang: string }>).detail;
+    syncEyebrow(detail?.lang ?? 'pl');
+  });
+
+  init();
+  document.addEventListener('astro:page-load', init);
+</script>

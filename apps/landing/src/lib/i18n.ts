@@ -56,7 +56,6 @@ export const translations: Record<SupportedLanguage, Record<string, string>> = {
     'ticker.onAir': 'NA ŻYWO',
 
     // Hero
-    'hero.eyebrow': 'Pływający dock już dostępny',
     'hero.headline.lead': 'Oglądaj i śledź w',
     'hero.headline.kanji': 'jednym',
     'hero.headline.mark': 'spokojnym miejscu',
@@ -388,7 +387,6 @@ export const translations: Record<SupportedLanguage, Record<string, string>> = {
     'ticker.onAir': 'ON AIR',
 
     // Hero
-    'hero.eyebrow': 'Floating dock now available',
     'hero.headline.lead': 'Watch and track in',
     'hero.headline.kanji': 'one',
     'hero.headline.mark': 'quiet place',
