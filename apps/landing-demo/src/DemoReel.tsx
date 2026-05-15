@@ -1,3 +1,4 @@
+import { loadFont } from '@remotion/google-fonts/Inter';
 import {
   AbsoluteFill,
   Easing,
@@ -8,6 +9,9 @@ import {
   useCurrentFrame,
   useVideoConfig,
 } from 'remotion';
+
+// Ensure Inter is available in headless Chromium, which ships no system fonts.
+const { fontFamily: interFamily } = loadFont('normal', { weights: ['500', '600', '700'] });
 
 export const FPS = 30;
 // 4:3 instead of 16:9 — the source screenshots are ~5:4 (1122×900), so a
@@ -94,7 +98,7 @@ const SCENES: SceneCopy[] = [
 export const TOTAL_FRAMES =
   INTRO_FRAMES + SCENES.length * (SCENE_FRAMES - SCENE_OVERLAP) + SCENE_OVERLAP + OUTRO_FRAMES;
 
-const FONT_STACK = '"Inter","Segoe UI","SF Pro Display",system-ui,-apple-system,Roboto,sans-serif';
+const FONT_STACK = `${interFamily},"Segoe UI","SF Pro Display",system-ui,-apple-system,Roboto,sans-serif`;
 
 const Background: React.FC = () => {
   return (

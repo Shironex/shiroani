@@ -1,16 +1,17 @@
 /**
  * Render the landing demo reel in both locales, into both H.264 MP4 and
- * VP9 WebM, plus a poster JPEG. Output lands directly in the landing
+ * VP9 WebM, plus a poster JPEG + AVIF. Output lands directly in the landing
  * site's public folder so Astro picks it up on next build.
  *
  * Usage:
  *   pnpm --filter @shiroani/landing-demo render
  *   pnpm --filter @shiroani/landing-demo render -- --lang=en   # single locale
- *   pnpm --filter @shiroani/landing-demo render -- --quick      # skip webm
+ *   pnpm --filter @shiroani/landing-demo render -- --quick      # skip WebM
  */
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { mkdir } from 'node:fs/promises';
+import sharp from 'sharp';
 import { bundle } from '@remotion/bundler';
 import {
   getCompositions,
@@ -26,9 +27,20 @@ const outDir = path.resolve(root, '../landing/public/demo');
 
 const args = new Set(process.argv.slice(2));
 const langArg = [...args].find((a) => a.startsWith('--lang='))?.split('=')[1];
+// --quick skips WebM; without it both MP4 and WebM are produced.
 const quick = args.has('--quick');
 
-const LANGS = langArg ? [langArg] : ['en', 'pl'];
+// Explicit allow-list so that --lang=de errors immediately rather than
+// silently rendering Polish content into shiroani-demo.de.mp4.
+const COMP_IDS = { en: 'DemoReelEn', pl: 'DemoReelPl' };
+const SUPPORTED = Object.keys(COMP_IDS);
+
+if (langArg && !SUPPORTED.includes(langArg)) {
+  console.error(`[demo-reel] unsupported --lang=${langArg}. Supported: ${SUPPORTED.join(', ')}`);
+  process.exit(1);
+}
+
+const LANGS = langArg ? [langArg] : SUPPORTED;
 
 async function main() {
   await mkdir(outDir, { recursive: true });
@@ -43,7 +55,7 @@ async function main() {
   const compositions = await getCompositions(serveUrl);
 
   for (const lang of LANGS) {
-    const compId = lang === 'en' ? 'DemoReelEn' : 'DemoReelPl';
+    const compId = COMP_IDS[lang];
     const composition = compositions.find((c) => c.id === compId);
     if (!composition) {
       throw new Error(`Composition ${compId} not found`);
@@ -63,6 +75,7 @@ async function main() {
       chromiumOptions: { gl: 'swangle' },
     });
 
+    // WebM/VP9 is produced by default; pass --quick to skip it.
     if (!quick) {
       const webmOut = path.join(outDir, `shiroani-demo.${lang}.webm`);
       console.log(`[demo-reel] rendering WebM → ${webmOut}`);
@@ -94,6 +107,14 @@ async function main() {
       jpegQuality: 80,
       chromiumOptions: { gl: 'swangle' },
     });
+
+    // Post-process poster to AVIF for browsers that support it.
+    // <video poster> only accepts a single URL so Demo.astro keeps the JPG
+    // as the poster= value; the AVIF sits alongside for future picture-based
+    // overlays or once browsers support AVIF in poster= more broadly.
+    const avifOut = path.join(outDir, `shiroani-demo.${lang}.avif`);
+    console.log(`[demo-reel] converting poster → AVIF ${avifOut}`);
+    await sharp(posterOut).avif({ quality: 50 }).toFile(avifOut);
   }
 
   console.log('[demo-reel] done.');

@@ -9,12 +9,14 @@ interface Props {
 const { lang = 'pl' } = Astro.props;
 const tt = (key: string) => t(key, lang);
 
-const mp4 = `/demo/shiroani-demo.${lang}.mp4`;
-const poster = `/demo/shiroani-demo.${lang}.jpg`;
+const webmEn = '/demo/shiroani-demo.en.webm';
+const webmPl = '/demo/shiroani-demo.pl.webm';
 const mp4En = '/demo/shiroani-demo.en.mp4';
-const posterEn = '/demo/shiroani-demo.en.jpg';
 const mp4Pl = '/demo/shiroani-demo.pl.mp4';
+const posterEn = '/demo/shiroani-demo.en.jpg';
 const posterPl = '/demo/shiroani-demo.pl.jpg';
+
+const poster = lang === 'en' ? posterEn : posterPl;
 ---
 
 <section class="demo" id="demo">
@@ -29,23 +31,34 @@ const posterPl = '/demo/shiroani-demo.pl.jpg';
     </header>
 
     <div class="demo-stage">
+      <!--
+        preload="none" + IntersectionObserver: browsers won't fetch the video
+        body until the section is close to the viewport. autoplay is handled
+        by the script below. muted + loop + playsinline are required for
+        silent autoplay on iOS/Android.
+      -->
       <video
         class="demo-video"
         data-demo-video
+        data-webm-pl={webmPl}
+        data-webm-en={webmEn}
         data-mp4-pl={mp4Pl}
         data-mp4-en={mp4En}
         data-poster-pl={posterPl}
         data-poster-en={posterEn}
-        src={mp4}
         poster={poster}
-        autoplay
         muted
         loop
         playsinline
-        preload="metadata"
+        preload="none"
         aria-label={tt('demo.video.label')}
         data-i18n-aria-label="demo.video.label"
-      ></video>
+      >
+        <!-- WebM/VP9 first — Chrome, Firefox, Android pick this (~30% smaller) -->
+        <source src={lang === 'en' ? webmEn : webmPl} type="video/webm" data-demo-source-webm />
+        <!-- MP4/H.264 fallback — Safari and any browser without VP9 support -->
+        <source src={lang === 'en' ? mp4En : mp4Pl} type="video/mp4" data-demo-source-mp4 />
+      </video>
     </div>
 
     <p class="demo-foot" data-i18n="demo.foot">{tt('demo.foot')}</p>
@@ -151,17 +164,44 @@ const posterPl = '/demo/shiroani-demo.pl.jpg';
 </style>
 
 <script>
+  const video = document.querySelector<HTMLVideoElement>('[data-demo-video]');
+
+  // Gate playback on IntersectionObserver so the browser doesn't fetch the
+  // video body at page load. A ~200 px root margin starts buffering just
+  // before the section enters the viewport.
+  if (video) {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          observer.disconnect();
+          video.load();
+          video.play().catch(() => {
+            /* autoplay blocked by browser policy — poster stays visible */
+          });
+        }
+      },
+      { rootMargin: '200px' }
+    );
+    observer.observe(video);
+  }
+
   // Swap the demo video source on in-place language toggle so the visible
   // reel matches the rest of the page. Locale-specific routes (/, /en)
   // already navigate on toggle, but a no-reload swap is needed for users
   // who land on /en and toggle back to PL via the dock route alias.
   function syncDemo(lang: string) {
-    const video = document.querySelector<HTMLVideoElement>('[data-demo-video]');
     if (!video) return;
+    const nextWebm = lang === 'en' ? video.dataset.webmEn : video.dataset.webmPl;
     const nextMp4 = lang === 'en' ? video.dataset.mp4En : video.dataset.mp4Pl;
     const nextPoster = lang === 'en' ? video.dataset.posterEn : video.dataset.posterPl;
-    if (nextMp4 && video.getAttribute('src') !== nextMp4) {
-      video.setAttribute('src', nextMp4);
+
+    const webmSource = video.querySelector<HTMLSourceElement>('[data-demo-source-webm]');
+    const mp4Source = video.querySelector<HTMLSourceElement>('[data-demo-source-mp4]');
+    const currentMp4 = mp4Source?.getAttribute('src');
+
+    if (nextMp4 && currentMp4 !== nextMp4) {
+      if (webmSource && nextWebm) webmSource.setAttribute('src', nextWebm);
+      if (mp4Source) mp4Source.setAttribute('src', nextMp4);
       if (nextPoster) video.setAttribute('poster', nextPoster);
       video.load();
       video.play().catch(() => {
