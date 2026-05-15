@@ -217,7 +217,8 @@ export const translations: Record<SupportedLanguage, Record<string, string>> = {
     'faq.a5':
       'Wszystkie dane (biblioteka, pamiętnik, ustawienia) są lokalne — SQLite na Twoim dysku. Nie wysyłamy niczego na serwer.',
     'faq.q6': 'Interfejs jest tylko po polsku?',
-    'faq.a6': 'Polski i angielski. Przełącznik języka jest w prawym górnym rogu strony.',
+    'faq.a6':
+      'Polski i angielski. Aby zmienić język interfejsu aplikacji, otwórz Ustawienia → Ogólne w aplikacji.',
 
     // Footer
     'footer.blurb':
@@ -548,7 +549,8 @@ export const translations: Record<SupportedLanguage, Record<string, string>> = {
     'faq.a5':
       'All data (library, diary, settings) is local — SQLite on your disk. Nothing is sent to a server.',
     'faq.q6': 'Is the interface only in Polish?',
-    'faq.a6': 'Polish and English. The language switcher is in the top-right of the page.',
+    'faq.a6':
+      "Polish and English. To switch the app's UI language, open Settings → General inside the app.",
 
     // Footer
     'footer.blurb':
