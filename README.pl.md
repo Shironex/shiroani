@@ -23,6 +23,10 @@
   <p>
     <a href="https://github.com/Shironex/shiroani/releases/latest"><strong>Pobierz</strong></a>
     &nbsp;·&nbsp;
+    <a href="https://shiroani.app"><strong>Strona</strong></a>
+    &nbsp;·&nbsp;
+    <a href="https://shiroani.app/changelog"><strong>Changelog</strong></a>
+    &nbsp;·&nbsp;
     <a href="README.md">English</a>
   </p>
 
