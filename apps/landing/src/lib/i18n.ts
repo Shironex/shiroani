@@ -65,6 +65,14 @@ export const translations: Record<SupportedLanguage, Record<string, string>> = {
     'hero.cta.download': 'Pobierz ShiroAni',
     'hero.cta.os': '· Windows / macOS',
     'hero.cta.see': 'Zobacz jak działa',
+    // Demo reel section (between Hero and Chapter 01)
+    'demo.eyebrow': 'Spacer · 30 sekund',
+    'demo.title.lead': 'Zobacz całą półkę w ',
+    'demo.title.em': 'jednym ujęciu',
+    'demo.title.tail': '.',
+    'demo.foot':
+      'Biblioteka, harmonogram, odkrywanie, przeglądarka, aktualności, pamiętnik, profil i ustawienia — wszystko w jednym przytulnym oknie.',
+    'demo.video.label': 'Krótki spacer po widokach ShiroAni',
     'hero.strip.themes': 'motywów',
     'hero.strip.statuses': 'statusów biblioteki',
     'hero.strip.adfree': 'bez reklam',
@@ -396,6 +404,14 @@ export const translations: Record<SupportedLanguage, Record<string, string>> = {
     'hero.cta.download': 'Download ShiroAni',
     'hero.cta.os': '· Windows / macOS',
     'hero.cta.see': 'See how it works',
+    // Demo reel section (between Hero and Chapter 01)
+    'demo.eyebrow': 'A 30-second tour',
+    'demo.title.lead': 'See the whole shelf in ',
+    'demo.title.em': 'one take',
+    'demo.title.tail': '.',
+    'demo.foot':
+      'Library, schedule, discover, browser, news, diary, profile, and settings — all in one cozy window.',
+    'demo.video.label': 'A quick walkthrough of ShiroAni views',
     'hero.strip.themes': 'themes',
     'hero.strip.statuses': 'library statuses',
     'hero.strip.adfree': 'ad-free',

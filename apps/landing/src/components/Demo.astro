@@ -1,0 +1,217 @@
+---
+import { t, type SupportedLanguage } from '../lib/i18n';
+
+interface Props {
+  /** SSR locale — controls which prerendered demo reel ships in the markup. */
+  lang?: SupportedLanguage;
+}
+
+const { lang = 'pl' } = Astro.props;
+const tt = (key: string) => t(key, lang);
+
+const webmEn = '/demo/shiroani-demo.en.webm';
+const webmPl = '/demo/shiroani-demo.pl.webm';
+const mp4En = '/demo/shiroani-demo.en.mp4';
+const mp4Pl = '/demo/shiroani-demo.pl.mp4';
+const posterEn = '/demo/shiroani-demo.en.jpg';
+const posterPl = '/demo/shiroani-demo.pl.jpg';
+
+const poster = lang === 'en' ? posterEn : posterPl;
+---
+
+<section class="demo" id="demo">
+  <div class="demo-inner">
+    <header class="demo-head">
+      <span class="demo-eyebrow" data-i18n="demo.eyebrow">{tt('demo.eyebrow')}</span>
+      <h2 class="demo-title">
+        <span data-i18n="demo.title.lead">{tt('demo.title.lead')}</span>
+        <em data-i18n="demo.title.em">{tt('demo.title.em')}</em>
+        <span data-i18n="demo.title.tail">{tt('demo.title.tail')}</span>
+      </h2>
+    </header>
+
+    <div class="demo-stage">
+      <!--
+        preload="none" + IntersectionObserver: browsers won't fetch the video
+        body until the section is close to the viewport. autoplay is handled
+        by the script below. muted + loop + playsinline are required for
+        silent autoplay on iOS/Android.
+      -->
+      <video
+        class="demo-video"
+        data-demo-video
+        data-webm-pl={webmPl}
+        data-webm-en={webmEn}
+        data-mp4-pl={mp4Pl}
+        data-mp4-en={mp4En}
+        data-poster-pl={posterPl}
+        data-poster-en={posterEn}
+        poster={poster}
+        muted
+        loop
+        playsinline
+        preload="none"
+        aria-label={tt('demo.video.label')}
+        data-i18n-aria-label="demo.video.label"
+      >
+        <!-- WebM/VP9 first — Chrome, Firefox, Android pick this (~30% smaller) -->
+        <source src={lang === 'en' ? webmEn : webmPl} type="video/webm" data-demo-source-webm />
+        <!-- MP4/H.264 fallback — Safari and any browser without VP9 support -->
+        <source src={lang === 'en' ? mp4En : mp4Pl} type="video/mp4" data-demo-source-mp4 />
+      </video>
+    </div>
+
+    <p class="demo-foot" data-i18n="demo.foot">{tt('demo.foot')}</p>
+  </div>
+</section>
+
+<style>
+  .demo {
+    position: relative;
+    padding: 96px 0 80px;
+    background:
+      radial-gradient(60% 50% at 30% 10%, var(--color-primary-glow), transparent 70%),
+      radial-gradient(50% 40% at 75% 80%, oklch(0.55 0.18 290 / 0.18), transparent 70%);
+  }
+
+  .demo-inner {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 0 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 28px;
+  }
+
+  .demo-head {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    align-items: center;
+  }
+
+  .demo-eyebrow {
+    font-size: 0.78rem;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    color: var(--color-brand);
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: oklch(1 0 0 / 0.04);
+    border: 1px solid oklch(0.74 0.15 355 / 0.25);
+  }
+
+  .demo-title {
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 700;
+    margin: 0;
+    color: var(--color-foreground);
+    line-height: 1.1;
+    max-width: 760px;
+  }
+
+  .demo-title em {
+    font-style: normal;
+    color: var(--color-brand);
+    background: linear-gradient(
+      135deg,
+      oklch(0.78 0.16 355) 0%,
+      oklch(0.72 0.16 320) 100%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .demo-stage {
+    width: 100%;
+    border-radius: 24px;
+    overflow: hidden;
+    background: var(--color-surface);
+    box-shadow:
+      0 60px 120px oklch(0 0 0 / 0.45),
+      0 0 0 1px var(--color-border),
+      0 0 80px var(--color-primary-glow);
+  }
+
+  .demo-video {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 4 / 3;
+    background: oklch(0.08 0.015 300);
+  }
+
+  .demo-foot {
+    font-size: 0.95rem;
+    color: var(--color-muted-foreground);
+    margin: 0;
+    text-align: center;
+    max-width: 600px;
+  }
+
+  @media (max-width: 720px) {
+    .demo {
+      padding: 64px 0 56px;
+    }
+    .demo-stage {
+      border-radius: 16px;
+    }
+  }
+</style>
+
+<script>
+  const video = document.querySelector<HTMLVideoElement>('[data-demo-video]');
+
+  // Gate playback on IntersectionObserver so the browser doesn't fetch the
+  // video body at page load. A ~200 px root margin starts buffering just
+  // before the section enters the viewport.
+  if (video) {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          observer.disconnect();
+          video.load();
+          video.play().catch(() => {
+            /* autoplay blocked by browser policy — poster stays visible */
+          });
+        }
+      },
+      { rootMargin: '200px' }
+    );
+    observer.observe(video);
+  }
+
+  // Swap the demo video source on in-place language toggle so the visible
+  // reel matches the rest of the page. Locale-specific routes (/, /en)
+  // already navigate on toggle, but a no-reload swap is needed for users
+  // who land on /en and toggle back to PL via the dock route alias.
+  function syncDemo(lang: string) {
+    if (!video) return;
+    const nextWebm = lang === 'en' ? video.dataset.webmEn : video.dataset.webmPl;
+    const nextMp4 = lang === 'en' ? video.dataset.mp4En : video.dataset.mp4Pl;
+    const nextPoster = lang === 'en' ? video.dataset.posterEn : video.dataset.posterPl;
+
+    const webmSource = video.querySelector<HTMLSourceElement>('[data-demo-source-webm]');
+    const mp4Source = video.querySelector<HTMLSourceElement>('[data-demo-source-mp4]');
+    const currentMp4 = mp4Source?.getAttribute('src');
+
+    if (nextMp4 && currentMp4 !== nextMp4) {
+      if (webmSource && nextWebm) webmSource.setAttribute('src', nextWebm);
+      if (mp4Source) mp4Source.setAttribute('src', nextMp4);
+      if (nextPoster) video.setAttribute('poster', nextPoster);
+      video.load();
+      video.play().catch(() => {
+        /* autoplay blocked — leave paused */
+      });
+    }
+  }
+
+  document.addEventListener('shiroani:lang-change', (e) => {
+    const detail = (e as CustomEvent<{ lang: string }>).detail;
+    syncDemo(detail?.lang ?? 'pl');
+  });
+</script>
