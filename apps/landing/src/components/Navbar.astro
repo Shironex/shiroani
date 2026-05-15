@@ -1,4 +1,6 @@
 ---
+import { Image } from 'astro:assets';
+import mascotWave from '../assets/mascot-wave.png';
 import { currentVersion } from '../lib/releases';
 import { t, type SupportedLanguage } from '../lib/i18n';
 
@@ -36,7 +38,7 @@ const activeLocalizedHref = activeHref ? localized(activeHref) : undefined;
 <nav class="nav" aria-label={tt('nav.primary')} data-i18n-aria-label="nav.primary">
   <div class="nav-inner">
     <a class="logo" href={homeHref}>
-      <span class="mark"><img src="/assets/mascot-wave.png" alt="" width="44" height="44" decoding="async" /></span>
+      <span class="mark"><Image src={mascotWave} alt="" width={44} height={44} decoding="async" /></span>
       <span class="name">ShiroAni<small>SHIRO·ANI · v{version}</small></span>
     </a>
     <div class="nav-links">

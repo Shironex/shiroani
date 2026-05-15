@@ -160,7 +160,7 @@
 .mock-bg {
   position: absolute;
   inset: 0;
-  background-image: url('/assets/library_view.webp');
+  background-image: url('../../assets/library_view.webp');
   background-size: cover;
   background-position: center;
   filter: blur(18px) saturate(1.1);

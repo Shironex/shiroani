@@ -1,3 +1,4 @@
+import mascotWave from '../assets/mascot-wave.png';
 import { translations, DEFAULT_LANGUAGE, type SupportedLanguage } from '../lib/i18n';
 import { currentVersion } from '../lib/releases';
 import { useLandingLang } from '../lib/useLandingLang';
@@ -26,12 +27,12 @@ export function Footer({ lang: initialLang }: FooterProps = {}) {
           <div className="lg">
             <span className="mark">
               <img
-                src="/assets/mascot-wave.png"
+                src={mascotWave.src}
                 alt=""
                 loading="lazy"
                 decoding="async"
-                width="52"
-                height="52"
+                width={52}
+                height={52}
               />
             </span>
             <div className="name">

@@ -1,4 +1,6 @@
 ---
+import { Image } from 'astro:assets';
+import mascotWave from '../assets/mascot-wave.png';
 import { currentVersion, getReleases } from '../lib/releases';
 import { t, type SupportedLanguage } from '../lib/i18n';
 
@@ -136,7 +138,7 @@ const libraryCards = [
         </button>
       </div>
 
-      <img class="mock-chibi" src="/assets/mascot-wave.png" alt="" width="96" height="96" decoding="async" />
+      <Image class="mock-chibi" src={mascotWave} alt="" width={96} height={96} decoding="async" />
     </div>
   </div>
 </section>

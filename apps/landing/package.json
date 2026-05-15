@@ -11,11 +11,11 @@
     "test": "node --test tests/**/*.spec.js"
   },
   "dependencies": {
-    "@shiroani/changelog": "workspace:*",
-    "@shiroani/shared": "workspace:*",
     "@astrojs/check": "^0.9.8",
     "@astrojs/react": "^5.0.0",
     "@astrojs/sitemap": "^3.7.1",
+    "@shiroani/changelog": "workspace:*",
+    "@shiroani/shared": "workspace:*",
     "@tailwindcss/vite": "^4.2.4",
     "astro": "^6.1.9",
     "react": "^18.3.1",
@@ -25,6 +25,7 @@
   },
   "devDependencies": {
     "@types/react": "^18.3.23",
-    "@types/react-dom": "^18.3.7"
+    "@types/react-dom": "^18.3.7",
+    "sharp": "^0.33.5"
   }
 }

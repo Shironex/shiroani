@@ -1,4 +1,8 @@
 import { useState } from 'react';
+import screenshotLibrary from '../assets/screenshot_library.webp';
+import screenshotSchedule from '../assets/screenshot_schedule.webp';
+import screenshotNewtab from '../assets/screenshot_newtab.webp';
+import screenshotSettings from '../assets/screenshot_settings.webp';
 import type { SupportedLanguage } from '../lib/i18n';
 import { useT } from '../lib/useLandingLang';
 
@@ -10,7 +14,7 @@ const ANA: Record<
   { src: string; titleKey: string; labelKey: string; viewLabelKey: string; pins: Pin[] }
 > = {
   library: {
-    src: '/assets/screenshot_library.webp',
+    src: screenshotLibrary.src,
     titleKey: 'anatomy.title.library',
     labelKey: 'anatomy.tab.library',
     viewLabelKey: 'anatomy.viewLabel.library',
@@ -32,7 +36,7 @@ const ANA: Record<
     ],
   },
   schedule: {
-    src: '/assets/screenshot_schedule.webp',
+    src: screenshotSchedule.src,
     titleKey: 'anatomy.title.schedule',
     labelKey: 'anatomy.tab.schedule',
     viewLabelKey: 'anatomy.viewLabel.schedule',
@@ -58,7 +62,7 @@ const ANA: Record<
     ],
   },
   newtab: {
-    src: '/assets/screenshot_newtab.webp',
+    src: screenshotNewtab.src,
     titleKey: 'anatomy.title.newtab',
     labelKey: 'anatomy.tab.newtab',
     viewLabelKey: 'anatomy.viewLabel.newtab',
@@ -69,7 +73,7 @@ const ANA: Record<
     ],
   },
   settings: {
-    src: '/assets/screenshot_settings.webp',
+    src: screenshotSettings.src,
     titleKey: 'anatomy.title.settings',
     labelKey: 'anatomy.tab.settings',
     viewLabelKey: 'anatomy.viewLabel.settings',

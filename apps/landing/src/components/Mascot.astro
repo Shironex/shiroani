@@ -1,4 +1,6 @@
 ---
+import { Image } from 'astro:assets';
+import mascotWave from '../assets/mascot-wave.png';
 import { t, type SupportedLanguage } from '../lib/i18n';
 
 interface Props {
@@ -20,7 +22,7 @@ const tt = (key: string) => t(key, lang);
       <p data-i18n="mascot.body">{tt('mascot.body')}</p>
     </div>
     <div class="mascot-r">
-      <img src="/assets/mascot-wave.png" alt={tt('mascot.alt')} data-i18n-alt="mascot.alt" loading="lazy" decoding="async" width="320" height="320" />
+      <Image src={mascotWave} alt={tt('mascot.alt')} data-i18n-alt="mascot.alt" loading="lazy" decoding="async" width={320} height={320} />
     </div>
   </div>
 </section>

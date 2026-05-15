@@ -1,5 +1,13 @@
 ---
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
 import { BUILT_IN_THEME_METADATA, type BuiltInThemeMeta } from '@shiroani/shared';
+import browserView from '../assets/browser_view.webp';
+import libraryView from '../assets/library_view.webp';
+import scheduleView from '../assets/schedule_view.webp';
+import diaryView from '../assets/diary_view.webp';
+import discordRpc from '../assets/discord_rpc.webp';
+import onboarding from '../assets/onboarding.webp';
 import { t, type SupportedLanguage } from '../lib/i18n';
 
 interface Props {
@@ -21,7 +29,7 @@ type Feature = {
   titleFallback: string;
   descKey: string;
   descFallback: string;
-  img?: string;
+  img?: ImageMetadata;
   altKey?: string;
   altFallback?: string;
   w?: number;
@@ -45,7 +53,7 @@ const features: Feature[] = [
     descKey: 'features.01.desc',
     descFallback:
       'Karty, sesje, zakładki i blokada reklam Ghostery — wszystko w tym samym oknie, w którym oglądasz. Żadnych pop-upów ani przekierowań.',
-    img: '/assets/browser_view.webp',
+    img: browserView,
     altKey: 'features.01.alt',
     altFallback: 'Wbudowana przeglądarka',
     ...SHOT,
@@ -61,7 +69,7 @@ const features: Feature[] = [
     descKey: 'features.02.desc',
     descFallback:
       'Oglądane, ukończone, planowane, wstrzymane, porzucone. Filtry, notatki, odcinki.',
-    img: '/assets/library_view.webp',
+    img: libraryView,
     altKey: 'features.02.alt',
     altFallback: 'Biblioteka anime',
     ...SHOT,
@@ -78,7 +86,7 @@ const features: Feature[] = [
     descKey: 'features.03.desc',
     descFallback:
       'Widok tygodniowy, dzienny i tabelaryczny. Dane prosto z AniList. Powiadomienie, gdy wchodzi nowy odcinek.',
-    img: '/assets/schedule_view.webp',
+    img: scheduleView,
     altKey: 'features.03.alt',
     altFallback: 'Harmonogram emisji',
     ...SHOT,
@@ -94,7 +102,7 @@ const features: Feature[] = [
     descKey: 'features.04.desc',
     descFallback:
       'Zapisuj wrażenia po każdym odcinku: tekst z formatowaniem, obrazki, nagłówki — wszystko lokalnie.',
-    img: '/assets/diary_view.webp',
+    img: diaryView,
     altKey: 'features.04.alt',
     altFallback: 'Pamiętnik',
     ...SHOT,
@@ -110,7 +118,7 @@ const features: Feature[] = [
     descKey: 'features.05.desc',
     descFallback:
       'Rich Presence z własnym szablonem. Podgląd na żywo w ustawieniach. Edytujesz tekst, obrazki, akcje.',
-    img: '/assets/discord_rpc.webp',
+    img: discordRpc,
     altKey: 'features.05.alt',
     altFallback: 'Discord Rich Presence',
     ...RPC,
@@ -123,7 +131,7 @@ const features: Feature[] = [
     titleFallback: 'Ulubione strony pod jednym kliknięciem.',
     descKey: 'features.06.desc',
     descFallback: 'Kafelki szybkiego dostępu. Raz skonfigurujesz, masz na zawsze.',
-    img: '/assets/onboarding.webp',
+    img: onboarding,
     altKey: 'features.06.alt',
     altFallback: 'Nowa karta',
     ...SHOT,
@@ -174,9 +182,9 @@ const features: Feature[] = [
         <p data-i18n={f.descKey}>{tt(f.descKey)}</p>
         {f.img && (
           <div class="fimg">
-            <img
+            <Image
               src={f.img}
-              alt={f.altKey ? tt(f.altKey) : f.altFallback}
+              alt={f.altKey ? tt(f.altKey) : (f.altFallback ?? '')}
               data-i18n-alt={f.altKey}
               loading="lazy"
               decoding="async"
