@@ -1,0 +1,177 @@
+---
+import { t, type SupportedLanguage } from '../lib/i18n';
+
+interface Props {
+  /** SSR locale — controls which prerendered demo reel ships in the markup. */
+  lang?: SupportedLanguage;
+}
+
+const { lang = 'pl' } = Astro.props;
+const tt = (key: string) => t(key, lang);
+
+const mp4 = `/demo/shiroani-demo.${lang}.mp4`;
+const poster = `/demo/shiroani-demo.${lang}.jpg`;
+const mp4En = '/demo/shiroani-demo.en.mp4';
+const posterEn = '/demo/shiroani-demo.en.jpg';
+const mp4Pl = '/demo/shiroani-demo.pl.mp4';
+const posterPl = '/demo/shiroani-demo.pl.jpg';
+---
+
+<section class="demo" id="demo">
+  <div class="demo-inner">
+    <header class="demo-head">
+      <span class="demo-eyebrow" data-i18n="demo.eyebrow">{tt('demo.eyebrow')}</span>
+      <h2 class="demo-title">
+        <span data-i18n="demo.title.lead">{tt('demo.title.lead')}</span>
+        <em data-i18n="demo.title.em">{tt('demo.title.em')}</em>
+        <span data-i18n="demo.title.tail">{tt('demo.title.tail')}</span>
+      </h2>
+    </header>
+
+    <div class="demo-stage">
+      <video
+        class="demo-video"
+        data-demo-video
+        data-mp4-pl={mp4Pl}
+        data-mp4-en={mp4En}
+        data-poster-pl={posterPl}
+        data-poster-en={posterEn}
+        src={mp4}
+        poster={poster}
+        autoplay
+        muted
+        loop
+        playsinline
+        preload="metadata"
+        aria-label={tt('demo.video.label')}
+        data-i18n-aria-label="demo.video.label"
+      ></video>
+    </div>
+
+    <p class="demo-foot" data-i18n="demo.foot">{tt('demo.foot')}</p>
+  </div>
+</section>
+
+<style>
+  .demo {
+    position: relative;
+    padding: 96px 0 80px;
+    background:
+      radial-gradient(60% 50% at 30% 10%, var(--color-primary-glow), transparent 70%),
+      radial-gradient(50% 40% at 75% 80%, oklch(0.55 0.18 290 / 0.18), transparent 70%);
+  }
+
+  .demo-inner {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 0 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 28px;
+  }
+
+  .demo-head {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    align-items: center;
+  }
+
+  .demo-eyebrow {
+    font-size: 0.78rem;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    color: var(--color-brand);
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: oklch(1 0 0 / 0.04);
+    border: 1px solid oklch(0.74 0.15 355 / 0.25);
+  }
+
+  .demo-title {
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 700;
+    margin: 0;
+    color: var(--color-foreground);
+    line-height: 1.1;
+    max-width: 760px;
+  }
+
+  .demo-title em {
+    font-style: normal;
+    color: var(--color-brand);
+    background: linear-gradient(
+      135deg,
+      oklch(0.78 0.16 355) 0%,
+      oklch(0.72 0.16 320) 100%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .demo-stage {
+    width: 100%;
+    border-radius: 24px;
+    overflow: hidden;
+    background: var(--color-surface);
+    box-shadow:
+      0 60px 120px oklch(0 0 0 / 0.45),
+      0 0 0 1px var(--color-border),
+      0 0 80px var(--color-primary-glow);
+  }
+
+  .demo-video {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 4 / 3;
+    background: oklch(0.08 0.015 300);
+  }
+
+  .demo-foot {
+    font-size: 0.95rem;
+    color: var(--color-muted-foreground);
+    margin: 0;
+    text-align: center;
+    max-width: 600px;
+  }
+
+  @media (max-width: 720px) {
+    .demo {
+      padding: 64px 0 56px;
+    }
+    .demo-stage {
+      border-radius: 16px;
+    }
+  }
+</style>
+
+<script>
+  // Swap the demo video source on in-place language toggle so the visible
+  // reel matches the rest of the page. Locale-specific routes (/, /en)
+  // already navigate on toggle, but a no-reload swap is needed for users
+  // who land on /en and toggle back to PL via the dock route alias.
+  function syncDemo(lang: string) {
+    const video = document.querySelector<HTMLVideoElement>('[data-demo-video]');
+    if (!video) return;
+    const nextMp4 = lang === 'en' ? video.dataset.mp4En : video.dataset.mp4Pl;
+    const nextPoster = lang === 'en' ? video.dataset.posterEn : video.dataset.posterPl;
+    if (nextMp4 && video.getAttribute('src') !== nextMp4) {
+      video.setAttribute('src', nextMp4);
+      if (nextPoster) video.setAttribute('poster', nextPoster);
+      video.load();
+      video.play().catch(() => {
+        /* autoplay blocked — leave paused */
+      });
+    }
+  }
+
+  document.addEventListener('shiroani:lang-change', (e) => {
+    const detail = (e as CustomEvent<{ lang: string }>).detail;
+    syncDemo(detail?.lang ?? 'pl');
+  });
+</script>
