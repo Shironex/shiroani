@@ -66,6 +66,22 @@ shiroani/
 | Tests     | Jest, Vitest                                 |
 | CI/CD     | GitHub Actions                               |
 
+## Refreshing README screenshots
+
+`pnpm screenshots` drives a running Electron window over CDP, walks every top-level view in each supported UI language, and writes PNGs to `assets/screenshots/<lang>/<view>.png`. The READMEs reference those paths directly.
+
+Steps:
+
+1. Start the renderer: `pnpm dev:web` (terminal 1).
+2. Start Electron with CDP enabled (terminal 2):
+   ```bash
+   cd apps/desktop
+   pnpm exec electron . --remote-debugging-port=9222
+   ```
+3. Once the dock is visible (onboarding done), run `pnpm screenshots` (terminal 3).
+
+Needs a local `playwright` install or `PLAYWRIGHT_PATH` pointing at one. `LANGS=en` limits the run to a single language; the default is `en,pl`.
+
 ## Releases & versioning
 
 Versions are bumped via `scripts/bump-version.mjs` — do not edit `package.json` versions by hand. Release notes live in `docs/release-v*.md` (local, gitignored copy-paste scratch) and the user-facing bilingual content under `packages/changelog/`.

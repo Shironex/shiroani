@@ -395,6 +395,7 @@ export function BrowserTabBar({
             size="icon"
             className="size-7 rounded-full mb-[2px] shrink-0"
             onClick={onNewTab}
+            data-testid="browser-new-tab"
             tooltip={t('tabs.newTabTooltip')}
             tooltipSide="bottom"
           >

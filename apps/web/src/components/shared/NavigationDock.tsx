@@ -193,6 +193,7 @@ function DockItem({
       onAnimationEnd={() => ripple && setRipple(false)}
       aria-current={isActive ? 'page' : undefined}
       aria-label={label}
+      data-view={item.id}
       className={cn(
         'group relative z-[1] flex items-center justify-center',
         // Floating pill dock uses circular slots without labels; labeled mode

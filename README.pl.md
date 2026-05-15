@@ -39,23 +39,40 @@ ShiroAni to aplikacja desktopowa, która zbiera wszystko co anime w jednym miejs
 
 ## Zrzuty ekranu
 
-<p align="center">
-  <img src="assets/welcome-wizard.jpeg" alt="Kreator powitania" width="720" />
-  <br />
-  <em>Pierwszy raz? Shiro-chan pomoże urządzić Twoje anime-gniazdko</em>
-</p>
-
-<p align="center">
-  <img src="assets/my-library.jpeg" alt="Biblioteka anime" width="720" />
-  <br />
-  <em>Twoja osobista biblioteka — wszystko, co oglądasz, w jednym miejscu</em>
-</p>
-
-<p align="center">
-  <img src="assets/settings.jpeg" alt="Ustawienia" width="720" />
-  <br />
-  <em>Motywy, tła, dock — dopasuj wszystko do siebie</em>
-</p>
+<table>
+  <tr>
+    <td width="50%"><img src="assets/screenshots/pl/library.png" alt="Biblioteka — wszystko, co oglądasz" /></td>
+    <td width="50%"><img src="assets/screenshots/pl/schedule.png" alt="Tygodniowy harmonogram emisji z AniList" /></td>
+  </tr>
+  <tr>
+    <td align="center"><sub>Biblioteka — oglądane, ukończone, planowane, wstrzymane, porzucone.</sub></td>
+    <td align="center"><sub>Harmonogram — widok tygodniowy, dzienny i tabelaryczny z AniList.</sub></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="assets/screenshots/pl/browser.png" alt="Nowa karta wbudowanej przeglądarki z wybranymi serwisami" /></td>
+    <td width="50%"><img src="assets/screenshots/pl/discover.png" alt="Odkrywaj — losowanie anime i przegląd po gatunkach" /></td>
+  </tr>
+  <tr>
+    <td align="center"><sub>Przeglądarka — nowa karta bez reklam z wybranymi serwisami.</sub></td>
+    <td align="center"><sub>Odkrywaj — losowanie anime i przegląd po gatunkach.</sub></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="assets/screenshots/pl/feed.png" alt="Aktualności anime z zakładkami" /></td>
+    <td width="50%"><img src="assets/screenshots/pl/diary.png" alt="Pamiętnik z edytorem tekstu" /></td>
+  </tr>
+  <tr>
+    <td align="center"><sub>Aktualności — RSS z anime newsami, źródła PL + EN.</sub></td>
+    <td align="center"><sub>Pamiętnik — osobisty dziennik z edytorem tekstu.</sub></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="assets/screenshots/pl/profile.png" alt="Profil — Twoje statystyki AniList i aktywność" /></td>
+    <td width="50%"><img src="assets/screenshots/pl/settings.png" alt="Ustawienia — motywy, tła, dock" /></td>
+  </tr>
+  <tr>
+    <td align="center"><sub>Profil — Twoje statystyki AniList i ostatnia aktywność.</sub></td>
+    <td align="center"><sub>Ustawienia — motywy, tła, dock, język.</sub></td>
+  </tr>
+</table>
 
 ## Co znajdziesz w środku
 
