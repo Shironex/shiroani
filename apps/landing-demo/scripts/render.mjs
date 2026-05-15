@@ -71,7 +71,12 @@ async function main() {
       crf: 20,
       pixelFormat: 'yuv420p',
       x264Preset: 'slow',
-      audioCodec: null,
+      // muted: true skips the audio track entirely. audioCodec: null only
+      // picks a default codec — it does NOT disable audio. WebM/VP9 was
+      // shipping a malformed Opus stream (duration=N/A) that Chrome
+      // refused to decode; without muted: true the MP4 has a silent AAC
+      // track which we also don't need.
+      muted: true,
       chromiumOptions: { gl: 'swangle' },
     });
 
@@ -85,7 +90,7 @@ async function main() {
         codec: 'vp9',
         outputLocation: webmOut,
         crf: 32,
-        audioCodec: null,
+        muted: true,
         chromiumOptions: { gl: 'swangle' },
       });
     }
