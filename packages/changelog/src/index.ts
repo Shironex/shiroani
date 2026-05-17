@@ -133,10 +133,63 @@ export function localizeReleases(locale: Locale): ResolvedRelease[] {
 
 export const RELEASES: readonly Release[] = [
   {
+    version: '0.10.1',
+    shortDate: '17.05.2026',
+    type: 'minor',
+    latest: true,
+    pl: {
+      date: '17 maja 2026',
+      title: 'Pełna kontrola nad własnym tłem',
+      description:
+        'Tła własne miały dotąd niewidoczną warstwę przyciemniającą, przez którą obraz wyglądał trochę ciemniej nawet przy 100% widoczności. Teraz to przyciemnienie można dopasować suwakiem obok przezroczystości i rozmycia — a istniejące tła wyglądają dokładnie tak samo jak wcześniej, dopóki nic nie ruszysz. Do tego flaga przy opcji „English" w pierwszym uruchomieniu pokazuje teraz prawdziwą flagę Wielkiej Brytanii.',
+      categories: [
+        {
+          kind: 'feature',
+          label: 'Pełna kontrola nad tłem',
+          entries: [
+            'Nowy suwak „Przyciemnienie" w ustawieniach tła — obok przezroczystości i rozmycia',
+            'Można teraz całkowicie wyłączyć przyciemnienie i zobaczyć obraz dokładnie taki, jaki jest',
+            'Domyślna wartość zachowuje dotychczasowy wygląd, więc istniejące tła nie zmieniają się same z siebie',
+          ],
+        },
+        {
+          kind: 'fix',
+          label: 'Poprawki',
+          entries: [
+            'Flaga przy opcji „English" w pierwszym uruchomieniu pokazuje teraz prawdziwą flagę Wielkiej Brytanii zamiast pasków w niewłaściwych kolorach',
+          ],
+        },
+      ],
+    },
+    en: {
+      date: 'May 17, 2026',
+      title: 'Full control over your custom background',
+      description:
+        'Custom backgrounds had a hidden dimming layer that kept the image looking a bit darker even at full opacity. You can now adjust that dimming with a slider sitting next to opacity and blur — and existing backgrounds keep their current look until you decide to touch them. Plus the flag next to the “English” option on first launch now shows the real Union Jack.',
+      categories: [
+        {
+          kind: 'feature',
+          label: 'Full background control',
+          entries: [
+            'New “Dim” slider in background settings — sits next to opacity and blur',
+            'You can now turn the dimming off completely and see the image exactly as it is',
+            'The default matches the previous look so existing backgrounds don’t change on their own',
+          ],
+        },
+        {
+          kind: 'fix',
+          label: 'Fixes',
+          entries: [
+            'The flag next to the “English” option on first launch now shows the real Union Jack instead of stripes in the wrong colours',
+          ],
+        },
+      ],
+    },
+  },
+  {
     version: '0.10.0',
     shortDate: '15.05.2026',
     type: 'major',
-    latest: true,
     pl: {
       date: '15 maja 2026',
       title: 'Aplikacja po angielsku i polsku',
