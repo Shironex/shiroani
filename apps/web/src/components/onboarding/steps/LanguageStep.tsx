@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 import { Check, Languages } from 'lucide-react';
 import { StepLayout } from '../StepLayout';
@@ -5,9 +6,38 @@ import { SUPPORTED_LANGUAGES, type SupportedLanguage } from '@shiroani/shared';
 import { persistLanguage } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 
-const FLAG_BACKGROUNDS: Record<SupportedLanguage, string> = {
-  pl: 'linear-gradient(180deg, #fff 50%, #dc143c 50%)',
-  en: 'linear-gradient(180deg, #012169 33%, #fff 33% 66%, #c8102e 66%)',
+function PolishFlag() {
+  return (
+    <svg viewBox="0 0 8 5" preserveAspectRatio="none" className="h-full w-full" aria-hidden="true">
+      <rect width="8" height="5" fill="#ffffff" />
+      <rect y="2.5" width="8" height="2.5" fill="#dc143c" />
+    </svg>
+  );
+}
+
+function UnionJackFlag() {
+  return (
+    <svg
+      viewBox="0 0 60 30"
+      preserveAspectRatio="none"
+      className="h-full w-full"
+      aria-hidden="true"
+    >
+      <clipPath id="uj-clip">
+        <path d="M30,15 h30 v15 z M30,15 v15 H0 z M30,15 H0 V0 z M30,15 V0 h30 z" />
+      </clipPath>
+      <rect width="60" height="30" fill="#012169" />
+      <path d="M0,0 L60,30 M60,0 L0,30" stroke="#ffffff" strokeWidth="6" />
+      <path d="M0,0 L60,30 M60,0 L0,30" clipPath="url(#uj-clip)" stroke="#c8102e" strokeWidth="4" />
+      <path d="M30,0 v30 M0,15 h60" stroke="#ffffff" strokeWidth="10" />
+      <path d="M30,0 v30 M0,15 h60" stroke="#c8102e" strokeWidth="6" />
+    </svg>
+  );
+}
+
+const FLAG_GLYPHS: Record<SupportedLanguage, ReactNode> = {
+  pl: <PolishFlag />,
+  en: <UnionJackFlag />,
 };
 
 export function LanguageStep() {
@@ -66,9 +96,10 @@ export function LanguageStep() {
             >
               <span
                 aria-hidden="true"
-                className="h-[26px] w-9 flex-shrink-0 rounded-[4px] border border-border-glass"
-                style={{ background: FLAG_BACKGROUNDS[lang.code] }}
-              />
+                className="h-[26px] w-9 flex-shrink-0 overflow-hidden rounded-[4px] ring-1 ring-foreground/10"
+              >
+                {FLAG_GLYPHS[lang.code]}
+              </span>
               <div className="min-w-0 flex-1">
                 <b className="block text-sm font-semibold text-foreground">{lang.label}</b>
                 <small className="text-[11.5px] text-muted-foreground">
