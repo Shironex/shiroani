@@ -39,16 +39,19 @@ export function BackgroundPanel({
   const customBackground = useBackgroundStore(s => s.customBackground);
   const backgroundOpacity = useBackgroundStore(s => s.backgroundOpacity);
   const backgroundBlur = useBackgroundStore(s => s.backgroundBlur);
+  const backgroundDim = useBackgroundStore(s => s.backgroundDim);
   const pickBackground = useBackgroundStore(s => s.pickBackground);
   const removeBackground = useBackgroundStore(s => s.removeBackground);
   const setBackgroundOpacity = useBackgroundStore(s => s.setBackgroundOpacity);
   const setBackgroundBlur = useBackgroundStore(s => s.setBackgroundBlur);
+  const setBackgroundDim = useBackgroundStore(s => s.setBackgroundDim);
 
   const isOnboarding = variant === 'onboarding';
   const RemoveIconFinal = RemoveIcon ?? (isOnboarding ? RotateCcw : Trash2);
   const removeLabelFinal = removeLabel ?? (isOnboarding ? t('panel.reset') : t('panel.remove'));
 
   const opacityPct = Math.round(backgroundOpacity * 100);
+  const dimPct = Math.round(backgroundDim * 100);
   const blurDisplay = isOnboarding
     ? `${Math.round((backgroundBlur / 20) * 100)}%`
     : `${backgroundBlur}px`;
@@ -165,12 +168,21 @@ export function BackgroundPanel({
           disabled={slidersDisabled}
         />
         <OnboardingSliderRow
-          label={t('panel.dim')}
+          label={t('panel.opacity')}
           value={backgroundOpacity}
           max={1}
           step={0.01}
           display={`${opacityPct}%`}
           onChange={setBackgroundOpacity}
+          disabled={slidersDisabled}
+        />
+        <OnboardingSliderRow
+          label={t('panel.dim')}
+          value={backgroundDim}
+          max={1}
+          step={0.01}
+          display={`${dimPct}%`}
+          onChange={setBackgroundDim}
           disabled={slidersDisabled}
         />
       </div>
@@ -211,6 +223,25 @@ export function BackgroundPanel({
             min={0}
             max={20}
             step={1}
+          />
+        </div>
+
+        <div>
+          <div className="flex items-center justify-between mb-2">
+            <label id="bg-dim-label" className="text-[13px] font-semibold text-foreground">
+              {t('panel.dim')}
+            </label>
+            <span className="font-mono text-[11px] font-semibold text-primary tabular-nums">
+              {dimPct}%
+            </span>
+          </div>
+          <Slider
+            aria-labelledby="bg-dim-label"
+            value={[backgroundDim]}
+            onValueChange={([v]) => setBackgroundDim(v)}
+            min={0}
+            max={1}
+            step={0.01}
           />
         </div>
       </div>

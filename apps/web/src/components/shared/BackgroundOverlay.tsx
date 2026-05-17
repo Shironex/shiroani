@@ -22,8 +22,11 @@ export function BackgroundOverlay() {
           filter: 'blur(var(--app-bg-blur, 0px))',
         }}
       />
-      {/* Semi-transparent overlay for text readability */}
-      <div className="absolute inset-0 bg-background/60" />
+      {/* Semi-transparent overlay for text readability — alpha driven by --app-bg-dim */}
+      <div
+        className="absolute inset-0 bg-background"
+        style={{ opacity: 'var(--app-bg-dim, 0.6)' }}
+      />
     </div>
   );
 }

@@ -19,6 +19,8 @@ interface BackgroundSettings {
   opacity: number;
   /** Background blur in px (0-20), default 0 */
   blur: number;
+  /** Scrim darkness (0-1), default 0.6 */
+  dim: number;
 }
 
 /**
@@ -33,6 +35,8 @@ interface BackgroundState {
   backgroundOpacity: number;
   /** Background blur in px */
   backgroundBlur: number;
+  /** Scrim darkness (0-1) */
+  backgroundDim: number;
   /** Whether the background has been loaded from persistence */
   backgroundLoaded: boolean;
 }
@@ -49,6 +53,8 @@ interface BackgroundActions {
   setBackgroundOpacity: (opacity: number) => void;
   /** Set background blur */
   setBackgroundBlur: (blur: number) => void;
+  /** Set scrim darkness */
+  setBackgroundDim: (dim: number) => void;
   /** Restore background settings from electron-store on startup */
   restoreBackground: () => Promise<void>;
 }
@@ -58,21 +64,24 @@ type BackgroundStore = BackgroundState & BackgroundActions;
 // Default background settings
 const DEFAULT_BG_OPACITY = 0.15;
 const DEFAULT_BG_BLUR = 0;
+const DEFAULT_BG_DIM = 0.6;
 const BG_STORE_KEY = 'custom-backgrounds';
 
 /**
  * Apply background CSS custom properties to the root element.
  */
-function applyBackgroundToDOM(url: string | null, opacity: number, blur: number) {
+function applyBackgroundToDOM(url: string | null, opacity: number, blur: number, dim: number) {
   const root = document.documentElement;
   if (url) {
     root.style.setProperty('--app-bg-image', `url(${url})`);
     root.style.setProperty('--app-bg-opacity', String(opacity));
     root.style.setProperty('--app-bg-blur', `${blur}px`);
+    root.style.setProperty('--app-bg-dim', String(dim));
   } else {
     root.style.removeProperty('--app-bg-image');
     root.style.removeProperty('--app-bg-opacity');
     root.style.removeProperty('--app-bg-blur');
+    root.style.removeProperty('--app-bg-dim');
   }
 }
 
@@ -112,25 +121,33 @@ function debouncedPersistBackgroundSettings(settings: BackgroundSettings | null)
 function applyBackgroundProperty(
   get: () => BackgroundStore,
   set: (partial: Partial<BackgroundState>, replace?: false, action?: string) => void,
-  property: 'opacity' | 'blur',
+  property: 'opacity' | 'blur' | 'dim',
   value: number
 ): void {
   const clamped =
-    property === 'opacity' ? Math.max(0, Math.min(1, value)) : Math.max(0, Math.min(20, value));
+    property === 'blur' ? Math.max(0, Math.min(20, value)) : Math.max(0, Math.min(1, value));
 
-  const stateKey = property === 'opacity' ? 'backgroundOpacity' : 'backgroundBlur';
-  logger.debug(property === 'opacity' ? 'setBackgroundOpacity' : 'setBackgroundBlur', clamped);
-  set(
-    { [stateKey]: clamped } as Partial<BackgroundState>,
-    undefined,
-    `background/set${property === 'opacity' ? 'Opacity' : 'Blur'}`
-  );
+  const stateKey =
+    property === 'opacity'
+      ? 'backgroundOpacity'
+      : property === 'blur'
+        ? 'backgroundBlur'
+        : 'backgroundDim';
+  const actionName =
+    property === 'opacity'
+      ? 'setBackgroundOpacity'
+      : property === 'blur'
+        ? 'setBackgroundBlur'
+        : 'setBackgroundDim';
+  logger.debug(actionName, clamped);
+  set({ [stateKey]: clamped } as Partial<BackgroundState>, undefined, `background/${actionName}`);
 
   const state = get();
   const opacity = property === 'opacity' ? clamped : state.backgroundOpacity;
   const blur = property === 'blur' ? clamped : state.backgroundBlur;
+  const dim = property === 'dim' ? clamped : state.backgroundDim;
 
-  applyBackgroundToDOM(state.customBackground, opacity, blur);
+  applyBackgroundToDOM(state.customBackground, opacity, blur, dim);
 
   if (state.customBackgroundFileName && state.customBackground) {
     debouncedPersistBackgroundSettings({
@@ -138,6 +155,7 @@ function applyBackgroundProperty(
       url: state.customBackground,
       opacity,
       blur,
+      dim,
     });
   }
 }
@@ -153,6 +171,7 @@ export const useBackgroundStore = create<BackgroundStore>()(
       customBackgroundFileName: null,
       backgroundOpacity: DEFAULT_BG_OPACITY,
       backgroundBlur: DEFAULT_BG_BLUR,
+      backgroundDim: DEFAULT_BG_DIM,
       backgroundLoaded: false,
 
       // Actions
@@ -165,6 +184,7 @@ export const useBackgroundStore = create<BackgroundStore>()(
           const state = get();
           const opacity = state.backgroundOpacity;
           const blur = state.backgroundBlur;
+          const dim = state.backgroundDim;
 
           // If there was a previous background, remove its file
           if (state.customBackgroundFileName) {
@@ -184,13 +204,14 @@ export const useBackgroundStore = create<BackgroundStore>()(
             'background/pick'
           );
 
-          applyBackgroundToDOM(result.url, opacity, blur);
+          applyBackgroundToDOM(result.url, opacity, blur, dim);
 
           await persistBackgroundSettings({
             fileName: result.fileName,
             url: result.url,
             opacity,
             blur,
+            dim,
           });
         } catch (err) {
           logger.error('Failed to pick custom background:', err);
@@ -216,12 +237,13 @@ export const useBackgroundStore = create<BackgroundStore>()(
             customBackgroundFileName: null,
             backgroundOpacity: DEFAULT_BG_OPACITY,
             backgroundBlur: DEFAULT_BG_BLUR,
+            backgroundDim: DEFAULT_BG_DIM,
           },
           undefined,
           'background/remove'
         );
 
-        applyBackgroundToDOM(null, DEFAULT_BG_OPACITY, DEFAULT_BG_BLUR);
+        applyBackgroundToDOM(null, DEFAULT_BG_OPACITY, DEFAULT_BG_BLUR, DEFAULT_BG_DIM);
         await persistBackgroundSettings(null);
       },
 
@@ -231,6 +253,10 @@ export const useBackgroundStore = create<BackgroundStore>()(
 
       setBackgroundBlur: (blur: number) => {
         applyBackgroundProperty(get, set, 'blur', blur);
+      },
+
+      setBackgroundDim: (dim: number) => {
+        applyBackgroundProperty(get, set, 'dim', dim);
       },
 
       restoreBackground: async () => {
@@ -253,6 +279,7 @@ export const useBackgroundStore = create<BackgroundStore>()(
 
           const opacity = typeof saved.opacity === 'number' ? saved.opacity : DEFAULT_BG_OPACITY;
           const blur = typeof saved.blur === 'number' ? saved.blur : DEFAULT_BG_BLUR;
+          const dim = typeof saved.dim === 'number' ? saved.dim : DEFAULT_BG_DIM;
 
           set(
             {
@@ -260,13 +287,14 @@ export const useBackgroundStore = create<BackgroundStore>()(
               customBackgroundFileName: saved.fileName,
               backgroundOpacity: opacity,
               backgroundBlur: blur,
+              backgroundDim: dim,
               backgroundLoaded: true,
             },
             undefined,
             'background/restore:success'
           );
 
-          applyBackgroundToDOM(url, opacity, blur);
+          applyBackgroundToDOM(url, opacity, blur, dim);
           logger.info('Background restored successfully');
         } catch (err) {
           logger.warn('Failed to restore background:', err);
