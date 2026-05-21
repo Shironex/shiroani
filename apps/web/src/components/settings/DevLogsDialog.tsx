@@ -39,6 +39,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
+import { formatBytes } from '@/lib/format-bytes';
 
 interface DevLogsDialogProps {
   open: boolean;
@@ -756,13 +757,6 @@ function parseJsonlLogEntries(contents: string): LogEntry[] {
 
 function isValidLevel(value: string): value is LogLevelName {
   return value === 'error' || value === 'warn' || value === 'info' || value === 'debug';
-}
-
-function formatBytes(bytes: number): string {
-  if (!Number.isFinite(bytes) || bytes < 0) return '—';
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / 1024 / 1024).toFixed(2)} MB`;
 }
 
 function formatFileDate(ts: number): string {

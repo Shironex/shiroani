@@ -2,6 +2,7 @@ import { session, webContents } from 'electron';
 import { createMainLogger } from '../logging/logger';
 import { getBlocker, enableCosmeticFiltering, disableCosmeticFiltering } from '../adblock';
 import { fromElectronDetails } from '@ghostery/adblocker-electron';
+import { buildChromeUserAgent, getOsSlug } from '../user-agent';
 
 const logger = createMainLogger('BrowserManager');
 
@@ -117,14 +118,8 @@ export class BrowserManager {
     this.browserSession = session.fromPartition('persist:browser');
 
     // Set platform-aware Chrome user agent to avoid Electron detection
-    const chromeVersion = process.versions.chrome || '134.0.0.0';
-    const osString =
-      process.platform === 'darwin'
-        ? 'Macintosh; Intel Mac OS X 10_15_7'
-        : 'Windows NT 10.0; Win64; x64';
-    this.browserSession.setUserAgent(
-      `Mozilla/5.0 (${osString}) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/${chromeVersion} Safari/537.36`
-    );
+    const osString = getOsSlug();
+    this.browserSession.setUserAgent(buildChromeUserAgent());
 
     // Send Firefox UA for Google auth domains so sign-in isn't blocked.
     // Google detects embedded Chromium browsers via Client Hints + navigator.userAgentData

@@ -10,6 +10,7 @@ import {
 import { TooltipButton } from '@/components/ui/tooltip-button';
 import { useNotificationStore } from '@/stores/useNotificationStore';
 import { IS_WINDOWS } from '@/lib/platform';
+import { useMountedRef } from '@/hooks/useMountedRef';
 import type { NotificationSettings } from '@shiroani/shared';
 
 interface NotifFormData {
@@ -50,20 +51,18 @@ export function NotificationsSection() {
   const { t } = useTranslation('settings');
   const [data, setData] = useState<NotifFormData>(defaultNotifData);
   const [loaded, setLoaded] = useState(false);
+  const isMounted = useMountedRef();
 
   // Load settings from main process on mount
   useEffect(() => {
-    let mounted = true;
     const req = window.electronAPI?.notifications?.getSettings();
     if (!req) {
       setLoaded(true);
-      return () => {
-        mounted = false;
-      };
+      return;
     }
     req
       .then(settings => {
-        if (!mounted || !settings) return;
+        if (!isMounted() || !settings) return;
         setData({
           enabled: settings.enabled,
           leadTime: String(settings.leadTimeMinutes),
@@ -75,12 +74,9 @@ export function NotificationsSection() {
       })
       .catch(() => {})
       .finally(() => {
-        if (mounted) setLoaded(true);
+        if (isMounted()) setLoaded(true);
       });
-    return () => {
-      mounted = false;
-    };
-  }, []);
+  }, [isMounted]);
 
   const updateAndSave = useCallback((partial: Partial<NotifFormData>) => {
     setData(prev => {

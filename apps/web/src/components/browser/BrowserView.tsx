@@ -22,6 +22,7 @@ import { unregisterWebview } from '@/components/browser/webviewRefs';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
 import { TooltipButton } from '@/components/ui/tooltip-button';
 import { cn } from '@/lib/utils';
+import { isEditableTarget } from '@/lib/is-editable-target';
 
 // Actions are stable references — extract once outside render cycle
 const {
@@ -288,10 +289,7 @@ export function BrowserView() {
   // Keyboard shortcuts — local keydown for when renderer has focus
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      const target = e.target as HTMLElement;
-      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) {
-        return;
-      }
+      if (isEditableTarget(e.target)) return;
 
       const ctrl = e.ctrlKey || e.metaKey;
       const alt = e.altKey;

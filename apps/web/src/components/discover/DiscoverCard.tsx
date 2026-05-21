@@ -6,16 +6,13 @@ import { PillTag } from '@/components/ui/pill-tag';
 import { formatScore } from '@/lib/anime-utils';
 import { getAnilistFormatLabel, getAnilistStatusLabel } from '@/lib/constants';
 import type { DiscoverMedia } from '@/stores/useDiscoverStore';
+import { getTitle } from './random/random-utils';
 
 interface DiscoverCardProps {
   media: DiscoverMedia;
   inLibrary?: boolean;
   onClick?: () => void;
   onAddToLibrary?: (media: DiscoverMedia) => void;
-}
-
-function getTitle(title: DiscoverMedia['title']): string {
-  return title.english || title.romaji || title.native || '?';
 }
 
 const DiscoverCard = memo(function DiscoverCard({

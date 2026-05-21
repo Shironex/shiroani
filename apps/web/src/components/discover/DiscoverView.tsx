@@ -10,6 +10,7 @@ import { ViewHeader } from '@/components/shared/ViewHeader';
 import { DiscoverCard } from '@/components/discover/DiscoverCard';
 import { DiscoverSkeleton } from '@/components/discover/DiscoverSkeleton';
 import { RandomDiscoveryPanel } from '@/components/discover/RandomDiscoveryPanel';
+import { getTitle } from '@/components/discover/random/random-utils';
 import { AnimeInfoDialog } from '@/components/schedule/AnimeInfoDialog';
 import { useDiscoverStore, type DiscoverMedia } from '@/stores/useDiscoverStore';
 import { useLibraryStore } from '@/stores/useLibraryStore';
@@ -24,10 +25,6 @@ function useLibraryAnilistIds(): Set<number> {
     () => new Set(entries.map(e => e.anilistId).filter(Boolean) as number[]),
     [entries]
   );
-}
-
-function getDiscoverTitle(media: DiscoverMedia): string {
-  return media.title.english || media.title.romaji || media.title.native || '?';
 }
 
 export function DiscoverView() {
@@ -86,7 +83,7 @@ export function DiscoverView() {
 
   const handleAddToLibrary = useCallback(
     (media: DiscoverMedia) => {
-      const title = getDiscoverTitle(media);
+      const title = getTitle(media.title);
       const entries = useLibraryStore.getState().entries;
       const alreadyByAnilist = entries.some(e => e.anilistId === media.id);
       const alreadyByTitle = entries.some(e => e.title.toLowerCase() === title.toLowerCase());

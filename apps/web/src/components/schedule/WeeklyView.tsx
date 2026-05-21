@@ -8,6 +8,7 @@ import { ScheduleDayColumn } from './ScheduleDayColumn';
 import { SubscribeBellButton } from './SubscribeBellButton';
 import { useWeekData } from '@/hooks/useWeekData';
 import { useNowSeconds } from '@/hooks/useNowSeconds';
+import { useActivatable } from '@/hooks/useActivatable';
 import type { AiringAnime } from '@shiroani/shared';
 
 export interface WeeklyViewProps {
@@ -117,6 +118,9 @@ function WeekEventCard({
   const coverUrl = getCoverUrl(anime.media);
   const isLive = status === 'live';
   const isDone = status === 'done';
+  const activatable = useActivatable(onClick ? () => onClick(anime) : undefined, {
+    inactiveRole: 'article',
+  });
 
   const borderColor = isLive
     ? 'border-l-primary'
@@ -137,20 +141,8 @@ function WeekEventCard({
 
   return (
     <div
-      role={onClick ? 'button' : 'article'}
-      tabIndex={onClick ? 0 : undefined}
+      {...activatable}
       aria-label={title}
-      onClick={onClick ? () => onClick(anime) : undefined}
-      onKeyDown={
-        onClick
-          ? e => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                onClick(anime);
-              }
-            }
-          : undefined
-      }
       className={cn(
         'group relative rounded-lg border border-l-[3px] pl-2 pr-2.5 py-2 bg-card/40',
         borderColor,

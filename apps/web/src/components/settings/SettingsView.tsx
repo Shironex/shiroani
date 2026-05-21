@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Palette,
@@ -20,6 +20,7 @@ import {
 import type { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { tDynamic } from '@/lib/i18n';
+import { useAppVersion } from '@/hooks/useAppVersion';
 import { IS_WINDOWS, IS_MAC, IS_ELECTRON } from '@/lib/platform';
 import { KanjiWatermark } from '@/components/shared/KanjiWatermark';
 import { ViewHeader } from '@/components/shared/ViewHeader';
@@ -191,7 +192,7 @@ export function SettingsView() {
   const [activeSection, setActiveSection] = useState<SettingsSection>(
     IS_ELECTRON ? 'general' : 'themes'
   );
-  const [version, setVersion] = useState('');
+  const version = useAppVersion('');
 
   // Filter platform-specific sections
   const sections = useMemo(
@@ -216,18 +217,6 @@ export function SettingsView() {
     for (const s of sections) buckets[s.group].push(s);
     return buckets;
   }, [sections]);
-
-  // Fetch app version once for both UpdatesSection and AboutSection
-  useEffect(() => {
-    let mounted = true;
-    window.electronAPI?.app?.getVersion().then(v => {
-      if (!mounted) return;
-      if (v) setVersion(v);
-    });
-    return () => {
-      mounted = false;
-    };
-  }, []);
 
   const currentSection = sections.find(s => s.id === activeSection) ?? sections[0];
   const currentLabel = tDynamic(i18n, `settings:nav.${currentSection.labelKey}`);

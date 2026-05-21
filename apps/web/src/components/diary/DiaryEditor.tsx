@@ -20,6 +20,7 @@ import type {
   DiaryGradient,
 } from '@shiroani/shared';
 import { DIARY_GRADIENTS } from '@/lib/diary-constants';
+import { isEditableTarget } from '@/lib/is-editable-target';
 
 const MAX_CONTENT_LENGTH = 2000;
 
@@ -150,14 +151,8 @@ export function DiaryEditor({ entry, onClose, onCreate, onUpdate }: DiaryEditorP
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        const target = e.target as HTMLElement | null;
         // Let contentEditable / select fields swallow Escape before we close.
-        if (
-          target &&
-          (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)
-        ) {
-          return;
-        }
+        if (isEditableTarget(e.target)) return;
         onClose();
       }
     };

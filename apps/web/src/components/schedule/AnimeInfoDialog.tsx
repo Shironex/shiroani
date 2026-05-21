@@ -19,6 +19,7 @@ import {
   BellRing,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { stripHtmlSimple } from '@/lib/html-text';
 import {
   formatScore,
   getAnimeTitle,
@@ -165,9 +166,8 @@ export function AnimeInfoDialog({ anime, open, onOpenChange }: AnimeInfoDialogPr
   const status = details?.status ?? anime.media.status;
   const episodes = details?.episodes ?? anime.media.episodes;
   const genres = details?.genres ?? anime.media.genres;
-  const cleanDescription = details?.description
-    ?.replace(/<br\s*\/?>/gi, '\n')
-    .replace(/<[^>]*>/g, '');
+  const cleanDescription =
+    details?.description != null ? stripHtmlSimple(details.description) : undefined;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

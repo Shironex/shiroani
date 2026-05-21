@@ -34,29 +34,39 @@ export const ALWAYS_VISIBLE_VIEWS: ReadonlySet<ActiveView> = new Set(['settings'
 export const DEFAULT_VIEW_ORDER: ActiveView[] = ALL_NAV_ITEMS.map(item => item.id);
 
 /**
- * Reconcile a (possibly stale) saved order against the current nav items:
- * keep the saved order, drop ids no longer in {@link ALL_NAV_ITEMS}, and
- * append any nav items the saved order is missing (so views added in a future
- * version never disappear). The result always contains every current view id
- * exactly once, in {@link DEFAULT_VIEW_ORDER} for the appended tail.
+ * Reconcile a (possibly stale) saved order against a canonical default order:
+ * keep the saved order, drop ids no longer in `defaultOrder`, and append any
+ * ids the saved order is missing (so entries added in a future version never
+ * disappear). The result always contains every id in `defaultOrder` exactly
+ * once — known ids in their saved order, missing ones appended in
+ * `defaultOrder` sequence.
  */
-export function sanitizeViewOrder(saved: unknown): ActiveView[] {
-  const known = new Set<ActiveView>(DEFAULT_VIEW_ORDER);
-  const seen = new Set<ActiveView>();
-  const result: ActiveView[] = [];
+export function reconcileOrder<T>(saved: unknown, defaultOrder: readonly T[]): T[] {
+  const known = new Set<T>(defaultOrder);
+  const seen = new Set<T>();
+  const result: T[] = [];
 
   if (Array.isArray(saved)) {
     for (const id of saved) {
-      if (known.has(id as ActiveView) && !seen.has(id as ActiveView)) {
-        seen.add(id as ActiveView);
-        result.push(id as ActiveView);
+      if (known.has(id as T) && !seen.has(id as T)) {
+        seen.add(id as T);
+        result.push(id as T);
       }
     }
   }
 
-  for (const id of DEFAULT_VIEW_ORDER) {
+  for (const id of defaultOrder) {
     if (!seen.has(id)) result.push(id);
   }
 
   return result;
+}
+
+/**
+ * Reconcile a (possibly stale) saved nav order against the current nav items.
+ * See {@link reconcileOrder}; uses {@link DEFAULT_VIEW_ORDER} as the canonical
+ * order so views added in a future version never disappear.
+ */
+export function sanitizeViewOrder(saved: unknown): ActiveView[] {
+  return reconcileOrder(saved, DEFAULT_VIEW_ORDER);
 }

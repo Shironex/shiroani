@@ -18,6 +18,7 @@ import {
 import { useSettingsStore } from '@/stores/useSettingsStore';
 import { persistLanguage } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
+import { useMountedRef } from '@/hooks/useMountedRef';
 
 export function GeneralSection() {
   const { t, i18n } = useTranslation('settings');
@@ -26,22 +27,19 @@ export function GeneralSection() {
   const [loaded, setLoaded] = useState(false);
   const displayName = useSettingsStore(s => s.displayName);
   const setDisplayName = useSettingsStore(s => s.setDisplayName);
+  const isMounted = useMountedRef();
 
   useEffect(() => {
-    let mounted = true;
     Promise.all([
       window.electronAPI?.app?.getAutoLaunch(),
       window.electronAPI?.store?.get<boolean>(FEED_STARTUP_REFRESH_SETTING_KEY),
     ]).then(([enabled, startupRefresh]) => {
-      if (!mounted) return;
+      if (!isMounted()) return;
       setAutoLaunch(enabled ?? false);
       setFeedRefreshOnStartup(startupRefresh ?? DEFAULT_FEED_STARTUP_REFRESH);
       setLoaded(true);
     });
-    return () => {
-      mounted = false;
-    };
-  }, []);
+  }, [isMounted]);
 
   const handleAutoLaunchChange = async (enabled: boolean) => {
     setAutoLaunch(enabled);

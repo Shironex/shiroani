@@ -8,6 +8,7 @@ import { ScheduleDayColumn } from './ScheduleDayColumn';
 import { SubscribeBellButton } from './SubscribeBellButton';
 import { useWeekData } from '@/hooks/useWeekData';
 import { useNowSeconds } from '@/hooks/useNowSeconds';
+import { useActivatable } from '@/hooks/useActivatable';
 import type { AiringAnime } from '@shiroani/shared';
 
 export interface TimetableViewProps {
@@ -87,23 +88,14 @@ function PosterCard({ anime, status, onClick, episodeLabel, liveLabel }: PosterC
   const coverUrl = anime.media.coverImage.large || anime.media.coverImage.medium;
   const isLive = status === 'live';
   const isDone = status === 'done';
+  const activatable = useActivatable(onClick ? () => onClick(anime) : undefined, {
+    inactiveRole: 'article',
+  });
 
   return (
     <div
-      role={onClick ? 'button' : 'article'}
-      tabIndex={onClick ? 0 : undefined}
+      {...activatable}
       aria-label={title}
-      onClick={onClick ? () => onClick(anime) : undefined}
-      onKeyDown={
-        onClick
-          ? e => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                onClick(anime);
-              }
-            }
-          : undefined
-      }
       className={cn(
         'group relative rounded-[9px] overflow-hidden border border-border-glass',
         'transition-transform duration-200',

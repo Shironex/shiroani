@@ -8,6 +8,7 @@ import { DiscordPreview } from '@/components/settings/DiscordPreview';
 import { DiscordTemplateEditor } from '@/components/settings/DiscordTemplateEditor';
 import { substitutePreview } from '@/lib/discord-utils';
 import { tDynamic } from '@/lib/i18n';
+import { useMountedRef } from '@/hooks/useMountedRef';
 import type {
   DiscordRpcSettings,
   DiscordActivityType,
@@ -58,16 +59,16 @@ export function DiscordSection() {
   const [settings, setSettings] = useState<DiscordRpcSettings | null>(null);
   const [saved, setSaved] = useState(false);
   const [selectedActivity, setSelectedActivity] = useState<DiscordActivityType>('watching');
+  const isMounted = useMountedRef();
 
   useEffect(() => {
-    let mounted = true;
     // Resolve sentinel-prefixed default fields the moment we hydrate so the
     // editor inputs show real copy in the active UI language. Saved user
     // overrides are passed through unchanged. The sentinels reference keys
     // inside the `settings` namespace, so we look them up there.
     const translate = (key: string) => tDynamic(i18n, `settings:${key}`);
     window.electronAPI?.discordRpc?.getSettings().then((s: DiscordRpcSettings) => {
-      if (!mounted) return;
+      if (!isMounted()) return;
       if (s) {
         const merged: DiscordPresenceTemplates = s.templates
           ? { ...DEFAULT_DISCORD_TEMPLATES, ...s.templates }
@@ -79,10 +80,7 @@ export function DiscordSection() {
         });
       }
     });
-    return () => {
-      mounted = false;
-    };
-  }, [i18n]);
+  }, [i18n, isMounted]);
 
   const updateField = useCallback(
     <K extends keyof DiscordRpcSettings>(key: K, value: DiscordRpcSettings[K]) => {

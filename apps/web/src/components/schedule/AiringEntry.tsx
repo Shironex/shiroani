@@ -12,6 +12,7 @@ import {
 } from './schedule-utils';
 import { formatEpisodeProgress } from '@/lib/anime-utils';
 import { SubscribeBellButton } from './SubscribeBellButton';
+import { useActivatable } from '@/hooks/useActivatable';
 import type { AiringAnime } from '@shiroani/shared';
 
 export interface AiringEntryProps {
@@ -75,22 +76,12 @@ const AiringEntry = memo(function AiringEntry({
       ? 'bg-muted-foreground/40'
       : 'bg-[oklch(0.5_0.15_280)]';
 
+  const activatable = useActivatable(onClick ? () => onClick(anime) : undefined);
+
   return (
     <div
-      role={onClick ? 'button' : undefined}
-      tabIndex={onClick ? 0 : undefined}
+      {...activatable}
       aria-label={t('entry.ariaLabel', { title, time: formatTime(anime.airingAt) })}
-      onClick={onClick ? () => onClick(anime) : undefined}
-      onKeyDown={
-        onClick
-          ? e => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                onClick(anime);
-              }
-            }
-          : undefined
-      }
       style={style}
       className={cn(
         'group relative flex items-stretch gap-3 rounded-[10px] overflow-hidden',
