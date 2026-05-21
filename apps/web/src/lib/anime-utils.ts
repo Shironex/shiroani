@@ -53,8 +53,8 @@ export function formatEpisodeProgress(
     : t('episodeProgressNoTotal', { current });
 }
 
-/** Format AniList score (0-100) to display format (0.0-10.0) */
-export function formatScore(anilistScore: number): string {
+/** Format a raw AniList score (0-100) to display format (0.0-10.0) */
+export function formatRawScore(anilistScore: number): string {
   return (anilistScore / 10).toFixed(1);
 }
 

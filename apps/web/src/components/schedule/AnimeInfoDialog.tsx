@@ -21,7 +21,7 @@ import {
 import { cn } from '@/lib/utils';
 import { stripHtmlSimple } from '@/lib/html-text';
 import {
-  formatScore,
+  formatRawScore,
   getAnimeTitle,
   formatFuzzyDate,
   formatTimeUntilAiring,
@@ -243,7 +243,7 @@ export function AnimeInfoDialog({ anime, open, onOpenChange }: AnimeInfoDialogPr
             {anime.media.averageScore != null && (
               <Badge variant="secondary" className="gap-1">
                 <Star className="w-3 h-3 text-yellow-500" />
-                {formatScore(anime.media.averageScore)}
+                {formatRawScore(anime.media.averageScore)}
               </Badge>
             )}
             {details?.popularity != null && (

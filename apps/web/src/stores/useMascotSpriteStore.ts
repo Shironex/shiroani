@@ -213,6 +213,6 @@ export const useMascotSpriteStore = create<MascotSpriteStore>()(
         }
       },
     }),
-    { name: 'mascotSprite' }
+    { name: 'mascot-sprite' }
   )
 );

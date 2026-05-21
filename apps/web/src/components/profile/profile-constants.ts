@@ -11,7 +11,8 @@ export function formatDaysLabel(minutes: number): string {
   return minutes / 60 / 24 >= 1 ? 'dni' : 'godzin';
 }
 
-export function formatScore(score: number): string {
+/** Format an already-0-10 mean score for display (e.g. profile statistics). */
+export function formatScoreOutOf10(score: number): string {
   return score > 0 ? score.toFixed(1) : '—';
 }
 

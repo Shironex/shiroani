@@ -1,17 +1,12 @@
 import { useMemo } from 'react';
 import { useLibraryStore } from '@/stores/useLibraryStore';
-import type { AnimeEntry, DiaryEntry, UserProfile } from '@shiroani/shared';
+import type { AnimeDetail, AnimeEntry, DiaryEntry, UserProfile } from '@shiroani/shared';
 
 /**
- * Shape-compatible subset of `AnimeDetail` — only the fields we aggregate on.
- * Lets the hook consume a future detail cache without re-deriving types.
+ * Subset of the canonical `AnimeDetail` — only the fields we aggregate on.
+ * Lets the hook consume a future detail cache without re-deriving the shape.
  */
-interface DiaryAnimeDetailLike {
-  genres?: string[];
-  studios?: {
-    edges?: Array<{ isMain: boolean; node: { name: string } }>;
-  };
-}
+type DiaryAnimeDetailLike = Pick<AnimeDetail, 'genres' | 'studios'>;
 
 export interface DiaryBreakdowns {
   genres: UserProfile['statistics']['genres'];

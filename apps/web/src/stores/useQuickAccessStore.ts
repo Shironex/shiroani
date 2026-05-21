@@ -226,6 +226,6 @@ export const useQuickAccessStore = create<QuickAccessStore>()(
         return [...visiblePredefined, ...sites];
       },
     }),
-    { name: 'quickAccess' }
+    { name: 'quick-access' }
   )
 );

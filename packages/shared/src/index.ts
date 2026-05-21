@@ -1,8 +1,31 @@
 // Anime types
 export * from './types/anime';
 
-// Settings types
-export * from './types/settings';
+// Settings types (BUILT_IN_THEMES is an internal lookup set used by
+// isBuiltInTheme — kept off the public surface; consumers use isBuiltInTheme /
+// BUILT_IN_THEME_METADATA instead)
+export type {
+  BuiltInTheme,
+  Theme,
+  CustomThemeDefinition,
+  BuiltInThemeMeta,
+} from './types/settings';
+export {
+  isBuiltInTheme,
+  BUILT_IN_THEME_METADATA,
+  DARK_THEMES,
+  LIGHT_THEMES,
+  DEFAULT_BUILT_IN_THEME,
+  FEED_STARTUP_REFRESH_SETTING_KEY,
+  DEFAULT_FEED_STARTUP_REFRESH,
+  UI_FONT_SCALE_SETTING_KEY,
+  DISPLAY_NAME_SETTING_KEY,
+  DISPLAY_NAME_MAX_LENGTH,
+  DEFAULT_UI_FONT_SCALE,
+  MIN_UI_FONT_SCALE,
+  MAX_UI_FONT_SCALE,
+  UI_FONT_SCALE_PRESETS,
+} from './types/settings';
 
 // Diary types
 export * from './types/diary';

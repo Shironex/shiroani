@@ -189,6 +189,6 @@ export const useNewTabStore = create<NewTabStore>()(
         }
       },
     }),
-    { name: 'newtab' }
+    { name: 'new-tab' }
   )
 );
