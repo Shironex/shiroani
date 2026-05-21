@@ -12,6 +12,7 @@ import {
   type BrowserSplitNode,
 } from '@shiroani/shared';
 import { findLeafById, useBrowserStore } from '@/stores/useBrowserStore';
+import { collectLeaves } from '@/stores/browser/browserTree';
 import { AddToLibraryDialog } from '@/components/browser/AddToLibraryDialog';
 import { BrowserTabBar } from '@/components/browser/BrowserTabBar';
 import { BrowserToolbar } from '@/components/browser/BrowserToolbar';
@@ -75,12 +76,6 @@ interface PaneRendererProps {
  * the page. See `BrowserView` for the layer mechanics.
  */
 const PANE_SLOT_ATTR = 'data-pane-slot';
-
-/** Walk a tree and collect every leaf in render order (left then right). */
-function collectLeaves(node: BrowserNode): BrowserLeafNode[] {
-  if (node.kind === 'leaf') return [node];
-  return [...collectLeaves(node.left), ...collectLeaves(node.right)];
-}
 
 /**
  * Slot key for a top-level tab — the id of its leftmost leaf. Stable across
