@@ -393,6 +393,7 @@ export function NavigationDock({ hasBg }: NavigationDockProps) {
   const draggable = useDockStore(s => s.draggable);
   const showLabels = useDockStore(s => s.showLabels);
   const hiddenViews = useDockStore(s => s.hiddenViews);
+  const order = useDockStore(s => s.order);
   const isDragging = useDockStore(s => s.isDragging);
   const dragPosition = useDockStore(s => s.dragPosition);
   const isExpanded = useDockStore(s => s.isExpanded);
@@ -408,10 +409,14 @@ export function NavigationDock({ hasBg }: NavigationDockProps) {
 
   const visibleItems = useMemo<NavItem[]>(() => {
     const hiddenSet = new Set(hiddenViews);
-    return ALL_NAV_ITEMS.filter(
-      item => ALWAYS_VISIBLE_VIEWS.has(item.id) || !hiddenSet.has(item.id)
-    );
-  }, [hiddenViews]);
+    const itemById = new Map(ALL_NAV_ITEMS.map(item => [item.id, item]));
+    return order
+      .map(id => itemById.get(id))
+      .filter(
+        (item): item is NavItem =>
+          item !== undefined && (ALWAYS_VISIBLE_VIEWS.has(item.id) || !hiddenSet.has(item.id))
+      );
+  }, [order, hiddenViews]);
 
   const activeIndex = visibleItems.findIndex(item => item.id === activeView);
   const vertical = isVerticalEdge(edge);
