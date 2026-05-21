@@ -326,6 +326,15 @@ export function BrowserView() {
 
   const isActivePaneNewTab = activePane ? isNewTabUrl(activePane.url) : false;
 
+  // Focus the URL bar when landing on a blank tab so the user can type immediately
+  useEffect(() => {
+    if (!isActivePaneNewTab) return;
+    const raf = requestAnimationFrame(() => {
+      urlInputRef.current?.focus();
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [activePaneId, isActivePaneNewTab]);
+
   // When navigating from a NewTabPage, swap that specific leaf into a webview.
   // Scoped to a paneId rather than the active pane so a NewTabPage rendered in
   // one half of a split doesn't accidentally redirect the other pane.
