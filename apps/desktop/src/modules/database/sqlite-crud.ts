@@ -11,7 +11,8 @@ import type Database from 'better-sqlite3';
  */
 
 const IDENTIFIER_RE = /^[A-Za-z_][A-Za-z0-9_]*$/;
-const ORDER_BY_RE = /^[A-Za-z_][A-Za-z0-9_]*(\s+(ASC|DESC))?$/i;
+/** A single ORDER BY term: a column identifier with an optional direction. */
+const ORDER_BY_TERM_RE = /^[A-Za-z_][A-Za-z0-9_]*(\s+(ASC|DESC))?$/i;
 
 function assertIdentifier(value: string, label: string): void {
   if (!IDENTIFIER_RE.test(value)) {
@@ -19,8 +20,14 @@ function assertIdentifier(value: string, label: string): void {
   }
 }
 
+/**
+ * Validate an ORDER BY clause, which may be a comma-separated list of terms
+ * (e.g. `"is_pinned DESC, updated_at DESC"`). Each term must be a bare column
+ * identifier optionally followed by ASC/DESC — no expressions or functions.
+ */
 function assertOrderBy(value: string): void {
-  if (!ORDER_BY_RE.test(value)) {
+  const terms = value.split(',').map(term => term.trim());
+  if (terms.length === 0 || terms.some(term => !ORDER_BY_TERM_RE.test(term))) {
     throw new Error(`Invalid SQL ORDER BY clause: "${value}"`);
   }
 }
