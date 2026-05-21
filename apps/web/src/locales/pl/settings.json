@@ -237,7 +237,12 @@
       "title": "Widoczność widoków",
       "subtitle": "Ukryj sekcje, których nie używasz. Ustawienia są zawsze dostępne."
     },
-    "alwaysOn": "(zawsze)"
+    "alwaysOn": "(zawsze)",
+    "reorderHint": "Przeciągnij uchwyt, aby zmienić kolejność ikon w docku.",
+    "dragHandleAria": "Zmień kolejność: {{label}}",
+    "resetTitle": "Kolejność i widoczność",
+    "resetDescription": "Przywróć domyślną kolejność ikon i ponownie pokaż wszystkie sekcje.",
+    "resetAction": "Przywróć domyślne"
   },
   "browser": {
     "adblock": {

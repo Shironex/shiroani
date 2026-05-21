@@ -237,7 +237,12 @@
       "title": "View visibility",
       "subtitle": "Hide sections you don't use. Settings is always available."
     },
-    "alwaysOn": "(always)"
+    "alwaysOn": "(always)",
+    "reorderHint": "Drag the handle to reorder icons in the dock.",
+    "dragHandleAria": "Reorder {{label}}",
+    "resetTitle": "Order and visibility",
+    "resetDescription": "Restore the default icon order and show every section again.",
+    "resetAction": "Reset to defaults"
   },
   "browser": {
     "adblock": {
