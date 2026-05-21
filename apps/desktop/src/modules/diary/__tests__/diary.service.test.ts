@@ -1,4 +1,4 @@
-import { rowToEntry, type DiaryRow } from '../diary.service';
+import { rowToEntry, type DiaryRow } from '../diary.types';
 
 describe('rowToEntry', () => {
   it('maps a full row with all fields populated', () => {

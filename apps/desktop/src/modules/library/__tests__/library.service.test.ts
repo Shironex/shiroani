@@ -1,12 +1,12 @@
 /**
- * Test the pure rowToEntry function from library.service.ts
+ * Test the pure rowToEntry function from library.types.ts
  *
- * This imports rowToEntry and AnimeLibraryRow directly from the service
+ * This imports rowToEntry and AnimeLibraryRow directly from the types module
  * to test the mapping contract between database rows and AnimeEntry objects.
  * This ensures the mapping stays correct if the DB schema changes.
  */
 
-import { rowToEntry, type AnimeLibraryRow } from '../library.service';
+import { rowToEntry, type AnimeLibraryRow } from '../library.types';
 
 describe('rowToEntry', () => {
   it('maps a full row with all fields populated', () => {

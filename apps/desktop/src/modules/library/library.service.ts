@@ -7,47 +7,31 @@ import {
   type LibraryUpdatePayload,
   type LibraryStatsResult,
 } from '@shiroani/shared';
-import { DatabaseService } from '../database';
+import {
+  DatabaseService,
+  getAll,
+  getById,
+  deleteById,
+  buildUpdate,
+  type FieldMap,
+} from '../database';
+import { rowToEntry, type AnimeLibraryRow } from './library.types';
 
 const logger = createLogger('LibraryService');
 
-/** Raw row shape returned by better-sqlite3 for the anime_library table. */
-export interface AnimeLibraryRow {
-  id: number;
-  anilist_id: number | null;
-  title: string;
-  title_romaji: string | null;
-  title_native: string | null;
-  cover_image: string | null;
-  total_episodes: number | null;
-  status: string;
-  current_episode: number;
-  score: number | null;
-  notes: string | null;
-  resume_url: string | null;
-  added_at: string;
-  updated_at: string;
-}
+const TABLE = 'anime_library';
 
-/** Map a database row to the shared AnimeEntry type. */
-export function rowToEntry(row: AnimeLibraryRow): AnimeEntry {
-  return {
-    id: row.id,
-    anilistId: row.anilist_id ?? undefined,
-    title: row.title,
-    titleRomaji: row.title_romaji ?? undefined,
-    titleNative: row.title_native ?? undefined,
-    coverImage: row.cover_image ?? undefined,
-    episodes: row.total_episodes ?? undefined,
-    status: row.status as AnimeStatus,
-    currentEpisode: row.current_episode,
-    score: row.score ?? undefined,
-    notes: row.notes ?? undefined,
-    resumeUrl: row.resume_url ?? undefined,
-    addedAt: row.added_at,
-    updatedAt: row.updated_at,
-  };
-}
+type LibraryUpdates = Omit<LibraryUpdatePayload, 'id'>;
+
+/** Column/transform map for the dynamic UPDATE builder. Order = emitted SET-clause order. */
+const UPDATE_FIELD_MAP: FieldMap<LibraryUpdates> = {
+  anilistId: { column: 'anilist_id' },
+  status: { column: 'status' },
+  currentEpisode: { column: 'current_episode' },
+  score: { column: 'score' },
+  notes: { column: 'notes' },
+  resumeUrl: { column: 'resume_url' },
+};
 
 @Injectable()
 export class LibraryService {
@@ -66,19 +50,12 @@ export class LibraryService {
       return rows.map(rowToEntry);
     }
 
-    const rows = db
-      .prepare('SELECT * FROM anime_library ORDER BY updated_at DESC')
-      .all() as AnimeLibraryRow[];
-    return rows.map(rowToEntry);
+    return getAll<AnimeLibraryRow, AnimeEntry>(db, TABLE, rowToEntry, 'updated_at DESC');
   }
 
   /** Get a single entry by its primary key. */
   getEntryById(id: number): AnimeEntry | undefined {
-    const db = this.databaseService.db;
-    const row = db.prepare('SELECT * FROM anime_library WHERE id = ?').get(id) as
-      | AnimeLibraryRow
-      | undefined;
-    return row ? rowToEntry(row) : undefined;
+    return getById<AnimeLibraryRow, AnimeEntry>(this.databaseService.db, TABLE, id, rowToEntry);
   }
 
   /** Get a single entry by its AniList ID. */
@@ -118,45 +95,15 @@ export class LibraryService {
   }
 
   /** Update an existing anime entry. Returns the updated entry or undefined if not found. */
-  updateEntry(id: number, updates: Omit<LibraryUpdatePayload, 'id'>): AnimeEntry | undefined {
+  updateEntry(id: number, updates: LibraryUpdates): AnimeEntry | undefined {
     const db = this.databaseService.db;
 
-    const setClauses: string[] = [];
-    const values: (string | number | null)[] = [];
-
-    if (updates.anilistId !== undefined) {
-      setClauses.push('anilist_id = ?');
-      values.push(updates.anilistId);
-    }
-    if (updates.status !== undefined) {
-      setClauses.push('status = ?');
-      values.push(updates.status);
-    }
-    if (updates.currentEpisode !== undefined) {
-      setClauses.push('current_episode = ?');
-      values.push(updates.currentEpisode);
-    }
-    if (updates.score !== undefined) {
-      setClauses.push('score = ?');
-      values.push(updates.score);
-    }
-    if (updates.notes !== undefined) {
-      setClauses.push('notes = ?');
-      values.push(updates.notes);
-    }
-    if (updates.resumeUrl !== undefined) {
-      setClauses.push('resume_url = ?');
-      values.push(updates.resumeUrl);
-    }
-
-    if (setClauses.length === 0) {
+    const built = buildUpdate(TABLE, updates, UPDATE_FIELD_MAP, id);
+    if (!built) {
       return this.getEntryById(id);
     }
 
-    setClauses.push("updated_at = datetime('now')");
-    values.push(id);
-
-    db.prepare(`UPDATE anime_library SET ${setClauses.join(', ')} WHERE id = ?`).run(...values);
+    db.prepare(built.sql).run(...built.values);
 
     const entry = this.getEntryById(id);
     if (entry) {
@@ -167,9 +114,7 @@ export class LibraryService {
 
   /** Remove an anime from the library. Returns true if a row was deleted. */
   removeEntry(id: number): boolean {
-    const db = this.databaseService.db;
-    const result = db.prepare('DELETE FROM anime_library WHERE id = ?').run(id);
-    const deleted = result.changes > 0;
+    const deleted = deleteById(this.databaseService.db, TABLE, id);
     if (deleted) {
       logger.info(`Removed entry id=${id} from library`);
     }
