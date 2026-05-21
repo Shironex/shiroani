@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { Eye, GripVertical } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -27,6 +27,8 @@ import { ALL_NAV_ITEMS, ALWAYS_VISIBLE_VIEWS } from '@/lib/nav-items';
 import { cn } from '@/lib/utils';
 import { DockStage } from '@/components/shared/DockStage';
 import { useDockPreviewItems } from '@/hooks/useDockPreviewItems';
+
+const ITEM_BY_ID = new Map(ALL_NAV_ITEMS.map(item => [item.id, item]));
 
 interface SortableViewRowProps {
   id: ActiveView;
@@ -81,14 +83,14 @@ function SortableViewRow({
         )}
         {...attributes}
         {...listeners}
+        onFocus={() => visible && onHover(true)}
+        onBlur={() => onHover(false)}
       >
         <GripVertical className="h-3.5 w-3.5" />
       </button>
       <span
         className="min-w-0 flex-1 truncate text-[12px] font-medium text-foreground"
         id={labelId}
-        onFocus={() => visible && onHover(true)}
-        onBlur={() => onHover(false)}
       >
         {label}
         {alwaysOn && (
@@ -126,17 +128,22 @@ export function ViewsSection() {
 
   // Render rows in the user-chosen order; fall back to the static list for any
   // id not yet present in `order` (defensive — initDock keeps these in sync).
-  const itemById = new Map(ALL_NAV_ITEMS.map(item => [item.id, item]));
-  const orderedItems = order
-    .map(id => itemById.get(id))
-    .filter((item): item is (typeof ALL_NAV_ITEMS)[number] => item !== undefined);
+  const [orderedItems, orderedIds] = useMemo(() => {
+    const items = order
+      .map(id => ITEM_BY_ID.get(id))
+      .filter((item): item is (typeof ALL_NAV_ITEMS)[number] => item !== undefined);
+    return [items, items.map(item => item.id)];
+  }, [order]);
 
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
-    if (over && active.id !== over.id) {
-      reorderViews(active.id as ActiveView, over.id as ActiveView);
-    }
-  };
+  const handleDragEnd = useCallback(
+    (event: DragEndEvent) => {
+      const { active, over } = event;
+      if (over && active.id !== over.id) {
+        reorderViews(active.id as ActiveView, over.id as ActiveView);
+      }
+    },
+    [reorderViews]
+  );
 
   return (
     <SettingsCard
@@ -156,10 +163,7 @@ export function ViewsSection() {
         modifiers={[restrictToVerticalAxis]}
         onDragEnd={handleDragEnd}
       >
-        <SortableContext
-          items={orderedItems.map(item => item.id)}
-          strategy={verticalListSortingStrategy}
-        >
+        <SortableContext items={orderedIds} strategy={verticalListSortingStrategy}>
           <div className="flex flex-col gap-2">
             {orderedItems.map(item => {
               const alwaysOn = ALWAYS_VISIBLE_VIEWS.has(item.id);
