@@ -33,3 +33,34 @@ export const ALWAYS_VISIBLE_VIEWS: ReadonlySet<ActiveView> = new Set(['settings'
 export function isViewToggleable(id: ActiveView): boolean {
   return !ALWAYS_VISIBLE_VIEWS.has(id);
 }
+
+/** Default dock display order — the static order of {@link ALL_NAV_ITEMS}. */
+export const DEFAULT_VIEW_ORDER: ActiveView[] = ALL_NAV_ITEMS.map(item => item.id);
+
+/**
+ * Reconcile a (possibly stale) saved order against the current nav items:
+ * keep the saved order, drop ids no longer in {@link ALL_NAV_ITEMS}, and
+ * append any nav items the saved order is missing (so views added in a future
+ * version never disappear). The result always contains every current view id
+ * exactly once, in {@link DEFAULT_VIEW_ORDER} for the appended tail.
+ */
+export function sanitizeViewOrder(saved: unknown): ActiveView[] {
+  const known = new Set<ActiveView>(DEFAULT_VIEW_ORDER);
+  const seen = new Set<ActiveView>();
+  const result: ActiveView[] = [];
+
+  if (Array.isArray(saved)) {
+    for (const id of saved) {
+      if (known.has(id as ActiveView) && !seen.has(id as ActiveView)) {
+        seen.add(id as ActiveView);
+        result.push(id as ActiveView);
+      }
+    }
+  }
+
+  for (const id of DEFAULT_VIEW_ORDER) {
+    if (!seen.has(id)) result.push(id);
+  }
+
+  return result;
+}

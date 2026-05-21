@@ -37,24 +37,32 @@ const ICON_BY_VIEW: Partial<Record<ActiveView, LucideIcon>> = {
  */
 export function useDockPreviewItems(hoveredId: ActiveView | null = null): DockStageItem[] {
   const hiddenViews = useDockStore(s => s.hiddenViews);
+  const order = useDockStore(s => s.order);
 
   return useMemo<DockStageItem[]>(() => {
-    return ALL_NAV_ITEMS.filter(item => {
-      const alwaysOn = ALWAYS_VISIBLE_VIEWS.has(item.id);
-      return alwaysOn || !hiddenViews.includes(item.id);
-    }).map(item => {
-      const Icon = ICON_BY_VIEW[item.id];
-      const icon =
-        item.id === 'browser' ? (
-          <img src={APP_LOGO_URL} alt="" draggable={false} className="h-3.5 w-3.5 object-contain" />
-        ) : Icon ? (
-          <Icon className="h-3 w-3" />
-        ) : undefined;
-      return {
-        id: item.id,
-        highlighted: hoveredId === item.id,
-        icon,
-      };
-    });
-  }, [hiddenViews, hoveredId]);
+    const labelById = new Map(ALL_NAV_ITEMS.map(item => [item.id, item]));
+    const hiddenSet = new Set(hiddenViews);
+
+    return order
+      .filter(id => labelById.has(id) && (ALWAYS_VISIBLE_VIEWS.has(id) || !hiddenSet.has(id)))
+      .map(id => {
+        const Icon = ICON_BY_VIEW[id];
+        const icon =
+          id === 'browser' ? (
+            <img
+              src={APP_LOGO_URL}
+              alt=""
+              draggable={false}
+              className="h-3.5 w-3.5 object-contain"
+            />
+          ) : Icon ? (
+            <Icon className="h-3 w-3" />
+          ) : undefined;
+        return {
+          id,
+          highlighted: hoveredId === id,
+          icon,
+        };
+      });
+  }, [order, hiddenViews, hoveredId]);
 }
