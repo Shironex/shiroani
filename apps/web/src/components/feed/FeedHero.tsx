@@ -1,6 +1,7 @@
-import { memo, useCallback } from 'react';
+import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
+import { handleImageError } from '@/lib/image-utils';
 import type { FeedItem } from '@shiroani/shared';
 import { PillTag } from '@/components/ui/pill-tag';
 import { KanjiWatermark } from '@/components/shared/KanjiWatermark';
@@ -21,9 +22,6 @@ export const FeedHero = memo(function FeedHero({ item, onOpen }: FeedHeroProps) 
   const { t } = useTranslation('feed');
   const categoryLabels = useCategoryLabels();
   const timeAgo = useTimeAgo();
-  const handleImgError = useCallback((e: React.SyntheticEvent<HTMLImageElement>) => {
-    e.currentTarget.style.display = 'none';
-  }, []);
 
   const published = item.publishedAt ? timeAgo(item.publishedAt) : timeAgo(item.createdAt);
 
@@ -49,7 +47,7 @@ export const FeedHero = memo(function FeedHero({ item, onOpen }: FeedHeroProps) 
           loading="lazy"
           decoding="async"
           draggable={false}
-          onError={handleImgError}
+          onError={handleImageError}
           className="absolute inset-0 w-full h-full object-cover opacity-60"
         />
       )}

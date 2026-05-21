@@ -1,4 +1,4 @@
-import { useId, type ReactNode } from 'react';
+import { useId, type ElementType, type ReactNode } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Switch } from '@/components/ui/switch';
@@ -265,5 +265,45 @@ export function SettingsSelectRow({
         </SelectContent>
       </Select>
     </SettingsRow>
+  );
+}
+
+// ── Info callout ────────────────────────────────────────────────────
+//
+// The mock's `.info-box`: a tinted, rounded card with a leading icon and a
+// short explanatory line. Several sections render the same block (General's
+// restart hint, the Windows-scheduled-notifications note, the Discord RPC
+// note), so this captures the shared chrome while leaving the icon, its tint
+// and the body element up to the caller.
+
+export interface SettingsInfoCalloutProps {
+  /** Leading icon component (e.g. `Info`, `Sparkles`). */
+  icon: LucideIcon;
+  /** Classes for the icon — controls its size and tint per section. */
+  iconClassName: string;
+  /** Vertical alignment of the icon against the body text. */
+  align?: 'center' | 'start';
+  /** Element used to wrap the body — `<p>` by default, `<span>` for inline `<Trans>` usage. */
+  as?: ElementType;
+  children: ReactNode;
+}
+
+export function SettingsInfoCallout({
+  icon: Icon,
+  iconClassName,
+  align = 'start',
+  as: Body = 'p',
+  children,
+}: SettingsInfoCalloutProps) {
+  return (
+    <div
+      className={cn(
+        'flex gap-3 rounded-xl border border-border-glass bg-background/40 px-4 py-3 text-[11.5px] leading-relaxed text-muted-foreground',
+        align === 'center' ? 'items-center' : 'items-start'
+      )}
+    >
+      <Icon className={iconClassName} />
+      <Body>{children}</Body>
+    </div>
   );
 }

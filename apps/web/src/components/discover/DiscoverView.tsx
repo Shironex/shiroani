@@ -1,7 +1,6 @@
 import { useEffect, useRef, useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Compass, SearchX, X, Loader2 } from 'lucide-react';
-import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { EmptyState } from '@/components/shared/EmptyState';
 import { AniListErrorState } from '@/components/shared/AniListErrorState';
@@ -10,7 +9,7 @@ import { ViewHeader } from '@/components/shared/ViewHeader';
 import { DiscoverCard } from '@/components/discover/DiscoverCard';
 import { DiscoverSkeleton } from '@/components/discover/DiscoverSkeleton';
 import { RandomDiscoveryPanel } from '@/components/discover/RandomDiscoveryPanel';
-import { getTitle } from '@/components/discover/random/random-utils';
+import { useAddDiscoverMediaToLibrary } from '@/components/discover/useAddDiscoverMediaToLibrary';
 import { AnimeInfoDialog } from '@/components/schedule/AnimeInfoDialog';
 import { useDiscoverStore, type DiscoverMedia } from '@/stores/useDiscoverStore';
 import { useLibraryStore } from '@/stores/useLibraryStore';
@@ -81,35 +80,7 @@ export function DiscoverView() {
     setDialogOpen(true);
   }, []);
 
-  const handleAddToLibrary = useCallback(
-    (media: DiscoverMedia) => {
-      const title = getTitle(media.title);
-      const entries = useLibraryStore.getState().entries;
-      const alreadyByAnilist = entries.some(e => e.anilistId === media.id);
-      const alreadyByTitle = entries.some(e => e.title.toLowerCase() === title.toLowerCase());
-      if (alreadyByAnilist || alreadyByTitle) {
-        toast.error(t('toast.alreadyInLibrary'));
-        return;
-      }
-
-      try {
-        useLibraryStore.getState().addToLibrary({
-          anilistId: media.id,
-          title,
-          titleRomaji: media.title.romaji,
-          titleNative: media.title.native,
-          coverImage:
-            media.coverImage.large || media.coverImage.extraLarge || media.coverImage.medium,
-          episodes: media.episodes,
-          status: 'plan_to_watch',
-        });
-        toast.success(t('toast.addedToLibrary'), { description: title });
-      } catch {
-        toast.error(t('toast.addFailed'));
-      }
-    },
-    [t]
-  );
+  const handleAddToLibrary = useAddDiscoverMediaToLibrary();
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const initialFetchDone = useRef(false);

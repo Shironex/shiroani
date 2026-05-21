@@ -2,6 +2,7 @@ import { memo, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, ExternalLink, Share2, Bookmark } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { handleImageError } from '@/lib/image-utils';
 import type { FeedItem } from '@shiroani/shared';
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -179,9 +180,7 @@ export const FeedReaderModal = memo(function FeedReaderModal({
                 loading="lazy"
                 decoding="async"
                 draggable={false}
-                onError={e => {
-                  e.currentTarget.style.display = 'none';
-                }}
+                onError={handleImageError}
                 className="relative w-full h-full object-cover"
               />
             )}
@@ -312,9 +311,7 @@ export const FeedReaderModal = memo(function FeedReaderModal({
                               loading="lazy"
                               decoding="async"
                               draggable={false}
-                              onError={e => {
-                                e.currentTarget.style.display = 'none';
-                              }}
+                              onError={handleImageError}
                               className="w-full h-full object-cover"
                             />
                           )}

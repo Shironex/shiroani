@@ -24,6 +24,7 @@ import { getWebview } from '@/components/browser/webviewRefs';
 import { toast } from 'sonner';
 import type { AnimeStatus } from '@shiroani/shared';
 import { getStatusOptions } from '@/lib/constants';
+import { isAlreadyInLibrary } from '@/lib/anime-utils';
 import { SCRAPE_METADATA_SCRIPT } from '@/lib/scrape-metadata';
 import { useDialogStateMachine } from '@/hooks/useDialogStateMachine';
 
@@ -111,11 +112,7 @@ export function AddToLibraryDialog({ open, onOpenChange, url, title }: AddToLibr
     }
 
     const entries = useLibraryStore.getState().entries;
-    const titleMatch = entries.some(
-      e => e.title.toLowerCase() === editableTitle.trim().toLowerCase()
-    );
-    const urlMatch = url && entries.some(e => e.resumeUrl && e.resumeUrl === url);
-    if (titleMatch || urlMatch) {
+    if (isAlreadyInLibrary(entries, { title: editableTitle.trim(), url: url || undefined })) {
       toast.error(t('addDialog.toast.duplicate'));
       return;
     }

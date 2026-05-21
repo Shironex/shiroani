@@ -1,17 +1,16 @@
 import { memo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Sparkles } from 'lucide-react';
-import { toast } from 'sonner';
 import { EmptyState } from '@/components/shared/EmptyState';
 import { AniListErrorState } from '@/components/shared/AniListErrorState';
 import { useDiscoverStore, type DiscoverMedia } from '@/stores/useDiscoverStore';
-import { useLibraryStore } from '@/stores/useLibraryStore';
+import { useAddDiscoverMediaToLibrary } from './useAddDiscoverMediaToLibrary';
 import { RandomFiltersPanel } from './random/RandomFiltersPanel';
 import { RandomShowcaseCard } from './random/RandomShowcaseCard';
 import { RandomPeekChip } from './random/RandomPeekChip';
 import { RandomSkeleton } from './random/RandomSkeleton';
 import { useRandomCarousel } from './random/useRandomCarousel';
-import { buildShowcaseMeta, getTitle } from './random/random-utils';
+import { buildShowcaseMeta } from './random/random-utils';
 
 interface RandomDiscoveryPanelProps {
   libraryIds: Set<number>;
@@ -41,34 +40,7 @@ export const RandomDiscoveryPanel = memo(function RandomDiscoveryPanel({
     useDiscoverStore.getState().setRandomGenres(inc, exc);
   }, []);
 
-  const handleAddToLibrary = useCallback(
-    (media: DiscoverMedia) => {
-      const title = getTitle(media.title);
-      const entries = useLibraryStore.getState().entries;
-      const alreadyByAnilist = entries.some(e => e.anilistId === media.id);
-      const alreadyByTitle = entries.some(e => e.title.toLowerCase() === title.toLowerCase());
-      if (alreadyByAnilist || alreadyByTitle) {
-        toast.error(t('toast.alreadyInLibrary'));
-        return;
-      }
-      try {
-        useLibraryStore.getState().addToLibrary({
-          anilistId: media.id,
-          title,
-          titleRomaji: media.title.romaji,
-          titleNative: media.title.native,
-          coverImage:
-            media.coverImage.large || media.coverImage.extraLarge || media.coverImage.medium,
-          episodes: media.episodes,
-          status: 'plan_to_watch',
-        });
-        toast.success(t('toast.addedToLibrary'), { description: title });
-      } catch {
-        toast.error(t('toast.addFailed'));
-      }
-    },
-    [t]
-  );
+  const handleAddToLibrary = useAddDiscoverMediaToLibrary();
 
   if (error) {
     return <AniListErrorState error={error} onRetry={onError} />;

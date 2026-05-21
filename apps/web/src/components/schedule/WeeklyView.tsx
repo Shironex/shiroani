@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { getDayNamesShort } from '@/lib/constants';
+import { handleImageError } from '@/lib/image-utils';
 import { Tv } from 'lucide-react';
 import { formatTime, getAnimeTitle, getCoverUrl, type SlotStatus } from './schedule-utils';
 import { ScheduleDayColumn } from './ScheduleDayColumn';
@@ -167,9 +168,7 @@ function WeekEventCard({
               loading="lazy"
               decoding="async"
               draggable={false}
-              onError={e => {
-                e.currentTarget.style.display = 'none';
-              }}
+              onError={handleImageError}
               className={cn('w-full h-full object-cover', isDone && 'grayscale-[30%]')}
             />
           ) : (

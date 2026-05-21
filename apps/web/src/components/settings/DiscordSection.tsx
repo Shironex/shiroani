@@ -3,7 +3,11 @@ import { useTranslation } from 'react-i18next';
 import { MessageCircle, Check, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
-import { SettingsCard, SettingsToggleRow } from '@/components/settings/SettingsCard';
+import {
+  SettingsCard,
+  SettingsInfoCallout,
+  SettingsToggleRow,
+} from '@/components/settings/SettingsCard';
 import { DiscordPreview } from '@/components/settings/DiscordPreview';
 import { DiscordTemplateEditor } from '@/components/settings/DiscordTemplateEditor';
 import { substitutePreview } from '@/lib/discord-utils';
@@ -229,10 +233,12 @@ export function DiscordSection() {
   );
 
   const infoCallout = (
-    <div className="flex items-start gap-3 rounded-xl border border-border-glass bg-background/40 px-4 py-3 text-[11.5px] leading-relaxed text-muted-foreground">
-      <Info className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground/80" />
-      <p>{t('discord.info')}</p>
-    </div>
+    <SettingsInfoCallout
+      icon={Info}
+      iconClassName="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground/80"
+    >
+      {t('discord.info')}
+    </SettingsInfoCallout>
   );
 
   if (showCustomTemplateColumns) {
