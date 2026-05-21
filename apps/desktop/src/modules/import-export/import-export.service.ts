@@ -5,11 +5,28 @@ import {
   type DiaryEntry,
   type ShiroaniExportFormat,
   type ImportItemResult,
+  type ImportRequest,
+  type ImportResponse,
 } from '@shiroani/shared';
 import { LibraryService } from '../library';
 import { DiaryService } from '../diary';
 
 const logger = createLogger('ImportExportService');
+
+/** Artificial per-item delay so the renderer can render import progress incrementally. */
+const IMPORT_PROGRESS_THROTTLE_MS = 1000;
+
+/** Small helper to wait for a given number of milliseconds. */
+function sleep(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+/** Reported by {@link ImportExportService.importBatch} so the caller can refresh the right stores. */
+export interface ImportBatchResult {
+  response: ImportResponse;
+  hasLibrary: boolean;
+  hasDiary: boolean;
+}
 
 @Injectable()
 export class ImportExportService {
@@ -163,5 +180,67 @@ export class ImportExportService {
       logger.error(`Error importing diary entry "${entry.title}":`, error);
       return { ...baseResult, status: 'error', error: message };
     }
+  }
+
+  /**
+   * Run a full import batch: import the requested library and/or diary entries
+   * (throttled per item), tally the outcome, and report progress as each entry
+   * completes. Transport-agnostic — the caller decides how `onProgress` and the
+   * returned `hasLibrary`/`hasDiary` flags surface to clients.
+   */
+  async importBatch(
+    request: ImportRequest,
+    onProgress: (result: ImportItemResult) => void
+  ): Promise<ImportBatchResult> {
+    const results: ImportItemResult[] = [];
+    let totalImported = 0;
+    let totalSkipped = 0;
+    let totalErrors = 0;
+    let index = 0;
+
+    const tally = (result: ImportItemResult): void => {
+      result.index = index;
+      results.push(result);
+      onProgress(result);
+
+      if (result.status === 'success') totalImported++;
+      else if (result.status === 'skipped') totalSkipped++;
+      else if (result.status === 'error') totalErrors++;
+
+      index++;
+    };
+
+    const libraryEntries = request.data.data.library ?? [];
+    const hasLibrary =
+      (request.type === 'library' || request.type === 'all') && libraryEntries.length > 0;
+    if (hasLibrary) {
+      for (const entry of libraryEntries) {
+        tally(this.importLibraryEntry(entry, request.strategy));
+        await sleep(IMPORT_PROGRESS_THROTTLE_MS);
+      }
+    }
+
+    const diaryEntries = request.data.data.diary ?? [];
+    const hasDiary =
+      (request.type === 'diary' || request.type === 'all') && diaryEntries.length > 0;
+    if (hasDiary) {
+      for (const entry of diaryEntries) {
+        tally(this.importDiaryEntry(entry, request.strategy));
+        await sleep(IMPORT_PROGRESS_THROTTLE_MS);
+      }
+    }
+
+    const response: ImportResponse = {
+      results,
+      totalImported,
+      totalSkipped,
+      totalErrors,
+    };
+
+    logger.info(
+      `Import complete: ${totalImported} imported, ${totalSkipped} skipped, ${totalErrors} errors`
+    );
+
+    return { response, hasLibrary, hasDiary };
   }
 }
