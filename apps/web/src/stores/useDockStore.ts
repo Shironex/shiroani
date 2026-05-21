@@ -4,7 +4,8 @@ import { createLogger } from '@shiroani/shared';
 import { IS_ELECTRON } from '@/lib/platform';
 import { electronStoreGet } from '@/lib/electron-store';
 import { createDebouncedPersist } from '@/lib/electron-store';
-import { ALWAYS_VISIBLE_VIEWS, ALL_NAV_ITEMS } from '@/lib/nav-items';
+import { arrayMove } from '@dnd-kit/sortable';
+import { ALWAYS_VISIBLE_VIEWS, DEFAULT_VIEW_ORDER, sanitizeViewOrder } from '@/lib/nav-items';
 import type { ActiveView } from '@/stores/useAppStore';
 import { useAppStore } from '@/stores/useAppStore';
 
@@ -25,6 +26,8 @@ interface DockSettings {
   showLabels: boolean;
   /** View ids the user has hidden from the dock (settings is always visible) */
   hiddenViews: ActiveView[];
+  /** View ids in user-chosen display order. Always contains every nav item id. */
+  order: ActiveView[];
 }
 
 interface DockState extends DockSettings {
@@ -46,6 +49,10 @@ interface DockActions {
   setShowLabels: (showLabels: boolean) => void;
   /** Toggle a view's visibility in the dock. Always-visible views are no-ops. */
   toggleViewVisibility: (view: ActiveView) => void;
+  /** Reorder views by moving the dragged view id to the position of the view it was dropped on. */
+  reorderViews: (activeId: ActiveView, overId: ActiveView) => void;
+  /** Restore the default view order and visibility. */
+  resetViews: () => void;
   setDragging: (isDragging: boolean) => void;
   setDragPosition: (pos: { x: number; y: number } | null) => void;
   setExpanded: (expanded: boolean) => void;
@@ -61,6 +68,7 @@ type DockStore = DockState & DockActions;
 
 const DEFAULT_OFFSET = 50;
 const DEFAULT_EDGE: DockEdge = 'bottom';
+const DEFAULT_HIDDEN_VIEWS: ActiveView[] = ['changelog'];
 const STORE_KEY = 'dock-settings';
 
 const persistSettings = createDebouncedPersist(STORE_KEY, 300);
@@ -74,17 +82,16 @@ function persistCurrentSettings(state: DockState) {
     draggable: state.draggable,
     showLabels: state.showLabels,
     hiddenViews: state.hiddenViews,
+    order: state.order,
   };
   persistSettings(settings);
 }
 
 /** First visible view in display order — used as a fallback when the active view is hidden. */
-function firstVisibleView(hidden: ActiveView[]): ActiveView {
+function firstVisibleView(order: ActiveView[], hidden: ActiveView[]): ActiveView {
   const hiddenSet = new Set(hidden);
-  const first = ALL_NAV_ITEMS.find(
-    item => ALWAYS_VISIBLE_VIEWS.has(item.id) || !hiddenSet.has(item.id)
-  );
-  return first?.id ?? 'settings';
+  const first = order.find(id => ALWAYS_VISIBLE_VIEWS.has(id) || !hiddenSet.has(id));
+  return first ?? 'settings';
 }
 
 export const useDockStore = create<DockStore>()(
@@ -96,7 +103,8 @@ export const useDockStore = create<DockStore>()(
       autoHide: false,
       draggable: true,
       showLabels: true,
-      hiddenViews: ['changelog'],
+      hiddenViews: DEFAULT_HIDDEN_VIEWS,
+      order: DEFAULT_VIEW_ORDER,
       isDragging: false,
       dragPosition: null,
       isExpanded: false,
@@ -141,9 +149,29 @@ export const useDockStore = create<DockStore>()(
         if (!isHidden) {
           const appState = useAppStore.getState();
           if (appState.activeView === view) {
-            appState.navigateTo(firstVisibleView(nextHidden));
+            appState.navigateTo(firstVisibleView(get().order, nextHidden));
           }
         }
+      },
+
+      reorderViews: (activeId: ActiveView, overId: ActiveView) => {
+        const { order } = get();
+        const oldIndex = order.indexOf(activeId);
+        const newIndex = order.indexOf(overId);
+        if (oldIndex === -1 || newIndex === -1 || oldIndex === newIndex) return;
+
+        const reordered = arrayMove(order, oldIndex, newIndex);
+        set({ order: reordered }, undefined, 'dock/reorderViews');
+        persistCurrentSettings(get());
+      },
+
+      resetViews: () => {
+        set(
+          { order: DEFAULT_VIEW_ORDER, hiddenViews: DEFAULT_HIDDEN_VIEWS },
+          undefined,
+          'dock/resetViews'
+        );
+        persistCurrentSettings(get());
       },
 
       setDragging: (isDragging: boolean) => {
@@ -212,6 +240,10 @@ export const useDockStore = create<DockStore>()(
                 hiddenViews: Array.isArray(saved.hiddenViews)
                   ? saved.hiddenViews.filter(v => !ALWAYS_VISIBLE_VIEWS.has(v))
                   : [],
+                // Reconcile the saved order with the current nav items: unknown
+                // ids are dropped and views added in a newer version are appended,
+                // so a stale order never makes a view disappear.
+                order: sanitizeViewOrder(saved.order),
                 isExpanded: !(saved.autoHide ?? false),
                 initialized: true,
               },
