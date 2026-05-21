@@ -305,7 +305,7 @@ describe('FeedService', () => {
     });
 
     it('filters by category when not "all"', () => {
-      service.getItems({ category: 'anime', limit: 10, offset: 0 });
+      service.getItems({ category: 'news', limit: 10, offset: 0 });
       const calls = db.prepare.mock.calls.map(c => (c[0] as string).replace(/\s+/g, ' '));
       expect(calls.some(s => s.includes('fs.category = ?'))).toBe(true);
     });

@@ -290,7 +290,15 @@ describe('mergeSettings', () => {
   });
 
   it('preserves subscriptions from stored settings', () => {
-    const subs = [{ anilistId: 123, title: 'Test', enabled: true }];
+    const subs: NotificationSubscription[] = [
+      {
+        anilistId: 123,
+        title: 'Test',
+        enabled: true,
+        subscribedAt: '2024-01-01T00:00:00.000Z',
+        source: 'schedule',
+      },
+    ];
     const result = mergeSettings({ subscriptions: subs });
     expect(result.subscriptions).toEqual(subs);
   });
