@@ -148,7 +148,8 @@ export function createCrudResource<
    */
   const optimisticRemove = (config: OptimisticRemoveConfig<TState>) => {
     const { event, id, extra, label = 'optimisticRemove' } = config;
-    const previousEntries = get().entries;
+    const previousState = get();
+    const extraSnapshot = extra?.(previousState) ?? ({} as Partial<TState>);
     set(
       state =>
         ({
@@ -160,7 +161,11 @@ export function createCrudResource<
     );
     emitWithErrorHandling(event, { id }).catch((err: Error) => {
       logger.error(`Failed to remove ${storeName} entry:`, err.message);
-      set({ entries: previousEntries } as Partial<TState>, undefined, `${storeName}/removeError`);
+      const rollback: Partial<TState> = { entries: previousState.entries } as Partial<TState>;
+      for (const key of Object.keys(extraSnapshot) as (keyof TState)[]) {
+        (rollback as Record<keyof TState, TState[keyof TState]>)[key] = previousState[key];
+      }
+      set(rollback, undefined, `${storeName}/removeError`);
     });
   };
 

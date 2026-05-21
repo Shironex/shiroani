@@ -56,7 +56,10 @@ export function reconcileOrder<T>(saved: unknown, defaultOrder: readonly T[]): T
   }
 
   for (const id of defaultOrder) {
-    if (!seen.has(id)) result.push(id);
+    if (!seen.has(id)) {
+      seen.add(id);
+      result.push(id);
+    }
   }
 
   return result;

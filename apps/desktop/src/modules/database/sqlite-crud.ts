@@ -10,6 +10,21 @@ import type Database from 'better-sqlite3';
  * mechanics (select-all / select-by-id / delete / dynamic UPDATE) live here.
  */
 
+const IDENTIFIER_RE = /^[A-Za-z_][A-Za-z0-9_]*$/;
+const ORDER_BY_RE = /^[A-Za-z_][A-Za-z0-9_]*(\s+(ASC|DESC))?$/i;
+
+function assertIdentifier(value: string, label: string): void {
+  if (!IDENTIFIER_RE.test(value)) {
+    throw new Error(`Invalid SQL identifier for ${label}: "${value}"`);
+  }
+}
+
+function assertOrderBy(value: string): void {
+  if (!ORDER_BY_RE.test(value)) {
+    throw new Error(`Invalid SQL ORDER BY clause: "${value}"`);
+  }
+}
+
 /** A value that can be bound to a prepared statement parameter. */
 export type SqlValue = string | number | null;
 
@@ -52,6 +67,8 @@ export function getAll<R, T>(
   mapper: (row: R) => T,
   orderBy?: string
 ): T[] {
+  assertIdentifier(table, 'table');
+  if (orderBy !== undefined) assertOrderBy(orderBy);
   const sql = orderBy ? `SELECT * FROM ${table} ORDER BY ${orderBy}` : `SELECT * FROM ${table}`;
   const rows = db.prepare(sql).all() as R[];
   return rows.map(mapper);
@@ -64,12 +81,14 @@ export function getById<R, T>(
   id: number,
   mapper: (row: R) => T
 ): T | undefined {
+  assertIdentifier(table, 'table');
   const row = db.prepare(`SELECT * FROM ${table} WHERE id = ?`).get(id) as R | undefined;
   return row ? mapper(row) : undefined;
 }
 
 /** Delete a row by primary key. Returns true if a row was removed. */
 export function deleteById(db: Database.Database, table: string, id: number): boolean {
+  assertIdentifier(table, 'table');
   const result = db.prepare(`DELETE FROM ${table} WHERE id = ?`).run(id);
   return result.changes > 0;
 }
@@ -91,6 +110,7 @@ export function buildUpdate<U extends Record<string, unknown>>(
   fieldMap: FieldMap<U>,
   id: number
 ): BuiltUpdate | null {
+  assertIdentifier(table, 'table');
   const setClauses: string[] = [];
   const values: SqlValue[] = [];
 
@@ -99,6 +119,7 @@ export function buildUpdate<U extends Record<string, unknown>>(
     if (value === undefined) continue;
 
     const spec = fieldMap[key] as FieldSpec<U[keyof U]>;
+    assertIdentifier(spec.column, 'column');
     setClauses.push(`${spec.column} = ?`);
     values.push(spec.transform ? spec.transform(value) : (value as SqlValue));
   }

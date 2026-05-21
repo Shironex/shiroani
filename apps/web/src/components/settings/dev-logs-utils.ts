@@ -28,7 +28,7 @@ export function isValidLevel(value: string): value is LogLevelName {
 export function stringifyData(data: unknown): string {
   if (typeof data === 'string') return data;
   try {
-    return JSON.stringify(data);
+    return JSON.stringify(data) ?? String(data);
   } catch {
     return String(data);
   }
@@ -45,7 +45,7 @@ export function prettyPrintData(data: unknown): string {
     }
   }
   try {
-    return JSON.stringify(data, null, 2);
+    return JSON.stringify(data, null, 2) ?? String(data);
   } catch {
     return String(data);
   }
