@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { memo, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Film } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -8,6 +8,7 @@ import { ScheduleDayColumn } from './ScheduleDayColumn';
 import { SubscribeBellButton } from './SubscribeBellButton';
 import { useWeekData } from '@/hooks/useWeekData';
 import { useNowSeconds } from '@/hooks/useNowSeconds';
+import { useActivatable } from '@/hooks/useActivatable';
 import type { AiringAnime } from '@shiroani/shared';
 
 export interface TimetableViewProps {
@@ -81,37 +82,34 @@ interface PosterCardProps {
   liveLabel: string;
 }
 
-function PosterCard({ anime, status, onClick, episodeLabel, liveLabel }: PosterCardProps) {
+const PosterCard = memo(function PosterCard({
+  anime,
+  status,
+  onClick,
+  episodeLabel,
+  liveLabel,
+}: PosterCardProps) {
   const title = getAnimeTitle(anime.media);
   // Prefer high-res cover for the hero treatment
   const coverUrl = anime.media.coverImage.large || anime.media.coverImage.medium;
   const isLive = status === 'live';
   const isDone = status === 'done';
+  const activatable = useActivatable(onClick ? () => onClick(anime) : undefined, {
+    inactiveRole: 'article',
+  });
 
   return (
     <div
-      role={onClick ? 'button' : 'article'}
-      tabIndex={onClick ? 0 : undefined}
+      {...activatable}
       aria-label={title}
-      onClick={onClick ? () => onClick(anime) : undefined}
-      onKeyDown={
-        onClick
-          ? e => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                onClick(anime);
-              }
-            }
-          : undefined
-      }
       className={cn(
         'group relative rounded-[9px] overflow-hidden border border-border-glass',
-        'transition-transform duration-200',
+        'transition-colors duration-200',
         'bg-[linear-gradient(150deg,oklch(0.45_0.14_280),oklch(0.28_0.1_330))]',
         isLive && 'border-primary/60 shadow-[0_0_18px_oklch(from_var(--primary)_l_c_h/0.35)]',
         isDone && 'opacity-55',
         onClick &&
-          'cursor-pointer hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
+          'cursor-pointer hover:border-primary/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
       )}
       style={{ aspectRatio: '2 / 2.6' }}
     >
@@ -174,4 +172,4 @@ function PosterCard({ anime, status, onClick, episodeLabel, liveLabel }: PosterC
       </div>
     </div>
   );
-}
+});

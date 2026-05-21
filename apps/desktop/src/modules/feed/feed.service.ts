@@ -1,6 +1,7 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import {
   createLogger,
+  extractErrorMessage,
   DEFAULT_FEED_SOURCES,
   type FeedGetItemsPayload,
   type FeedGetItemsResult,
@@ -189,7 +190,7 @@ export class FeedService implements OnModuleInit {
       else logger.debug(`No new items from "${source.name}"`);
       return newCount;
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorMessage = extractErrorMessage(error, 'Unknown error');
       db.prepare(
         `UPDATE feed_sources SET last_fetched_at = datetime('now'),
            consecutive_failures = consecutive_failures + 1, last_error = ? WHERE id = ?`

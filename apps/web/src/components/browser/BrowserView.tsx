@@ -12,6 +12,7 @@ import {
   type BrowserSplitNode,
 } from '@shiroani/shared';
 import { findLeafById, useBrowserStore } from '@/stores/useBrowserStore';
+import { collectLeaves } from '@/stores/browser/browserTree';
 import { AddToLibraryDialog } from '@/components/browser/AddToLibraryDialog';
 import { BrowserTabBar } from '@/components/browser/BrowserTabBar';
 import { BrowserToolbar } from '@/components/browser/BrowserToolbar';
@@ -22,6 +23,7 @@ import { unregisterWebview } from '@/components/browser/webviewRefs';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
 import { TooltipButton } from '@/components/ui/tooltip-button';
 import { cn } from '@/lib/utils';
+import { isEditableTarget } from '@/lib/is-editable-target';
 
 // Actions are stable references — extract once outside render cycle
 const {
@@ -74,12 +76,6 @@ interface PaneRendererProps {
  * the page. See `BrowserView` for the layer mechanics.
  */
 const PANE_SLOT_ATTR = 'data-pane-slot';
-
-/** Walk a tree and collect every leaf in render order (left then right). */
-function collectLeaves(node: BrowserNode): BrowserLeafNode[] {
-  if (node.kind === 'leaf') return [node];
-  return [...collectLeaves(node.left), ...collectLeaves(node.right)];
-}
 
 /**
  * Slot key for a top-level tab — the id of its leftmost leaf. Stable across
@@ -288,10 +284,7 @@ export function BrowserView() {
   // Keyboard shortcuts — local keydown for when renderer has focus
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      const target = e.target as HTMLElement;
-      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) {
-        return;
-      }
+      if (isEditableTarget(e.target)) return;
 
       const ctrl = e.ctrlKey || e.metaKey;
       const alt = e.altKey;

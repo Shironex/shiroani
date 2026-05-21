@@ -42,6 +42,10 @@ export function ImportDialog({ open, onOpenChange, type }: ImportDialogProps) {
   });
   const [strategy, setStrategy] = useState<'skip' | 'overwrite'>('skip');
   const listenerCleanupRef = useRef<(() => void) | null>(null);
+  // Guards the auto-trigger against StrictMode's double-mount: the file dialog
+  // must open exactly once per `open` session, before any state transition has
+  // a chance to settle. Reset when the dialog closes.
+  const autoTriggeredRef = useRef(false);
 
   // Clean up socket listener on unmount
   useEffect(() => {
@@ -183,10 +187,20 @@ export function ImportDialog({ open, onOpenChange, type }: ImportDialogProps) {
     [onOpenChange, state.step, reset]
   );
 
-  // Auto-start file selection when opened
-  if (open && state.step === 'idle') {
-    handleFileSelect();
-  }
+  // Auto-start file selection when opened. Runs as an effect (not in render)
+  // so the async side-effect is StrictMode-safe — the ref guard ensures the
+  // file dialog fires exactly once per open session even though the first
+  // `transition` away from 'idle' hasn't settled yet on the double mount.
+  useEffect(() => {
+    if (!open) {
+      autoTriggeredRef.current = false;
+      return;
+    }
+    if (state.step === 'idle' && !autoTriggeredRef.current) {
+      autoTriggeredRef.current = true;
+      handleFileSelect();
+    }
+  }, [open, state.step, handleFileSelect]);
 
   // Compute progress stats for the importing step
   const progressInfo = useMemo(() => {

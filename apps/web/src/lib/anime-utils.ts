@@ -1,5 +1,34 @@
-import type { AiringAnime, AnimeDetailFuzzyDate } from '@shiroani/shared';
+import type { AiringAnime, AnimeDetailFuzzyDate, AnimeEntry } from '@shiroani/shared';
 import type { TFunction } from 'i18next';
+
+/** Criteria for matching an existing library entry. Each provided field is OR-ed. */
+export interface LibraryMatch {
+  /** AniList id — matches an entry's `anilistId`. */
+  anilistId?: number;
+  /** Title — matches an entry's `title` case-insensitively. */
+  title?: string;
+  /** Resume URL — matches an entry's `resumeUrl` exactly (both must be truthy). */
+  url?: string;
+}
+
+/**
+ * Whether the library already contains an entry matching any of the provided
+ * criteria. Mirrors the dedupe rules the add-to-library call sites used inline:
+ * AniList-id match, case-insensitive title match, and (for browser-sourced
+ * entries) exact resume-URL match.
+ */
+export function isAlreadyInLibrary(
+  entries: ReadonlyArray<AnimeEntry>,
+  match: LibraryMatch
+): boolean {
+  const normalizedTitle = match.title?.toLowerCase();
+  return entries.some(e => {
+    if (match.anilistId !== undefined && e.anilistId === match.anilistId) return true;
+    if (normalizedTitle !== undefined && e.title.toLowerCase() === normalizedTitle) return true;
+    if (match.url && e.resumeUrl && e.resumeUrl === match.url) return true;
+    return false;
+  });
+}
 
 export function getAnimeTitle(media: AiringAnime['media']): string {
   return media.title.romaji || media.title.english || media.title.native || '?';
@@ -24,8 +53,8 @@ export function formatEpisodeProgress(
     : t('episodeProgressNoTotal', { current });
 }
 
-/** Format AniList score (0-100) to display format (0.0-10.0) */
-export function formatScore(anilistScore: number): string {
+/** Format a raw AniList score (0-100) to display format (0.0-10.0) */
+export function formatRawScore(anilistScore: number): string {
   return (anilistScore / 10).toFixed(1);
 }
 

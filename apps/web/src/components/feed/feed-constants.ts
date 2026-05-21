@@ -32,10 +32,3 @@ export function useLanguageLabels(): Record<FeedLanguage | 'all', string> {
     [t]
   );
 }
-
-export const CATEGORY_COLORS: Record<FeedCategory, string> = {
-  news: 'bg-blue-500/15 text-blue-400',
-  episodes: 'bg-green-500/15 text-green-400',
-  reviews: 'bg-amber-500/15 text-amber-400',
-  community: 'bg-purple-500/15 text-purple-400',
-};

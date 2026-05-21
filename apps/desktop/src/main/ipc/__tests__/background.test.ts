@@ -140,7 +140,7 @@ describe('registerBackgroundHandlers', () => {
       await expect(
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (ipcMain as any).__invoke('background:pick')
-      ).rejects.toThrow(/Nieobslugiwany format/i);
+      ).rejects.toThrow(/unsupported file format|nieobsługiwany format/i);
     });
   });
 

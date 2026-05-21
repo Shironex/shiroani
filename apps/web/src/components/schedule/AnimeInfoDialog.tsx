@@ -1,80 +1,18 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
-import {
-  ExternalLink,
-  Star,
-  Heart,
-  Users,
-  Clock,
-  Tv,
-  Play,
-  Trophy,
-  ChevronDown,
-  ChevronUp,
-  Bell,
-  BellRing,
-} from 'lucide-react';
-import { cn } from '@/lib/utils';
-import {
-  formatScore,
-  getAnimeTitle,
-  formatFuzzyDate,
-  formatTimeUntilAiring,
-} from '@/lib/anime-utils';
-import {
-  getAnilistFormatLabel,
-  getAnilistStatusLabel,
-  getAnilistSourceLabel,
-  getAnilistSeasonLabel,
-  getAnilistRelationLabel,
-} from '@/lib/constants';
+import { stripHtmlSimple } from '@/lib/html-text';
+import { getAnimeTitle } from '@/lib/anime-utils';
 import { emitAsync } from '@/lib/socketHelpers';
 import { useNavigateToBrowser } from '@/hooks/useNavigateToBrowser';
 import { useNotificationToggle } from '@/hooks/useNotificationToggle';
 import type { AiringAnime, AnimeDetail } from '@shiroani/shared';
 import { AnimeEvents } from '@shiroani/shared';
-
-// ============================================
-// Sub-components
-// ============================================
-
-/** Reusable avatar + name + subtitle card used for characters and staff */
-function PersonCard({
-  imageUrl,
-  name,
-  subtitle,
-}: {
-  imageUrl?: string;
-  name: string;
-  subtitle: string;
-}) {
-  return (
-    <div className="flex items-center gap-2 p-1.5 rounded-lg bg-muted/30">
-      {imageUrl ? (
-        <img
-          src={imageUrl}
-          alt={name}
-          className="w-8 h-8 rounded-full object-cover shrink-0"
-          loading="lazy"
-        />
-      ) : (
-        <div className="w-8 h-8 rounded-full bg-muted shrink-0" />
-      )}
-      <div className="min-w-0">
-        <p className="text-xs font-medium truncate">{name}</p>
-        <p className="text-2xs text-muted-foreground truncate">{subtitle}</p>
-      </div>
-    </div>
-  );
-}
-
-// ============================================
-// Main component
-// ============================================
+import { AnimeInfoHeader } from './anime-info/AnimeInfoHeader';
+import { AnimeInfoStats } from './anime-info/AnimeInfoStats';
+import { AnimeInfoMeta } from './anime-info/AnimeInfoMeta';
+import { AnimeInfoPeople } from './anime-info/AnimeInfoPeople';
+import { AnimeInfoLinks } from './anime-info/AnimeInfoLinks';
 
 interface AnimeInfoDialogProps {
   anime: AiringAnime | null;
@@ -86,7 +24,6 @@ export function AnimeInfoDialog({ anime, open, onOpenChange }: AnimeInfoDialogPr
   // Subscribe to language changes so the imperative anilist label getters
   // re-evaluate on the next render when the user switches language.
   const { i18n } = useTranslation('anilist');
-  const { t } = useTranslation('schedule');
   const [details, setDetails] = useState<AnimeDetail | null>(null);
   const [loading, setLoading] = useState(false);
   const [descExpanded, setDescExpanded] = useState(false);
@@ -152,6 +89,14 @@ export function AnimeInfoDialog({ anime, open, onOpenChange }: AnimeInfoDialogPr
     );
   }, [details]);
 
+  const handleNavigate = useCallback(
+    (url: string) => {
+      navigateToBrowser(url);
+      onOpenChange(false);
+    },
+    [navigateToBrowser, onOpenChange]
+  );
+
   if (!anime) return null;
 
   const coverUrl =
@@ -165,9 +110,8 @@ export function AnimeInfoDialog({ anime, open, onOpenChange }: AnimeInfoDialogPr
   const status = details?.status ?? anime.media.status;
   const episodes = details?.episodes ?? anime.media.episodes;
   const genres = details?.genres ?? anime.media.genres;
-  const cleanDescription = details?.description
-    ?.replace(/<br\s*\/?>/gi, '\n')
-    .replace(/<[^>]*>/g, '');
+  const cleanDescription =
+    details?.description != null ? stripHtmlSimple(details.description) : undefined;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -177,388 +121,46 @@ export function AnimeInfoDialog({ anime, open, onOpenChange }: AnimeInfoDialogPr
       >
         <DialogTitle className="sr-only">{title}</DialogTitle>
 
-        {/* Banner */}
-        <div className="relative h-44 overflow-hidden rounded-t-lg shrink-0">
-          {bannerUrl ? (
-            <img src={bannerUrl} alt="" className="w-full h-full object-cover" />
-          ) : coverUrl ? (
-            <img
-              src={coverUrl}
-              alt=""
-              className="w-full h-full object-cover blur-md scale-110 opacity-50"
-            />
-          ) : (
-            <div
-              className="w-full h-full"
-              style={{ backgroundColor: accentColor ?? 'hsl(var(--muted))' }}
-            />
-          )}
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
-
-          {/* Cover + Title overlay */}
-          <div className="absolute bottom-0 left-0 right-0 p-4 flex items-end gap-4">
-            {coverUrl && (
-              <img
-                src={coverUrl}
-                alt={title}
-                className="w-20 h-28 rounded-lg object-cover shadow-xl border border-border/50 shrink-0"
-              />
-            )}
-            <div className="min-w-0 flex-1 pb-1">
-              <h2 className="text-lg font-bold leading-tight text-foreground drop-shadow-sm line-clamp-2">
-                {title}
-              </h2>
-              {details?.title?.english && details.title.english !== title && (
-                <p className="text-xs text-muted-foreground mt-0.5 truncate">
-                  {details.title.english}
-                </p>
-              )}
-              {details?.title?.native && (
-                <p className="text-xs text-muted-foreground/70 mt-0.5 truncate">
-                  {details.title.native}
-                </p>
-              )}
-            </div>
-
-            {/* Bell button — plain button without tooltip to avoid auto-show on dialog open */}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="shrink-0 w-8 h-8 bg-background/60 backdrop-blur-sm"
-              onClick={toggle}
-            >
-              {isSubscribed ? (
-                <BellRing className="w-3.5 h-3.5 text-primary" />
-              ) : (
-                <Bell className="w-3.5 h-3.5" />
-              )}
-            </Button>
-          </div>
-        </div>
+        <AnimeInfoHeader
+          title={title}
+          details={details}
+          coverUrl={coverUrl}
+          bannerUrl={bannerUrl}
+          accentColor={accentColor}
+          isSubscribed={isSubscribed}
+          onToggleSubscribe={toggle}
+        />
 
         {/* Content */}
         <div className="px-5 pb-5 space-y-4">
-          {/* Quick stats row */}
-          <div className="flex flex-wrap items-center gap-2 pt-3">
-            {anime.media.averageScore != null && (
-              <Badge variant="secondary" className="gap-1">
-                <Star className="w-3 h-3 text-yellow-500" />
-                {formatScore(anime.media.averageScore)}
-              </Badge>
-            )}
-            {details?.popularity != null && (
-              <Badge variant="secondary" className="gap-1">
-                <Heart className="w-3 h-3 text-pink-500" />
-                {details.popularity.toLocaleString()}
-              </Badge>
-            )}
-            {details?.favourites != null && (
-              <Badge variant="secondary" className="gap-1">
-                <Users className="w-3 h-3" />
-                {details.favourites.toLocaleString()}
-              </Badge>
-            )}
-            {topRanking && (
-              <Badge variant="secondary" className="gap-1">
-                <Trophy className="w-3 h-3 text-amber-500" />#{topRanking.rank} {topRanking.context}
-              </Badge>
-            )}
-          </div>
+          <AnimeInfoStats
+            anime={anime}
+            details={details}
+            topRanking={topRanking}
+            format={format}
+            status={status}
+            episodes={episodes}
+          />
 
-          {/* Info badges */}
-          <div className="flex flex-wrap gap-1.5">
-            {format && <Badge variant="outline">{getAnilistFormatLabel(format)}</Badge>}
-            {status && <Badge variant="outline">{getAnilistStatusLabel(status)}</Badge>}
-            {details?.source && (
-              <Badge variant="outline">{getAnilistSourceLabel(details.source)}</Badge>
-            )}
-            {details?.season && details?.seasonYear && (
-              <Badge variant="outline">
-                {getAnilistSeasonLabel(details.season)} {details.seasonYear}
-              </Badge>
-            )}
-            {episodes && (
-              <Badge variant="outline" className="gap-1">
-                <Tv className="w-3 h-3" />
-                {episodes} {t('dialog.episodesShort')}
-              </Badge>
-            )}
-            {details?.duration && (
-              <Badge variant="outline" className="gap-1">
-                <Clock className="w-3 h-3" />
-                {details.duration} {t('dialog.minutesShort')}
-              </Badge>
-            )}
-          </div>
+          <AnimeInfoMeta
+            details={details}
+            mainStudios={mainStudios}
+            genres={genres}
+            nonSpoilerTags={nonSpoilerTags}
+            cleanDescription={cleanDescription}
+            loading={loading}
+            descExpanded={descExpanded}
+            onToggleDesc={() => setDescExpanded(v => !v)}
+            language={i18n.language}
+          />
 
-          {/* Next episode countdown */}
-          {details?.nextAiringEpisode &&
-            details.nextAiringEpisode.timeUntilAiring != null &&
-            details.nextAiringEpisode.timeUntilAiring > 0 && (
-              <div className="flex items-center gap-2 p-2.5 rounded-lg bg-primary/5 border border-primary/10">
-                <Play className="w-4 h-4 text-primary shrink-0" />
-                <span className="text-sm">
-                  <span className="font-medium">
-                    {t('dialog.nextEpisode.episode', {
-                      episode: details.nextAiringEpisode.episode,
-                    })}
-                  </span>
-                  <span className="text-muted-foreground"> {t('dialog.nextEpisode.in')} </span>
-                  <span className="font-medium text-primary">
-                    {formatTimeUntilAiring(details.nextAiringEpisode.timeUntilAiring!)}
-                  </span>
-                </span>
-              </div>
-            )}
+          <AnimeInfoPeople details={details} />
 
-          {/* Studios */}
-          {mainStudios.length > 0 && (
-            <div>
-              <h3 className="text-xs font-medium text-muted-foreground mb-1">
-                {t('dialog.studios')}
-              </h3>
-              <p className="text-sm font-medium">{mainStudios.join(', ')}</p>
-            </div>
-          )}
-
-          {/* Genres */}
-          {genres.length > 0 && (
-            <div>
-              <h3 className="text-xs font-medium text-muted-foreground mb-1.5">
-                {t('dialog.genres')}
-              </h3>
-              <div className="flex flex-wrap gap-1">
-                {genres.map(genre => (
-                  <Badge key={genre} variant="secondary" className="text-xs">
-                    {genre}
-                  </Badge>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Tags */}
-          {nonSpoilerTags.length > 0 && (
-            <div>
-              <h3 className="text-xs font-medium text-muted-foreground mb-1.5">
-                {t('dialog.tags')}
-              </h3>
-              <div className="flex flex-wrap gap-1">
-                {nonSpoilerTags.map(tag => (
-                  <Badge key={tag.id} variant="outline" className="text-2xs">
-                    {tag.name}
-                    {tag.rank != null && (
-                      <span className="text-muted-foreground ml-1">{tag.rank}%</span>
-                    )}
-                  </Badge>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Description */}
-          {loading ? (
-            <div className="space-y-2">
-              <Skeleton className="h-4 w-full" />
-              <Skeleton className="h-4 w-4/5" />
-              <Skeleton className="h-4 w-3/5" />
-            </div>
-          ) : cleanDescription ? (
-            <div>
-              <h3 className="text-xs font-medium text-muted-foreground mb-1.5">
-                {t('dialog.description')}
-              </h3>
-              <p
-                className={cn(
-                  'text-sm text-foreground/80 leading-relaxed whitespace-pre-line',
-                  !descExpanded && 'line-clamp-4'
-                )}
-              >
-                {cleanDescription}
-              </p>
-              {cleanDescription.length > 300 && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-xs text-primary h-6 px-1 mt-1"
-                  onClick={() => setDescExpanded(v => !v)}
-                >
-                  {descExpanded ? (
-                    <>
-                      <ChevronUp className="w-3 h-3" /> {t('dialog.collapse')}
-                    </>
-                  ) : (
-                    <>
-                      <ChevronDown className="w-3 h-3" /> {t('dialog.expand')}
-                    </>
-                  )}
-                </Button>
-              )}
-            </div>
-          ) : null}
-
-          {/* Dates */}
-          {details &&
-            (formatFuzzyDate(details.startDate, i18n.language) ||
-              formatFuzzyDate(details.endDate, i18n.language)) && (
-              <div className="flex gap-6">
-                {formatFuzzyDate(details.startDate, i18n.language) && (
-                  <div>
-                    <h3 className="text-xs font-medium text-muted-foreground mb-0.5">
-                      {t('dialog.startDate')}
-                    </h3>
-                    <p className="text-sm tabular-nums">
-                      {formatFuzzyDate(details.startDate, i18n.language)}
-                    </p>
-                  </div>
-                )}
-                {formatFuzzyDate(details.endDate, i18n.language) && (
-                  <div>
-                    <h3 className="text-xs font-medium text-muted-foreground mb-0.5">
-                      {t('dialog.endDate')}
-                    </h3>
-                    <p className="text-sm tabular-nums">
-                      {formatFuzzyDate(details.endDate, i18n.language)}
-                    </p>
-                  </div>
-                )}
-              </div>
-            )}
-
-          {/* Characters */}
-          {details?.characters?.edges && details.characters.edges.length > 0 && (
-            <div>
-              <h3 className="text-xs font-medium text-muted-foreground mb-2">
-                {t('dialog.characters')}
-              </h3>
-              <div className="grid grid-cols-2 gap-2">
-                {details.characters.edges.slice(0, 6).map(char => (
-                  <PersonCard
-                    key={char.node.id}
-                    imageUrl={char.node.image?.medium}
-                    name={char.node.name.userPreferred ?? char.node.name.full ?? ''}
-                    subtitle={char.role?.toLowerCase() ?? ''}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Staff */}
-          {details?.staff?.edges && details.staff.edges.length > 0 && (
-            <div>
-              <h3 className="text-xs font-medium text-muted-foreground mb-2">
-                {t('dialog.staff')}
-              </h3>
-              <div className="grid grid-cols-2 gap-2">
-                {details.staff.edges.slice(0, 4).map(staff => (
-                  <PersonCard
-                    key={`${staff.node.id}-${staff.role}`}
-                    imageUrl={staff.node.image?.medium}
-                    name={staff.node.name.userPreferred ?? staff.node.name.full ?? ''}
-                    subtitle={staff.role}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Relations */}
-          {details?.relations?.edges && details.relations.edges.length > 0 && (
-            <div>
-              <h3 className="text-xs font-medium text-muted-foreground mb-2">
-                {t('dialog.related')}
-              </h3>
-              <div className="flex gap-2 overflow-x-auto pb-1">
-                {details.relations.edges.slice(0, 8).map(rel => (
-                  <div
-                    key={`${rel.node.id}-${rel.relationType}`}
-                    className="shrink-0 w-24 text-center"
-                  >
-                    {rel.node.coverImage?.medium ? (
-                      <img
-                        src={rel.node.coverImage.medium}
-                        alt={rel.node.title.romaji ?? rel.node.title.english ?? ''}
-                        className="w-full aspect-[3/4] rounded-lg object-cover border border-border/50"
-                        loading="lazy"
-                      />
-                    ) : (
-                      <div className="w-full aspect-[3/4] rounded-lg bg-muted border border-border/50" />
-                    )}
-                    <p className="text-2xs text-primary mt-1">
-                      {getAnilistRelationLabel(rel.relationType)}
-                    </p>
-                    <p className="text-2xs font-medium truncate mt-0.5">
-                      {rel.node.title.romaji ?? rel.node.title.english}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Trailer */}
-          {details?.trailer?.id && details.trailer.site === 'youtube' && (
-            <div>
-              <h3 className="text-xs font-medium text-muted-foreground mb-2">
-                {t('dialog.trailer')}
-              </h3>
-              <div className="relative aspect-video rounded-lg overflow-hidden border border-border/50">
-                <iframe
-                  src={`https://www.youtube.com/embed/${details.trailer.id}`}
-                  title={t('dialog.trailerTitle')}
-                  className="absolute inset-0 w-full h-full"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                />
-              </div>
-            </div>
-          )}
-
-          {/* Streaming links */}
-          {streamingLinks.length > 0 && (
-            <div>
-              <h3 className="text-xs font-medium text-muted-foreground mb-1.5">
-                {t('dialog.streaming')}
-              </h3>
-              <div className="flex flex-wrap gap-1.5">
-                {streamingLinks.map(link => (
-                  <Button
-                    key={link.url}
-                    variant="outline"
-                    size="sm"
-                    className="h-7 text-xs gap-1.5"
-                    onClick={() => {
-                      navigateToBrowser(link.url);
-                      onOpenChange(false);
-                    }}
-                  >
-                    {link.icon && <img src={link.icon} alt="" className="w-3.5 h-3.5" />}
-                    {link.site}
-                    <ExternalLink className="w-3 h-3 text-muted-foreground" />
-                  </Button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* AniList link — opens in the in-app browser */}
-          {details?.siteUrl && (
-            <div className="pt-1">
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-8 text-xs gap-1.5 w-full"
-                onClick={() => {
-                  navigateToBrowser(details.siteUrl);
-                  onOpenChange(false);
-                }}
-              >
-                {t('dialog.openOnAniList')}
-                <ExternalLink className="w-3 h-3" />
-              </Button>
-            </div>
-          )}
+          <AnimeInfoLinks
+            details={details}
+            streamingLinks={streamingLinks}
+            onNavigate={handleNavigate}
+          />
         </div>
       </DialogContent>
     </Dialog>

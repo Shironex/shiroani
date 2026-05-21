@@ -1,7 +1,9 @@
 import { create } from 'zustand';
 import { maybeDevtools } from '@/stores/utils/maybeDevtools';
-import type { AppStatsSnapshot } from '@shiroani/shared';
+import { createLogger, type AppStatsSnapshot } from '@shiroani/shared';
 import { IS_ELECTRON } from '@/lib/platform';
+
+const logger = createLogger('AppStats');
 
 const POLL_INTERVAL_MS = 60_000;
 
@@ -51,7 +53,7 @@ export const useAppStatsStore = create<AppStatsStore>()(
             'app-stats/loaded'
           );
         } catch (err) {
-          console.error('[app-stats] refresh failed', err);
+          logger.error('refresh failed', err);
           set({ isLoading: false }, undefined, 'app-stats/error');
         }
       },
@@ -66,7 +68,7 @@ export const useAppStatsStore = create<AppStatsStore>()(
             'app-stats/reset'
           );
         } catch (err) {
-          console.error('[app-stats] reset failed', err);
+          logger.error('reset failed', err);
           set({ isLoading: false }, undefined, 'app-stats/error');
         }
       },

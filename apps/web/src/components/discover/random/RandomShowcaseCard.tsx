@@ -14,7 +14,7 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { TooltipButton } from '@/components/ui/tooltip-button';
 import { PillTag } from '@/components/ui/pill-tag';
-import { formatScore } from '@/lib/anime-utils';
+import { formatRawScore } from '@/lib/anime-utils';
 import type { DiscoverMedia } from '@/stores/useDiscoverStore';
 import { buildShowcaseMeta } from './random-utils';
 
@@ -162,7 +162,7 @@ export const RandomShowcaseCard = memo(function RandomShowcaseCard({
               )}
             >
               <Star className="w-3 h-3 fill-current" strokeWidth={0} />
-              <span className="tabular-nums">{formatScore(media.averageScore)}</span>
+              <span className="tabular-nums">{formatRawScore(media.averageScore)}</span>
             </div>
           )}
         </div>

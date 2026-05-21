@@ -1,13 +1,15 @@
-import { useMemo } from 'react';
+import { memo, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { getDayNamesShort } from '@/lib/constants';
+import { handleImageError } from '@/lib/image-utils';
 import { Tv } from 'lucide-react';
 import { formatTime, getAnimeTitle, getCoverUrl, type SlotStatus } from './schedule-utils';
 import { ScheduleDayColumn } from './ScheduleDayColumn';
 import { SubscribeBellButton } from './SubscribeBellButton';
 import { useWeekData } from '@/hooks/useWeekData';
 import { useNowSeconds } from '@/hooks/useNowSeconds';
+import { useActivatable } from '@/hooks/useActivatable';
 import type { AiringAnime } from '@shiroani/shared';
 
 export interface WeeklyViewProps {
@@ -105,7 +107,7 @@ interface WeekEventCardProps {
   episodeLabel: string;
 }
 
-function WeekEventCard({
+const WeekEventCard = memo(function WeekEventCard({
   anime,
   status,
   membership,
@@ -117,6 +119,9 @@ function WeekEventCard({
   const coverUrl = getCoverUrl(anime.media);
   const isLive = status === 'live';
   const isDone = status === 'done';
+  const activatable = useActivatable(onClick ? () => onClick(anime) : undefined, {
+    inactiveRole: 'article',
+  });
 
   const borderColor = isLive
     ? 'border-l-primary'
@@ -137,20 +142,8 @@ function WeekEventCard({
 
   return (
     <div
-      role={onClick ? 'button' : 'article'}
-      tabIndex={onClick ? 0 : undefined}
+      {...activatable}
       aria-label={title}
-      onClick={onClick ? () => onClick(anime) : undefined}
-      onKeyDown={
-        onClick
-          ? e => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                onClick(anime);
-              }
-            }
-          : undefined
-      }
       className={cn(
         'group relative rounded-lg border border-l-[3px] pl-2 pr-2.5 py-2 bg-card/40',
         borderColor,
@@ -175,9 +168,7 @@ function WeekEventCard({
               loading="lazy"
               decoding="async"
               draggable={false}
-              onError={e => {
-                e.currentTarget.style.display = 'none';
-              }}
+              onError={handleImageError}
               className={cn('w-full h-full object-cover', isDone && 'grayscale-[30%]')}
             />
           ) : (
@@ -216,4 +207,4 @@ function WeekEventCard({
       />
     </div>
   );
-}
+});

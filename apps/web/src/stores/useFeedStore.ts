@@ -6,7 +6,7 @@ import {
   createSocketActions,
   createSocketListeners,
 } from '@/stores/utils/createSocketStore';
-import { createMemoizedSelector } from '@/stores/utils/createMemoizedSelector';
+import { createFilteredListSelector } from '@/stores/utils/createFilteredListSelector';
 import {
   type FeedItem,
   type FeedSource,
@@ -437,26 +437,22 @@ export const useFeedStore = create<FeedStore>()(
  * Provides instant client-side filtering for cached items while the server
  * re-fetches with the new filters.
  */
-export const getFilteredItems = createMemoizedSelector(
-  (
-    state: Pick<FeedState, 'items' | 'categoryFilter' | 'languageFilter' | 'sourceFilter'>
-  ): FeedItem[] => {
-    const { items, categoryFilter, languageFilter, sourceFilter } = state;
+type FeedFilterState = Pick<
+  FeedState,
+  'items' | 'categoryFilter' | 'languageFilter' | 'sourceFilter'
+>;
 
-    let filtered = items;
-
-    if (categoryFilter !== 'all') {
-      filtered = filtered.filter(item => item.sourceCategory === categoryFilter);
+export const getFilteredItems = createFilteredListSelector<FeedItem, FeedFilterState>({
+  selectItems: state => state.items,
+  matchesFilter: ({ categoryFilter, languageFilter, sourceFilter }) => {
+    // When no filter is active, return null so the source array reference is
+    // preserved untouched (instant client-side filtering, stable identity).
+    if (categoryFilter === 'all' && languageFilter === 'all' && sourceFilter === null) {
+      return null;
     }
-
-    if (languageFilter !== 'all') {
-      filtered = filtered.filter(item => item.sourceLanguage === languageFilter);
-    }
-
-    if (sourceFilter !== null) {
-      filtered = filtered.filter(item => item.feedSourceId === sourceFilter);
-    }
-
-    return filtered;
-  }
-);
+    return item =>
+      (categoryFilter === 'all' || item.sourceCategory === categoryFilter) &&
+      (languageFilter === 'all' || item.sourceLanguage === languageFilter) &&
+      (sourceFilter === null || item.feedSourceId === sourceFilter);
+  },
+});

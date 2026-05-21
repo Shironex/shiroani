@@ -21,7 +21,7 @@ export function useElectronSettings<T extends object>(
   const [data, setData] = useState<T>(options.defaultValue);
   const [loaded, setLoaded] = useState(false);
   const [saved, setSaved] = useState(false);
-  const savedTimerRef = useRef<ReturnType<typeof setTimeout>>();
+  const savedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Stable refs for options to avoid re-running the effect
   const loadRef = useRef(options.load);

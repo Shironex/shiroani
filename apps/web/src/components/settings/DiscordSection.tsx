@@ -3,11 +3,16 @@ import { useTranslation } from 'react-i18next';
 import { MessageCircle, Check, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
-import { SettingsCard, SettingsToggleRow } from '@/components/settings/SettingsCard';
+import {
+  SettingsCard,
+  SettingsInfoCallout,
+  SettingsToggleRow,
+} from '@/components/settings/SettingsCard';
 import { DiscordPreview } from '@/components/settings/DiscordPreview';
 import { DiscordTemplateEditor } from '@/components/settings/DiscordTemplateEditor';
 import { substitutePreview } from '@/lib/discord-utils';
 import { tDynamic } from '@/lib/i18n';
+import { useMountedRef } from '@/hooks/useMountedRef';
 import type {
   DiscordRpcSettings,
   DiscordActivityType,
@@ -58,16 +63,16 @@ export function DiscordSection() {
   const [settings, setSettings] = useState<DiscordRpcSettings | null>(null);
   const [saved, setSaved] = useState(false);
   const [selectedActivity, setSelectedActivity] = useState<DiscordActivityType>('watching');
+  const isMounted = useMountedRef();
 
   useEffect(() => {
-    let mounted = true;
     // Resolve sentinel-prefixed default fields the moment we hydrate so the
     // editor inputs show real copy in the active UI language. Saved user
     // overrides are passed through unchanged. The sentinels reference keys
     // inside the `settings` namespace, so we look them up there.
     const translate = (key: string) => tDynamic(i18n, `settings:${key}`);
     window.electronAPI?.discordRpc?.getSettings().then((s: DiscordRpcSettings) => {
-      if (!mounted) return;
+      if (!isMounted()) return;
       if (s) {
         const merged: DiscordPresenceTemplates = s.templates
           ? { ...DEFAULT_DISCORD_TEMPLATES, ...s.templates }
@@ -79,10 +84,7 @@ export function DiscordSection() {
         });
       }
     });
-    return () => {
-      mounted = false;
-    };
-  }, [i18n]);
+  }, [i18n, isMounted]);
 
   const updateField = useCallback(
     <K extends keyof DiscordRpcSettings>(key: K, value: DiscordRpcSettings[K]) => {
@@ -231,10 +233,12 @@ export function DiscordSection() {
   );
 
   const infoCallout = (
-    <div className="flex items-start gap-3 rounded-xl border border-border-glass bg-background/40 px-4 py-3 text-[11.5px] leading-relaxed text-muted-foreground">
-      <Info className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground/80" />
-      <p>{t('discord.info')}</p>
-    </div>
+    <SettingsInfoCallout
+      icon={Info}
+      iconClassName="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground/80"
+    >
+      {t('discord.info')}
+    </SettingsInfoCallout>
   );
 
   if (showCustomTemplateColumns) {

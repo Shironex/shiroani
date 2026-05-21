@@ -4,18 +4,12 @@ import {
   getAnilistStatusLabel,
   getAnilistSeasonLabel,
 } from '@/lib/constants';
+import { stripHtml } from '@/lib/html-text';
+
+export { stripHtml };
 
 export function getTitle(t: DiscoverMedia['title']): string {
   return t.english || t.romaji || t.native || '?';
-}
-
-export function stripHtml(s?: string): string {
-  if (!s) return '';
-  return s
-    .replace(/<br\s*\/?>(\s*)/gi, '\n')
-    .replace(/<[^>]+>/g, '')
-    .replace(/\n{3,}/g, '\n\n')
-    .trim();
 }
 
 export interface ShowcaseMeta {

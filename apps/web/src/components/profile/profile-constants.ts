@@ -11,7 +11,8 @@ export function formatDaysLabel(minutes: number): string {
   return minutes / 60 / 24 >= 1 ? 'dni' : 'godzin';
 }
 
-export function formatScore(score: number): string {
+/** Format an already-0-10 mean score for display (e.g. profile statistics). */
+export function formatScoreOutOf10(score: number): string {
   return score > 0 ? score.toFixed(1) : '—';
 }
 
@@ -47,23 +48,4 @@ export const STATUS_LABELS: Record<string, string> = {
   DROPPED: 'Porzucone',
   PAUSED: 'Wstrzymane',
   REPEATING: 'Powtarzam',
-};
-
-export const STATUS_COLORS: Record<string, string> = {
-  CURRENT: 'var(--status-success)',
-  COMPLETED: 'var(--primary)',
-  PLANNING: 'var(--status-info)',
-  DROPPED: 'var(--destructive)',
-  PAUSED: 'var(--status-warning)',
-  REPEATING: 'var(--status-info)',
-};
-
-export const FORMAT_LABELS: Record<string, string> = {
-  TV: 'TV',
-  TV_SHORT: 'Krótki serial TV',
-  MOVIE: 'Film',
-  SPECIAL: 'Odcinek specjalny',
-  OVA: 'OVA',
-  ONA: 'ONA',
-  MUSIC: 'Muzyka',
 };

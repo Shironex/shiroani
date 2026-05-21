@@ -3,19 +3,16 @@ import { useTranslation } from 'react-i18next';
 import { Check, Film, Plus, Star } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { PillTag } from '@/components/ui/pill-tag';
-import { formatScore } from '@/lib/anime-utils';
+import { formatRawScore } from '@/lib/anime-utils';
 import { getAnilistFormatLabel, getAnilistStatusLabel } from '@/lib/constants';
 import type { DiscoverMedia } from '@/stores/useDiscoverStore';
+import { getTitle } from './random/random-utils';
 
 interface DiscoverCardProps {
   media: DiscoverMedia;
   inLibrary?: boolean;
   onClick?: () => void;
   onAddToLibrary?: (media: DiscoverMedia) => void;
-}
-
-function getTitle(title: DiscoverMedia['title']): string {
-  return title.english || title.romaji || title.native || '?';
 }
 
 const DiscoverCard = memo(function DiscoverCard({
@@ -123,7 +120,7 @@ const DiscoverCard = memo(function DiscoverCard({
             )}
           >
             <Star className="w-3 h-3 fill-current" strokeWidth={0} />
-            <span className="tabular-nums">{formatScore(media.averageScore)}</span>
+            <span className="tabular-nums">{formatRawScore(media.averageScore)}</span>
           </div>
         )}
 

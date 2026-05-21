@@ -4,6 +4,7 @@ import { Languages, Settings, Sparkles, UserRound } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import {
   SettingsCard,
+  SettingsInfoCallout,
   SettingsRow,
   SettingsRowLabel,
   SettingsToggleRow,
@@ -18,6 +19,7 @@ import {
 import { useSettingsStore } from '@/stores/useSettingsStore';
 import { persistLanguage } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
+import { useMountedRef } from '@/hooks/useMountedRef';
 
 export function GeneralSection() {
   const { t, i18n } = useTranslation('settings');
@@ -26,22 +28,19 @@ export function GeneralSection() {
   const [loaded, setLoaded] = useState(false);
   const displayName = useSettingsStore(s => s.displayName);
   const setDisplayName = useSettingsStore(s => s.setDisplayName);
+  const isMounted = useMountedRef();
 
   useEffect(() => {
-    let mounted = true;
     Promise.all([
       window.electronAPI?.app?.getAutoLaunch(),
       window.electronAPI?.store?.get<boolean>(FEED_STARTUP_REFRESH_SETTING_KEY),
     ]).then(([enabled, startupRefresh]) => {
-      if (!mounted) return;
+      if (!isMounted()) return;
       setAutoLaunch(enabled ?? false);
       setFeedRefreshOnStartup(startupRefresh ?? DEFAULT_FEED_STARTUP_REFRESH);
       setLoaded(true);
     });
-    return () => {
-      mounted = false;
-    };
-  }, []);
+  }, [isMounted]);
 
   const handleAutoLaunchChange = async (enabled: boolean) => {
     setAutoLaunch(enabled);
@@ -136,16 +135,18 @@ export function GeneralSection() {
       </SettingsCard>
 
       {/* Info callout matching the mock's .info-box */}
-      <div className="flex items-center gap-3 rounded-xl border border-border-glass bg-background/40 px-4 py-3 text-[11.5px] leading-relaxed text-muted-foreground">
-        <Sparkles className="w-[18px] h-[18px] flex-shrink-0 text-[oklch(0.8_0.14_70)]" />
-        <span>
-          <Trans
-            i18nKey="general.restartCallout"
-            t={t}
-            components={{ 1: <b className="font-semibold text-foreground" /> }}
-          />
-        </span>
-      </div>
+      <SettingsInfoCallout
+        icon={Sparkles}
+        iconClassName="w-[18px] h-[18px] flex-shrink-0 text-[oklch(0.8_0.14_70)]"
+        align="center"
+        as="span"
+      >
+        <Trans
+          i18nKey="general.restartCallout"
+          t={t}
+          components={{ 1: <b className="font-semibold text-foreground" /> }}
+        />
+      </SettingsInfoCallout>
     </div>
   );
 }

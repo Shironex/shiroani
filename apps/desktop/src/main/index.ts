@@ -14,6 +14,7 @@ import { NestLoggerAdapter } from '../modules/kernel/nest-logger';
 import { LOCALHOST, setLoggerContext, makeCorrelationId } from '@shiroani/shared';
 import { setBackendPort } from './backend-port';
 import { BrowserManager } from './browser/browser-manager';
+import { buildChromeUserAgent } from './user-agent';
 import { registerBackgroundProtocol } from './ipc/background';
 import { registerMascotSpriteProtocol } from './ipc/sprite';
 import {
@@ -54,14 +55,7 @@ import { appStatsTracker } from './stats/app-stats-tracker';
 // session.setUserAgent and fall back to this default, which Cloudflare's
 // Turnstile fingerprinting catches. Must run before any webContents is
 // created (top-level module load is the right spot).
-const chromeVersion = process.versions.chrome || '134.0.0.0';
-const osSlug =
-  process.platform === 'darwin'
-    ? 'Macintosh; Intel Mac OS X 10_15_7'
-    : process.platform === 'linux'
-      ? 'X11; Linux x86_64'
-      : 'Windows NT 10.0; Win64; x64';
-app.userAgentFallback = `Mozilla/5.0 (${osSlug}) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/${chromeVersion} Safari/537.36`;
+app.userAgentFallback = buildChromeUserAgent();
 
 // Register custom protocol schemes for serving user-supplied assets from
 // `userData`. Both schemes share the same privilege envelope so the renderer
@@ -118,7 +112,7 @@ if (process.platform === 'win32') {
 if (app.isPackaged) {
   const gotSingleInstanceLock = app.requestSingleInstanceLock();
   if (!gotSingleInstanceLock) {
-    console.warn('Another ShiroAni instance is already running; quitting this one.');
+    logger.warn('Another ShiroAni instance is already running; quitting this one.');
     app.exit(0);
   }
 

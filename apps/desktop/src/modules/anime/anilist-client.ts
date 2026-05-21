@@ -31,6 +31,7 @@ export class AniListClient {
   private readonly endpoint = 'https://graphql.anilist.co';
   private readonly maxRetries = 3;
   private readonly defaultRetryDelayMs = 2000;
+  private readonly requestTimeoutMs = 15_000;
   private readonly cache = new LruTtlCache<string, unknown>(200, DEFAULT_CACHE_TTL_MS);
 
   constructor() {
@@ -96,7 +97,7 @@ export class AniListClient {
             Accept: 'application/json',
           },
           body: JSON.stringify({ query, variables }),
-          signal: AbortSignal.timeout(15_000),
+          signal: AbortSignal.timeout(this.requestTimeoutMs),
         });
 
         // Handle rate limiting (429)

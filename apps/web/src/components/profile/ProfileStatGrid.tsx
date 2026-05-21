@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import type { UserProfile } from '@shiroani/shared';
-import { formatScore } from './profile-constants';
+import { formatScoreOutOf10 } from './profile-constants';
 
 interface ProfileStatGridProps {
   profile: UserProfile;
@@ -33,7 +33,7 @@ export function ProfileStatGrid({ profile }: ProfileStatGridProps) {
       <StatCard label={t('stats.planning')} value={planning} sub={t('stats.planningSub')} />
       <StatCard
         label={t('stats.meanScore')}
-        value={formatScore(stats.meanScore)}
+        value={formatScoreOutOf10(stats.meanScore)}
         sub={t('stats.meanScoreSub')}
         tone="gold"
       />

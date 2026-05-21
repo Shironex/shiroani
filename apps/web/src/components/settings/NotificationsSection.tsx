@@ -4,12 +4,14 @@ import { Bell, X, BellRing, Info } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import {
   SettingsCard,
+  SettingsInfoCallout,
   SettingsSelectRow,
   SettingsToggleRow,
 } from '@/components/settings/SettingsCard';
 import { TooltipButton } from '@/components/ui/tooltip-button';
 import { useNotificationStore } from '@/stores/useNotificationStore';
 import { IS_WINDOWS } from '@/lib/platform';
+import { useMountedRef } from '@/hooks/useMountedRef';
 import type { NotificationSettings } from '@shiroani/shared';
 
 interface NotifFormData {
@@ -50,20 +52,18 @@ export function NotificationsSection() {
   const { t } = useTranslation('settings');
   const [data, setData] = useState<NotifFormData>(defaultNotifData);
   const [loaded, setLoaded] = useState(false);
+  const isMounted = useMountedRef();
 
   // Load settings from main process on mount
   useEffect(() => {
-    let mounted = true;
     const req = window.electronAPI?.notifications?.getSettings();
     if (!req) {
       setLoaded(true);
-      return () => {
-        mounted = false;
-      };
+      return;
     }
     req
       .then(settings => {
-        if (!mounted || !settings) return;
+        if (!isMounted() || !settings) return;
         setData({
           enabled: settings.enabled,
           leadTime: String(settings.leadTimeMinutes),
@@ -75,12 +75,9 @@ export function NotificationsSection() {
       })
       .catch(() => {})
       .finally(() => {
-        if (mounted) setLoaded(true);
+        if (isMounted()) setLoaded(true);
       });
-    return () => {
-      mounted = false;
-    };
-  }, []);
+  }, [isMounted]);
 
   const updateAndSave = useCallback((partial: Partial<NotifFormData>) => {
     setData(prev => {
@@ -193,16 +190,16 @@ export function NotificationsSection() {
 
       {/* Windows scheduled notifications info */}
       {IS_WINDOWS && data.enabled && (
-        <div className="flex items-start gap-3 rounded-xl border border-border-glass bg-background/40 px-4 py-3 text-[11.5px] leading-relaxed text-muted-foreground">
-          <Info className="w-4 h-4 text-muted-foreground/80 mt-0.5 shrink-0" />
-          <p>
-            <Trans
-              i18nKey="notifications.windowsInfo"
-              ns="settings"
-              components={{ 1: <b className="font-semibold text-foreground" /> }}
-            />
-          </p>
-        </div>
+        <SettingsInfoCallout
+          icon={Info}
+          iconClassName="w-4 h-4 text-muted-foreground/80 mt-0.5 shrink-0"
+        >
+          <Trans
+            i18nKey="notifications.windowsInfo"
+            ns="settings"
+            components={{ 1: <b className="font-semibold text-foreground" /> }}
+          />
+        </SettingsInfoCallout>
       )}
 
       {/* Subscriptions list */}

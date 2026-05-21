@@ -10,7 +10,7 @@ import {
   useAppStatsStore,
 } from '@/stores/useAppStatsStore';
 import { daysSinceCreated } from '@/lib/stats-conversions';
-import { formatDays, formatDaysLabel, formatScore } from './profile-constants';
+import { formatDays, formatDaysLabel, formatScoreOutOf10 } from './profile-constants';
 
 interface ProfileSidebarProps {
   profile: UserProfile;
@@ -147,7 +147,7 @@ export function ProfileSidebar({
         />
         <SideStat
           label={t('sidebar.stats.meanScore')}
-          value={formatScore(stats.meanScore)}
+          value={formatScoreOutOf10(stats.meanScore)}
           sub="/10"
         />
       </div>

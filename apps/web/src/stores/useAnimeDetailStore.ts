@@ -123,6 +123,6 @@ export const useAnimeDetailStore = create<AnimeDetailStore>()(
         },
       };
     },
-    { name: 'animeDetail' }
+    { name: 'anime-detail' }
   )
 );

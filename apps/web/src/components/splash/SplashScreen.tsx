@@ -4,6 +4,7 @@ import { cn } from '@/lib/utils';
 import { IS_ELECTRON } from '@/lib/platform';
 import { KanjiWatermark } from '@/components/shared/KanjiWatermark';
 import { useUpdateStore } from '@/stores/useUpdateStore';
+import { useAppVersion } from '@/hooks/useAppVersion';
 import { SplashHero, type SplashVariant } from './SplashHero';
 import { SplashFooter, type SplashStatusText } from './SplashFooter';
 
@@ -61,7 +62,7 @@ export function SplashScreen({ ready, error, onDismissed }: SplashScreenProps) {
   const [isDismissing, setIsDismissing] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
   const [messageIndex, setMessageIndex] = useState(randomStartIndex);
-  const [version, setVersion] = useState<string | null>(null);
+  const version = useAppVersion<string | null>(null);
   const hasDismissedRef = useRef(false);
 
   const isInstalling = useUpdateStore(s => s.isInstalling);
@@ -102,16 +103,6 @@ export function SplashScreen({ ready, error, onDismissed }: SplashScreenProps) {
       if (interval) clearInterval(interval);
     };
   }, [variant]);
-
-  useEffect(() => {
-    let mounted = true;
-    window.electronAPI?.app?.getVersion().then(v => {
-      if (mounted && v) setVersion(v);
-    });
-    return () => {
-      mounted = false;
-    };
-  }, []);
 
   useEffect(() => {
     if (!shouldDismiss || hasDismissedRef.current) return;

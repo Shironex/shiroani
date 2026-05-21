@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { useTranslation, Trans } from 'react-i18next';
 import { Download, Loader2, CheckCircle, AlertCircle, Save } from 'lucide-react';
 import {
@@ -39,6 +39,9 @@ const EXPORT_FILENAME: Record<string, string> = {
 export function ExportDialog({ open, onOpenChange, type, selectedIds }: ExportDialogProps) {
   const { t } = useTranslation('nav');
   const { state, transition, reset } = useDialogStateMachine<ExportState>({ step: 'idle' });
+  // Guards the auto-trigger against StrictMode's double-mount so the export
+  // fires exactly once per open session. Reset when the dialog closes.
+  const autoTriggeredRef = useRef(false);
 
   const handleExport = useCallback(async () => {
     transition({ step: 'loading' });
@@ -95,21 +98,24 @@ export function ExportDialog({ open, onOpenChange, type, selectedIds }: ExportDi
     [onOpenChange, reset]
   );
 
-  // Trigger export when dialog opens
-  const handleDialogOpen = useCallback(() => {
-    if (state.step === 'idle') {
+  // Auto-start export when opened. Single trigger path (the previous
+  // render-phase call + onOpenAutoFocus duplicated this) moved into an effect
+  // so the async side-effect isn't run during render; the ref guard keeps it
+  // single-fire under StrictMode's double mount.
+  useEffect(() => {
+    if (!open) {
+      autoTriggeredRef.current = false;
+      return;
+    }
+    if (state.step === 'idle' && !autoTriggeredRef.current) {
+      autoTriggeredRef.current = true;
       handleExport();
     }
-  }, [state.step, handleExport]);
-
-  // Auto-start export when opened
-  if (open && state.step === 'idle') {
-    handleExport();
-  }
+  }, [open, state.step, handleExport]);
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent onOpenAutoFocus={handleDialogOpen}>
+      <DialogContent>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Download className="w-5 h-5 text-primary" />

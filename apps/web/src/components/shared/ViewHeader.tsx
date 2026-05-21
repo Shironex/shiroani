@@ -5,12 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
 import { TooltipButton } from '@/components/ui/tooltip-button';
-import { FilterTabBar } from '@/components/shared/FilterTabBar';
-
-interface FilterOption<T extends string = string> {
-  value: T;
-  label: string;
-}
+import { FilterTabBar, type FilterTab } from '@/components/shared/FilterTabBar';
 
 interface ViewHeaderProps<T extends string = string> {
   icon: LucideIcon;
@@ -22,7 +17,7 @@ interface ViewHeaderProps<T extends string = string> {
   onSearchChange?: (query: string) => void;
   searchPlaceholder?: string;
   /** Filter tabs — when omitted, the tab row is not rendered. */
-  filters?: FilterOption<T>[];
+  filters?: FilterTab<T>[];
   activeFilter?: T;
   onFilterChange?: (filter: T) => void;
   viewMode?: 'grid' | 'list';

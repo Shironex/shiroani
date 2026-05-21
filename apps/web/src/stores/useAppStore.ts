@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { maybeDevtools } from '@/stores/utils/maybeDevtools';
 import { IS_ELECTRON } from '@/lib/platform';
-import { updateAnimePresence } from '@/lib/anime-detection';
+import { updateAnimePresence, setActiveViewProvider } from '@/lib/anime-detection';
 import { useBrowserStore } from '@/stores/useBrowserStore';
 import { useLibraryStore } from '@/stores/useLibraryStore';
 
@@ -44,7 +44,7 @@ export const useAppStore = create<AppStore>()(
             // When navigating back to browser, restore anime-specific presence
             const activePaneId = useBrowserStore.getState().activePaneId;
             if (activePaneId) {
-              updateAnimePresence(activePaneId);
+              updateAnimePresence(activePaneId, view);
             } else {
               window.electronAPI.discordRpc.updatePresence({ view });
             }
@@ -67,3 +67,7 @@ export const useAppStore = create<AppStore>()(
     { name: 'app' }
   )
 );
+
+// Give the anime-detection lib a way to read the active view without importing
+// this store (which would re-create the import cycle this indirection removes).
+setActiveViewProvider(() => useAppStore.getState().activeView);

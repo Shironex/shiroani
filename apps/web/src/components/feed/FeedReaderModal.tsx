@@ -2,6 +2,7 @@ import { memo, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, ExternalLink, Share2, Bookmark } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { handleImageError } from '@/lib/image-utils';
 import type { FeedItem } from '@shiroani/shared';
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -9,6 +10,7 @@ import { TooltipButton } from '@/components/ui/tooltip-button';
 import { PillTag } from '@/components/ui/pill-tag';
 import { hostFromUrl } from '@/lib/url-utils';
 import { useFeedBookmarksStore } from '@/stores/useFeedBookmarksStore';
+import { htmlToParagraphs } from '@/lib/html-text';
 import { useCategoryLabels } from './feed-constants';
 import { useTimeAgo } from './useTimeAgo';
 
@@ -27,50 +29,6 @@ function getInitials(name: string): string {
     .map(s => s.charAt(0).toUpperCase())
     .slice(0, 2)
     .join('');
-}
-
-/**
- * Strip HTML tags and decode basic entities so RSS descriptions are safe to
- * render as plain text. RSS `description` fields can contain untrusted HTML —
- * the web bundle does not ship an HTML sanitiser, so we purposefully avoid
- * `dangerouslySetInnerHTML` and turn the markup into prose + paragraph breaks.
- */
-function descriptionToParagraphs(html: string): string[] {
-  // Normalise common block breaks to double newlines
-  const withBreaks = html
-    .replace(/<br\s*\/?>/gi, '\n')
-    .replace(/<\/(p|div|h[1-6]|li|blockquote)>/gi, '\n\n')
-    .replace(/<li[^>]*>/gi, '• ');
-
-  // Strip remaining tags
-  const stripped = withBreaks.replace(/<[^>]+>/g, '');
-
-  // Decode a small set of common entities
-  const decoded = stripped
-    .replace(/&nbsp;/g, ' ')
-    .replace(/&amp;/g, '&')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&quot;/g, '"')
-    .replace(/&#039;/g, "'")
-    .replace(/&mdash;/g, '—')
-    .replace(/&ndash;/g, '–')
-    .replace(/&hellip;/g, '…')
-    .replace(/&rsquo;/g, '’')
-    .replace(/&lsquo;/g, '‘')
-    .replace(/&ldquo;/g, '“')
-    .replace(/&rdquo;/g, '”');
-
-  // Split into paragraphs and drop empties
-  return decoded
-    .split(/\n{2,}/)
-    .map(p =>
-      p
-        .replace(/[ \t]+\n/g, '\n')
-        .replace(/\s+/g, ' ')
-        .trim()
-    )
-    .filter(Boolean);
 }
 
 /**
@@ -101,7 +59,7 @@ export const FeedReaderModal = memo(function FeedReaderModal({
   // Preserve legacy fallback of rendering the raw URL when parsing fails.
   const domain = useMemo(() => (item ? (hostFromUrl(item.url) ?? item.url) : ''), [item]);
   const paragraphs = useMemo(
-    () => (item?.description ? descriptionToParagraphs(item.description) : []),
+    () => (item?.description ? htmlToParagraphs(item.description) : []),
     [item?.description]
   );
 
@@ -222,9 +180,7 @@ export const FeedReaderModal = memo(function FeedReaderModal({
                 loading="lazy"
                 decoding="async"
                 draggable={false}
-                onError={e => {
-                  e.currentTarget.style.display = 'none';
-                }}
+                onError={handleImageError}
                 className="relative w-full h-full object-cover"
               />
             )}
@@ -355,9 +311,7 @@ export const FeedReaderModal = memo(function FeedReaderModal({
                               loading="lazy"
                               decoding="async"
                               draggable={false}
-                              onError={e => {
-                                e.currentTarget.style.display = 'none';
-                              }}
+                              onError={handleImageError}
                               className="w-full h-full object-cover"
                             />
                           )}

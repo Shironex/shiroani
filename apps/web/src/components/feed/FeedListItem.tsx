@@ -1,7 +1,8 @@
-import { memo, useCallback } from 'react';
+import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Rss, ExternalLink } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { handleImageError } from '@/lib/image-utils';
 import type { FeedItem } from '@shiroani/shared';
 import { PillTag } from '@/components/ui/pill-tag';
 import { useCategoryLabels } from './feed-constants';
@@ -15,10 +16,6 @@ interface FeedListItemProps {
 }
 
 function FeedThumb({ src, alt }: { src?: string; alt: string }) {
-  const handleError = useCallback((e: React.SyntheticEvent<HTMLImageElement>) => {
-    e.currentTarget.style.display = 'none';
-  }, []);
-
   return (
     <div
       className={cn(
@@ -41,7 +38,7 @@ function FeedThumb({ src, alt }: { src?: string; alt: string }) {
           loading="lazy"
           decoding="async"
           draggable={false}
-          onError={handleError}
+          onError={handleImageError}
           className="relative w-full h-full object-cover"
         />
       )}

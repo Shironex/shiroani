@@ -3,6 +3,7 @@ import { maybeDevtools } from '@/stores/utils/maybeDevtools';
 import { createLogger } from '@shiroani/shared';
 import { IS_ELECTRON } from '@/lib/platform';
 import { electronStoreGet, createDebouncedPersist } from '@/lib/electron-store';
+import { reconcileOrder } from '@/lib/nav-items';
 import { arrayMove } from '@dnd-kit/sortable';
 
 const logger = createLogger('NewTab');
@@ -65,30 +66,11 @@ interface NewTabActions {
 type NewTabStore = NewTabState & NewTabActions;
 
 /**
- * Reconcile a (possibly stale) saved order against the current panel set:
- * keep the saved order, drop ids no longer known, and append any panels the
- * saved order is missing (so panels added in a future version never vanish).
- * The result always contains every panel id exactly once.
+ * Reconcile a (possibly stale) saved order against the current panel set so
+ * panels added in a future version never vanish. See {@link reconcileOrder}.
  */
 function sanitizePanelOrder(saved: unknown): NewTabPanelId[] {
-  const known = new Set<NewTabPanelId>(DEFAULT_PANEL_ORDER);
-  const seen = new Set<NewTabPanelId>();
-  const result: NewTabPanelId[] = [];
-
-  if (Array.isArray(saved)) {
-    for (const id of saved) {
-      if (known.has(id as NewTabPanelId) && !seen.has(id as NewTabPanelId)) {
-        seen.add(id as NewTabPanelId);
-        result.push(id as NewTabPanelId);
-      }
-    }
-  }
-
-  for (const id of DEFAULT_PANEL_ORDER) {
-    if (!seen.has(id)) result.push(id);
-  }
-
-  return result;
+  return reconcileOrder(saved, DEFAULT_PANEL_ORDER);
 }
 
 function clampAiringCount(value: number): number {
@@ -207,6 +189,6 @@ export const useNewTabStore = create<NewTabStore>()(
         }
       },
     }),
-    { name: 'newtab' }
+    { name: 'new-tab' }
   )
 );

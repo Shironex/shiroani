@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { ArrowRight, ArrowLeft, PartyPopper } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { IS_ELECTRON } from '@/lib/platform';
+import { isEditableTarget } from '@/lib/is-editable-target';
 import { Button } from '@/components/ui/button';
 import { TitleBar } from '@/components/shared/TitleBar';
 import { useOnboardingStore } from '@/stores/useOnboardingStore';
@@ -95,13 +96,7 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       // Don't hijack keys while typing in inputs / textareas.
-      const target = e.target as HTMLElement | null;
-      if (
-        target &&
-        (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)
-      ) {
-        return;
-      }
+      if (isEditableTarget(e.target)) return;
 
       if (e.key === 'ArrowRight' || e.key === 'Enter') {
         if (isLast) finish();

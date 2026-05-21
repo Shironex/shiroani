@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useDiscoverStore, type DiscoverMedia } from '@/stores/useDiscoverStore';
+import { isEditableTarget } from '@/lib/is-editable-target';
 
 export interface RandomCarousel {
   index: number;
@@ -43,7 +44,7 @@ export function useRandomCarousel(pool: DiscoverMedia[]): RandomCarousel {
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      if (isEditableTarget(e.target)) return;
       if (e.key === 'ArrowLeft') prev();
       else if (e.key === 'ArrowRight') next();
     };

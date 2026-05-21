@@ -32,7 +32,7 @@ const BrowserWebviewInner = function BrowserWebview({
 
   return (
     <webview
-      ref={webviewRef as any}
+      ref={webviewRef as React.Ref<HTMLElement>}
       src={initialUrl}
       partition="persist:browser"
       allowpopups=""

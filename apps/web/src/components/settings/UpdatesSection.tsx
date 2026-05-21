@@ -2,15 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useTranslation, Trans } from 'react-i18next';
 import type { i18n as I18nInstance } from 'i18next';
 import { tDynamic } from '@/lib/i18n';
-import {
-  AlertTriangle,
-  Download,
-  ExternalLink,
-  Loader2,
-  Package,
-  RefreshCw,
-  Sparkles,
-} from 'lucide-react';
+import { AlertTriangle, Download, ExternalLink, Loader2, RefreshCw, Sparkles } from 'lucide-react';
 import { GITHUB_RELEASES_URL, UPDATE_ERROR_RELEASE_PENDING } from '@shiroani/shared';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -321,8 +313,6 @@ export function UpdatesSection({ version }: UpdatesSectionProps) {
                 aria-label={t('updates.downloadProgressAria')}
               />
             )}
-
-            <Package className="hidden" />
           </div>
         )}
       </SettingsCard>

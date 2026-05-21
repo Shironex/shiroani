@@ -31,7 +31,7 @@ export interface PillTagProps
   extends React.HTMLAttributes<HTMLSpanElement>, VariantProps<typeof pillTagVariants> {}
 
 export function PillTag({ className, variant, ...props }: PillTagProps) {
-  return <span className={cn(pillTagVariants({ variant }), className)} {...props} />;
+  return <span className={cn(pillTagVariants({ variant, className }))} {...props} />;
 }
 
 export { pillTagVariants };

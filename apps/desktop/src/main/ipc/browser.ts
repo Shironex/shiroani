@@ -82,9 +82,9 @@ export function registerBrowserHandlers(
     async (_event, enabled) => {
       logger.debug(`browser:toggle-adblock invoked, enabled=${enabled}`);
       if (enabled) {
-        await browserManager.enableAdblock();
+        browserManager.enableAdblock();
       } else {
-        await browserManager.disableAdblock();
+        browserManager.disableAdblock();
       }
     },
     { schema: browserToggleAdblockSchema }
