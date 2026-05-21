@@ -1,6 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { TFunction } from 'i18next';
 import {
   Copy,
   Trash2,
@@ -13,15 +11,6 @@ import {
   ChevronRight,
   AlertCircle,
 } from 'lucide-react';
-import {
-  getLogBuffer,
-  subscribeToLogBuffer,
-  clearLogBuffer,
-  getLogLevel,
-  setLogLevel,
-  LogLevel,
-  type LogEntry,
-} from '@shiroani/shared';
 import {
   Dialog,
   DialogContent,
@@ -40,20 +29,19 @@ import {
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import { formatBytes } from '@/lib/format-bytes';
+import {
+  type LevelFilter,
+  type LogLevelName,
+  FILE_ENTRY_LIMIT,
+  formatFileDate,
+  prettyPrintData,
+} from './dev-logs-utils';
+import { useLogSource } from './useLogSource';
+import { useStickyTail } from './useStickyTail';
 
 interface DevLogsDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-}
-
-type LogLevelName = 'error' | 'warn' | 'info' | 'debug';
-type SourceMode = 'buffer' | 'today' | 'archive';
-type LevelFilter = 'all' | LogLevelName;
-
-interface LogFileInfo {
-  name: string;
-  size: number;
-  lastModified: number;
 }
 
 const LEVEL_STYLES: Record<LogLevelName, string> = {
@@ -63,337 +51,17 @@ const LEVEL_STYLES: Record<LogLevelName, string> = {
   debug: 'bg-foreground/[0.08] text-muted-foreground',
 };
 
-const LEVEL_TO_NAME: Record<LogLevel, LogLevelName> = {
-  [LogLevel.ERROR]: 'error',
-  [LogLevel.WARN]: 'warn',
-  [LogLevel.INFO]: 'info',
-  [LogLevel.DEBUG]: 'debug',
-};
-
-const FILE_ENTRY_LIMIT = 2000;
-const SCROLL_STICKY_THRESHOLD = 20;
-const SEARCH_DEBOUNCE_MS = 150;
-const LEVEL_CHANGE_TOAST_MS = 2000;
-
 export function DevLogsDialog({ open, onOpenChange }: DevLogsDialogProps) {
   const { t } = useTranslation('settings');
-  // Source / data state
-  const [source, setSource] = useState<SourceMode>('buffer');
-  const [bufferEntries, setBufferEntries] = useState<readonly LogEntry[]>(() => getLogBuffer());
-  const [fileEntries, setFileEntries] = useState<readonly LogEntry[]>([]);
-  const [fileTotalCount, setFileTotalCount] = useState(0);
-  const [fileList, setFileList] = useState<LogFileInfo[]>([]);
-  const [selectedArchive, setSelectedArchive] = useState<string | null>(null);
-  const [fileLoading, setFileLoading] = useState(false);
-  const [fileError, setFileError] = useState<string | null>(null);
 
-  // Filters
-  const [levelFilter, setLevelFilter] = useState<LevelFilter>('all');
-  const [searchInput, setSearchInput] = useState('');
-  const [searchQuery, setSearchQuery] = useState('');
+  const logs = useLogSource({ open });
+  const stickyTail = useStickyTail({
+    tailTrigger: logs.filteredEntries,
+    paused: logs.paused,
+    resetSignal: logs.resetSignal,
+  });
 
-  // Runtime log level
-  const [runtimeLevel, setRuntimeLevel] = useState<LogLevelName>(
-    () => LEVEL_TO_NAME[getLogLevel()]
-  );
-  const [levelChangedAt, setLevelChangedAt] = useState<number | null>(null);
-
-  // Pause / sticky-tail
-  const [paused, setPaused] = useState(false);
-  const [pendingCount, setPendingCount] = useState(0);
-  const [autoScroll, setAutoScroll] = useState(true);
-  const [showJumpToTail, setShowJumpToTail] = useState(false);
-
-  // Copy / expand
-  const [copied, setCopied] = useState(false);
-  const [expanded, setExpanded] = useState<Set<number>>(() => new Set());
-
-  const listRef = useRef<HTMLDivElement>(null);
-  const pausedRef = useRef(false);
-  pausedRef.current = paused;
-
-  // ── Debounce text search ────────────────────────────────────────────
-  useEffect(() => {
-    const handle = window.setTimeout(() => setSearchQuery(searchInput), SEARCH_DEBOUNCE_MS);
-    return () => window.clearTimeout(handle);
-  }, [searchInput]);
-
-  // ── Reset transient UI state when reopening ─────────────────────────
-  useEffect(() => {
-    if (!open) return;
-    setRuntimeLevel(LEVEL_TO_NAME[getLogLevel()]);
-    setExpanded(new Set());
-    setPendingCount(0);
-    setPaused(false);
-    setAutoScroll(true);
-    setShowJumpToTail(false);
-  }, [open]);
-
-  // ── Subscribe to live buffer when in buffer mode ────────────────────
-  //
-  // The buffer is a ring, so `next.length` stays flat once capacity is
-  // reached; counting callbacks (each representing one push) is the only
-  // reliable way to track "how many new entries while paused".
-  useEffect(() => {
-    if (!open || source !== 'buffer') return;
-    setBufferEntries(getLogBuffer());
-    const unsubscribe = subscribeToLogBuffer(next => {
-      if (pausedRef.current) {
-        setPendingCount(c => c + 1);
-        return;
-      }
-      setBufferEntries(next);
-    });
-    return unsubscribe;
-  }, [open, source]);
-
-  // ── Load file list when switching to file-based sources ─────────────
-  useEffect(() => {
-    if (!open) return;
-    if (source === 'buffer') return;
-
-    const api = window.electronAPI?.app;
-    if (!api?.listLogFiles || !api?.readLogFile) {
-      setFileError(t('logs.logsUnavailable'));
-      setFileList([]);
-      setFileEntries([]);
-      return;
-    }
-
-    setFileError(null);
-    setFileLoading(true);
-    api
-      .listLogFiles()
-      .then(files => {
-        const sorted = [...files].sort((a, b) => b.lastModified - a.lastModified);
-        setFileList(sorted);
-        if (source === 'today') {
-          const latest = sorted[0];
-          if (!latest) {
-            setFileError(t('logs.noFilesError'));
-            setFileEntries([]);
-            setFileTotalCount(0);
-            return;
-          }
-          void loadFileContents(latest.name);
-        } else if (source === 'archive') {
-          // Keep previous selection if still present, otherwise leave empty.
-          if (selectedArchive && sorted.some(f => f.name === selectedArchive)) {
-            void loadFileContents(selectedArchive);
-          } else {
-            setFileEntries([]);
-            setFileTotalCount(0);
-          }
-        }
-      })
-      .catch((err: unknown) => {
-        setFileError(describeError(err, t));
-        setFileList([]);
-        setFileEntries([]);
-      })
-      .finally(() => setFileLoading(false));
-  }, [open, source, t]);
-
-  const loadFileContents = useCallback(
-    async (fileName: string) => {
-      const api = window.electronAPI?.app;
-      if (!api?.readLogFile) {
-        setFileError(t('logs.logsUnavailable'));
-        return;
-      }
-      setFileLoading(true);
-      setFileError(null);
-      try {
-        const contents = await api.readLogFile(fileName);
-        const parsed = parseJsonlLogEntries(contents);
-        setFileTotalCount(parsed.length);
-        if (parsed.length > FILE_ENTRY_LIMIT) {
-          setFileEntries(parsed.slice(parsed.length - FILE_ENTRY_LIMIT));
-        } else {
-          setFileEntries(parsed);
-        }
-      } catch (err) {
-        setFileError(describeError(err, t));
-        setFileEntries([]);
-        setFileTotalCount(0);
-      } finally {
-        setFileLoading(false);
-      }
-    },
-    [t]
-  );
-
-  // ── Active entries (pre-filter) ─────────────────────────────────────
-  const activeEntries = source === 'buffer' ? bufferEntries : fileEntries;
-
-  // ── Filter pipeline ─────────────────────────────────────────────────
-  const filteredEntries = useMemo(() => {
-    const q = searchQuery.trim().toLowerCase();
-    if (levelFilter === 'all' && q.length === 0) return activeEntries;
-    return activeEntries.filter(entry => {
-      if (levelFilter !== 'all' && entry.level !== levelFilter) return false;
-      if (q.length === 0) return true;
-      const haystack =
-        entry.message.toLowerCase() +
-        '\n' +
-        entry.context.toLowerCase() +
-        '\n' +
-        (entry.data === undefined ? '' : stringifyData(entry.data).toLowerCase());
-      return haystack.includes(q);
-    });
-  }, [activeEntries, levelFilter, searchQuery]);
-
-  // ── Auto-scroll when new filtered entries arrive ────────────────────
-  useEffect(() => {
-    if (!listRef.current) return;
-    if (paused) return;
-    if (!autoScroll) return;
-    listRef.current.scrollTop = listRef.current.scrollHeight;
-  }, [filteredEntries, paused, autoScroll]);
-
-  // ── Scroll handler: detect user scrolling up to pause auto-scroll ───
-  const handleScroll = useCallback(() => {
-    const el = listRef.current;
-    if (!el) return;
-    const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
-    const nearBottom = distanceFromBottom <= SCROLL_STICKY_THRESHOLD;
-    if (nearBottom) {
-      if (!autoScroll) setAutoScroll(true);
-      if (showJumpToTail) setShowJumpToTail(false);
-    } else {
-      if (autoScroll) setAutoScroll(false);
-      if (!showJumpToTail) setShowJumpToTail(true);
-    }
-  }, [autoScroll, showJumpToTail]);
-
-  // ── Level change toast auto-dismiss ─────────────────────────────────
-  useEffect(() => {
-    if (levelChangedAt === null) return;
-    const handle = window.setTimeout(() => setLevelChangedAt(null), LEVEL_CHANGE_TOAST_MS);
-    return () => window.clearTimeout(handle);
-  }, [levelChangedAt]);
-
-  // ── Derived strings / handlers ──────────────────────────────────────
-  const formattedForCopy = useMemo(
-    () => filteredEntries.map(formatLine).join('\n'),
-    [filteredEntries]
-  );
-
-  const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(formattedForCopy);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1500);
-    } catch {
-      await window.electronAPI?.app?.clipboardWrite?.(formattedForCopy);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1500);
-    }
-  };
-
-  const handleExport = () => {
-    const jsonl = filteredEntries.map(e => JSON.stringify(e)).join('\n');
-    const blob = new Blob([jsonl], { type: 'application/x-ndjson' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `shiroani-logs-${formatDownloadStamp(new Date())}.jsonl`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    // Release after a short delay so the download can complete.
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
-  };
-
-  const handleClear = () => {
-    if (source === 'buffer') {
-      clearLogBuffer();
-      setPendingCount(0);
-    } else {
-      // For file mode, "clear" just empties the currently loaded view.
-      setFileEntries([]);
-      setFileTotalCount(0);
-    }
-    setExpanded(new Set());
-  };
-
-  const handleTogglePause = () => {
-    if (paused) {
-      // Resume: pull the latest buffer snapshot so queued entries appear.
-      if (source === 'buffer') {
-        setBufferEntries(getLogBuffer());
-      }
-      setPendingCount(0);
-      setPaused(false);
-      setAutoScroll(true);
-      setShowJumpToTail(false);
-    } else {
-      setPaused(true);
-    }
-  };
-
-  const handleJumpToTail = () => {
-    const el = listRef.current;
-    if (!el) return;
-    el.scrollTop = el.scrollHeight;
-    setAutoScroll(true);
-    setShowJumpToTail(false);
-  };
-
-  const handleRuntimeLevelChange = async (value: string) => {
-    const next = value as LogLevelName;
-    setRuntimeLevel(next);
-    // Apply locally so renderer matches immediately.
-    setLogLevel(next);
-    try {
-      await window.electronAPI?.app?.setLogLevel?.(next);
-      setLevelChangedAt(Date.now());
-    } catch {
-      // Best-effort: local change still applied. Surface via toast line.
-      setLevelChangedAt(Date.now());
-    }
-  };
-
-  const handleSourceChange = (next: SourceMode) => {
-    if (next === source) return;
-    setSource(next);
-    // Reset transient per-source state.
-    setPendingCount(0);
-    setPaused(false);
-    setAutoScroll(true);
-    setShowJumpToTail(false);
-    setExpanded(new Set());
-    setFileError(null);
-    if (next === 'buffer') {
-      setBufferEntries(getLogBuffer());
-    }
-  };
-
-  const handleArchiveSelect = (name: string) => {
-    setSelectedArchive(name);
-    void loadFileContents(name);
-  };
-
-  const toggleExpand = (idx: number) => {
-    setExpanded(prev => {
-      const copy = new Set(prev);
-      if (copy.has(idx)) copy.delete(idx);
-      else copy.add(idx);
-      return copy;
-    });
-  };
-
-  const totalCountForHeader =
-    source === 'buffer'
-      ? bufferEntries.length
-      : fileTotalCount > FILE_ENTRY_LIMIT
-        ? FILE_ENTRY_LIMIT
-        : fileTotalCount;
-
-  const showTruncationNote = source !== 'buffer' && fileTotalCount > FILE_ENTRY_LIMIT;
-
-  const hasAnyEntries = activeEntries.length > 0;
-  const hasFilteredEntries = filteredEntries.length > 0;
+  const { source, filteredEntries, fileTotalCount, totalCountForHeader, showTruncationNote } = logs;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -422,17 +90,17 @@ export function DevLogsDialog({ open, onOpenChange }: DevLogsDialogProps) {
         <div className="flex items-center gap-1 rounded-lg border border-border-glass bg-background/40 p-0.5 text-[11.5px] self-start">
           <SourceButton
             active={source === 'buffer'}
-            onClick={() => handleSourceChange('buffer')}
+            onClick={() => logs.handleSourceChange('buffer')}
             label={t('logs.source.buffer')}
           />
           <SourceButton
             active={source === 'today'}
-            onClick={() => handleSourceChange('today')}
+            onClick={() => logs.handleSourceChange('today')}
             label={t('logs.source.today')}
           />
           <SourceButton
             active={source === 'archive'}
-            onClick={() => handleSourceChange('archive')}
+            onClick={() => logs.handleSourceChange('archive')}
             label={t('logs.source.archive')}
           />
         </div>
@@ -444,21 +112,21 @@ export function DevLogsDialog({ open, onOpenChange }: DevLogsDialogProps) {
               {t('logs.filePicker.label')}
             </label>
             <Select
-              value={selectedArchive ?? undefined}
-              onValueChange={handleArchiveSelect}
-              disabled={fileList.length === 0}
+              value={logs.selectedArchive ?? undefined}
+              onValueChange={logs.handleArchiveSelect}
+              disabled={logs.fileList.length === 0}
             >
               <SelectTrigger className="h-8 text-[12px] max-w-md">
                 <SelectValue
                   placeholder={
-                    fileList.length === 0
+                    logs.fileList.length === 0
                       ? t('logs.filePicker.noFiles')
                       : t('logs.filePicker.placeholder')
                   }
                 />
               </SelectTrigger>
               <SelectContent>
-                {fileList.map(file => (
+                {logs.fileList.map(file => (
                   <SelectItem key={file.name} value={file.name}>
                     <span className="flex items-center gap-2">
                       <span className="font-mono">{file.name}</span>
@@ -476,7 +144,10 @@ export function DevLogsDialog({ open, onOpenChange }: DevLogsDialogProps) {
         {/* Toolbar: filters + actions */}
         <div className="flex flex-wrap items-center gap-2">
           {/* Level filter */}
-          <Select value={levelFilter} onValueChange={v => setLevelFilter(v as LevelFilter)}>
+          <Select
+            value={logs.levelFilter}
+            onValueChange={v => logs.setLevelFilter(v as LevelFilter)}
+          >
             <SelectTrigger className="h-8 w-[130px] text-[12px]" aria-label={t('logs.filterAria')}>
               <SelectValue />
             </SelectTrigger>
@@ -492,8 +163,8 @@ export function DevLogsDialog({ open, onOpenChange }: DevLogsDialogProps) {
           {/* Search */}
           <Input
             type="search"
-            value={searchInput}
-            onChange={e => setSearchInput(e.target.value)}
+            value={logs.searchInput}
+            onChange={e => logs.setSearchInput(e.target.value)}
             placeholder={t('logs.searchPlaceholder')}
             className="h-8 max-w-xs"
             aria-label={t('logs.searchAria')}
@@ -502,7 +173,7 @@ export function DevLogsDialog({ open, onOpenChange }: DevLogsDialogProps) {
           {/* Runtime log level */}
           <div className="flex items-center gap-1.5 ml-auto">
             <span className="text-[11.5px] text-muted-foreground">{t('logs.levelLabel')}</span>
-            <Select value={runtimeLevel} onValueChange={handleRuntimeLevelChange}>
+            <Select value={logs.runtimeLevel} onValueChange={logs.handleRuntimeLevelChange}>
               <SelectTrigger
                 className="h-8 w-[100px] text-[12px]"
                 aria-label={t('logs.runtimeLevelAria')}
@@ -516,7 +187,7 @@ export function DevLogsDialog({ open, onOpenChange }: DevLogsDialogProps) {
                 <SelectItem value="debug">{t('logs.level.debug')}</SelectItem>
               </SelectContent>
             </Select>
-            {levelChangedAt !== null && (
+            {logs.levelChangedAt !== null && (
               <span
                 className="text-[11px] text-primary inline-flex items-center gap-1"
                 role="status"
@@ -533,17 +204,17 @@ export function DevLogsDialog({ open, onOpenChange }: DevLogsDialogProps) {
           <Button
             size="sm"
             variant="outline"
-            onClick={handleTogglePause}
+            onClick={logs.handleTogglePause}
             disabled={source !== 'buffer'}
-            aria-label={paused ? t('logs.resume') : t('logs.pause')}
+            aria-label={logs.paused ? t('logs.resume') : t('logs.pause')}
           >
-            {paused ? (
+            {logs.paused ? (
               <>
                 <Play className="w-3.5 h-3.5" />
                 {t('logs.resume')}
-                {pendingCount > 0 && (
+                {logs.pendingCount > 0 && (
                   <span className="ml-1 rounded-full bg-primary/20 text-primary px-1.5 py-0.5 text-[10px] font-semibold">
-                    {t('logs.newCount', { count: pendingCount })}
+                    {t('logs.newCount', { count: logs.pendingCount })}
                   </span>
                 )}
               </>
@@ -554,15 +225,30 @@ export function DevLogsDialog({ open, onOpenChange }: DevLogsDialogProps) {
               </>
             )}
           </Button>
-          <Button size="sm" variant="outline" onClick={handleCopy} disabled={!hasFilteredEntries}>
-            {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-            {copied ? t('logs.copied') : t('logs.copyAll')}
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={logs.handleCopy}
+            disabled={!logs.hasFilteredEntries}
+          >
+            {logs.copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+            {logs.copied ? t('logs.copied') : t('logs.copyAll')}
           </Button>
-          <Button size="sm" variant="outline" onClick={handleExport} disabled={!hasFilteredEntries}>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={logs.handleExport}
+            disabled={!logs.hasFilteredEntries}
+          >
             <Download className="w-3.5 h-3.5" />
             {t('logs.export')}
           </Button>
-          <Button size="sm" variant="outline" onClick={handleClear} disabled={!hasAnyEntries}>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={logs.handleClear}
+            disabled={!logs.hasAnyEntries}
+          >
             <Trash2 className="w-3.5 h-3.5" />
             {t('logs.clear')}
           </Button>
@@ -571,35 +257,35 @@ export function DevLogsDialog({ open, onOpenChange }: DevLogsDialogProps) {
         {/* List + optional jump-to-tail button */}
         <div className="relative">
           <div
-            ref={listRef}
-            onScroll={handleScroll}
+            ref={stickyTail.listRef}
+            onScroll={stickyTail.handleScroll}
             className={cn(
               'max-h-[52vh] overflow-x-hidden overflow-y-auto rounded-lg border border-border-glass bg-background/40',
               'font-mono text-[11px] leading-[1.55]'
             )}
           >
-            {fileLoading && source !== 'buffer' ? (
+            {logs.fileLoading && source !== 'buffer' ? (
               <div className="p-6 text-center text-muted-foreground text-[12px]">
                 {t('logs.loading')}
               </div>
-            ) : fileError && source !== 'buffer' ? (
+            ) : logs.fileError && source !== 'buffer' ? (
               <div className="p-6 text-center text-destructive text-[12px]">
                 <AlertCircle className="w-4 h-4 mx-auto mb-2" />
-                {fileError}
+                {logs.fileError}
               </div>
-            ) : !hasAnyEntries ? (
+            ) : !logs.hasAnyEntries ? (
               <div className="p-6 text-center text-muted-foreground text-[12px]">
                 <X className="w-4 h-4 mx-auto mb-2 opacity-50" />
                 {source === 'buffer' ? t('logs.emptyBuffer') : t('logs.emptyFile')}
               </div>
-            ) : !hasFilteredEntries ? (
+            ) : !logs.hasFilteredEntries ? (
               <div className="p-6 text-center text-muted-foreground text-[12px]">
                 {t('logs.noFilterMatches')}
               </div>
             ) : (
               <ul className="divide-y divide-border-glass/50">
                 {filteredEntries.map((entry, i) => {
-                  const isOpen = expanded.has(i);
+                  const isOpen = logs.expanded.has(i);
                   const hasData = entry.data !== undefined;
                   return (
                     <li
@@ -624,7 +310,7 @@ export function DevLogsDialog({ open, onOpenChange }: DevLogsDialogProps) {
                           {hasData && (
                             <button
                               type="button"
-                              onClick={() => toggleExpand(i)}
+                              onClick={() => logs.toggleExpand(i)}
                               className="ml-2 inline-flex items-center gap-0.5 rounded border border-border-glass px-1 text-[10px] text-muted-foreground hover:text-foreground"
                               aria-expanded={isOpen}
                               aria-label={isOpen ? t('logs.showLessData') : t('logs.showMoreData')}
@@ -652,10 +338,10 @@ export function DevLogsDialog({ open, onOpenChange }: DevLogsDialogProps) {
             )}
           </div>
 
-          {showJumpToTail && hasFilteredEntries && (
+          {stickyTail.showJumpToTail && logs.hasFilteredEntries && (
             <button
               type="button"
-              onClick={handleJumpToTail}
+              onClick={stickyTail.jumpToTail}
               className="absolute bottom-2 left-1/2 -translate-x-1/2 inline-flex items-center gap-1 rounded-full border border-border-glass bg-background/90 px-3 py-1 text-[11px] text-foreground shadow-md hover:bg-background"
             >
               <ArrowDown className="w-3 h-3" />
@@ -667,10 +353,6 @@ export function DevLogsDialog({ open, onOpenChange }: DevLogsDialogProps) {
     </Dialog>
   );
 }
-
-// ─────────────────────────────────────────────────────────────────────
-// Helpers
-// ─────────────────────────────────────────────────────────────────────
 
 function SourceButton({
   active,
@@ -696,91 +378,4 @@ function SourceButton({
       {label}
     </button>
   );
-}
-
-function formatLine(entry: LogEntry): string {
-  const time = entry.timestamp.split('T')[1]?.slice(0, 12) ?? entry.timestamp;
-  const level = entry.level.toUpperCase().padEnd(5);
-  const base = `${time} ${level} [${entry.context}] ${entry.message}`;
-  if (entry.data === undefined) return base;
-  return `${base} ${stringifyData(entry.data)}`;
-}
-
-function stringifyData(data: unknown): string {
-  if (typeof data === 'string') return data;
-  try {
-    return JSON.stringify(data);
-  } catch {
-    return String(data);
-  }
-}
-
-function prettyPrintData(data: unknown): string {
-  if (typeof data === 'string') {
-    // If the string is itself JSON, pretty-print it.
-    try {
-      const parsed = JSON.parse(data);
-      return JSON.stringify(parsed, null, 2);
-    } catch {
-      return data;
-    }
-  }
-  try {
-    return JSON.stringify(data, null, 2);
-  } catch {
-    return String(data);
-  }
-}
-
-function parseJsonlLogEntries(contents: string): LogEntry[] {
-  const out: LogEntry[] = [];
-  const lines = contents.split(/\r?\n/);
-  for (const line of lines) {
-    if (!line) continue;
-    try {
-      const parsed = JSON.parse(line) as Partial<LogEntry>;
-      if (
-        typeof parsed?.timestamp === 'string' &&
-        typeof parsed?.level === 'string' &&
-        typeof parsed?.context === 'string' &&
-        typeof parsed?.message === 'string' &&
-        isValidLevel(parsed.level)
-      ) {
-        out.push(parsed as LogEntry);
-      }
-    } catch {
-      // Skip malformed lines silently.
-    }
-  }
-  return out;
-}
-
-function isValidLevel(value: string): value is LogLevelName {
-  return value === 'error' || value === 'warn' || value === 'info' || value === 'debug';
-}
-
-function formatFileDate(ts: number): string {
-  const d = new Date(ts);
-  if (Number.isNaN(d.getTime())) return '—';
-  const yyyy = d.getFullYear();
-  const mm = String(d.getMonth() + 1).padStart(2, '0');
-  const dd = String(d.getDate()).padStart(2, '0');
-  const hh = String(d.getHours()).padStart(2, '0');
-  const mi = String(d.getMinutes()).padStart(2, '0');
-  return `${yyyy}-${mm}-${dd} ${hh}:${mi}`;
-}
-
-function formatDownloadStamp(d: Date): string {
-  const yyyy = d.getFullYear();
-  const mm = String(d.getMonth() + 1).padStart(2, '0');
-  const dd = String(d.getDate()).padStart(2, '0');
-  const hh = String(d.getHours()).padStart(2, '0');
-  const mi = String(d.getMinutes()).padStart(2, '0');
-  return `${yyyy}-${mm}-${dd}-${hh}${mi}`;
-}
-
-function describeError(err: unknown, t: TFunction<'settings'>): string {
-  if (err instanceof Error) return err.message || t('logs.unknownError');
-  if (typeof err === 'string') return err;
-  return t('logs.fileError');
 }
