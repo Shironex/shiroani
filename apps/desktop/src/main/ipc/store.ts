@@ -57,6 +57,8 @@ const ALLOWED_STORE_KEYS = new Set([
   'quick-access-frequent',
   // Dock position and settings
   'dock-settings',
+  // New Tab page panel visibility / order / preferences
+  'newtab-settings',
   // Onboarding completion
   'onboarding-completed',
   // AniList profile username

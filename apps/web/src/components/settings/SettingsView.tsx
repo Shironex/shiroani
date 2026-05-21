@@ -4,6 +4,7 @@ import {
   Palette,
   Image as ImageIcon,
   LayoutGrid,
+  LayoutDashboard,
   Eye,
   Globe,
   Download,
@@ -27,6 +28,7 @@ import { BackgroundSettings } from '@/components/settings/BackgroundSettings';
 import { DockSection } from '@/components/settings/DockSection';
 import { ViewsSection } from '@/components/settings/ViewsSection';
 import { BrowserSection } from '@/components/settings/BrowserSection';
+import { NewTabSection } from '@/components/settings/NewTabSection';
 import { UpdatesSection } from '@/components/settings/UpdatesSection';
 import { AboutSection } from '@/components/settings/AboutSection';
 import { NotificationsSection } from '@/components/settings/NotificationsSection';
@@ -44,6 +46,7 @@ type SettingsSection =
   | 'dock'
   | 'views'
   | 'browser'
+  | 'newtab'
   | 'notifications'
   | 'discord'
   | 'mascot'
@@ -79,6 +82,13 @@ const ALL_SECTIONS: SectionDef[] = [
     subtitleKey: 'browserSubtitle',
     group: 'app',
     Icon: Globe,
+  },
+  {
+    id: 'newtab',
+    labelKey: 'newtab',
+    subtitleKey: 'newtabSubtitle',
+    group: 'app',
+    Icon: LayoutDashboard,
   },
   {
     id: 'notifications',
@@ -308,6 +318,7 @@ export function SettingsView() {
               {activeSection === 'dock' && <DockSection />}
               {activeSection === 'views' && <ViewsSection />}
               {activeSection === 'browser' && <BrowserSection />}
+              {activeSection === 'newtab' && <NewTabSection />}
               {activeSection === 'notifications' && <NotificationsSection />}
               {activeSection === 'discord' && <DiscordSection />}
               {activeSection === 'mascot' && <MascotSection />}

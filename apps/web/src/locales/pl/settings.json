@@ -244,6 +244,39 @@
     "resetDescription": "Przywróć domyślną kolejność ikon i ponownie pokaż wszystkie sekcje.",
     "resetAction": "Przywróć domyślne"
   },
+  "newtab": {
+    "card": {
+      "title": "Strona nowej karty",
+      "subtitle": "Pokaż lub ukryj panele i ustaw ich kolejność."
+    },
+    "reorderHint": "Przeciągnij uchwyt, aby zmienić kolejność paneli.",
+    "dragHandleAria": "Zmień kolejność: {{label}}",
+    "panels": {
+      "greeting": "Powitanie",
+      "airing": "Dzisiaj emitowane",
+      "quickAccess": "Szybki dostęp",
+      "recents": "Ostatnio odwiedzone",
+      "resume": "Kontynuuj oglądanie"
+    },
+    "watermark": {
+      "title": "Znak wodny kanji",
+      "description": "Pokaż dekoracyjny znak kanji w tle."
+    },
+    "greetingName": {
+      "title": "Pokaż imię w powitaniu",
+      "description": "Wyświetl imię obok powitania na nowej karcie."
+    },
+    "airingCount": {
+      "title": "Liczba kafelków „Dzisiaj emitowane”",
+      "description": "Maksymalna liczba pokazywanych tytułów."
+    },
+    "resetTitle": "Układ i widoczność",
+    "resetDescription": "Przywróć domyślną kolejność i pokaż wszystkie panele.",
+    "resetAction": "Przywróć domyślne",
+    "preview": {
+      "allHidden": "Wszystkie panele ukryte."
+    }
+  },
   "browser": {
     "adblock": {
       "card": {
@@ -573,6 +606,8 @@
     "generalSubtitle": "Podstawowe ustawienia aplikacji",
     "browser": "Przeglądarka",
     "browserSubtitle": "Ustawienia wbudowanej przeglądarki",
+    "newtab": "Nowa karta",
+    "newtabSubtitle": "Wygląd i panele strony nowej karty",
     "notifications": "Powiadomienia",
     "notificationsSubtitle": "Nowe odcinki i harmonogram emisji",
     "themes": "Motywy",
