@@ -355,16 +355,6 @@ if (typeof document !== 'undefined') {
 // Selectors
 
 /**
- * Select current theme
- */
-export const selectTheme = (state: SettingsStore) => state.theme;
-
-/**
- * Select preview theme
- */
-export const selectPreviewTheme = (state: SettingsStore) => state.previewTheme;
-
-/**
  * Select effective theme (preview or actual)
  */
 export const selectEffectiveTheme = (state: SettingsStore) => state.previewTheme ?? state.theme;

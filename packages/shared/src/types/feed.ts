@@ -77,10 +77,6 @@ export interface FeedToggleSourcePayload {
   enabled: boolean;
 }
 
-export interface FeedRefreshResult {
-  newItemsCount: number;
-}
-
 // ============================================
 // Default Feed Sources
 // ============================================

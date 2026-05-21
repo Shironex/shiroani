@@ -34,6 +34,4 @@ export function useBrowserInit() {
       openTab();
     }
   }, [initialCheckDone, tabs.length, openTab]);
-
-  return { initialCheckDone };
 }

@@ -32,7 +32,7 @@ export const YARDSTICKS: readonly Yardstick[] = [
   { id: 'evangelion', title: 'Neon Genesis Evangelion', episodes: 26, perEpisodeMin: 24 },
 ] as const;
 
-export const FRIEREN: Yardstick = YARDSTICKS[0];
+const FRIEREN: Yardstick = YARDSTICKS[0];
 
 function dayOfYear(date: Date = new Date()): number {
   const start = Date.UTC(date.getFullYear(), 0, 0);

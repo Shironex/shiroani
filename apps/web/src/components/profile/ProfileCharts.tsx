@@ -2,14 +2,6 @@ import { useState, useMemo } from 'react';
 import { Film } from 'lucide-react';
 import type { UserProfile } from '@shiroani/shared';
 
-export function SectionLabel({ children }: { children: React.ReactNode }) {
-  return (
-    <h3 className="text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider mb-3">
-      {children}
-    </h3>
-  );
-}
-
 export type AccentColor = 'primary' | 'info' | 'warning' | 'success';
 
 const ACCENT_ICON_CLASS: Record<AccentColor, string> = {

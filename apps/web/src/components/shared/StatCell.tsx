@@ -36,11 +36,11 @@ export function StatCell({ label, value, sub, serif, className, ...props }: Stat
  * "font-mono 10px tracked uppercase" label style). Kept as a tiny primitive so
  * callers can reuse the exact token without re-typing it.
  */
-export interface StatLabelProps extends React.HTMLAttributes<HTMLSpanElement> {
+interface StatLabelProps extends React.HTMLAttributes<HTMLSpanElement> {
   as?: 'span' | 'p';
 }
 
-export function StatLabel({ as = 'span', className, children, ...props }: StatLabelProps) {
+function StatLabel({ as = 'span', className, children, ...props }: StatLabelProps) {
   const Tag = as;
   return (
     <Tag

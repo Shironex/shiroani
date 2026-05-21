@@ -196,8 +196,3 @@ const DAY_KEYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] as const;
 export function getDayNamesShort(): string[] {
   return DAY_KEYS.map(k => i18n.t(`day.short.${k}`, { ns: 'common' }));
 }
-
-/** Mon-first full day names. Re-evaluates on each call against current language. */
-export function getDayNamesFull(): string[] {
-  return DAY_KEYS.map(k => i18n.t(`day.full.${k}`, { ns: 'common' }));
-}

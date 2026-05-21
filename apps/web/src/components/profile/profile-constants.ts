@@ -48,22 +48,3 @@ export const STATUS_LABELS: Record<string, string> = {
   PAUSED: 'Wstrzymane',
   REPEATING: 'Powtarzam',
 };
-
-export const STATUS_COLORS: Record<string, string> = {
-  CURRENT: 'var(--status-success)',
-  COMPLETED: 'var(--primary)',
-  PLANNING: 'var(--status-info)',
-  DROPPED: 'var(--destructive)',
-  PAUSED: 'var(--status-warning)',
-  REPEATING: 'var(--status-info)',
-};
-
-export const FORMAT_LABELS: Record<string, string> = {
-  TV: 'TV',
-  TV_SHORT: 'Krótki serial TV',
-  MOVIE: 'Film',
-  SPECIAL: 'Odcinek specjalny',
-  OVA: 'OVA',
-  ONA: 'ONA',
-  MUSIC: 'Muzyka',
-};

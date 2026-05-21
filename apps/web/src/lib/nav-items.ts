@@ -30,10 +30,6 @@ export const ALL_NAV_ITEMS: NavItem[] = [
 /** Views that cannot be hidden — settings is the escape hatch back into the toggle UI. */
 export const ALWAYS_VISIBLE_VIEWS: ReadonlySet<ActiveView> = new Set(['settings']);
 
-export function isViewToggleable(id: ActiveView): boolean {
-  return !ALWAYS_VISIBLE_VIEWS.has(id);
-}
-
 /** Default dock display order — the static order of {@link ALL_NAV_ITEMS}. */
 export const DEFAULT_VIEW_ORDER: ActiveView[] = ALL_NAV_ITEMS.map(item => item.id);
 

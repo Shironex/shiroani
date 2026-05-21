@@ -93,9 +93,6 @@ if (envLogLevel && LOG_LEVEL_NAMES[envLogLevel] !== undefined) {
   currentLogLevel = LOG_LEVEL_NAMES[envLogLevel];
 }
 
-type LogLevelListener = (level: LogLevel) => void;
-const logLevelListeners = new Set<LogLevelListener>();
-
 function resolveLogLevel(level: LogLevel | keyof typeof LogLevel | string): LogLevel | undefined {
   if (typeof level === 'number') {
     return level in LogLevel ? (level as LogLevel) : undefined;
@@ -122,15 +119,6 @@ export function setLogLevel(level: LogLevel | keyof typeof LogLevel | string): v
   }
   if (resolved === currentLogLevel) return;
   currentLogLevel = resolved;
-  for (const listener of logLevelListeners) listener(resolved);
-}
-
-/** Subscribe to runtime log-level changes. Returns an unsubscribe function. */
-export function subscribeToLogLevel(listener: LogLevelListener): () => void {
-  logLevelListeners.add(listener);
-  return () => {
-    logLevelListeners.delete(listener);
-  };
 }
 
 /**
@@ -179,7 +167,7 @@ export interface LogEntry {
   appVersion?: string;
   /** Process platform (set via setLoggerContext). */
   platform?: string;
-  /** Per-operation correlation id applied by createCorrelatedLogger. */
+  /** Per-operation correlation id. */
   correlationId?: string;
 }
 
@@ -276,11 +264,6 @@ const logBuffer: LogEntry[] = [];
 type BufferListener = (entries: readonly LogEntry[]) => void;
 const bufferListeners = new Set<BufferListener>();
 
-/** Effective ring buffer capacity (post env parsing + clamp). */
-export function getLogBufferMax(): number {
-  return LOG_BUFFER_MAX;
-}
-
 const REDACT_KEY_SET = new Set(LOG_REDACT_KEYS.map(k => k.toLowerCase()));
 
 // Path regexes for home-directory scrubbing. The Windows form uses a negated
@@ -296,15 +279,7 @@ const LINUX_USER_PATH_RE = /(\/home\/)[^/]+(\/)/g;
 // end so query-string secrets (access_token, sig, etc.) never leak verbatim.
 const URL_QUERY_RE = /^(https?:\/\/[^?#\s]*)\?[^#]*(.*)$/i;
 
-let redactionEnabled = true;
-
-/**
- * Enable or disable the redaction walker. Defaults to true in dev and prod;
- * disabling is an explicit escape hatch for local debugging.
- */
-export function setRedactionEnabled(enabled: boolean): void {
-  redactionEnabled = enabled;
-}
+const redactionEnabled = true;
 
 function redactString(value: string): string {
   let out = value.replace(WIN_USER_PATH_RE, '$1<USER>$2');
@@ -477,17 +452,8 @@ export interface LoggerOptions {
   fileTransport?: (message: string) => void;
 }
 
-// Stash the options/context used to create a logger so correlated wrappers
-// can inherit the underlying transport + context + prior tags. We keep this
-// in a WeakMap keyed by the Logger object reference to avoid mutating the
-// Logger surface. Only loggers built via createLoggerInternal() are present.
-const loggerMeta = new WeakMap<
-  Logger,
-  { context: string; options: LoggerOptions | undefined; tags: Partial<LogEntry> | undefined }
->();
-
 /**
- * Internal factory shared by createLogger() and createCorrelatedLogger().
+ * Internal logger factory.
  * Wires pushToBuffer + console + optional fileTransport against a single
  * `tags` bag that's merged into every emitted entry.
  */
@@ -643,7 +609,6 @@ function createLoggerInternal(
     };
   }
 
-  loggerMeta.set(instance, { context, options, tags });
   return instance;
 }
 
@@ -652,21 +617,6 @@ function createLoggerInternal(
  */
 export function createLogger(context: string, options?: LoggerOptions): Logger {
   return createLoggerInternal(context, options, undefined);
-}
-
-/**
- * Build a Logger that forwards every call through the same transport chain as
- * `parent` but stamps `correlationId` on each resulting LogEntry. If `parent`
- * was itself correlated, the new correlationId replaces the inherited one.
- *
- * Falls back to a standalone logger (same context, no file transport) if
- * `parent` wasn't produced by `createLogger`/`createCorrelatedLogger` — this
- * only matters for consumers passing in a hand-rolled Logger stub.
- */
-export function createCorrelatedLogger(parent: Logger, correlationId: string): Logger {
-  const meta = loggerMeta.get(parent);
-  const mergedTags: Partial<LogEntry> = { ...(meta?.tags ?? {}), correlationId };
-  return createLoggerInternal(meta?.context ?? 'Correlated', meta?.options, mergedTags);
 }
 
 /**

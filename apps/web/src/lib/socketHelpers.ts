@@ -24,11 +24,6 @@ interface EmitOptions {
 type ErrorResponse = { error: string };
 
 /**
- * Response type that uses success boolean pattern
- */
-type SuccessResponse = { success: boolean; error?: string };
-
-/**
  * Ensure socket is connected before making requests
  */
 async function ensureConnected(): Promise<void> {
@@ -96,28 +91,4 @@ export async function emitWithErrorHandling<TPayload, TResponse>(
   return response as TResponse;
 }
 
-/**
- * Emit that handles { success: boolean; error?: string } response pattern.
- * Automatically rejects if success is false.
- *
- * @param event - The socket event name to emit
- * @param payload - The payload to send with the event
- * @param options - Optional configuration (timeout, autoConnect)
- * @param errorMessage - Default error message if none provided in response
- * @returns Promise that resolves on success or rejects with error
- */
-export async function emitWithSuccessHandling<TPayload>(
-  event: string,
-  payload: TPayload,
-  options: EmitOptions = {},
-  errorMessage = 'Operation failed'
-): Promise<void> {
-  const response = await emitAsync<TPayload, SuccessResponse>(event, payload, options);
-
-  if (!response.success) {
-    logger.warn('Failed response for', event, response.error ?? errorMessage);
-    throw new Error(response.error ?? errorMessage);
-  }
-}
-
-export type { EmitOptions, ErrorResponse, SuccessResponse };
+export type { EmitOptions, ErrorResponse };
