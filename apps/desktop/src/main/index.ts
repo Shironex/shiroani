@@ -112,7 +112,7 @@ if (process.platform === 'win32') {
 if (app.isPackaged) {
   const gotSingleInstanceLock = app.requestSingleInstanceLock();
   if (!gotSingleInstanceLock) {
-    console.warn('Another ShiroAni instance is already running; quitting this one.');
+    logger.warn('Another ShiroAni instance is already running; quitting this one.');
     app.exit(0);
   }
 

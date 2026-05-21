@@ -1,4 +1,4 @@
-import fs from 'node:fs';
+import fs from 'node:fs/promises';
 import path from 'node:path';
 import { ipcMain, app } from 'electron';
 import { createMainLogger } from '../logging/logger';
@@ -51,7 +51,7 @@ export function registerFileHandlers(): void {
     'file:write-json',
     async (_event, filePath, jsonString) => {
       validateJsonPath(filePath);
-      fs.writeFileSync(filePath, jsonString, 'utf-8');
+      await fs.writeFile(filePath, jsonString, 'utf-8');
       return { success: true };
     },
     { schema: fileWriteJsonSchema }
@@ -61,7 +61,7 @@ export function registerFileHandlers(): void {
     'file:read-json',
     async (_event, filePath) => {
       validateJsonPath(filePath);
-      return fs.readFileSync(filePath, 'utf-8');
+      return await fs.readFile(filePath, 'utf-8');
     },
     { schema: fileReadJsonSchema }
   );

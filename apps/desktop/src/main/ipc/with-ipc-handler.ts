@@ -1,7 +1,7 @@
 import { ipcMain } from 'electron';
 import type { ZodType } from 'zod';
 import { createMainLogger } from '../logging/logger';
-import { IpcError } from './errors';
+import { IpcError, VALIDATION_ERROR_CODES } from './errors';
 
 const logger = createMainLogger('IPC');
 
@@ -24,7 +24,11 @@ function validateOrThrow<Args extends unknown[]>(
   const parsed = schema.safeParse(rawArgs);
   if (!parsed.success) {
     logger.error(`[ipc:${channel}] validation failed`, parsed.error.issues);
-    throw new IpcError('BAD_REQUEST', `Invalid payload for ${channel}`, parsed.error.issues);
+    throw new IpcError(
+      VALIDATION_ERROR_CODES.BAD_REQUEST,
+      `Invalid payload for ${channel}`,
+      parsed.error.issues
+    );
   }
   return parsed.data;
 }

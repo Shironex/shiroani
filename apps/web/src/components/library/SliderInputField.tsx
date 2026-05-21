@@ -32,7 +32,7 @@ export function SliderInputField({
           min={min}
           max={max}
           value={value}
-          onChange={e => onChange(Math.max(min, Math.min(max, parseInt(e.target.value) || 0)))}
+          onChange={e => onChange(Math.max(min, Math.min(max, parseInt(e.target.value, 10) || 0)))}
           className="w-16 h-7 text-xs text-center"
           disabled={disabled}
         />

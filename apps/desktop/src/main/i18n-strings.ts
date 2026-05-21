@@ -66,6 +66,10 @@ const strings = {
       dimensionsTooLarge: 'Image is too large (max {{max}}×{{max}} px)',
       invalidDimensions: 'Image has invalid dimensions',
     },
+    background: {
+      unsupportedFormat: 'Unsupported file format',
+      tooLarge: 'File is too large (max 20 MB)',
+    },
     discord: {
       browsingLibrary: 'Browsing library',
       libraryCount: '{{count}} anime',
@@ -127,6 +131,10 @@ const strings = {
       dimensionsTooLarge: 'Obraz jest za duży (maks. {{max}}×{{max}} px)',
       invalidDimensions: 'Obraz ma niepoprawne wymiary',
     },
+    background: {
+      unsupportedFormat: 'Nieobsługiwany format pliku',
+      tooLarge: 'Plik jest za duży (maksymalnie 20 MB)',
+    },
     discord: {
       browsingLibrary: 'Przeglądanie biblioteki',
       libraryCount: '{{count}} anime',
@@ -186,6 +194,10 @@ type MainStringsShape = {
     tooLarge: string;
     dimensionsTooLarge: string;
     invalidDimensions: string;
+  };
+  background: {
+    unsupportedFormat: string;
+    tooLarge: string;
   };
   discord: {
     browsingLibrary: string;

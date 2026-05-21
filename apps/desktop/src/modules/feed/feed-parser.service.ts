@@ -1,9 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { createHash } from 'crypto';
 import Parser from 'rss-parser';
-import { createLogger } from '@shiroani/shared';
+import { createLogger, truncate } from '@shiroani/shared';
 
 const logger = createLogger('FeedParserService');
+
+/** Network timeout for fetching an RSS/Atom feed before the parse aborts. */
+const FEED_PARSE_TIMEOUT_MS = 30_000;
 
 // ============================================
 // RSS Parser custom item type
@@ -52,7 +55,7 @@ export class FeedParserService {
         ['enclosure', 'enclosure', { keepArray: true }],
       ],
     },
-    timeout: 30000,
+    timeout: FEED_PARSE_TIMEOUT_MS,
   });
 
   constructor() {
@@ -157,7 +160,7 @@ export class FeedParserService {
   cleanDescription(html: string): string {
     if (!html) return '';
 
-    let text = html
+    const text = html
       // Remove HTML tags
       .replace(/<[^>]+>/g, '')
       // Decode common HTML entities
@@ -173,10 +176,6 @@ export class FeedParserService {
       .replace(/\s+/g, ' ')
       .trim();
 
-    if (text.length > 500) {
-      text = text.substring(0, 497) + '...';
-    }
-
-    return text;
+    return truncate(text, 500);
   }
 }

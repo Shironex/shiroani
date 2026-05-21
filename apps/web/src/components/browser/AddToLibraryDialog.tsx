@@ -23,7 +23,7 @@ import { useBrowserStore } from '@/stores/useBrowserStore';
 import { getWebview } from '@/components/browser/webviewRefs';
 import { toast } from 'sonner';
 import type { AnimeStatus } from '@shiroani/shared';
-import { getStatusOptions } from '@/lib/constants';
+import { getStatusOptions, MAX_EPISODES } from '@/lib/constants';
 import { isAlreadyInLibrary } from '@/lib/anime-utils';
 import { SCRAPE_METADATA_SCRIPT } from '@/lib/scrape-metadata';
 import { useDialogStateMachine } from '@/hooks/useDialogStateMachine';
@@ -259,9 +259,9 @@ export function AddToLibraryDialog({ open, onOpenChange, url, title }: AddToLibr
                 id="add-lib-current-ep"
                 type="number"
                 min={0}
-                max={9999}
+                max={MAX_EPISODES}
                 value={currentEpisode}
-                onChange={e => setCurrentEpisode(Math.max(0, parseInt(e.target.value) || 0))}
+                onChange={e => setCurrentEpisode(Math.max(0, parseInt(e.target.value, 10) || 0))}
                 className="h-8 text-sm w-24"
                 disabled={isCompleted}
               />
@@ -277,9 +277,9 @@ export function AddToLibraryDialog({ open, onOpenChange, url, title }: AddToLibr
                 id="add-lib-total-ep"
                 type="number"
                 min={0}
-                max={9999}
+                max={MAX_EPISODES}
                 value={totalEpisodes}
-                onChange={e => setTotalEpisodes(Math.max(0, parseInt(e.target.value) || 0))}
+                onChange={e => setTotalEpisodes(Math.max(0, parseInt(e.target.value, 10) || 0))}
                 placeholder="?"
                 className="h-8 text-sm w-24"
               />

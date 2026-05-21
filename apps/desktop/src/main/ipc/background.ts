@@ -135,13 +135,13 @@ export function registerBackgroundHandlers(mainWindow: BrowserWindow): void {
       // Validate extension
       if (!isAllowedExtension(sourcePath)) {
         logger.warn(`Rejected file with invalid extension: ${sourcePath}`);
-        throw new Error('Nieobslugiwany format pliku');
+        throw new Error(t('background.unsupportedFormat'));
       }
 
       // Check file size
       const fileStats = await stat(sourcePath);
       if (fileStats.size > MAX_FILE_SIZE) {
-        throw new Error('Plik jest za duzy (maksymalnie 20 MB)');
+        throw new Error(t('background.tooLarge'));
       }
 
       // Generate unique filename to avoid collisions

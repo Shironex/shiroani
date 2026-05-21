@@ -20,7 +20,7 @@ import { useLibraryStore } from '@/stores/useLibraryStore';
 import { getActivePane } from '@/stores/useBrowserStore';
 import { toast } from 'sonner';
 import type { AnimeEntry, AnimeStatus } from '@shiroani/shared';
-import { STATUS_LABEL_KEY, getStatusOptions } from '@/lib/constants';
+import { STATUS_LABEL_KEY, getStatusOptions, MAX_EPISODES } from '@/lib/constants';
 import { tDynamic } from '@/lib/i18n';
 import { useAnimeDetailForm } from '@/hooks/useAnimeDetailForm';
 import { useNavigateToBrowser } from '@/hooks/useNavigateToBrowser';
@@ -114,7 +114,7 @@ export function AnimeDetailModal({ entry, open, onOpenChange }: AnimeDetailModal
 
   if (!entry) return null;
 
-  const maxEpisodes = entry.episodes ?? 9999;
+  const maxEpisodes = entry.episodes ?? MAX_EPISODES;
   const progressPercent = entry.episodes
     ? Math.min(100, Math.round((currentEpisode / entry.episodes) * 100))
     : 0;

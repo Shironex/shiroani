@@ -1,5 +1,6 @@
 import { useEffect, type RefObject } from 'react';
 import { findLeafById, useBrowserStore } from '@/stores/useBrowserStore';
+import { useAppStore } from '@/stores/useAppStore';
 import { useQuickAccessStore } from '@/stores/useQuickAccessStore';
 import {
   registerWebview,
@@ -85,7 +86,7 @@ export function useWebviewEvents(webviewRef: RefObject<WebviewElement | null>, p
         canGoBack: el.canGoBack(),
         canGoForward: el.canGoForward(),
       });
-      updateAnimePresence(paneId);
+      updateAnimePresence(paneId, useAppStore.getState().activeView);
     };
 
     const onDidNavigateInPage = (e: Event) => {
@@ -96,13 +97,13 @@ export function useWebviewEvents(webviewRef: RefObject<WebviewElement | null>, p
         canGoBack: el.canGoBack(),
         canGoForward: el.canGoForward(),
       });
-      updateAnimePresence(paneId);
+      updateAnimePresence(paneId, useAppStore.getState().activeView);
     };
 
     const onPageTitleUpdated = (e: Event) => {
       const detail = e as WebviewTitleEvent;
       updateTabState(paneId, { title: detail.title });
-      updateAnimePresence(paneId);
+      updateAnimePresence(paneId, useAppStore.getState().activeView);
     };
 
     const onPageFaviconUpdated = (e: Event) => {

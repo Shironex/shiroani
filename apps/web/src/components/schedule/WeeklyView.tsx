@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { memo, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { getDayNamesShort } from '@/lib/constants';
@@ -107,7 +107,7 @@ interface WeekEventCardProps {
   episodeLabel: string;
 }
 
-function WeekEventCard({
+const WeekEventCard = memo(function WeekEventCard({
   anime,
   status,
   membership,
@@ -207,4 +207,4 @@ function WeekEventCard({
       />
     </div>
   );
-}
+});

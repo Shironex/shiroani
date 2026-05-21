@@ -1,7 +1,7 @@
 import { IS_ELECTRON } from '@/lib/platform';
 import { hostFromUrl } from '@/lib/url-utils';
-import { findLeafById, useBrowserStore } from '@/stores/useBrowserStore';
-import { useAppStore } from '@/stores/useAppStore';
+import { findLeafById } from '@/stores/browser/browserTree';
+import { useBrowserStore } from '@/stores/useBrowserStore';
 import type { BrowserNode, DiscordPresenceActivity } from '@shiroani/shared';
 
 // ── Types ─────────────────────────────────────────────────────────
@@ -113,25 +113,25 @@ function detectYoutube(parsed: URL, pageTitle: string): AnimeDetection | null {
  * Checks the given tab for anime content and updates Discord Rich Presence.
  * Should be called after tab URL or title changes.
  *
- * Parameters are optional — when omitted, values are read from stores.
- * New callers should prefer passing data explicitly to avoid coupling
- * a lib utility to store internals.
+ * `activeView` is a required parameter so this lib utility never reaches back
+ * into `useAppStore` — that previously created a `useAppStore → anime-detection
+ * → useAppStore` import cycle. Callers read the active view at the call site
+ * and pass it in. `tabs`/`activePaneId` remain optional store-backed reads.
  */
 export function updateAnimePresence(
   paneId: string,
+  activeView: string,
   tabs?: BrowserNode[],
-  activePaneId?: string | null,
-  activeView?: string
+  activePaneId?: string | null
 ): void {
   if (!IS_ELECTRON) return;
 
   const _tabs = tabs ?? useBrowserStore.getState().tabs;
   const _activePaneId =
     activePaneId !== undefined ? activePaneId : useBrowserStore.getState().activePaneId;
-  const _activeView = activeView ?? useAppStore.getState().activeView;
 
   // Only update for the focused pane while the browser view is visible
-  if (paneId !== _activePaneId || _activeView !== 'browser') return;
+  if (paneId !== _activePaneId || activeView !== 'browser') return;
 
   const leaf = findLeafById(_tabs, paneId);
   if (!leaf) return;
@@ -166,6 +166,19 @@ export function updateAnimePresence(
  * pane wins. Non-focus paths (did-navigate, page-title-updated) keep calling
  * `updateAnimePresence` directly so URL/title changes still fire immediately.
  */
+/**
+ * Provider for the current active view, registered by `useAppStore` at module
+ * load. This inverts the old direct `useAppStore` import: rather than this lib
+ * reaching into the store (which created the import cycle), the store pushes a
+ * getter down here. Store-triggered debounced callers (switchTab/focusPane)
+ * read the view through this without importing `useAppStore` themselves.
+ */
+let activeViewProvider: (() => string) | null = null;
+
+export function setActiveViewProvider(provider: () => string): void {
+  activeViewProvider = provider;
+}
+
 const PRESENCE_DEBOUNCE_MS = 350;
 let presenceTimer: ReturnType<typeof setTimeout> | null = null;
 let pendingPaneId: string | null = null;
@@ -177,6 +190,6 @@ export function updateAnimePresenceDebounced(paneId: string): void {
     presenceTimer = null;
     const id = pendingPaneId;
     pendingPaneId = null;
-    if (id !== null) updateAnimePresence(id);
+    if (id !== null) updateAnimePresence(id, activeViewProvider?.() ?? '');
   }, PRESENCE_DEBOUNCE_MS);
 }

@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import {
   createLogger,
+  extractErrorMessage,
   type AnimeEntry,
   type DiaryEntry,
   type ShiroaniExportFormat,
@@ -122,7 +123,7 @@ export class ImportExportService {
       });
       return { ...baseResult, status: 'success' };
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Unknown error';
+      const message = extractErrorMessage(error, 'Unknown error');
       logger.error(`Error importing library entry "${entry.title}":`, error);
       return { ...baseResult, status: 'error', error: message };
     }
@@ -176,7 +177,7 @@ export class ImportExportService {
       });
       return { ...baseResult, status: 'success' };
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Unknown error';
+      const message = extractErrorMessage(error, 'Unknown error');
       logger.error(`Error importing diary entry "${entry.title}":`, error);
       return { ...baseResult, status: 'error', error: message };
     }

@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { memo, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Film } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -82,7 +82,13 @@ interface PosterCardProps {
   liveLabel: string;
 }
 
-function PosterCard({ anime, status, onClick, episodeLabel, liveLabel }: PosterCardProps) {
+const PosterCard = memo(function PosterCard({
+  anime,
+  status,
+  onClick,
+  episodeLabel,
+  liveLabel,
+}: PosterCardProps) {
   const title = getAnimeTitle(anime.media);
   // Prefer high-res cover for the hero treatment
   const coverUrl = anime.media.coverImage.large || anime.media.coverImage.medium;
@@ -98,12 +104,12 @@ function PosterCard({ anime, status, onClick, episodeLabel, liveLabel }: PosterC
       aria-label={title}
       className={cn(
         'group relative rounded-[9px] overflow-hidden border border-border-glass',
-        'transition-transform duration-200',
+        'transition-colors duration-200',
         'bg-[linear-gradient(150deg,oklch(0.45_0.14_280),oklch(0.28_0.1_330))]',
         isLive && 'border-primary/60 shadow-[0_0_18px_oklch(from_var(--primary)_l_c_h/0.35)]',
         isDone && 'opacity-55',
         onClick &&
-          'cursor-pointer hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
+          'cursor-pointer hover:border-primary/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
       )}
       style={{ aspectRatio: '2 / 2.6' }}
     >
@@ -166,4 +172,4 @@ function PosterCard({ anime, status, onClick, episodeLabel, liveLabel }: PosterC
       </div>
     </div>
   );
-}
+});

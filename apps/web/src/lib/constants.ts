@@ -10,6 +10,12 @@ export const MASCOT_WAVE_URL = `${import.meta.env.BASE_URL}chibi_wave.png`;
 /** Path to the sleeping mascot pose (used on splash updating/error + ErrorBoundary) */
 export const MASCOT_SLEEP_URL = `${import.meta.env.BASE_URL}chibi_sleep.png`;
 
+/**
+ * Upper bound for episode-count inputs when the real total is unknown.
+ * Used as the `max` for current/total episode number fields.
+ */
+export const MAX_EPISODES = 9999;
+
 // ============================================
 // Status — color/style config + i18n helpers
 // ============================================
