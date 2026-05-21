@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo, useEffect } from 'react';
+import { useState, useCallback, useMemo, useEffect, type ReactNode } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import { Plus, X, Eye, CalendarDays, Bookmark, Clock, Play, Globe2, History } from 'lucide-react';
@@ -9,6 +9,7 @@ import { APP_LOGO_URL } from '@/lib/constants';
 import { useProfileStore } from '@/stores/useProfileStore';
 import type { QuickAccessSite, FrequentSite, AiringAnime, AnimeEntry } from '@shiroani/shared';
 import { useQuickAccessStore } from '@/stores/useQuickAccessStore';
+import { useNewTabStore, type NewTabPanelId } from '@/stores/useNewTabStore';
 import { useScheduleStore } from '@/stores/useScheduleStore';
 import { useLibraryStore } from '@/stores/useLibraryStore';
 import { useNotificationStore } from '@/stores/useNotificationStore';
@@ -112,115 +113,99 @@ export function NewTabPage({ onNavigate }: NewTabPageProps) {
 
   const hiddenPredefined = PREDEFINED_SITES.filter(s => hiddenPredefinedIds.includes(s.id));
 
+  const hiddenPanels = useNewTabStore(s => s.hiddenPanels);
+  const panelOrder = useNewTabStore(s => s.order);
+  const showWatermark = useNewTabStore(s => s.showWatermark);
+  const showGreetingName = useNewTabStore(s => s.showGreetingName);
+  const airingCount = useNewTabStore(s => s.airingCount);
+
+  // Build the list of panels to render, in the user's order, dropping hidden
+  // ones. Quick Access and Recents render as a paired two-column sub-group only
+  // when both are visible and still adjacent in the order; otherwise each falls
+  // back to its own full-width block so hiding or reordering one never leaves a
+  // dangling empty column.
+  const renderedPanels = useMemo(() => {
+    const hidden = new Set(hiddenPanels);
+    const visible = panelOrder.filter(id => !hidden.has(id));
+
+    const node = (id: NewTabPanelId): ReactNode => {
+      switch (id) {
+        case 'greeting':
+          return <GreetingBanner showName={showGreetingName} />;
+        case 'airing':
+          return <AiringTodaySection maxCards={airingCount} />;
+        case 'quickAccess':
+          return (
+            <QuickAccessPanel
+              sites={sites}
+              hiddenPredefined={hiddenPredefined}
+              onNavigate={onNavigate}
+              onRemove={handleRemoveSite}
+              onAdd={() => setIsAddDialogOpen(true)}
+              onShowPredefined={showPredefined}
+            />
+          );
+        case 'recents':
+          return <RecentsPanel frequentSites={frequentSites} onNavigate={onNavigate} />;
+        case 'resume':
+          return <ResumeWatchingSection onNavigate={onNavigate} />;
+        default:
+          return null;
+      }
+    };
+
+    const out: ReactNode[] = [];
+    for (let i = 0; i < visible.length; i++) {
+      const id = visible[i];
+      const next = visible[i + 1];
+      if (id === 'quickAccess' && next === 'recents') {
+        out.push(
+          <div key="qa-recents" className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-4 mb-6">
+            {node('quickAccess')}
+            {node('recents')}
+          </div>
+        );
+        i++; // consumed the recents panel as part of the pair
+        continue;
+      }
+      const rendered = node(id);
+      // Skip the margin wrapper for panels that self-hide (e.g. Airing today
+      // with no entries) so they never leave a dangling empty gap.
+      if (rendered == null) continue;
+      out.push(
+        <div key={id} className="mb-6">
+          {rendered}
+        </div>
+      );
+    }
+    return out;
+  }, [
+    hiddenPanels,
+    panelOrder,
+    showGreetingName,
+    airingCount,
+    sites,
+    hiddenPredefined,
+    frequentSites,
+    onNavigate,
+    handleRemoveSite,
+    showPredefined,
+  ]);
+
   return (
     <div className="relative h-full overflow-hidden">
       {/* Decorative kanji watermark — 網 (mou: net / web).
           Clipped wrapper keeps the glyph's negative offsets from producing
           scrollbars on either axis. */}
-      <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
-        <KanjiWatermark kanji="網" position="br" size={320} opacity={0.03} />
-      </div>
+      {showWatermark && (
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
+          <KanjiWatermark kanji="網" position="br" size={320} opacity={0.03} />
+        </div>
+      )}
 
       <div className="absolute inset-0 overflow-y-auto overflow-x-hidden">
         <div className="relative z-[1] mx-auto w-full max-w-5xl px-7 pt-8 pb-20">
-          {/* Greeting banner — time-aware hello + today's queue teaser */}
-          <GreetingBanner />
-
-          {/* Airing today horizontal scroll (kept from previous phase) */}
-          <AiringTodaySection />
-
-          {/* Main grid: Szybki dostęp + Ostatnio odwiedzone */}
-          <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-4 mb-6">
-            {/* Quick Access panel */}
-            <section
-              aria-labelledby="newtab-quick-access"
-              className="relative rounded-[14px] border border-border-glass bg-foreground/[0.025] p-4 overflow-hidden min-w-0"
-            >
-              <PanelHeader
-                id="newtab-quick-access"
-                icon={Bookmark}
-                title={t('newTab.quickAccess.title')}
-                meta={t('newTab.quickAccess.tabsCount', { count: sites.length })}
-              />
-
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5">
-                {sites.map(site => (
-                  <SiteCard
-                    key={site.id}
-                    site={site}
-                    onClick={() => onNavigate(site.url)}
-                    onRemove={() => handleRemoveSite(site)}
-                  />
-                ))}
-                {/* Add site button — tile shape */}
-                <button
-                  onClick={() => setIsAddDialogOpen(true)}
-                  aria-label={t('newTab.quickAccess.addAria')}
-                  className={cn(
-                    'group relative flex aspect-[1.7] flex-col items-center justify-center gap-1.5',
-                    'rounded-[10px] border border-dashed border-border-glass bg-foreground/[0.02]',
-                    'text-muted-foreground transition-colors',
-                    'hover:border-primary/40 hover:bg-primary/[0.06] hover:text-primary cursor-pointer'
-                  )}
-                >
-                  <Plus className="w-4 h-4" />
-                  <span className="font-mono text-[9px] uppercase tracking-[0.15em]">
-                    {t('newTab.quickAccess.add')}
-                  </span>
-                </button>
-              </div>
-
-              {hiddenPredefined.length > 0 && (
-                <div className="mt-4 pt-3 border-t border-border-glass/60">
-                  <h3 className="mb-2 font-mono text-[9.5px] uppercase tracking-[0.16em] text-muted-foreground/80">
-                    {t('newTab.quickAccess.hiddenTitle')}
-                  </h3>
-                  <div className="flex flex-wrap gap-1.5">
-                    {hiddenPredefined.map(site => (
-                      <button
-                        key={site.id}
-                        onClick={() => showPredefined(site.id)}
-                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-foreground/[0.04] hover:bg-foreground/[0.08] text-[11px] text-muted-foreground hover:text-foreground/80 transition-colors cursor-pointer"
-                      >
-                        <Eye className="w-3 h-3" />
-                        {site.name}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </section>
-
-            {/* Recent visits panel */}
-            <section
-              aria-labelledby="newtab-recent"
-              className="relative rounded-[14px] border border-border-glass bg-foreground/[0.025] p-4 overflow-hidden min-w-0"
-            >
-              <PanelHeader
-                id="newtab-recent"
-                icon={Clock}
-                title={t('newTab.recents.title')}
-                meta={frequentSites.length > 0 ? `${frequentSites.length}` : undefined}
-              />
-
-              {frequentSites.length > 0 ? (
-                <div className="flex flex-col gap-0.5">
-                  {frequentSites.slice(0, 8).map(site => (
-                    <FrequentSiteRow
-                      key={site.url}
-                      site={site}
-                      onClick={() => onNavigate(site.url)}
-                    />
-                  ))}
-                </div>
-              ) : (
-                <EmptyRecents />
-              )}
-            </section>
-          </div>
-
-          {/* Resume watching — pulls from library */}
-          <ResumeWatchingSection onNavigate={onNavigate} />
+          {renderedPanels}
         </div>
       </div>
 
@@ -296,7 +281,119 @@ function PanelHeader({ id, icon: Icon, title, meta }: PanelHeaderProps) {
   );
 }
 
-const MAX_AIRING_CARDS = 12;
+interface QuickAccessPanelProps {
+  sites: QuickAccessSite[];
+  hiddenPredefined: QuickAccessSite[];
+  onNavigate: (url: string) => void;
+  onRemove: (site: QuickAccessSite) => void;
+  onAdd: () => void;
+  onShowPredefined: (id: string) => void;
+}
+
+/** Quick Access panel — tile grid of saved/predefined sites plus an add tile. */
+function QuickAccessPanel({
+  sites,
+  hiddenPredefined,
+  onNavigate,
+  onRemove,
+  onAdd,
+  onShowPredefined,
+}: QuickAccessPanelProps) {
+  const { t } = useTranslation('browser');
+  return (
+    <section
+      aria-labelledby="newtab-quick-access"
+      className="relative rounded-[14px] border border-border-glass bg-foreground/[0.025] p-4 overflow-hidden min-w-0"
+    >
+      <PanelHeader
+        id="newtab-quick-access"
+        icon={Bookmark}
+        title={t('newTab.quickAccess.title')}
+        meta={t('newTab.quickAccess.tabsCount', { count: sites.length })}
+      />
+
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5">
+        {sites.map(site => (
+          <SiteCard
+            key={site.id}
+            site={site}
+            onClick={() => onNavigate(site.url)}
+            onRemove={() => onRemove(site)}
+          />
+        ))}
+        {/* Add site button — tile shape */}
+        <button
+          onClick={onAdd}
+          aria-label={t('newTab.quickAccess.addAria')}
+          className={cn(
+            'group relative flex aspect-[1.7] flex-col items-center justify-center gap-1.5',
+            'rounded-[10px] border border-dashed border-border-glass bg-foreground/[0.02]',
+            'text-muted-foreground transition-colors',
+            'hover:border-primary/40 hover:bg-primary/[0.06] hover:text-primary cursor-pointer'
+          )}
+        >
+          <Plus className="w-4 h-4" />
+          <span className="font-mono text-[9px] uppercase tracking-[0.15em]">
+            {t('newTab.quickAccess.add')}
+          </span>
+        </button>
+      </div>
+
+      {hiddenPredefined.length > 0 && (
+        <div className="mt-4 pt-3 border-t border-border-glass/60">
+          <h3 className="mb-2 font-mono text-[9.5px] uppercase tracking-[0.16em] text-muted-foreground/80">
+            {t('newTab.quickAccess.hiddenTitle')}
+          </h3>
+          <div className="flex flex-wrap gap-1.5">
+            {hiddenPredefined.map(site => (
+              <button
+                key={site.id}
+                onClick={() => onShowPredefined(site.id)}
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-foreground/[0.04] hover:bg-foreground/[0.08] text-[11px] text-muted-foreground hover:text-foreground/80 transition-colors cursor-pointer"
+              >
+                <Eye className="w-3 h-3" />
+                {site.name}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </section>
+  );
+}
+
+interface RecentsPanelProps {
+  frequentSites: FrequentSite[];
+  onNavigate: (url: string) => void;
+}
+
+/** Recent visits panel — favicon rows of the most frequent sites. */
+function RecentsPanel({ frequentSites, onNavigate }: RecentsPanelProps) {
+  const { t } = useTranslation('browser');
+  return (
+    <section
+      aria-labelledby="newtab-recent"
+      className="relative rounded-[14px] border border-border-glass bg-foreground/[0.025] p-4 overflow-hidden min-w-0"
+    >
+      <PanelHeader
+        id="newtab-recent"
+        icon={Clock}
+        title={t('newTab.recents.title')}
+        meta={frequentSites.length > 0 ? `${frequentSites.length}` : undefined}
+      />
+
+      {frequentSites.length > 0 ? (
+        <div className="flex flex-col gap-0.5">
+          {frequentSites.slice(0, 8).map(site => (
+            <FrequentSiteRow key={site.url} site={site} onClick={() => onNavigate(site.url)} />
+          ))}
+        </div>
+      ) : (
+        <EmptyRecents />
+      )}
+    </section>
+  );
+}
 
 /**
  * Time-aware greeting banner shown at the top of the newtab page.
@@ -319,7 +416,7 @@ const MAX_AIRING_CARDS = 12;
  *   2. Today's schedule teaser
  *   3. "Miłego oglądania." fallback
  */
-function GreetingBanner() {
+function GreetingBanner({ showName }: { showName: boolean }) {
   const { t } = useTranslation('browser');
   const profile = useProfileStore(s => s.profile);
   const storedUsername = useProfileStore(s => s.username);
@@ -351,7 +448,7 @@ function GreetingBanner() {
   }, [t]);
 
   return (
-    <header className="mb-6 flex items-center gap-4">
+    <header className="flex items-center gap-4">
       <div
         aria-hidden="true"
         className={cn(
@@ -366,7 +463,7 @@ function GreetingBanner() {
       <div className="min-w-0 flex-1">
         <h1 className="font-serif text-[26px] font-extrabold leading-tight tracking-[-0.02em] text-foreground">
           {greeting}
-          {displayName && (
+          {showName && displayName && (
             <>
               , <span className="text-primary">{displayName}</span>
             </>
@@ -439,7 +536,7 @@ function GreetingSubtitle({ episodesWaiting, unreadFeedCount, todayCount }: Gree
 }
 
 /** Airing Today section — horizontal scrolling poster cards */
-function AiringTodaySection() {
+function AiringTodaySection({ maxCards }: { maxCards: number }) {
   const { t } = useTranslation('browser');
   const todayKey = useMemo(() => toLocalDate(new Date()), []);
 
@@ -483,15 +580,15 @@ function AiringTodaySection() {
 
     const all = [...user, ...other];
     return {
-      cards: all.slice(0, MAX_AIRING_CARDS),
-      hasMore: all.length > MAX_AIRING_CARDS,
+      cards: all.slice(0, maxCards),
+      hasMore: all.length > maxCards,
     };
-  }, [todayEntries, libraryAnilistIds, subscribedIds]);
+  }, [todayEntries, libraryAnilistIds, subscribedIds, maxCards]);
 
   // Loading state
   if (!todayEntries && isLoading) {
     return (
-      <div className="mb-6">
+      <div>
         <div className="mb-3 flex items-center gap-2">
           <span className="grid size-5 place-items-center rounded-md bg-primary/12 text-primary shrink-0">
             <CalendarDays className="w-3 h-3" />
@@ -516,7 +613,7 @@ function AiringTodaySection() {
   if (!todayEntries || todayEntries.length === 0) return null;
 
   return (
-    <div className="mb-6">
+    <div>
       <div className="mb-3 flex items-center gap-2">
         <span className="grid size-5 place-items-center rounded-md bg-primary/12 text-primary shrink-0">
           <CalendarDays className="w-3 h-3" />

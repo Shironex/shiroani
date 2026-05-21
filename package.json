@@ -49,6 +49,7 @@
   "scripts": {
     "dev": "pnpm build:packages && concurrently -k -n web,desktop -c cyan,yellow \"pnpm dev:web\" \"wait-on http://localhost:15174 && pnpm --filter @shiroani/desktop dev\"",
     "dev:debug": "LOG_LEVEL=debug pnpm dev",
+    "dev:inspect": "pnpm build:packages && concurrently -k -n web,desktop -c cyan,yellow \"pnpm dev:web\" \"wait-on http://localhost:15174 && pnpm --filter @shiroani/desktop dev:inspect\"",
     "dev:web": "pnpm --filter @shiroani/web dev",
     "dev:landing": "pnpm --filter @shiroani/landing dev",
     "build": "pnpm build:packages && pnpm --filter @shiroani/web build && pnpm --filter @shiroani/desktop build",

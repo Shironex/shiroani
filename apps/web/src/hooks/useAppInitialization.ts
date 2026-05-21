@@ -8,6 +8,7 @@ import { useFeedStore } from '@/stores/useFeedStore';
 import { useConnectionStore } from '@/stores/useConnectionStore';
 import { useUpdateStore } from '@/stores/useUpdateStore';
 import { useQuickAccessStore } from '@/stores/useQuickAccessStore';
+import { useNewTabStore } from '@/stores/useNewTabStore';
 
 const logger = createLogger('AppInit');
 
@@ -117,6 +118,13 @@ export function useAppInitialization(): { ready: boolean; error: string | null }
           await useQuickAccessStore.getState().loadSites();
         } catch {
           // Non-critical — quick access will use defaults
+        }
+
+        // Restore new tab page customization (panel order, visibility, counts)
+        try {
+          await useNewTabStore.getState().initNewTab();
+        } catch {
+          // Non-critical — new tab page will use defaults
         }
 
         setReady(true);

@@ -244,6 +244,39 @@
     "resetDescription": "Restore the default icon order and show every section again.",
     "resetAction": "Reset to defaults"
   },
+  "newtab": {
+    "card": {
+      "title": "New tab page",
+      "subtitle": "Show or hide panels and set their order."
+    },
+    "reorderHint": "Drag the handle to reorder panels.",
+    "dragHandleAria": "Reorder {{label}}",
+    "panels": {
+      "greeting": "Greeting",
+      "airing": "Airing today",
+      "quickAccess": "Quick access",
+      "recents": "Recently visited",
+      "resume": "Continue watching"
+    },
+    "watermark": {
+      "title": "Kanji watermark",
+      "description": "Show the decorative kanji glyph in the background."
+    },
+    "greetingName": {
+      "title": "Show name in greeting",
+      "description": "Display the name next to the greeting on the new tab page."
+    },
+    "airingCount": {
+      "title": "Airing today card count",
+      "description": "Maximum number of titles shown."
+    },
+    "resetTitle": "Layout and visibility",
+    "resetDescription": "Restore the default order and show every panel.",
+    "resetAction": "Reset to defaults",
+    "preview": {
+      "allHidden": "All panels hidden."
+    }
+  },
   "browser": {
     "adblock": {
       "card": {
@@ -571,6 +604,8 @@
     "generalSubtitle": "Basic app settings",
     "browser": "Browser",
     "browserSubtitle": "Built-in browser settings",
+    "newtab": "New tab",
+    "newtabSubtitle": "Layout and panels of the new tab page",
     "notifications": "Notifications",
     "notificationsSubtitle": "New episodes and airing schedule",
     "themes": "Themes",
