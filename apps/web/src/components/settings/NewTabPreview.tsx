@@ -1,6 +1,11 @@
-import type { ReactNode } from 'react';
+import { useMemo, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNewTabStore, type NewTabPanelId } from '@/stores/useNewTabStore';
+import {
+  useNewTabStore,
+  type NewTabPanelId,
+  AIRING_COUNT_MIN,
+  AIRING_COUNT_MAX,
+} from '@/stores/useNewTabStore';
 import { cn } from '@/lib/utils';
 
 /**
@@ -23,27 +28,29 @@ export function NewTabPreview() {
   const showGreetingName = useNewTabStore(s => s.showGreetingName);
   const airingCount = useNewTabStore(s => s.airingCount);
 
-  const hidden = new Set(hiddenPanels);
-  const visible = order.filter(id => !hidden.has(id));
-
-  const rows: ReactNode[] = [];
-  for (let i = 0; i < visible.length; i++) {
-    const id = visible[i];
-    // Pair Quick Access + Recents into one two-column row, mirroring NewTabPage.
-    if (id === 'quickAccess' && visible[i + 1] === 'recents') {
-      rows.push(
-        <div key="qa-recents" className="flex min-h-0 gap-1.5">
-          <MiniQuickAccess className="flex-[1.7]" />
-          <MiniRecents className="flex-1" />
-        </div>
+  const rows = useMemo(() => {
+    const hidden = new Set(hiddenPanels);
+    const visible = order.filter(id => !hidden.has(id));
+    const result: ReactNode[] = [];
+    for (let i = 0; i < visible.length; i++) {
+      const id = visible[i];
+      // Pair Quick Access + Recents into one two-column row, mirroring NewTabPage.
+      if (id === 'quickAccess' && visible[i + 1] === 'recents') {
+        result.push(
+          <div key="qa-recents" className="flex min-h-0 gap-1.5">
+            <MiniQuickAccess className="flex-[1.7]" />
+            <MiniRecents className="flex-1" />
+          </div>
+        );
+        i++; // consumed recents as part of the pair
+        continue;
+      }
+      result.push(
+        <MiniPanel key={id} id={id} showGreetingName={showGreetingName} airingCount={airingCount} />
       );
-      i++; // consumed recents as part of the pair
-      continue;
     }
-    rows.push(
-      <MiniPanel key={id} id={id} showGreetingName={showGreetingName} airingCount={airingCount} />
-    );
-  }
+    return result;
+  }, [order, hiddenPanels, showGreetingName, airingCount]);
 
   return (
     <div
@@ -74,7 +81,7 @@ export function NewTabPreview() {
         </span>
       )}
 
-      {visible.length === 0 ? (
+      {rows.length === 0 ? (
         <div className="relative grid h-full place-items-center px-6">
           <p className="text-center text-[11.5px] font-medium text-muted-foreground/80">
             {t('newtab.preview.allHidden')}
@@ -145,10 +152,10 @@ function MiniGreeting({ showName }: { showName: boolean }) {
 }
 
 function MiniAiring({ count }: { count: number }) {
-  // Map 1:1 to the count across its full 6–20 range so dragging the slider
-  // visibly lengthens the filmstrip; overflow-hidden clips the tail on narrow
-  // windows rather than wrapping.
-  const posters = Math.max(1, Math.min(count, 20));
+  // Map 1:1 to the count across its full range so dragging the slider visibly
+  // lengthens the filmstrip; overflow-hidden clips the tail on narrow windows
+  // rather than wrapping.
+  const posters = Math.max(AIRING_COUNT_MIN, Math.min(count, AIRING_COUNT_MAX));
   return (
     <MiniSection>
       <div className="flex gap-1 overflow-hidden">
