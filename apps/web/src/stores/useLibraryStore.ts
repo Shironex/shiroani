@@ -6,7 +6,8 @@ import {
   createSocketActions,
   createSocketListeners,
 } from '@/stores/utils/createSocketStore';
-import { createMemoizedSelector } from '@/stores/utils/createMemoizedSelector';
+import { createFilteredListSelector } from '@/stores/utils/createFilteredListSelector';
+import { createCrudResource } from '@/stores/utils/createCrudResource';
 import {
   type AnimeEntry,
   type AnimeStatus,
@@ -62,6 +63,23 @@ export const useLibraryStore = create<LibraryStore>()(
     (set, get) => {
       const socketActions = createSocketActions<LibraryStore>(set, 'library');
 
+      const crud = createCrudResource<AnimeEntry, LibraryStore>({
+        set,
+        get,
+        storeName: 'library',
+        logger,
+        events: { getAll: LibraryEvents.GET_ALL },
+      });
+
+      const onLibraryUpdated = crud.createUpdatedListener({
+        addActions: ['added'],
+        onAdded: (state, entry) => ({ entries: [...state.entries, entry] }),
+        onUpdated: (state, entry) => ({
+          entries: state.entries.map(e => (e.id === entry.id ? entry : e)),
+        }),
+        onRemoved: (state, id) => ({ entries: state.entries.filter(e => e.id !== id) }),
+      });
+
       const { initListeners, cleanupListeners } = createSocketListeners<LibraryStore>(
         get,
         set,
@@ -77,35 +95,7 @@ export const useLibraryStore = create<LibraryStore>()(
             },
             {
               event: LibraryEvents.UPDATED,
-              handler: data => {
-                const { action } = data as { action: string };
-                if (action === 'added') {
-                  const { entry } = data as { entry: AnimeEntry; action: string };
-                  set(
-                    state => ({ entries: [...state.entries, entry] }),
-                    undefined,
-                    'library/entryAdded'
-                  );
-                } else if (action === 'updated') {
-                  const { entry } = data as { entry: AnimeEntry; action: string };
-                  set(
-                    state => ({
-                      entries: state.entries.map(e => (e.id === entry.id ? entry : e)),
-                    }),
-                    undefined,
-                    'library/entryUpdated'
-                  );
-                } else if (action === 'removed') {
-                  const { id } = data as { id: number; action: string };
-                  set(
-                    state => ({ entries: state.entries.filter(e => e.id !== id) }),
-                    undefined,
-                    'library/entryRemoved'
-                  );
-                } else if (action === 'imported') {
-                  get().fetchLibrary();
-                }
-              },
+              handler: onLibraryUpdated,
             },
           ],
           onConnect: () => {
@@ -131,22 +121,7 @@ export const useLibraryStore = create<LibraryStore>()(
 
         // Actions
         fetchLibrary: () => {
-          set({ isLoading: true }, undefined, 'library/fetching');
-          emitWithErrorHandling<Record<string, never>, { entries: AnimeEntry[] }>(
-            LibraryEvents.GET_ALL,
-            {}
-          )
-            .then(data => {
-              set(
-                { entries: data.entries ?? [], isLoading: false, error: null },
-                undefined,
-                'library/result'
-              );
-            })
-            .catch((err: Error) => {
-              logger.error('Failed to fetch library:', err.message);
-              set({ isLoading: false, error: err.message }, undefined, 'library/fetchError');
-            });
+          crud.fetchAll();
         },
 
         addToLibrary: (payload: LibraryAddPayload) => {
@@ -162,42 +137,27 @@ export const useLibraryStore = create<LibraryStore>()(
         },
 
         updateEntry: (payload: LibraryUpdatePayload) => {
-          // Optimistic update — normalize null anilistId to undefined for AnimeEntry compat
-          const { anilistId, ...rest } = payload;
-          const optimistic = {
-            ...rest,
-            ...(anilistId !== undefined ? { anilistId: anilistId ?? undefined } : {}),
-          };
-          set(
-            state => ({
-              entries: state.entries.map(e => (e.id === payload.id ? { ...e, ...optimistic } : e)),
-            }),
-            undefined,
-            'library/optimisticUpdate'
-          );
-          emitWithErrorHandling(LibraryEvents.UPDATE, payload).catch((err: Error) => {
-            logger.error('Failed to update entry:', err.message);
-            // Re-fetch on error to restore correct state
-            get().fetchLibrary();
+          crud.optimisticUpdate({
+            event: LibraryEvents.UPDATE,
+            payload,
+            id: payload.id,
+            applyUpdate: (existing, p) => {
+              // Normalize null anilistId to undefined for AnimeEntry compat
+              const { anilistId, ...rest } = p;
+              return {
+                ...existing,
+                ...rest,
+                ...(anilistId !== undefined ? { anilistId: anilistId ?? undefined } : {}),
+              };
+            },
           });
         },
 
         removeFromLibrary: (id: number) => {
-          const previousEntries = get().entries;
-          // Optimistic removal
-          set(
-            state => ({
-              entries: state.entries.filter(e => e.id !== id),
-              isDetailOpen: false,
-              selectedEntry: null,
-            }),
-            undefined,
-            'library/optimisticRemove'
-          );
-          emitWithErrorHandling(LibraryEvents.REMOVE, { id }).catch((err: Error) => {
-            logger.error('Failed to remove from library:', err.message);
-            // Restore on error
-            set({ entries: previousEntries }, undefined, 'library/removeError');
+          crud.optimisticRemove({
+            event: LibraryEvents.REMOVE,
+            id,
+            extra: () => ({ isDetailOpen: false, selectedEntry: null }),
           });
         },
 
@@ -248,32 +208,26 @@ export const useLibraryStore = create<LibraryStore>()(
  *
  * Use with: useLibraryStore(getFilteredEntries)
  */
-export const getFilteredEntries = createMemoizedSelector(
-  (
-    state: Pick<LibraryState, 'entries' | 'activeFilter' | 'searchQuery' | 'sortBy' | 'sortOrder'>
-  ): AnimeEntry[] => {
-    const { entries, activeFilter, searchQuery, sortBy, sortOrder } = state;
+type LibraryFilterState = Pick<
+  LibraryState,
+  'entries' | 'activeFilter' | 'searchQuery' | 'sortBy' | 'sortOrder'
+>;
 
-    let filtered = entries;
-
-    // Filter by status
-    if (activeFilter !== 'all') {
-      filtered = filtered.filter(e => e.status === activeFilter);
-    }
-
-    // Filter by search
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(
-        e =>
-          e.title.toLowerCase().includes(query) ||
-          e.titleRomaji?.toLowerCase().includes(query) ||
-          e.titleNative?.toLowerCase().includes(query)
-      );
-    }
-
-    // Sort
-    const sorted = [...filtered].sort((a, b) => {
+export const getFilteredEntries = createFilteredListSelector<AnimeEntry, LibraryFilterState>({
+  selectItems: state => state.entries,
+  matchesFilter: ({ activeFilter }) =>
+    activeFilter === 'all' ? null : e => e.status === activeFilter,
+  matchesSearch: ({ searchQuery }) => {
+    if (!searchQuery.trim()) return null;
+    const query = searchQuery.toLowerCase();
+    return e =>
+      e.title.toLowerCase().includes(query) ||
+      (e.titleRomaji?.toLowerCase().includes(query) ?? false) ||
+      (e.titleNative?.toLowerCase().includes(query) ?? false);
+  },
+  comparator:
+    ({ sortBy, sortOrder }) =>
+    (a, b) => {
       let cmp = 0;
       switch (sortBy) {
         case 'title':
@@ -290,8 +244,5 @@ export const getFilteredEntries = createMemoizedSelector(
           break;
       }
       return sortOrder === 'asc' ? cmp : -cmp;
-    });
-
-    return sorted;
-  }
-);
+    },
+});
