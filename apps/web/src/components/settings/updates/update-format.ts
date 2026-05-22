@@ -30,7 +30,7 @@ export function formatRelativeTime(
   justNow: string,
   todayTemplate: (time: string) => string
 ): string | null {
-  if (!epochMs) return null;
+  if (epochMs == null) return null;
   const now = Date.now();
   const diff = now - epochMs;
   if (diff < 0) return null;

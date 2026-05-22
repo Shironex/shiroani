@@ -34,6 +34,10 @@ describe('formatRelativeTime', () => {
     expect(formatRelativeTime(null, 'en', justNow, today)).toBeNull();
   });
 
+  it('does not treat epoch 0 as a missing timestamp', () => {
+    expect(formatRelativeTime(0, 'en', justNow, today)).not.toBeNull();
+  });
+
   it('returns null for future timestamps', () => {
     expect(formatRelativeTime(NOW + 60_000, 'en', justNow, today)).toBeNull();
   });
