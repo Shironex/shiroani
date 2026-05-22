@@ -11,6 +11,7 @@ import {
   FeedEvents,
   feedGetItemsPayloadSchema,
   feedToggleSourcePayloadSchema,
+  feedGetArticlePayloadSchema,
 } from '@shiroani/shared';
 import { CORS_CONFIG } from '../kernel/cors.config';
 import { WsThrottlerGuard } from '../kernel/ws-throttler.guard';
@@ -69,6 +70,20 @@ export class FeedGateway {
         const sources = this.feedService.getAllSources();
         this.server.emit(FeedEvents.SOURCES_RESULT, { sources });
         return { sources };
+      },
+    });
+  }
+
+  @SubscribeMessage(FeedEvents.GET_ARTICLE)
+  handleGetArticle(@MessageBody() payload: unknown) {
+    return handleGatewayRequest({
+      logger,
+      action: 'feed:get-article',
+      defaultResult: { contentHtml: null },
+      schema: feedGetArticlePayloadSchema,
+      payload,
+      handler: async parsed => {
+        return this.feedService.getArticleContent(parsed.url);
       },
     });
   }

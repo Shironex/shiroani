@@ -5,10 +5,12 @@ import {
   DEFAULT_FEED_SOURCES,
   type FeedGetItemsPayload,
   type FeedGetItemsResult,
+  type FeedGetArticleResult,
   type FeedSource,
 } from '@shiroani/shared';
 import { DatabaseService } from '../database';
 import { FeedCacheService } from './feed-cache.service';
+import { ArticleExtractorService } from './article-extractor.service';
 import { rowToItem, rowToSource, type FeedItemRow, type FeedSourceRow } from './feed.types';
 
 const logger = createLogger('FeedService');
@@ -23,7 +25,8 @@ export class FeedService implements OnModuleInit {
 
   constructor(
     private readonly databaseService: DatabaseService,
-    private readonly cache: FeedCacheService
+    private readonly cache: FeedCacheService,
+    private readonly articleExtractor: ArticleExtractorService
   ) {
     logger.info('FeedService initialized');
   }
@@ -43,8 +46,8 @@ export class FeedService implements OnModuleInit {
       return;
     }
     const insert = db.prepare(
-      `INSERT INTO feed_sources (name, url, site_url, category, language, color, icon, poll_interval_minutes)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+      `INSERT INTO feed_sources (name, url, site_url, category, language, color, icon, poll_interval_minutes, supports_full_content)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
     );
     db.transaction(() => {
       for (const s of DEFAULT_FEED_SOURCES) {
@@ -56,7 +59,8 @@ export class FeedService implements OnModuleInit {
           s.language,
           s.color,
           s.icon ?? null,
-          s.pollIntervalMinutes
+          s.pollIntervalMinutes,
+          s.supportsFullContent === false ? 0 : 1
         );
       }
     })();
@@ -108,7 +112,8 @@ export class FeedService implements OnModuleInit {
     const rows = db
       .prepare(
         `SELECT fi.*, fs.name as source_name, fs.color as source_color, fs.icon as source_icon,
-                fs.category as source_category, fs.language as source_language
+                fs.category as source_category, fs.language as source_language,
+                fs.supports_full_content as source_supports_full_content
          FROM feed_items fi
          JOIN feed_sources fs ON fi.feed_source_id = fs.id ${whereClause}
          ORDER BY fi.published_at DESC, fi.created_at DESC
@@ -120,6 +125,56 @@ export class FeedService implements OnModuleInit {
       total: countRow.total,
       hasMore: offset + limit < countRow.total,
     };
+  }
+
+  /**
+   * Extract the full article body for a teaser-only item on demand.
+   *
+   * Delegates to the SSRF-guarded {@link ArticleExtractorService}. On success
+   * the body is persisted back into the matching `feed_items.content_html` row
+   * (keyed by URL) so subsequent opens are instant and offline-readable. Always
+   * resolves — failures return `{ contentHtml: null }` so the reader can fall
+   * back to the teaser + CTA.
+   */
+  async getArticleContent(url: string): Promise<FeedGetArticleResult> {
+    // If a body is already stored (Phase 1 feed body or a prior extraction),
+    // return it without re-fetching the page.
+    const db = this.databaseService.db;
+    const existing = db
+      .prepare('SELECT content_html FROM feed_items WHERE url = ? AND content_html IS NOT NULL')
+      .get(url) as { content_html: string } | undefined;
+    if (existing?.content_html) {
+      return { contentHtml: existing.content_html };
+    }
+
+    // Respect the source's extraction flag: sources whose pages extract poorly
+    // (SPA, navigation/archive bleed) or have no body are not scraped on demand —
+    // the reader falls back to the teaser + CTA.
+    const source = db
+      .prepare(
+        `SELECT fs.supports_full_content AS flag
+         FROM feed_items fi JOIN feed_sources fs ON fi.feed_source_id = fs.id
+         WHERE fi.url = ? LIMIT 1`
+      )
+      .get(url) as { flag: number } | undefined;
+    if (source && source.flag === 0) {
+      return { contentHtml: null, error: 'extraction-disabled' };
+    }
+
+    const result = await this.articleExtractor.extract(url);
+    if (result.contentHtml) {
+      try {
+        db.prepare('UPDATE feed_items SET content_html = ? WHERE url = ?').run(
+          result.contentHtml,
+          url
+        );
+      } catch (error) {
+        logger.warn(
+          `Failed to persist extracted article for ${url}: ${extractErrorMessage(error, 'unknown')}`
+        );
+      }
+    }
+    return result;
   }
 
   /** Refresh all enabled feeds. Returns the count of newly inserted items. */
@@ -160,8 +215,16 @@ export class FeedService implements OnModuleInit {
       const parsedItems = await this.cache.fetch(source.url);
       const insert = db.prepare(
         `INSERT OR IGNORE INTO feed_items
-          (feed_source_id, guid, title, description, url, author, image_url, published_at, categories, content_hash)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+          (feed_source_id, guid, title, description, content_html, url, author, image_url, published_at, categories, content_hash)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      );
+      // Backfill the full-article body onto items that predate the content_html
+      // column (or were inserted before the source shipped one). Only fills when
+      // the stored body is still NULL, so it never counts as a "new" item and
+      // never clobbers an existing body.
+      const backfill = db.prepare(
+        `UPDATE feed_items SET content_html = ?
+         WHERE feed_source_id = ? AND guid = ? AND content_html IS NULL`
       );
       let newCount = 0;
       const insertAll = db.transaction(() => {
@@ -171,6 +234,7 @@ export class FeedService implements OnModuleInit {
             item.guid,
             item.title,
             item.description,
+            item.contentHtml,
             item.url,
             item.author,
             item.imageUrl,
@@ -178,7 +242,11 @@ export class FeedService implements OnModuleInit {
             item.categories,
             item.contentHash
           );
-          if (result.changes > 0) newCount++;
+          if (result.changes > 0) {
+            newCount++;
+          } else if (item.contentHtml) {
+            backfill.run(item.contentHtml, source.id, item.guid);
+          }
         }
       });
       insertAll();
