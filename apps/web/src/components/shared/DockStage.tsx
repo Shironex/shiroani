@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
+import { PreviewStage } from '@/components/shared/PreviewStage';
 import type { DockEdge } from '@/stores/useDockStore';
 
 export interface DockStageItem {
@@ -29,26 +30,9 @@ interface DockStageProps {
  */
 export function DockStage({ edge, height = 144, className, items }: DockStageProps) {
   return (
-    <div
-      className={cn('relative overflow-hidden rounded-xl border border-border-glass', className)}
-      style={{
-        height,
-        background:
-          'linear-gradient(135deg, oklch(0.14 0.02 300), oklch(0.1 0.02 280)), radial-gradient(circle at 70% 30%, oklch(0.5 0.15 355 / 0.25), transparent 60%)',
-        backgroundBlendMode: 'overlay',
-      }}
-    >
-      <div
-        aria-hidden="true"
-        className="absolute inset-0"
-        style={{
-          backgroundImage:
-            'linear-gradient(oklch(1 0 0 / 0.03) 1px, transparent 1px), linear-gradient(90deg, oklch(1 0 0 / 0.03) 1px, transparent 1px)',
-          backgroundSize: '20px 20px',
-        }}
-      />
+    <PreviewStage height={height} className={className}>
       <MiniDock edge={edge} items={items} />
-    </div>
+    </PreviewStage>
   );
 }
 
