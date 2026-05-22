@@ -4,7 +4,11 @@ import { Sparkles } from 'lucide-react';
 import { tDynamic } from '@/lib/i18n';
 import { PillTag } from '@/components/ui/pill-tag';
 import { SettingsCard } from '@/components/settings/SettingsCard';
-import { getChangelogReleases, CHANGELOG_CATEGORY_VARIANT } from '@/lib/changelog-entries';
+import {
+  getChangelogReleases,
+  CHANGELOG_CATEGORY_VARIANT,
+  type ChangelogCategoryKind,
+} from '@/lib/changelog-entries';
 
 /**
  * Historia zmian preview — pill-tagged summary of the latest release. Short
@@ -23,7 +27,11 @@ export function LatestReleaseHighlights() {
   for (const cat of latest.categories) {
     for (const entry of cat.entries) {
       if (rows.length >= MAX_ROWS) break;
-      rows.push({ variant: variantFor(cat.kind), label: shortLabel(cat.label, i18n), entry });
+      rows.push({
+        variant: variantFor(cat.kind),
+        label: shortLabel(cat.kind, cat.label, i18n),
+        entry,
+      });
     }
     if (rows.length >= MAX_ROWS) break;
   }
@@ -43,7 +51,7 @@ export function LatestReleaseHighlights() {
           <li key={i} className="contents">
             <PillTag
               variant={row.variant}
-              className="w-full justify-center mt-[3px] !text-[8.5px] !px-1.5 !py-[2px]"
+              className="w-full justify-center mt-[3px] text-[8.5px]! px-1.5! py-[2px]!"
             >
               {row.label}
             </PillTag>
@@ -59,16 +67,18 @@ function variantFor(kind: keyof typeof CHANGELOG_CATEGORY_VARIANT) {
   return CHANGELOG_CATEGORY_VARIANT[kind];
 }
 
+// Map the stable category kind (language-agnostic) to its localized short tag.
+// Keying off `kind` rather than the localized label keeps the mapping robust
+// when the changelog source ships English (or any non-PL) labels.
+const KIND_TO_SHORT: Partial<Record<ChangelogCategoryKind, string>> = {
+  feature: 'updates.changelogPreview.shortLabels.new',
+  fix: 'updates.changelogPreview.shortLabels.fix',
+  polish: 'updates.changelogPreview.shortLabels.polish',
+  security: 'updates.changelogPreview.shortLabels.security',
+};
+
 /** Shorten category labels so the pill stays compact. */
-function shortLabel(label: string, i18n: I18nInstance): string {
-  // The original PL labels arrive from `lib/changelog-entries`; map them to
-  // localized short tags. Falls back to the raw label for non-PL inputs.
-  const keyMap: Record<string, string> = {
-    Nowości: 'updates.changelogPreview.shortLabels.new',
-    Poprawki: 'updates.changelogPreview.shortLabels.fix',
-    Dopracowania: 'updates.changelogPreview.shortLabels.polish',
-    Bezpieczeństwo: 'updates.changelogPreview.shortLabels.security',
-  };
-  const k = keyMap[label];
+function shortLabel(kind: ChangelogCategoryKind, label: string, i18n: I18nInstance): string {
+  const k = KIND_TO_SHORT[kind];
   return k ? tDynamic(i18n, `settings:${k}`) : label;
 }

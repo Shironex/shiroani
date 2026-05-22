@@ -51,7 +51,7 @@ export function LogEntryRow({ entry, expanded, onToggle }: LogEntryRowProps) {
               <ChevronRight
                 className={cn('w-2.5 h-2.5 transition-transform', expanded && 'rotate-90')}
               />
-              dane
+              {t('logs.data')}
             </button>
           )}
         </span>
