@@ -1,3 +1,4 @@
+import { useRef, type KeyboardEvent } from 'react';
 import { cn } from '@/lib/utils';
 import type { DockEdge } from '@/stores/useDockStore';
 
@@ -32,6 +33,27 @@ export function DockEdgePicker({
   variant = 'text',
   className,
 }: DockEdgePickerProps) {
+  const radioRefs = useRef<(HTMLButtonElement | null)[]>([]);
+
+  // WAI-ARIA APG radiogroup: arrow keys move (with wrap) the checked radio and
+  // shift focus to it; Right/Down go forward, Left/Up go backward.
+  function move(delta: number) {
+    const currentIndex = DOCK_EDGES.indexOf(value);
+    const nextIndex = (currentIndex + delta + DOCK_EDGES.length) % DOCK_EDGES.length;
+    onSelect(DOCK_EDGES[nextIndex]);
+    radioRefs.current[nextIndex]?.focus();
+  }
+
+  function handleKeyDown(e: KeyboardEvent<HTMLButtonElement>) {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+      e.preventDefault();
+      move(1);
+    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      move(-1);
+    }
+  }
+
   return (
     <div
       role="radiogroup"
@@ -43,7 +65,7 @@ export function DockEdgePicker({
         className
       )}
     >
-      {DOCK_EDGES.map(edge => {
+      {DOCK_EDGES.map((edge, index) => {
         const active = value === edge;
         const label = getLabel(edge);
 
@@ -51,10 +73,15 @@ export function DockEdgePicker({
           return (
             <button
               key={edge}
+              ref={el => {
+                radioRefs.current[index] = el;
+              }}
               type="button"
               role="radio"
               aria-checked={active}
+              tabIndex={active ? 0 : -1}
               onClick={() => onSelect(edge)}
+              onKeyDown={handleKeyDown}
               className={cn(
                 'flex flex-col items-center gap-1.5 rounded-lg border px-2.5 py-2 font-mono text-[9.5px] uppercase tracking-[0.1em] transition-colors',
                 'focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background',
@@ -72,10 +99,15 @@ export function DockEdgePicker({
         return (
           <button
             key={edge}
+            ref={el => {
+              radioRefs.current[index] = el;
+            }}
             type="button"
             role="radio"
             aria-checked={active}
+            tabIndex={active ? 0 : -1}
             onClick={() => onSelect(edge)}
+            onKeyDown={handleKeyDown}
             className={cn(
               'rounded-lg border px-3 py-[7px] text-[12px] font-medium transition-colors',
               'focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1',

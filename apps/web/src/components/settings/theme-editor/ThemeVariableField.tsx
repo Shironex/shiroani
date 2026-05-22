@@ -33,10 +33,15 @@ export function ThemeVariableField({ varName, group, value, onChange }: ThemeVar
     );
   }
 
+  const inputId = `theme-var-${varName}`;
+
   return (
     <div className="flex flex-col gap-0.5">
-      <label className="text-2xs text-foreground">{variableLabel(varName)}</label>
+      <label htmlFor={inputId} className="text-2xs text-foreground">
+        {variableLabel(varName)}
+      </label>
       <Input
+        id={inputId}
         value={value}
         onChange={e => onChange(e.target.value)}
         className="h-6 px-1.5 text-2xs font-mono"

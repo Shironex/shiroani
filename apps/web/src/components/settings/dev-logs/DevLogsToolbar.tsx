@@ -56,7 +56,10 @@ export function DevLogsToolbar({ logs }: DevLogsToolbarProps) {
             onValueChange={logs.handleArchiveSelect}
             disabled={logs.fileList.length === 0}
           >
-            <SelectTrigger className="h-8 text-[12px] max-w-md">
+            <SelectTrigger
+              className="h-8 text-[12px] max-w-md"
+              aria-label={t('logs.filePicker.label')}
+            >
               <SelectValue
                 placeholder={
                   logs.fileList.length === 0
