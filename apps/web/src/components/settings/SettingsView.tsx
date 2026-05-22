@@ -12,6 +12,7 @@ import {
   Bell,
   Boxes,
   Cat,
+  Coffee,
   Database,
   MessageCircle,
   Settings,
@@ -32,6 +33,7 @@ import { BrowserSection } from '@/components/settings/BrowserSection';
 import { NewTabSection } from '@/components/settings/NewTabSection';
 import { UpdatesSection } from '@/components/settings/UpdatesSection';
 import { AboutSection } from '@/components/settings/AboutSection';
+import { SupportSection } from '@/components/settings/SupportSection';
 import { NotificationsSection } from '@/components/settings/NotificationsSection';
 import { MascotSection } from '@/components/settings/MascotSection';
 import { DataSection } from '@/components/settings/DataSection';
@@ -55,6 +57,7 @@ type SettingsSection =
   | 'updates'
   | 'suite'
   | 'about'
+  | 'support'
   | 'developer';
 
 type SectionGroup = 'app' | 'appearance' | 'integrations' | 'data' | 'advanced';
@@ -167,6 +170,13 @@ const ALL_SECTIONS: SectionDef[] = [
     subtitleKey: 'aboutSubtitle',
     group: 'data',
     Icon: Info,
+  },
+  {
+    id: 'support',
+    labelKey: 'support',
+    subtitleKey: 'supportSubtitle',
+    group: 'data',
+    Icon: Coffee,
   },
   {
     id: 'developer',
@@ -315,6 +325,7 @@ export function SettingsView() {
               {activeSection === 'updates' && <UpdatesSection version={version} />}
               {activeSection === 'suite' && <SuiteSection />}
               {activeSection === 'about' && <AboutSection version={version} />}
+              {activeSection === 'support' && <SupportSection />}
               {activeSection === 'developer' && <DeveloperSection />}
             </div>
           </div>

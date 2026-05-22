@@ -10,6 +10,9 @@ export const MASCOT_WAVE_URL = `${import.meta.env.BASE_URL}chibi_wave.png`;
 /** Path to the sleeping mascot pose (used on splash updating/error + ErrorBoundary) */
 export const MASCOT_SLEEP_URL = `${import.meta.env.BASE_URL}chibi_sleep.png`;
 
+/** Buy Me a Coffee support link (mirrors `.github/FUNDING.yml`). Single source for the support section + launch banner. */
+export const BUY_ME_A_COFFEE_URL = 'https://www.buymeacoffee.com/shirone';
+
 /**
  * Upper bound for episode-count inputs when the real total is unknown.
  * Used as the `max` for current/total episode number fields.

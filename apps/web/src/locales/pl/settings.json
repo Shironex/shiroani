@@ -511,6 +511,16 @@
       "action": "Otwórz folder logów"
     }
   },
+  "support": {
+    "card": {
+      "title": "Wesprzyj ShiroAni",
+      "subtitle": "Jeśli aplikacja umila Ci wieczory z anime.",
+      "p1": "ShiroAni robię sam, po godzinach, w wolnym czasie. Każdy motyw, maskotka i drobny szczegół to coś, co dodałem, bo sam chciałem, żeby istniało.",
+      "p2": "Aplikacja jest darmowa i zawsze taka będzie. Ale jeśli weszła Ci w nawyk i chcesz podziękować, możesz <1>postawić mi kawę</1>, to naprawdę dodaje mi motywacji do dalszej pracy.",
+      "p3": "Bez żadnej presji. To, że tu jesteś i z niej korzystasz, już znaczy dla mnie bardzo dużo."
+    },
+    "action": "Postaw mi kawę"
+  },
   "developer": {
     "card": {
       "title": "Tryb deweloperski",
@@ -630,6 +640,8 @@
     "suiteSubtitle": "Inne aplikacje, które warto sprawdzić",
     "about": "O aplikacji",
     "aboutSubtitle": "Historia, wersja i logi",
+    "support": "Wsparcie",
+    "supportSubtitle": "Postaw mi kawę, jeśli lubisz aplikację",
     "developer": "Deweloper",
     "developerSubtitle": "Narzędzia debugowania i diagnostyka"
   }
