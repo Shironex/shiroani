@@ -7,15 +7,12 @@ import { GITHUB_RELEASES_URL, UPDATE_ERROR_RELEASE_PENDING } from '@shiroani/sha
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { PillTag } from '@/components/ui/pill-tag';
+import { useAppVersion } from '@/hooks/useAppVersion';
 import { useUpdateStore, isUpdateLocked } from '@/stores/useUpdateStore';
 import { useBrowserStore } from '@/stores/useBrowserStore';
 import { SettingsCard } from '@/components/settings/SettingsCard';
 import { ProgressBar } from '@/components/shared/ProgressBar';
 import { getChangelogReleases, CHANGELOG_CATEGORY_VARIANT } from '@/lib/changelog-entries';
-
-interface UpdatesSectionProps {
-  version: string;
-}
 
 const BYTES_PER_MB = 1024 * 1024;
 
@@ -68,8 +65,9 @@ function formatRelativeTime(
   return sameDay ? todayTemplate(clock) : then.toLocaleDateString(locale);
 }
 
-export function UpdatesSection({ version }: UpdatesSectionProps) {
+export function UpdatesSection() {
   const { t, i18n } = useTranslation('settings');
+  const version = useAppVersion('');
   const {
     status,
     updateInfo,
