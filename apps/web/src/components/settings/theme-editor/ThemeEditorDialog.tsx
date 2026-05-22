@@ -20,112 +20,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { ColorPickerField } from '@/components/settings/ColorPickerField';
 import { themeOptions, getThemeOption } from '@/lib/theme';
 import {
   injectCustomThemeCSS,
   removeCustomThemeCSS,
   extractThemeVariables,
-  THEME_VARIABLE_NAMES,
 } from '@/lib/custom-theme-css';
 import { useCustomThemeStore } from '@/stores/useCustomThemeStore';
 import { useSettingsStore } from '@/stores/useSettingsStore';
+import {
+  VARIABLE_GROUPS,
+  TEMP_THEME_ID,
+} from '@/components/settings/theme-editor/theme-variable-groups';
+import { ThemeVariableField } from '@/components/settings/theme-editor/ThemeVariableField';
 import type { BuiltInTheme, CustomThemeDefinition } from '@shiroani/shared';
-
-// ── Variable groups ───────────────────────────────────────────────
-
-interface VariableGroup {
-  /** i18n key for the group label, resolved against `settings:themes.editor.groups.*` */
-  labelKey: 'main' | 'cardsMenus' | 'sidebar' | 'borders' | 'statuses' | 'shadows';
-  variables: string[];
-  /** If true, variables are box-shadow strings — use text input instead of color picker */
-  isTextOnly?: boolean;
-  /** Individual variables that are colors even in a text-only group */
-  colorOverrides?: string[];
-}
-
-const VARIABLE_GROUPS: VariableGroup[] = [
-  {
-    labelKey: 'main',
-    variables: [
-      'background',
-      'background-80',
-      'foreground',
-      'primary',
-      'primary-foreground',
-      'brand-600',
-    ],
-  },
-  {
-    labelKey: 'cardsMenus',
-    variables: [
-      'card',
-      'card-foreground',
-      'popover',
-      'popover-foreground',
-      'secondary',
-      'secondary-foreground',
-      'muted',
-      'muted-foreground',
-      'accent',
-      'accent-foreground',
-      'destructive',
-    ],
-  },
-  {
-    labelKey: 'sidebar',
-    variables: ['sidebar', 'sidebar-foreground'],
-  },
-  {
-    labelKey: 'borders',
-    variables: ['border', 'border-glass', 'input', 'ring'],
-  },
-  {
-    labelKey: 'statuses',
-    variables: [
-      'status-success',
-      'status-success-bg',
-      'status-warning',
-      'status-warning-bg',
-      'status-error',
-      'status-error-bg',
-      'status-info',
-      'status-info-bg',
-      'status-pending',
-      'status-pending-bg',
-    ],
-  },
-  {
-    labelKey: 'shadows',
-    variables: [
-      'shadow-xs',
-      'shadow-sm',
-      'shadow-md',
-      'shadow-lg',
-      'shadow-xl',
-      'shadow-card-focused',
-    ],
-    isTextOnly: true,
-  },
-];
-
-// ── Helpers ───────────────────────────────────────────────────────
-
-const TEMP_THEME_ID = '__theme-editor-preview__';
-
-/** Human-readable label for a CSS variable name */
-function variableLabel(name: string): string {
-  return name.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-}
-
-/** Check whether a variable should use color picker (not a shadow string) */
-function isColorVariable(varName: string, group: VariableGroup): boolean {
-  if (!group.isTextOnly) return true;
-  if (group.colorOverrides?.includes(varName)) return true;
-  return false;
-}
-
-// ── Props ─────────────────────────────────────────────────────────
 
 interface ThemeEditorDialogProps {
   open: boolean;
@@ -133,8 +41,6 @@ interface ThemeEditorDialogProps {
   editThemeId?: string;
   cloneFromTheme?: string;
 }
-
-// ── Component ─────────────────────────────────────────────────────
 
 export function ThemeEditorDialog({
   open,
@@ -380,37 +286,15 @@ export function ThemeEditorDialog({
             <div key={group.label}>
               <h4 className="text-xs font-medium text-primary mb-2">{group.label}</h4>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2">
-                {group.variables.map(varName => {
-                  // Only show variables that exist in THEME_VARIABLE_NAMES
-                  if (!(THEME_VARIABLE_NAMES as readonly string[]).includes(varName)) return null;
-
-                  const currentValue = variables[varName] || '';
-
-                  if (isColorVariable(varName, group)) {
-                    return (
-                      <ColorPickerField
-                        key={varName}
-                        label={variableLabel(varName)}
-                        variableName={varName}
-                        value={currentValue}
-                        onChange={val => handleVariableChange(varName, val)}
-                      />
-                    );
-                  }
-
-                  // Text input for shadow values
-                  return (
-                    <div key={varName} className="flex flex-col gap-0.5">
-                      <label className="text-2xs text-foreground">{variableLabel(varName)}</label>
-                      <Input
-                        value={currentValue}
-                        onChange={e => handleVariableChange(varName, e.target.value)}
-                        className="h-6 px-1.5 text-2xs font-mono"
-                        placeholder={`--${varName}`}
-                      />
-                    </div>
-                  );
-                })}
+                {group.variables.map(varName => (
+                  <ThemeVariableField
+                    key={varName}
+                    varName={varName}
+                    group={group}
+                    value={variables[varName] || ''}
+                    onChange={val => handleVariableChange(varName, val)}
+                  />
+                ))}
               </div>
             </div>
           ))}

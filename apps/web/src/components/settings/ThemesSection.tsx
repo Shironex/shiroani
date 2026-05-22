@@ -19,7 +19,7 @@ import { useCustomThemeStore } from '@/stores/useCustomThemeStore';
 import { darkThemes, lightThemes, getAllThemeOptions } from '@/lib/theme';
 import { removeCustomThemeCSS } from '@/lib/custom-theme-css';
 import { ThemeSwatch } from '@/components/shared/theme/ThemeSwatch';
-import { ThemeEditorDialog } from '@/components/settings/ThemeEditorDialog';
+import { ThemeEditorDialog } from '@/components/settings/theme-editor/ThemeEditorDialog';
 import { SettingsCard } from '@/components/settings/SettingsCard';
 import { ThemeGrid } from '@/components/shared/theme/ThemeGrid';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';

@@ -30,7 +30,7 @@ import { DockSection } from '@/components/settings/DockSection';
 import { ViewsSection } from '@/components/settings/ViewsSection';
 import { BrowserSection } from '@/components/settings/BrowserSection';
 import { NewTabSection } from '@/components/settings/NewTabSection';
-import { UpdatesSection } from '@/components/settings/UpdatesSection';
+import { UpdatesSection } from '@/components/settings/updates/UpdatesSection';
 import { AboutSection } from '@/components/settings/AboutSection';
 import { SupportSection } from '@/components/settings/SupportSection';
 import { NotificationsSection } from '@/components/settings/NotificationsSection';

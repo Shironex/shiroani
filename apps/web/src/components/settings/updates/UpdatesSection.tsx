@@ -1,69 +1,18 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation, Trans } from 'react-i18next';
-import type { i18n as I18nInstance } from 'i18next';
-import { tDynamic } from '@/lib/i18n';
-import { AlertTriangle, Download, ExternalLink, Loader2, RefreshCw, Sparkles } from 'lucide-react';
+import { AlertTriangle, Download, ExternalLink, Loader2, RefreshCw } from 'lucide-react';
 import { GITHUB_RELEASES_URL, UPDATE_ERROR_RELEASE_PENDING } from '@shiroani/shared';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { PillTag } from '@/components/ui/pill-tag';
 import { useAppVersion } from '@/hooks/useAppVersion';
 import { useUpdateStore, isUpdateLocked } from '@/stores/useUpdateStore';
 import { useBrowserStore } from '@/stores/useBrowserStore';
 import { SettingsCard } from '@/components/settings/SettingsCard';
 import { ProgressBar } from '@/components/shared/ProgressBar';
-import { getChangelogReleases, CHANGELOG_CATEGORY_VARIANT } from '@/lib/changelog-entries';
-
-const BYTES_PER_MB = 1024 * 1024;
-
-// Cache `Intl.NumberFormat` per locale. `formatMB` runs twice per
-// download-progress tick (~200–500ms cadence from electron-updater) so
-// allocating a fresh formatter per call wastes ~1–2 KB per allocation
-// for the duration of a multi-hundred-MB download.
-const mbFormatters = new Map<string, Intl.NumberFormat>();
-function getMbFormatter(locale: string): Intl.NumberFormat {
-  let f = mbFormatters.get(locale);
-  if (!f) {
-    f = new Intl.NumberFormat(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
-    mbFormatters.set(locale, f);
-  }
-  return f;
-}
-
-/** Format bytes as `X.Y MB` with 1 decimal, using a locale-aware decimal separator. */
-function formatMB(bytes: number, locale: string): string {
-  const value = Number.isFinite(bytes) && bytes > 0 ? bytes / BYTES_PER_MB : 0;
-  return getMbFormatter(locale).format(value) + ' MB';
-}
-
-/**
- * Lightweight relative-time formatter for recent events using Intl APIs.
- * Falls back to a locale-aware clock/date for events older than ~6 hours.
- */
-function formatRelativeTime(
-  epochMs: number | null,
-  locale: string,
-  justNow: string,
-  todayTemplate: (time: string) => string
-): string | null {
-  if (!epochMs) return null;
-  const now = Date.now();
-  const diff = now - epochMs;
-  if (diff < 0) return null;
-  const sec = Math.floor(diff / 1000);
-  if (sec < 30) return justNow;
-  const min = Math.floor(sec / 60);
-  if (min < 1) return justNow;
-  const rtf = new Intl.RelativeTimeFormat(locale, { numeric: 'always', style: 'short' });
-  if (min < 60) return rtf.format(-min, 'minute');
-  const hrs = Math.floor(min / 60);
-  if (hrs < 6) return rtf.format(-hrs, 'hour');
-  // Older than ~6h — fall back to a clock time, prefixed with locale-aware "today" when same day.
-  const then = new Date(epochMs);
-  const sameDay = new Date(now).toDateString() === then.toDateString();
-  const clock = then.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' });
-  return sameDay ? todayTemplate(clock) : then.toLocaleDateString(locale);
-}
+import { formatMB, formatRelativeTime } from '@/components/settings/updates/update-format';
+import { StatusPill, type StatusTone } from '@/components/settings/updates/StatusPill';
+import { ChannelButton } from '@/components/settings/updates/ChannelButton';
+import { LatestReleaseHighlights } from '@/components/settings/updates/LatestReleaseHighlights';
 
 export function UpdatesSection() {
   const { t, i18n } = useTranslation('settings');
@@ -139,7 +88,7 @@ export function UpdatesSection() {
     }
   })();
 
-  const statusTone: 'green' | 'accent' | 'destructive' | 'muted' = (() => {
+  const statusTone: StatusTone = (() => {
     if (status === 'error') return 'destructive';
     if (status === 'idle') return 'green';
     if (
@@ -315,140 +264,7 @@ export function UpdatesSection() {
         )}
       </SettingsCard>
 
-      {/* Historia zmian preview — pill-tagged summary of the latest release.
-          Short (4 lines max) per mock L1006; full timeline lives in the
-          dedicated Changelog view. */}
       <LatestReleaseHighlights />
     </div>
-  );
-}
-
-// ── Helper components ───────────────────────────────────────────────
-
-function LatestReleaseHighlights() {
-  const { t, i18n } = useTranslation('settings');
-  const latest = getChangelogReleases(i18n.language)[0];
-  if (!latest) return null;
-
-  // Flatten the release's categories into (variant, label, entry) triples,
-  // cap at 4 rows (mock: 4-line preview; full list lives in Changelog view).
-  const MAX_ROWS = 4;
-  const rows: Array<{ variant: ReturnType<typeof variantFor>; label: string; entry: string }> = [];
-  for (const cat of latest.categories) {
-    for (const entry of cat.entries) {
-      if (rows.length >= MAX_ROWS) break;
-      rows.push({ variant: variantFor(cat.kind), label: shortLabel(cat.label, i18n), entry });
-    }
-    if (rows.length >= MAX_ROWS) break;
-  }
-
-  return (
-    <SettingsCard
-      icon={Sparkles}
-      tone="gold"
-      title={t('updates.changelogPreview.title')}
-      subtitle={t('updates.changelogPreview.subtitle')}
-    >
-      <div className="font-mono text-[10px] uppercase tracking-[0.15em] text-primary mb-2">
-        v{latest.version} — {latest.date}
-      </div>
-      <ul className="grid grid-cols-[auto_1fr] gap-x-2.5 gap-y-1.5 items-start text-[12.5px] leading-snug text-foreground/90">
-        {rows.map((row, i) => (
-          <li key={i} className="contents">
-            <PillTag
-              variant={row.variant}
-              className="w-full justify-center mt-[3px] !text-[8.5px] !px-1.5 !py-[2px]"
-            >
-              {row.label}
-            </PillTag>
-            <span>{row.entry}</span>
-          </li>
-        ))}
-      </ul>
-    </SettingsCard>
-  );
-}
-
-function variantFor(kind: keyof typeof CHANGELOG_CATEGORY_VARIANT) {
-  return CHANGELOG_CATEGORY_VARIANT[kind];
-}
-
-/** Shorten category labels so the pill stays compact. */
-function shortLabel(label: string, i18n: I18nInstance): string {
-  // The original PL labels arrive from `lib/changelog-entries`; map them to
-  // localized short tags. Falls back to the raw label for non-PL inputs.
-  const keyMap: Record<string, string> = {
-    Nowości: 'updates.changelogPreview.shortLabels.new',
-    Poprawki: 'updates.changelogPreview.shortLabels.fix',
-    Dopracowania: 'updates.changelogPreview.shortLabels.polish',
-    Bezpieczeństwo: 'updates.changelogPreview.shortLabels.security',
-  };
-  const k = keyMap[label];
-  return k ? tDynamic(i18n, `settings:${k}`) : label;
-}
-
-function StatusPill({
-  tone,
-  text,
-}: {
-  tone: 'green' | 'accent' | 'destructive' | 'muted';
-  text: string;
-}) {
-  const toneClass = {
-    green:
-      'bg-[oklch(0.78_0.15_140/0.12)] border-[oklch(0.78_0.15_140/0.3)] text-[oklch(0.78_0.15_140)]',
-    accent: 'bg-primary/12 border-primary/30 text-primary',
-    destructive: 'bg-destructive/12 border-destructive/30 text-destructive',
-    muted: 'bg-muted/15 border-border-glass text-muted-foreground',
-  }[tone];
-
-  const dotClass = {
-    green: 'bg-[oklch(0.78_0.15_140)] shadow-[0_0_8px_oklch(0.78_0.15_140/0.6)]',
-    accent: 'bg-primary shadow-[0_0_8px_hsl(var(--primary)/0.6)]',
-    destructive: 'bg-destructive',
-    muted: 'bg-muted-foreground/60',
-  }[tone];
-
-  return (
-    <div
-      className={cn(
-        'flex items-center gap-2.5 rounded-lg border px-3 py-2 text-[12.5px] font-semibold',
-        toneClass
-      )}
-    >
-      <span className={cn('w-2.5 h-2.5 rounded-full flex-shrink-0', dotClass)} />
-      <span className="leading-tight">{text}</span>
-    </div>
-  );
-}
-
-function ChannelButton({
-  active,
-  disabled,
-  onClick,
-  children,
-}: {
-  active: boolean;
-  disabled?: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={disabled}
-      aria-pressed={active}
-      className={cn(
-        'inline-flex items-center gap-2 px-3 py-[6px] rounded-lg border text-[12px] font-medium',
-        'transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1',
-        'disabled:opacity-60 disabled:cursor-not-allowed',
-        active
-          ? 'border-primary/35 bg-primary/18 text-primary font-semibold'
-          : 'border-border-glass bg-background/30 text-muted-foreground hover:bg-accent/40 hover:text-foreground'
-      )}
-    >
-      {children}
-    </button>
   );
 }
