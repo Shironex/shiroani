@@ -1,5 +1,7 @@
+import type { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 import { APP_LOGO_URL } from '@/lib/constants';
+import { PreviewStage } from '@/components/shared/PreviewStage';
 import { useMascotSpriteStore } from '@/stores/useMascotSpriteStore';
 import type { MascotSpriteScaleMode } from '@shiroani/shared';
 
@@ -7,6 +9,8 @@ interface MascotPreviewProps {
   current: number;
   min: number;
   max: number;
+  /** Optional uppercase caption rendered above the stage (e.g. "Podgląd"). */
+  label?: ReactNode;
 }
 
 /** Minimum display height for the smallest mascot in preview px. */
@@ -42,7 +46,7 @@ function objectFitFor(mode: MascotSpriteScaleMode): 'contain' | 'cover' | 'fill'
  * applies the matching `object-fit` so the rendered aspect mirrors what the
  * native Win32 overlay will show on the desktop.
  */
-export function MascotPreview({ current, min, max }: MascotPreviewProps) {
+export function MascotPreview({ current, min, max, label }: MascotPreviewProps) {
   const customSpriteUrl = useMascotSpriteStore(s => s.customSpriteUrl);
   const scaleMode = useMascotSpriteStore(s => s.scaleMode);
 
@@ -54,23 +58,7 @@ export function MascotPreview({ current, min, max }: MascotPreviewProps) {
   const objectFit = customSpriteUrl ? objectFitFor(scaleMode) : 'contain';
 
   return (
-    <div
-      className="relative h-[200px] overflow-hidden rounded-xl border border-border-glass"
-      style={{
-        background:
-          'linear-gradient(135deg, oklch(0.14 0.02 300), oklch(0.1 0.02 280)), radial-gradient(circle at 70% 30%, oklch(0.5 0.15 355 / 0.25), transparent 60%)',
-        backgroundBlendMode: 'overlay',
-      }}
-    >
-      <div
-        aria-hidden="true"
-        className="absolute inset-0"
-        style={{
-          backgroundImage:
-            'linear-gradient(oklch(1 0 0 / 0.03) 1px, transparent 1px), linear-gradient(90deg, oklch(1 0 0 / 0.03) 1px, transparent 1px)',
-          backgroundSize: '20px 20px',
-        }}
-      />
+    <PreviewStage heightClassName="h-[200px]" label={label}>
       <div className="relative flex h-full items-end justify-around px-8 pb-6">
         <ChibiPreviewItem
           previewSize={minPx}
@@ -95,7 +83,7 @@ export function MascotPreview({ current, min, max }: MascotPreviewProps) {
           objectFit={objectFit}
         />
       </div>
-    </div>
+    </PreviewStage>
   );
 }
 

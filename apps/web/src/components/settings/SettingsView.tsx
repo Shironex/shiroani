@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, type ComponentType } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Palette,
@@ -21,7 +21,6 @@ import {
 import type { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { tDynamic } from '@/lib/i18n';
-import { useAppVersion } from '@/hooks/useAppVersion';
 import { IS_WINDOWS, IS_ELECTRON } from '@/lib/platform';
 import { KanjiWatermark } from '@/components/shared/KanjiWatermark';
 import { ViewHeader } from '@/components/shared/ViewHeader';
@@ -31,7 +30,7 @@ import { DockSection } from '@/components/settings/DockSection';
 import { ViewsSection } from '@/components/settings/ViewsSection';
 import { BrowserSection } from '@/components/settings/BrowserSection';
 import { NewTabSection } from '@/components/settings/NewTabSection';
-import { UpdatesSection } from '@/components/settings/UpdatesSection';
+import { UpdatesSection } from '@/components/settings/updates/UpdatesSection';
 import { AboutSection } from '@/components/settings/AboutSection';
 import { SupportSection } from '@/components/settings/SupportSection';
 import { NotificationsSection } from '@/components/settings/NotificationsSection';
@@ -197,12 +196,35 @@ const GROUP_LABEL_KEYS: Record<SectionGroup, string> = {
 
 const GROUP_ORDER: SectionGroup[] = ['app', 'appearance', 'integrations', 'data', 'advanced'];
 
+// Dispatch table for the active section's panel. Typing it as a total
+// `Record<SettingsSection, …>` makes TypeScript reject any new section id that
+// forgets to register a panel, so dispatch can't silently render nothing.
+// Platform gating (which sidebar buttons appear) stays in the `sections`
+// filter below — this map only governs what renders for the active id.
+const SECTION_PANEL: Record<SettingsSection, ComponentType> = {
+  general: GeneralSection,
+  themes: ThemesSection,
+  background: BackgroundSettings,
+  dock: DockSection,
+  views: ViewsSection,
+  browser: BrowserSection,
+  newtab: NewTabSection,
+  notifications: NotificationsSection,
+  discord: DiscordSection,
+  mascot: MascotSection,
+  data: DataSection,
+  updates: UpdatesSection,
+  suite: SuiteSection,
+  about: AboutSection,
+  support: SupportSection,
+  developer: DeveloperSection,
+};
+
 export function SettingsView() {
   const { t, i18n } = useTranslation('settings');
   const [activeSection, setActiveSection] = useState<SettingsSection>(
     IS_ELECTRON ? 'general' : 'themes'
   );
-  const version = useAppVersion('');
 
   // Filter platform-specific sections
   const sections = useMemo(
@@ -231,6 +253,8 @@ export function SettingsView() {
   const currentSection = sections.find(s => s.id === activeSection) ?? sections[0];
   const currentLabel = tDynamic(i18n, `settings:nav.${currentSection.labelKey}`);
   const currentSubtitle = tDynamic(i18n, `settings:nav.${currentSection.subtitleKey}`);
+
+  const Panel = SECTION_PANEL[currentSection.id];
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden animate-fade-in relative">
@@ -308,25 +332,10 @@ export function SettingsView() {
             <div
               className={cn(
                 'relative z-[1] px-7 pt-5 pb-24',
-                activeSection === 'discord' ? 'max-w-[1040px]' : 'max-w-[720px]'
+                currentSection.id === 'discord' ? 'max-w-[1040px]' : 'max-w-[720px]'
               )}
             >
-              {activeSection === 'general' && <GeneralSection />}
-              {activeSection === 'themes' && <ThemesSection />}
-              {activeSection === 'background' && <BackgroundSettings />}
-              {activeSection === 'dock' && <DockSection />}
-              {activeSection === 'views' && <ViewsSection />}
-              {activeSection === 'browser' && <BrowserSection />}
-              {activeSection === 'newtab' && <NewTabSection />}
-              {activeSection === 'notifications' && <NotificationsSection />}
-              {activeSection === 'discord' && <DiscordSection />}
-              {activeSection === 'mascot' && <MascotSection />}
-              {activeSection === 'data' && <DataSection />}
-              {activeSection === 'updates' && <UpdatesSection version={version} />}
-              {activeSection === 'suite' && <SuiteSection />}
-              {activeSection === 'about' && <AboutSection version={version} />}
-              {activeSection === 'support' && <SupportSection />}
-              {activeSection === 'developer' && <DeveloperSection />}
+              <Panel />
             </div>
           </div>
         </div>

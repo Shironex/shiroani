@@ -146,12 +146,13 @@ describe('useLogSource — runtime level + expand', () => {
     expect(result.current.levelChangedAt).not.toBeNull();
   });
 
-  it('toggleExpand adds then removes an index', () => {
+  it('toggleExpand adds then removes a key', () => {
     const { result } = renderHook(() => useLogSource({ open: true }));
-    act(() => result.current.toggleExpand(2));
-    expect(result.current.expanded.has(2)).toBe(true);
-    act(() => result.current.toggleExpand(2));
-    expect(result.current.expanded.has(2)).toBe(false);
+    const key = '2026-05-22T12:00:00.000Z|App|hello';
+    act(() => result.current.toggleExpand(key));
+    expect(result.current.expanded.has(key)).toBe(true);
+    act(() => result.current.toggleExpand(key));
+    expect(result.current.expanded.has(key)).toBe(false);
   });
 });
 
@@ -159,7 +160,7 @@ describe('useLogSource — source switching', () => {
   it('switching source bumps the reset signal and resets transient state', () => {
     const { result } = renderHook(() => useLogSource({ open: true }));
     const before = result.current.resetSignal;
-    act(() => result.current.toggleExpand(1));
+    act(() => result.current.toggleExpand('2026-05-22T12:00:00.000Z|App|hello'));
     act(() => result.current.handleSourceChange('today'));
     expect(result.current.source).toBe('today');
     expect(result.current.resetSignal).toBeGreaterThan(before);

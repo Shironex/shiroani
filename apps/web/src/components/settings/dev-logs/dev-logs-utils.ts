@@ -51,6 +51,16 @@ export function prettyPrintData(data: unknown): string {
   }
 }
 
+/**
+ * Stable per-entry identity used as the React `key` and the expand-state key.
+ * `LogEntry` has no single id field, so we derive a composite from the fields
+ * that uniquely pin an entry; keying off the filtered index instead would make
+ * the wrong rows appear expanded once the level/search filter changes.
+ */
+export function entryKey(entry: LogEntry): string {
+  return `${entry.timestamp}|${entry.context}|${entry.message}`;
+}
+
 export function formatLine(entry: LogEntry): string {
   const time = entry.timestamp.split('T')[1]?.slice(0, 12) ?? entry.timestamp;
   const level = entry.level.toUpperCase().padEnd(5);

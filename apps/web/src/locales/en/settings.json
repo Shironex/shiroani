@@ -1,4 +1,5 @@
 {
+  "previewLabel": "Preview",
   "app": {
     "languageTitle": "Language",
     "languageDesc": "Choose the display language for the app"
@@ -578,6 +579,7 @@
     "noFilterMatches": "No entries match the filter.",
     "showMoreData": "Expand data",
     "showLessData": "Collapse data",
+    "data": "Data",
     "newEntries": "New entries",
     "unknownError": "Unknown error.",
     "entries_one": "entry",

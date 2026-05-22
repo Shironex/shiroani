@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Terminal, SquareCode, ClipboardCopy, ScrollText, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { SettingsCard, SettingsToggleRow } from '@/components/settings/SettingsCard';
-import { DevLogsDialog } from '@/components/settings/DevLogsDialog';
+import { DevLogsDialog } from '@/components/settings/dev-logs/DevLogsDialog';
 import { useSettingsStore } from '@/stores/useSettingsStore';
 import { copyDiagnosticsToClipboard } from '@/lib/diagnostics';
 

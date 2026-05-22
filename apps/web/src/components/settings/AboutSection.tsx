@@ -6,14 +6,12 @@ import { Button } from '@/components/ui/button';
 import { PillTag } from '@/components/ui/pill-tag';
 import { useAppStore } from '@/stores/useAppStore';
 import { useOnboardingStore } from '@/stores/useOnboardingStore';
+import { useAppVersion } from '@/hooks/useAppVersion';
 import { SettingsCard } from '@/components/settings/SettingsCard';
 
-interface AboutSectionProps {
-  version: string;
-}
-
-export function AboutSection({ version }: AboutSectionProps) {
+export function AboutSection() {
   const { t } = useTranslation('settings');
+  const version = useAppVersion('');
   const resetOnboarding = useOnboardingStore(s => s.reset);
 
   const heroIcon = (

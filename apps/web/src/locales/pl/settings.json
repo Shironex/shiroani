@@ -1,4 +1,5 @@
 {
+  "previewLabel": "Podgląd",
   "app": {
     "languageTitle": "Język",
     "languageDesc": "Wybierz język wyświetlania aplikacji"
@@ -580,6 +581,7 @@
     "noFilterMatches": "Brak wpisów pasujących do filtra.",
     "showMoreData": "Rozwiń dane",
     "showLessData": "Zwiń dane",
+    "data": "Dane",
     "newEntries": "Nowe wpisy",
     "unknownError": "Nieznany błąd.",
     "entries_one": "wpis",

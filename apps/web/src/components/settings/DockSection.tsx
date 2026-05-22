@@ -1,7 +1,7 @@
 import { LayoutGrid } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
-import { useDockStore, type DockEdge } from '@/stores/useDockStore';
+import { useDockStore } from '@/stores/useDockStore';
 import {
   SettingsCard,
   SettingsRow,
@@ -9,18 +9,8 @@ import {
   SettingsToggleRow,
 } from '@/components/settings/SettingsCard';
 import { DockStage } from '@/components/shared/DockStage';
-import { cn } from '@/lib/utils';
+import { DockEdgePicker } from '@/components/shared/DockEdgePicker';
 import { useDockPreviewItems } from '@/hooks/useDockPreviewItems';
-
-const DOCK_EDGES: ReadonlyArray<{
-  value: DockEdge;
-  labelKey: 'bottom' | 'top' | 'left' | 'right';
-}> = [
-  { value: 'bottom', labelKey: 'bottom' },
-  { value: 'top', labelKey: 'top' },
-  { value: 'left', labelKey: 'left' },
-  { value: 'right', labelKey: 'right' },
-];
 
 export function DockSection() {
   const { t } = useTranslation('settings');
@@ -42,40 +32,20 @@ export function DockSection() {
         title={t('dock.position.title')}
         subtitle={t('dock.position.subtitle')}
       >
-        <DockStage edge={dockEdge} items={dockItems} height={160} />
+        <DockStage edge={dockEdge} items={dockItems} height={160} label={t('previewLabel')} />
 
         <SettingsRow stacked>
           <SettingsRowLabel
             title={t('dock.position.edgeTitle')}
             description={t('dock.position.edgeDescription')}
           />
-          <div
-            role="radiogroup"
-            aria-label={t('dock.position.edgeAria')}
-            className="grid grid-cols-2 gap-1.5 sm:grid-cols-4"
-          >
-            {DOCK_EDGES.map(({ value, labelKey }) => {
-              const isActive = dockEdge === value;
-              return (
-                <button
-                  key={value}
-                  type="button"
-                  role="radio"
-                  aria-checked={isActive}
-                  onClick={() => setDockEdge(value)}
-                  className={cn(
-                    'rounded-lg border px-3 py-[7px] text-[12px] font-medium transition-colors',
-                    'focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1',
-                    isActive
-                      ? 'border-primary/35 bg-primary/18 text-primary font-semibold'
-                      : 'border-border-glass bg-background/30 text-muted-foreground hover:bg-accent/40 hover:text-foreground'
-                  )}
-                >
-                  {t(`dock.position.edges.${labelKey}`)}
-                </button>
-              );
-            })}
-          </div>
+          <DockEdgePicker
+            value={dockEdge}
+            onSelect={setDockEdge}
+            getLabel={edge => t(`dock.position.edges.${edge}`)}
+            ariaLabel={t('dock.position.edgeAria')}
+            variant="text"
+          />
         </SettingsRow>
 
         <SettingsRow divider>

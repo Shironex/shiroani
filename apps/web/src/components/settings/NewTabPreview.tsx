@@ -6,6 +6,7 @@ import {
   AIRING_COUNT_MIN,
   AIRING_COUNT_MAX,
 } from '@/stores/useNewTabStore';
+import { PreviewStage } from '@/components/shared/PreviewStage';
 import { cn } from '@/lib/utils';
 
 /**
@@ -20,7 +21,7 @@ import { cn } from '@/lib/utils';
  * into a paired two-column row (Quick Access wider, Recents narrower) when both
  * are visible and adjacent in the order; otherwise each panel is full-width.
  */
-export function NewTabPreview() {
+export function NewTabPreview({ label }: { label?: ReactNode }) {
   const { t } = useTranslation('settings');
   const order = useNewTabStore(s => s.order);
   const hiddenPanels = useNewTabStore(s => s.hiddenPanels);
@@ -53,25 +54,7 @@ export function NewTabPreview() {
   }, [order, hiddenPanels, showGreetingName, airingCount]);
 
   return (
-    <div
-      data-testid="newtab-preview"
-      className="relative h-[220px] overflow-hidden rounded-xl border border-border-glass"
-      style={{
-        background:
-          'linear-gradient(135deg, oklch(0.14 0.02 300), oklch(0.1 0.02 280)), radial-gradient(circle at 70% 30%, oklch(0.5 0.15 355 / 0.25), transparent 60%)',
-        backgroundBlendMode: 'overlay',
-      }}
-    >
-      <div
-        aria-hidden="true"
-        className="absolute inset-0"
-        style={{
-          backgroundImage:
-            'linear-gradient(oklch(1 0 0 / 0.03) 1px, transparent 1px), linear-gradient(90deg, oklch(1 0 0 / 0.03) 1px, transparent 1px)',
-          backgroundSize: '20px 20px',
-        }}
-      />
-
+    <PreviewStage data-testid="newtab-preview" heightClassName="h-[220px]" label={label}>
       {showWatermark && (
         <span
           aria-hidden="true"
@@ -90,7 +73,7 @@ export function NewTabPreview() {
       ) : (
         <div className="relative flex h-full flex-col gap-1.5 overflow-hidden p-3">{rows}</div>
       )}
-    </div>
+    </PreviewStage>
   );
 }
 

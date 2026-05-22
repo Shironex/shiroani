@@ -63,9 +63,9 @@ export interface LogSource {
   pendingCount: number;
   handleTogglePause: () => void;
 
-  // Expand
-  expanded: Set<number>;
-  toggleExpand: (idx: number) => void;
+  // Expand (keyed by stable entry identity, not filtered index)
+  expanded: Set<string>;
+  toggleExpand: (key: string) => void;
 
   // Copy / actions
   copied: boolean;
@@ -122,7 +122,7 @@ export function useLogSource({ open }: UseLogSourceOptions): LogSource {
 
   // Copy / expand
   const [copied, setCopied] = useState(false);
-  const [expanded, setExpanded] = useState<Set<number>>(() => new Set());
+  const [expanded, setExpanded] = useState<Set<string>>(() => new Set());
 
   const pausedRef = useRef(false);
   pausedRef.current = paused;
@@ -350,11 +350,11 @@ export function useLogSource({ open }: UseLogSourceOptions): LogSource {
     [loadFileContents]
   );
 
-  const toggleExpand = useCallback((idx: number) => {
+  const toggleExpand = useCallback((key: string) => {
     setExpanded(prev => {
       const copy = new Set(prev);
-      if (copy.has(idx)) copy.delete(idx);
-      else copy.add(idx);
+      if (copy.has(key)) copy.delete(key);
+      else copy.add(key);
       return copy;
     });
   }, []);
