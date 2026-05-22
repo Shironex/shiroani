@@ -8,7 +8,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
-import { FILE_ENTRY_LIMIT } from '@/components/settings/dev-logs/dev-logs-utils';
+import { FILE_ENTRY_LIMIT, entryKey } from '@/components/settings/dev-logs/dev-logs-utils';
 import { useLogSource } from '@/components/settings/dev-logs/useLogSource';
 import { useStickyTail } from '@/components/settings/dev-logs/useStickyTail';
 import { DevLogsToolbar } from '@/components/settings/dev-logs/DevLogsToolbar';
@@ -86,14 +86,17 @@ export function DevLogsDialog({ open, onOpenChange }: DevLogsDialogProps) {
               </div>
             ) : (
               <ul className="divide-y divide-border-glass/50">
-                {filteredEntries.map((entry, i) => (
-                  <LogEntryRow
-                    key={i}
-                    entry={entry}
-                    expanded={logs.expanded.has(i)}
-                    onToggle={() => logs.toggleExpand(i)}
-                  />
-                ))}
+                {filteredEntries.map(entry => {
+                  const key = entryKey(entry);
+                  return (
+                    <LogEntryRow
+                      key={key}
+                      entry={entry}
+                      expanded={logs.expanded.has(key)}
+                      onToggle={() => logs.toggleExpand(key)}
+                    />
+                  );
+                })}
               </ul>
             )}
           </div>
