@@ -71,7 +71,7 @@ export function NewTabSection() {
       title={t('newtab.card.title')}
       subtitle={t('newtab.card.subtitle')}
     >
-      <NewTabPreview />
+      <NewTabPreview label={t('previewLabel')} />
 
       <p className="text-[11.5px] leading-snug text-muted-foreground/85">
         {t('newtab.reorderHint')}

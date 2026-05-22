@@ -21,7 +21,7 @@ import { cn } from '@/lib/utils';
  * into a paired two-column row (Quick Access wider, Recents narrower) when both
  * are visible and adjacent in the order; otherwise each panel is full-width.
  */
-export function NewTabPreview() {
+export function NewTabPreview({ label }: { label?: ReactNode }) {
   const { t } = useTranslation('settings');
   const order = useNewTabStore(s => s.order);
   const hiddenPanels = useNewTabStore(s => s.hiddenPanels);
@@ -54,7 +54,7 @@ export function NewTabPreview() {
   }, [order, hiddenPanels, showGreetingName, airingCount]);
 
   return (
-    <PreviewStage data-testid="newtab-preview" heightClassName="h-[220px]">
+    <PreviewStage data-testid="newtab-preview" heightClassName="h-[220px]" label={label}>
       {showWatermark && (
         <span
           aria-hidden="true"

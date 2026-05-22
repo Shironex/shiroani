@@ -62,6 +62,7 @@
       "marker": "Step <1>05 · Layout</1> · navigation dock",
       "title": "Dock",
       "edge": {
+        "ariaLabel": "Dock position",
         "bottom": "Bottom",
         "top": "Top",
         "left": "Left",

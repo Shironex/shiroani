@@ -21,6 +21,11 @@ interface DockStageProps {
    * falls back to a 4-dot placeholder (used by the Dock position preview).
    */
   items?: DockStageItem[];
+  /**
+   * Optional uppercase caption rendered above the stage (e.g. "Podgląd"). Used
+   * by the settings sections; the onboarding step leaves it unset.
+   */
+  label?: ReactNode;
 }
 
 /**
@@ -28,9 +33,9 @@ interface DockStageProps {
  * Reused between the onboarding DockStep, the Dock settings section, and the
  * Widoki section's visibility preview so the live preview stays consistent.
  */
-export function DockStage({ edge, height = 144, className, items }: DockStageProps) {
+export function DockStage({ edge, height = 144, className, items, label }: DockStageProps) {
   return (
-    <PreviewStage height={height} className={className}>
+    <PreviewStage height={height} className={className} label={label}>
       <MiniDock edge={edge} items={items} />
     </PreviewStage>
   );

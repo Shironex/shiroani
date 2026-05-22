@@ -93,7 +93,7 @@ export function ViewsSection() {
       title={t('settings:views.card.title')}
       subtitle={t('settings:views.card.subtitle')}
     >
-      <DockStage edge={edge} items={dockItems} height={140} />
+      <DockStage edge={edge} items={dockItems} height={140} label={t('settings:previewLabel')} />
 
       <p className="text-[11.5px] leading-snug text-muted-foreground/85">
         {t('settings:views.reorderHint')}

@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 import { APP_LOGO_URL } from '@/lib/constants';
 import { PreviewStage } from '@/components/shared/PreviewStage';
@@ -8,6 +9,8 @@ interface MascotPreviewProps {
   current: number;
   min: number;
   max: number;
+  /** Optional uppercase caption rendered above the stage (e.g. "Podgląd"). */
+  label?: ReactNode;
 }
 
 /** Minimum display height for the smallest mascot in preview px. */
@@ -43,7 +46,7 @@ function objectFitFor(mode: MascotSpriteScaleMode): 'contain' | 'cover' | 'fill'
  * applies the matching `object-fit` so the rendered aspect mirrors what the
  * native Win32 overlay will show on the desktop.
  */
-export function MascotPreview({ current, min, max }: MascotPreviewProps) {
+export function MascotPreview({ current, min, max, label }: MascotPreviewProps) {
   const customSpriteUrl = useMascotSpriteStore(s => s.customSpriteUrl);
   const scaleMode = useMascotSpriteStore(s => s.scaleMode);
 
@@ -55,7 +58,7 @@ export function MascotPreview({ current, min, max }: MascotPreviewProps) {
   const objectFit = customSpriteUrl ? objectFitFor(scaleMode) : 'contain';
 
   return (
-    <PreviewStage heightClassName="h-[200px]">
+    <PreviewStage heightClassName="h-[200px]" label={label}>
       <div className="relative flex h-full items-end justify-around px-8 pb-6">
         <ChibiPreviewItem
           previewSize={minPx}

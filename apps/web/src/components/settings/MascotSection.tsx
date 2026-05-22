@@ -154,7 +154,12 @@ export function MascotSection() {
       >
         {enabled && (
           <>
-            <MascotPreview current={size} min={MASCOT_MIN_SIZE} max={MASCOT_MAX_SIZE} />
+            <MascotPreview
+              current={size}
+              min={MASCOT_MIN_SIZE}
+              max={MASCOT_MAX_SIZE}
+              label={t('previewLabel')}
+            />
 
             <div>
               <div className="mb-2 flex items-center justify-between">

@@ -62,6 +62,7 @@
       "marker": "Krok <1>05 · Układ</1> · dock nawigacyjny",
       "title": "Dock",
       "edge": {
+        "ariaLabel": "Pozycja docka",
         "bottom": "Dół",
         "top": "Góra",
         "left": "Lewo",
