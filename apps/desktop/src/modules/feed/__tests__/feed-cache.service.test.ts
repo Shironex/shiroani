@@ -13,6 +13,7 @@ function stubItem(guid: string): ParsedFeedItem {
     guid,
     title: guid,
     description: null,
+    contentHtml: null,
     url: `https://example.com/${guid}`,
     author: null,
     imageUrl: null,

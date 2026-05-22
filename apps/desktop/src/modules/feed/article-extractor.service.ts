@@ -180,6 +180,19 @@ export class ArticleExtractorService {
     ARTICLE_CACHE_TTL_MS
   );
 
+  /**
+   * A single DOMPurify instance bound to one long-lived, empty JSDOM window.
+   * Constructing a JSDOM is the dominant cost of sanitisation, so we build it
+   * (and register the hooks) lazily once and reuse it across calls instead of
+   * spinning up a fresh window per `sanitize()`. The Readability *parse* JSDOM
+   * (in `parseAndSanitize`) stays per-article — it holds the fetched page and
+   * is built with the page `url` — only this empty sanitiser window is reused.
+   */
+  private purify: ReturnType<typeof createDOMPurify> | null = null;
+
+  /** Per-call base URL read by the URL-resolving sanitiser hooks. */
+  private currentBaseUrl: string | null = null;
+
   constructor() {
     logger.info('ArticleExtractorService initialized');
   }
@@ -313,7 +326,7 @@ export class ArticleExtractorService {
       }
       chunks.push(value);
     }
-    return Buffer.concat(chunks.map(c => Buffer.from(c))).toString('utf8');
+    return Buffer.concat(chunks).toString('utf8');
   }
 
   /**
@@ -367,60 +380,147 @@ export class ArticleExtractorService {
     }
   }
 
-  /** DOMPurify sanitisation matching the renderer's allowlist (jsdom window). */
-  private sanitize(html: string, baseUrl: string): string {
+  /**
+   * Lazily build the cached DOMPurify instance bound to one empty JSDOM window
+   * and register the sanitiser hooks once. Subsequent calls reuse the same
+   * instance — no JSDOM is constructed per `sanitize()`.
+   *
+   * Hooks are kept identical to the renderer sanitiser
+   * (`apps/web/src/lib/sanitize-html.ts`) so desktop and renderer strip and
+   * rewrite third-party HTML the same way.
+   */
+  private getPurify(): ReturnType<typeof createDOMPurify> {
+    if (this.purify) return this.purify;
+
     const JSDOM = getJSDOM();
     const { window } = new JSDOM('<!DOCTYPE html><html><body></body></html>');
     const purify = createDOMPurify(window as unknown as Window & typeof globalThis);
 
+    // Rewrite/promote URLs BEFORE DOMPurify's URI filter runs: relative
+    // `src`/`href` have no scheme and `data-*` lazy attributes are dropped by
+    // `ALLOW_DATA_ATTR: false` before `afterSanitizeAttributes`, so both must be
+    // resolved here or they are lost. (See the renderer sanitiser for the same.)
+    purify.addHook('uponSanitizeElement', (node, data) => {
+      this.uponSanitizeElement(node as unknown as Element, data.tagName);
+    });
+
+    // Post-filter hardening only: the URLs that survived the allowlist get the
+    // safe link/image attributes.
     purify.addHook('afterSanitizeAttributes', node => {
-      const el = node as unknown as Element;
-
-      if (el.tagName === 'A') {
-        const href = el.getAttribute('href');
-        // Readability already resolved relative URLs against the page URL; this
-        // is a belt-and-braces re-resolve + protocol check.
-        if (href) {
-          const resolved = this.resolveUrl(href, baseUrl);
-          if (resolved && /^https?:$/.test(new URL(resolved).protocol)) {
-            el.setAttribute('href', resolved);
-          } else {
-            el.removeAttribute('href');
-          }
-        }
-        el.setAttribute('target', '_blank');
-        el.setAttribute('rel', 'noopener noreferrer nofollow');
-      }
-
-      if (el.tagName === 'IMG') {
-        const src = el.getAttribute('src');
-        const resolved = src ? this.resolveUrl(src, baseUrl) : null;
-        if (resolved && new URL(resolved).protocol === 'https:') {
-          el.setAttribute('src', resolved);
-          el.setAttribute('loading', 'lazy');
-          el.setAttribute('decoding', 'async');
-        } else {
-          el.remove();
-        }
-      }
+      this.afterSanitizeAttributes(node as unknown as Element);
     });
 
-    const result = purify.sanitize(html, {
-      ALLOWED_TAGS,
-      ALLOWED_ATTR,
-      FORBID_TAGS,
-      FORBID_ATTR: ['style', 'srcset'],
-      ALLOW_DATA_ATTR: false,
-      ALLOW_ARIA_ATTR: false,
-      ALLOWED_URI_REGEXP: /^(?:https?|mailto|tel):/i,
-    });
-    purify.removeAllHooks();
-    return result;
+    this.purify = purify;
+    return purify;
   }
 
-  private resolveUrl(value: string, base: string): string | null {
+  /**
+   * `uponSanitizeElement` hook body, extracted for direct testing. Promotes
+   * lazy-loaded image sources, drops tracking pixels, and resolves relative
+   * `src`/`href` to absolute https before DOMPurify's URI filter strips them.
+   */
+  private uponSanitizeElement(el: Element, tagName: string): void {
+    if (tagName === 'img') {
+      // Promote lazy-loaded sources to a real `src` so the image isn't blank.
+      if (!el.getAttribute('src')) {
+        const lazy =
+          el.getAttribute('data-src') ??
+          el.getAttribute('data-lazy-src') ??
+          el.getAttribute('data-original');
+        if (lazy) el.setAttribute('src', lazy);
+      }
+      // `srcset` (incl. `data-srcset`) — take the first candidate URL as `src`.
+      if (!el.getAttribute('src')) {
+        const srcset = el.getAttribute('srcset') ?? el.getAttribute('data-srcset');
+        const first = srcset?.split(',')[0]?.trim().split(/\s+/)[0];
+        if (first) el.setAttribute('src', first);
+      }
+
+      if (this.isTrackingPixel(el)) {
+        el.remove();
+        return;
+      }
+
+      // Resolve to absolute and require https.
+      const src = el.getAttribute('src');
+      const resolved = src ? this.resolveUrl(src, this.currentBaseUrl) : null;
+      if (resolved && new URL(resolved).protocol === 'https:') {
+        el.setAttribute('src', resolved);
+      } else {
+        el.remove();
+      }
+      return;
+    }
+
+    if (tagName === 'a') {
+      const href = el.getAttribute('href');
+      if (href) {
+        const resolved = this.resolveUrl(href, this.currentBaseUrl);
+        if (resolved && /^https?:$/.test(new URL(resolved).protocol)) {
+          el.setAttribute('href', resolved);
+        } else {
+          el.removeAttribute('href');
+        }
+      }
+    }
+  }
+
+  /**
+   * `afterSanitizeAttributes` hook body, extracted for direct testing. Forces
+   * the safe link/image attributes on whatever survived the allowlist.
+   */
+  private afterSanitizeAttributes(el: Element): void {
+    if (el.tagName === 'A') {
+      el.setAttribute('target', '_blank');
+      el.setAttribute('rel', 'noopener noreferrer nofollow');
+    }
+
+    if (el.tagName === 'IMG') {
+      el.setAttribute('loading', 'lazy');
+      el.setAttribute('decoding', 'async');
+    }
+  }
+
+  /**
+   * Whether an image looks like a tracking pixel: explicit 1×1 (or smaller)
+   * dimensions on the element. Real article images either omit dimensions or
+   * are meaningfully sized.
+   */
+  private isTrackingPixel(el: Element): boolean {
+    const w = Number(el.getAttribute('width'));
+    const h = Number(el.getAttribute('height'));
+    return Number.isFinite(w) && Number.isFinite(h) && w > 0 && w <= 1 && h > 0 && h <= 1;
+  }
+
+  /** DOMPurify sanitisation matching the renderer's allowlist (jsdom window). */
+  private sanitize(html: string, baseUrl: string): string {
+    const purify = this.getPurify();
+    this.currentBaseUrl = baseUrl;
     try {
-      return new URL(value, base).href;
+      return purify.sanitize(html, {
+        ALLOWED_TAGS,
+        ALLOWED_ATTR,
+        FORBID_TAGS,
+        FORBID_ATTR: [
+          'style',
+          'srcset',
+          'data-src',
+          'data-lazy-src',
+          'data-srcset',
+          'data-original',
+        ],
+        ALLOW_DATA_ATTR: false,
+        ALLOW_ARIA_ATTR: false,
+        ALLOWED_URI_REGEXP: /^(?:https?|mailto|tel):/i,
+      });
+    } finally {
+      this.currentBaseUrl = null;
+    }
+  }
+
+  private resolveUrl(value: string, base: string | null): string | null {
+    try {
+      return new URL(value, base ?? undefined).href;
     } catch {
       return null;
     }

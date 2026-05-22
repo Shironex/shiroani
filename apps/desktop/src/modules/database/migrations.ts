@@ -181,6 +181,17 @@ const MIGRATIONS: Migration[] = [
       );
     `,
   },
+  {
+    version: 10,
+    description: 'Index feed_items.url for article lookups and backfill',
+    // FeedService queries feed_items by `url` on a user action (opening an
+    // article): the stored-body lookup and the persist UPDATE in
+    // getArticleContent. `url` is not UNIQUE (uniqueness is (feed_source_id,
+    // guid)), so a plain index is the right shape.
+    up: `
+      CREATE INDEX IF NOT EXISTS idx_feed_items_url ON feed_items(url);
+    `,
+  },
 ];
 
 /**

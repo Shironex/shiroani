@@ -26,6 +26,7 @@ function makeSource(overrides: Partial<FeedSourceRow> = {}): FeedSourceRow {
     last_etag: null,
     consecutive_failures: 0,
     last_error: null,
+    supports_full_content: 1,
     created_at: '2024-01-01T00:00:00Z',
     ...overrides,
   };
