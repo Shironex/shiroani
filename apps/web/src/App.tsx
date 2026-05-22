@@ -23,10 +23,12 @@ import { useBackgroundStore } from '@/stores/useBackgroundStore';
 import { useBrowserStore } from '@/stores/useBrowserStore';
 import { useDockStore } from '@/stores/useDockStore';
 import { useOnboardingStore } from '@/stores/useOnboardingStore';
+import { useSupportBannerStore } from '@/stores/useSupportBannerStore';
 import { useSettingsStore } from '@/stores/useSettingsStore';
 import { AppBackground } from '@/components/shared/AppBackground';
 import { BackgroundOverlay } from '@/components/shared/BackgroundOverlay';
 import { ConnectionBanner } from '@/components/shared/ConnectionBanner';
+import { SupportBanner } from '@/components/shared/SupportBanner';
 
 function App() {
   const activeView = useAppStore(s => s.activeView);
@@ -39,6 +41,7 @@ function App() {
 
   const onboardingCompleted = useOnboardingStore(s => s.completed);
   const initOnboarding = useOnboardingStore(s => s.initOnboarding);
+  const initSupportBanner = useSupportBannerStore(s => s.initSupportBanner);
   // Track locally so resetting from settings immediately shows onboarding
   const [onboardingDone, setOnboardingDone] = useState(onboardingCompleted);
 
@@ -66,8 +69,9 @@ function App() {
       void initSettings();
       void initDock();
       void initOnboarding();
+      void initSupportBanner();
     }
-  }, [ready, initSettings, initDock, initOnboarding]);
+  }, [ready, initSettings, initDock, initOnboarding, initSupportBanner]);
 
   // Listen for navigation events from the main process (e.g. mascot overlay context menu)
   useEffect(() => {
@@ -120,6 +124,9 @@ function App() {
 
           {/* Connection status banner */}
           <ConnectionBanner />
+
+          {/* Support launch banner — shown once ever, only after onboarding is complete */}
+          <SupportBanner />
 
           {/* Content area — full width, with bottom padding for the dock */}
           <main

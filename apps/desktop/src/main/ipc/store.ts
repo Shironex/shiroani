@@ -61,6 +61,8 @@ const ALLOWED_STORE_KEYS = new Set([
   'newtab-settings',
   // Onboarding completion
   'onboarding-completed',
+  // Support launch banner — shown once ever, after onboarding
+  'support-banner-seen',
   // AniList profile username
   'anilist-username',
   // UI language (mirrored from renderer for main-process tray/notifications/Discord)

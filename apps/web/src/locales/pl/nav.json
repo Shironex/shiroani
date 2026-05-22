@@ -36,6 +36,11 @@
       "throttled": "Zbyt wiele zapytań — poczekaj chwilę"
     }
   },
+  "supportBanner": {
+    "message": "ShiroAni robię sam, po godzinach. Jeśli Ci się podoba, możesz postawić mi kawę 💛",
+    "action": "Postaw mi kawę",
+    "dismiss": "Zamknij"
+  },
   "comingSoon": {
     "tag": "WKRÓTCE"
   },

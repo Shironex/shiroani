@@ -13,7 +13,7 @@ export function ConnectionBanner() {
     <div
       role="status"
       aria-live="polite"
-      className="animate-slide-down flex items-center justify-center gap-2 bg-status-warning-bg px-3 py-1.5 text-xs text-status-warning"
+      className="animate-slide-down relative z-[1] flex items-center justify-center gap-2 border-b border-status-warning/25 bg-status-warning-bg px-3 py-1.5 text-xs text-status-warning backdrop-blur-md"
     >
       {status === 'reconnecting' ? (
         <>
