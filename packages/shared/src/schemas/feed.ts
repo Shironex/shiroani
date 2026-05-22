@@ -24,3 +24,7 @@ export const feedToggleSourcePayloadSchema = z.object({
   id: z.number().int().positive(),
   enabled: z.boolean(),
 });
+
+export const feedGetArticlePayloadSchema = z.object({
+  url: z.string().url().max(2048),
+});

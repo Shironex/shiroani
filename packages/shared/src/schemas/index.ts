@@ -9,6 +9,10 @@ export {
   diaryUpdatePayloadSchema,
   diaryRemovePayloadSchema,
 } from './diary';
-export { feedGetItemsPayloadSchema, feedToggleSourcePayloadSchema } from './feed';
+export {
+  feedGetItemsPayloadSchema,
+  feedToggleSourcePayloadSchema,
+  feedGetArticlePayloadSchema,
+} from './feed';
 export * from './import-export';
 export * from './schedule';
