@@ -79,6 +79,8 @@
     "copyLink": "Kopiuj link",
     "openExternal": "Otwórz w przeglądarce",
     "readFull": "Czytaj pełny artykuł",
+    "openOnSite": "Otwórz na stronie",
+    "loadingArticle": "Wczytywanie pełnej treści artykułu…",
     "previewUnavailable": "Podgląd niedostępny. Otwórz artykuł w przeglądarce, aby przeczytać całość.",
     "related": "Powiązane",
     "ariaDescribed": "Artykuł z {{source}} · {{published}}"

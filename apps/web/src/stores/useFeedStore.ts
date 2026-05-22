@@ -15,6 +15,8 @@ import {
   type FeedGetItemsPayload,
   type FeedGetItemsResult,
   type FeedGetSourcesResult,
+  type FeedGetArticlePayload,
+  type FeedGetArticleResult,
   FeedEvents,
   FEED_STARTUP_REFRESH_SETTING_KEY,
 } from '@shiroani/shared';
@@ -57,6 +59,14 @@ interface FeedState extends SocketStoreSlice {
   lastVisitedAt: number;
   /** Persistent set of feed item IDs the user has opened in the reader. */
   readIds: Set<number>;
+  /**
+   * Per-item on-demand article extraction state (Phase 2), keyed by item id.
+   * `articleContent` holds successfully extracted HTML; `articleStatus` tracks
+   * the in-flight / failed lifecycle so the reader can show a loader or fall
+   * back to the teaser + CTA. Session-scoped (not persisted).
+   */
+  articleContent: Record<number, string>;
+  articleStatus: Record<number, 'loading' | 'error'>;
 }
 
 /**
@@ -74,6 +84,13 @@ interface FeedActions {
   markAllSeen: () => void;
   /** Persist a single feed item as "read" (idempotent). */
   markRead: (id: number) => void;
+  /**
+   * Lazily extract the full article body for a teaser-only item (Phase 2).
+   * No-op when the item already carries `contentHtml`, when extraction has
+   * already succeeded, or while a request is in flight. On failure leaves the
+   * status as `'error'` so the reader falls back to the teaser + CTA.
+   */
+  loadArticleContent: (item: FeedItem) => void;
   /**
    * Mark every currently-loaded feed item as read. Distinct from {@link markAllSeen},
    * which only bumps the newtab greeting's `lastVisitedAt` timestamp — this one
@@ -207,6 +224,8 @@ export const useFeedStore = create<FeedStore>()(
         lastRefreshNewCount: null,
         lastVisitedAt: getPersistedLastVisitedAt(),
         readIds: getPersistedReadIds(),
+        articleContent: {},
+        articleStatus: {},
 
         // Socket actions
         ...socketActions,
@@ -386,6 +405,60 @@ export const useFeedStore = create<FeedStore>()(
 
           set({ readIds: next }, undefined, 'feed/markRead');
           persistReadIds(next);
+        },
+
+        loadArticleContent: (item: FeedItem) => {
+          // The feed already shipped a full body, or we have nothing to fetch.
+          if (item.contentHtml || !item.url) return;
+          // The source opts out of on-demand extraction (SPA/teaser-noisy) —
+          // the reader shows the teaser + CTA instead.
+          if (!item.sourceSupportsFullContent) return;
+
+          const { articleContent, articleStatus } = get();
+          // Already resolved or in flight — don't refetch.
+          if (articleContent[item.id] !== undefined) return;
+          if (articleStatus[item.id] === 'loading') return;
+
+          set(
+            state => ({ articleStatus: { ...state.articleStatus, [item.id]: 'loading' } }),
+            undefined,
+            'feed/articleLoading'
+          );
+
+          emitWithErrorHandling<FeedGetArticlePayload, FeedGetArticleResult>(
+            FeedEvents.GET_ARTICLE,
+            { url: item.url }
+          )
+            .then(result => {
+              if (result.contentHtml) {
+                set(
+                  state => {
+                    const nextStatus = { ...state.articleStatus };
+                    delete nextStatus[item.id];
+                    return {
+                      articleContent: { ...state.articleContent, [item.id]: result.contentHtml! },
+                      articleStatus: nextStatus,
+                    };
+                  },
+                  undefined,
+                  'feed/articleReady'
+                );
+              } else {
+                set(
+                  state => ({ articleStatus: { ...state.articleStatus, [item.id]: 'error' } }),
+                  undefined,
+                  'feed/articleEmpty'
+                );
+              }
+            })
+            .catch((err: Error) => {
+              logger.warn(`Failed to extract article for item ${item.id}:`, err.message);
+              set(
+                state => ({ articleStatus: { ...state.articleStatus, [item.id]: 'error' } }),
+                undefined,
+                'feed/articleError'
+              );
+            });
         },
 
         markAllRead: () => {

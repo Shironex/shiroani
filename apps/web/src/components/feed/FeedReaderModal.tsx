@@ -1,6 +1,6 @@
-import { memo, useCallback, useMemo } from 'react';
+import { memo, useCallback, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, ExternalLink, Share2, Bookmark } from 'lucide-react';
+import { ArrowLeft, ExternalLink, Share2, Bookmark, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { handleImageError } from '@/lib/image-utils';
 import type { FeedItem } from '@shiroani/shared';
@@ -10,7 +10,9 @@ import { TooltipButton } from '@/components/ui/tooltip-button';
 import { PillTag } from '@/components/ui/pill-tag';
 import { hostFromUrl } from '@/lib/url-utils';
 import { useFeedBookmarksStore } from '@/stores/useFeedBookmarksStore';
+import { useFeedStore } from '@/stores/useFeedStore';
 import { htmlToParagraphs } from '@/lib/html-text';
+import { sanitizeArticleHtml } from '@/lib/sanitize-html';
 import { useCategoryLabels } from './feed-constants';
 import { useTimeAgo } from './useTimeAgo';
 
@@ -36,12 +38,11 @@ function getInitials(name: string): string {
  *
  * Matches the "Artykuł — czytnik wbudowany" mock: top-bar with source chip and
  * action buttons, hero image with caption, pill-tag meta row, Shippori Mincho
- * headline, byline, body (sourced from the item's description), and a
- * "Powiązane" panel.
+ * headline, byline, body, and a "Powiązane" panel.
  *
- * Full scraped/reader-mode content is out of scope; the back-end currently
- * only exposes `description`, so we render that as the article body and
- * link out via "Otwórz w przeglądarce" for the full piece.
+ * When the item carries a full-article body (`contentHtml`) we render it as
+ * sanitized HTML in a prose container; otherwise we fall back to the plain-text
+ * `description` teaser and the "Otwórz w przeglądarce" CTA for the full piece.
  */
 export const FeedReaderModal = memo(function FeedReaderModal({
   item,
@@ -62,6 +63,29 @@ export const FeedReaderModal = memo(function FeedReaderModal({
     () => (item?.description ? htmlToParagraphs(item.description) : []),
     [item?.description]
   );
+  const feedBodyHtml = useMemo(
+    () => (item?.contentHtml ? sanitizeArticleHtml(item.contentHtml, item.url) : ''),
+    [item?.contentHtml, item?.url]
+  );
+
+  // On-demand extraction (Phase 2): for teaser-only items, ask the main process
+  // to fetch + Readability-extract the article when the reader opens. Selected
+  // as granular primitives so the modal only re-renders when this item changes.
+  const loadArticleContent = useFeedStore(s => s.loadArticleContent);
+  const extractedRaw = useFeedStore(s => (item ? s.articleContent[item.id] : undefined));
+  const extractionStatus = useFeedStore(s => (item ? s.articleStatus[item.id] : undefined));
+  useEffect(() => {
+    if (open && item && !item.contentHtml && item.sourceSupportsFullContent) {
+      loadArticleContent(item);
+    }
+  }, [open, item, loadArticleContent]);
+
+  const extractedHtml = useMemo(
+    () => (extractedRaw && item ? sanitizeArticleHtml(extractedRaw, item.url) : ''),
+    [extractedRaw, item]
+  );
+  const articleHtml = feedBodyHtml || extractedHtml;
+  const isExtracting = !feedBodyHtml && !extractedRaw && extractionStatus === 'loading';
 
   const bookmarked = useFeedBookmarksStore(s => (item ? s.bookmarks.has(item.id) : false));
   const toggleBookmark = useFeedBookmarksStore(s => s.toggle);
@@ -250,7 +274,29 @@ export const FeedReaderModal = memo(function FeedReaderModal({
 
             <div className="h-px bg-white/[0.07] my-4" />
 
-            {paragraphs.length > 0 ? (
+            {articleHtml ? (
+              <div
+                className="feed-prose"
+                // Sanitized via DOMPurify in sanitizeArticleHtml (scripts/iframes
+                // stripped, lazy images rewritten, links forced rel/target).
+                dangerouslySetInnerHTML={{ __html: articleHtml }}
+              />
+            ) : isExtracting ? (
+              <div className="space-y-3.5" aria-busy="true">
+                <div className="flex items-center gap-2 text-muted-foreground/80">
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  <span className="text-[12px]">{t('reader.loadingArticle')}</span>
+                </div>
+                {paragraphs.map((p, i) => (
+                  <p
+                    key={i}
+                    className="text-[13.5px] leading-[1.75] text-foreground/80 text-pretty"
+                  >
+                    {p}
+                  </p>
+                ))}
+              </div>
+            ) : paragraphs.length > 0 ? (
               <div className="space-y-3.5">
                 {paragraphs.map((p, i) => (
                   <p
@@ -277,7 +323,7 @@ export const FeedReaderModal = memo(function FeedReaderModal({
                 onClick={() => onOpenExternal(item)}
               >
                 <ExternalLink className="w-3.5 h-3.5 mr-1.5" />
-                {t('reader.readFull')}
+                {articleHtml ? t('reader.openOnSite') : t('reader.readFull')}
               </Button>
             </div>
 
