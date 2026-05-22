@@ -19,7 +19,7 @@ export function SupportBanner() {
     <div
       role="status"
       aria-live="polite"
-      className="animate-slide-down flex items-center justify-center gap-2 bg-primary/10 px-3 py-1.5 text-xs text-foreground/90"
+      className="animate-slide-down relative z-[1] flex items-center justify-center gap-2 border-b border-border-glass bg-card/90 px-3 py-1.5 text-xs text-foreground backdrop-blur-md"
     >
       <Coffee className="size-3.5 text-primary" aria-hidden="true" />
       <span>{t('supportBanner.message')}</span>

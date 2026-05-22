@@ -158,13 +158,6 @@ const ALL_SECTIONS: SectionDef[] = [
     Icon: Download,
   },
   {
-    id: 'suite',
-    labelKey: 'suite',
-    subtitleKey: 'suiteSubtitle',
-    group: 'data',
-    Icon: Boxes,
-  },
-  {
     id: 'about',
     labelKey: 'about',
     subtitleKey: 'aboutSubtitle',
@@ -177,6 +170,13 @@ const ALL_SECTIONS: SectionDef[] = [
     subtitleKey: 'supportSubtitle',
     group: 'data',
     Icon: Coffee,
+  },
+  {
+    id: 'suite',
+    labelKey: 'suite',
+    subtitleKey: 'suiteSubtitle',
+    group: 'data',
+    Icon: Boxes,
   },
   {
     id: 'developer',
