@@ -128,6 +128,46 @@ describe('FeedParserService', () => {
     });
   });
 
+  describe('extractContentHtml', () => {
+    const longBody = (tag = 'p') => `<${tag}>${'word '.repeat(200)}</${tag}>`;
+
+    it('returns null when no body field is present', () => {
+      expect(service.extractContentHtml({})).toBeNull();
+    });
+
+    it('returns null for teaser-length bodies (below the min threshold)', () => {
+      expect(service.extractContentHtml({ description: '<p>short teaser</p>' })).toBeNull();
+    });
+
+    it('captures content:encoded full HTML un-truncated', () => {
+      const body = longBody();
+      expect(service.extractContentHtml({ contentEncoded: body })).toBe(body);
+    });
+
+    it('reads content:encoded via the raw key as well', () => {
+      const body = longBody();
+      expect(service.extractContentHtml({ 'content:encoded': body })).toBe(body);
+    });
+
+    it('prefers the longest available HTML field (Blogger full description)', () => {
+      const long = longBody('div');
+      const short = '<p>excerpt</p>';
+      expect(service.extractContentHtml({ description: long, summary: short })).toBe(long);
+    });
+
+    it('does not truncate large bodies the way cleanDescription does', () => {
+      const body = `<p>${'x'.repeat(5000)}</p>`;
+      const result = service.extractContentHtml({ contentEncoded: body });
+      expect(result).toBe(body);
+      expect(result!.length).toBeGreaterThan(500);
+    });
+
+    it('drops bodies that exceed the byte cap', () => {
+      const huge = `<p>${'x'.repeat(300 * 1024)}</p>`;
+      expect(service.extractContentHtml({ contentEncoded: huge })).toBeNull();
+    });
+  });
+
   describe('generateContentHash', () => {
     it('returns a 16-character hex string', () => {
       const hash = service.generateContentHash('title', 'https://example.com');
@@ -262,6 +302,41 @@ describe('FeedParserService', () => {
       });
       const result = await service.parse('https://feed.example.com/rss');
       expect(result[0]!.description).toBe('snippet & text');
+    });
+
+    it('captures the full content:encoded body into contentHtml', async () => {
+      const body = `<p>${'word '.repeat(200)}</p>`;
+      parseURLMock.mockResolvedValue({
+        items: [
+          {
+            guid: 'a',
+            link: 'https://a.example.com',
+            title: 'A',
+            contentSnippet: 'short teaser',
+            contentEncoded: body,
+          },
+        ],
+      });
+      const result = await service.parse('https://feed.example.com/rss');
+      expect(result[0]!.contentHtml).toBe(body);
+      // The teaser path is untouched — description stays the short cleaned text.
+      expect(result[0]!.description).toBe('short teaser');
+    });
+
+    it('leaves contentHtml null for teaser-only feeds', async () => {
+      parseURLMock.mockResolvedValue({
+        items: [
+          {
+            guid: 'a',
+            link: 'https://a.example.com',
+            title: 'A',
+            contentSnippet: 'short teaser',
+            content: '<p>short teaser</p>',
+          },
+        ],
+      });
+      const result = await service.parse('https://feed.example.com/rss');
+      expect(result[0]!.contentHtml).toBeNull();
     });
 
     it('returns null description when all description sources are empty', async () => {
