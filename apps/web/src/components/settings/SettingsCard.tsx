@@ -150,18 +150,32 @@ export function SettingsRow({ children, className, stacked, divider }: SettingsR
 export interface SettingsRowLabelProps {
   title: ReactNode;
   description?: ReactNode;
+  /** id applied to the title element for `aria-labelledby` wiring. */
   id?: string;
+  /** id applied to the description element for `aria-describedby` wiring. */
+  descriptionId?: string;
   className?: string;
 }
 
-export function SettingsRowLabel({ title, description, id, className }: SettingsRowLabelProps) {
+export function SettingsRowLabel({
+  title,
+  description,
+  id,
+  descriptionId,
+  className,
+}: SettingsRowLabelProps) {
   return (
     <div className={cn('min-w-0 flex-1', className)}>
       <p id={id} className="text-[13px] font-semibold leading-snug text-foreground">
         {title}
       </p>
       {description && (
-        <p className="mt-0.5 text-[11.5px] text-muted-foreground/85 leading-snug">{description}</p>
+        <p
+          id={descriptionId}
+          className="mt-0.5 text-[11.5px] text-muted-foreground/85 leading-snug"
+        >
+          {description}
+        </p>
       )}
     </div>
   );
@@ -196,12 +210,20 @@ export function SettingsToggleRow({
   className,
 }: SettingsToggleRowProps) {
   const autoId = useId();
+  const autoDescriptionId = useId();
   const labelId = id ?? autoId;
+  const describedBy = description ? autoDescriptionId : undefined;
   return (
     <SettingsRow divider={divider} className={className}>
-      <SettingsRowLabel id={labelId} title={title} description={description} />
+      <SettingsRowLabel
+        id={labelId}
+        descriptionId={describedBy}
+        title={title}
+        description={description}
+      />
       <Switch
         aria-labelledby={labelId}
+        aria-describedby={describedBy}
         checked={checked}
         onCheckedChange={onCheckedChange}
         disabled={disabled}
@@ -242,13 +264,21 @@ export function SettingsSelectRow({
   triggerClassName,
 }: SettingsSelectRowProps) {
   const autoId = useId();
+  const autoDescriptionId = useId();
   const labelId = id ?? autoId;
+  const describedBy = description ? autoDescriptionId : undefined;
   return (
     <SettingsRow divider={divider} className={className}>
-      <SettingsRowLabel id={labelId} title={title} description={description} />
+      <SettingsRowLabel
+        id={labelId}
+        descriptionId={describedBy}
+        title={title}
+        description={description}
+      />
       <Select value={value} onValueChange={onValueChange} disabled={disabled}>
         <SelectTrigger
           aria-labelledby={labelId}
+          aria-describedby={describedBy}
           className={cn(
             'h-8 text-xs bg-background/40 border-border-glass focus:bg-background/60 transition-colors',
             triggerClassName ?? 'w-40'
