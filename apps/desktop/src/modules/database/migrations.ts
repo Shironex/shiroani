@@ -129,6 +129,69 @@ const MIGRATIONS: Migration[] = [
       CREATE INDEX IF NOT EXISTS idx_feed_items_hash ON feed_items(content_hash);
     `,
   },
+  // NOTE: version 6 is reserved by the AniList resolver migration
+  // (resolve_cache / resolve_cache_meta) that lives on a separate branch and is
+  // already applied to some local databases. Keep feed migrations at 7+ to avoid
+  // a version collision that would silently skip this ALTER.
+  {
+    version: 7,
+    description: 'Add content_html column to feed_items for full-article reading',
+    up: `
+      ALTER TABLE feed_items ADD COLUMN content_html TEXT;
+    `,
+  },
+  {
+    version: 8,
+    description: 'Add supports_full_content flag to feed_sources (gates on-demand extraction)',
+    up: `
+      ALTER TABLE feed_sources ADD COLUMN supports_full_content INTEGER NOT NULL DEFAULT 1;
+      -- On-demand Readability extraction is noisy or pointless for these sources
+      -- (SPA pages, navigation/archive bleed, or episode-metadata feeds with no
+      -- article body). Disable it so teaser items fall back to the clean CTA.
+      UPDATE feed_sources SET supports_full_content = 0 WHERE name IN (
+        'Anime News Network',
+        'ANN Reviews',
+        'MyAnimeList',
+        'Anime Corner',
+        'Crunchyroll',
+        'LiveChart Episodes',
+        'AnimeSchedule (Subs)'
+      );
+    `,
+  },
+  {
+    version: 9,
+    description: 'Clear previously-extracted noisy bodies for teaser-only sources',
+    // These sources never ship a feed body (no content:encoded), so any stored
+    // content_html came from an earlier on-demand extraction — which we now
+    // disable because it bleeds navigation/archive lists into the reader. Null
+    // those bodies so the items fall back to the clean teaser + CTA. Crunchyroll
+    // is deliberately excluded: it DOES ship content:encoded (Phase 1).
+    up: `
+      UPDATE feed_items SET content_html = NULL
+      WHERE feed_source_id IN (
+        SELECT id FROM feed_sources WHERE name IN (
+          'Anime News Network',
+          'ANN Reviews',
+          'MyAnimeList',
+          'Anime Corner',
+          'LiveChart Episodes',
+          'AnimeSchedule (Subs)'
+        )
+      );
+    `,
+  },
+  {
+    version: 10,
+    description: 'Index feed_items.url for article lookups and backfill',
+    // FeedService queries feed_items by `url` on a user action (opening an
+    // article): the stored-body lookup and the persist UPDATE in
+    // getArticleContent. `url` is not UNIQUE (uniqueness is (feed_source_id,
+    // guid)), so a plain index is the right shape.
+    up: `
+      CREATE INDEX IF NOT EXISTS idx_feed_items_url ON feed_items(url);
+    `,
+  },
 ];
 
 /**

@@ -79,6 +79,8 @@
     "copyLink": "Copy link",
     "openExternal": "Open in browser",
     "readFull": "Read full article",
+    "openOnSite": "Open on site",
+    "loadingArticle": "Loading the full article…",
     "previewUnavailable": "Preview unavailable. Open the article in a browser to read the full content.",
     "related": "Related",
     "ariaDescribed": "Article from {{source}} · {{published}}"

@@ -8,6 +8,23 @@ const logger = createLogger('FeedParserService');
 /** Network timeout for fetching an RSS/Atom feed before the parse aborts. */
 const FEED_PARSE_TIMEOUT_MS = 30_000;
 
+/**
+ * Hard cap on the full-article HTML body we persist per item.
+ *
+ * Some feeds (e.g. Rascal.pl `content:encoded`) ship 100 KB+ of HTML per post.
+ * Storing every body uncapped would bloat the SQLite file. 256 KB is generous
+ * for an article while still bounding worst-case row size; oversized bodies are
+ * dropped (the reader then falls back to the teaser + CTA).
+ */
+const MAX_CONTENT_HTML_BYTES = 256 * 1024;
+
+/**
+ * Minimum length (in characters) before a feed body is treated as a real
+ * full-article body worth storing. Below this it's almost certainly a teaser,
+ * and the existing 500-char `description` already covers it.
+ */
+const MIN_CONTENT_HTML_CHARS = 600;
+
 // ============================================
 // RSS Parser custom item type
 // ============================================
@@ -18,6 +35,8 @@ export interface CustomItem {
   enclosure?:
     | Array<{ $?: { url?: string; type?: string } }>
     | { $?: { url?: string; type?: string } };
+  /** `<content:encoded>` — the full post HTML many WordPress/CMS feeds ship. */
+  contentEncoded?: string;
   [key: string]: unknown;
 }
 
@@ -29,6 +48,13 @@ export interface ParsedFeedItem {
   guid: string;
   title: string;
   description: string | null;
+  /**
+   * Full-article HTML the feed shipped (`content:encoded` or a long
+   * `description`/`content`), un-truncated. `null` when the feed only carries a
+   * teaser. Raw third-party HTML — it is sanitized in the renderer (DOMPurify)
+   * before ever being rendered.
+   */
+  contentHtml: string | null;
   url: string;
   author: string | null;
   imageUrl: string | null;
@@ -53,6 +79,7 @@ export class FeedParserService {
         ['media:thumbnail', 'mediaThumbnail'],
         ['media:content', 'mediaContent', { keepArray: true }],
         ['enclosure', 'enclosure', { keepArray: true }],
+        ['content:encoded', 'contentEncoded'],
       ],
     },
     timeout: FEED_PARSE_TIMEOUT_MS,
@@ -81,6 +108,7 @@ export class FeedParserService {
         (typeof item.summary === 'string' ? item.summary : null) ??
         '';
       const description = this.cleanDescription(rawDescription);
+      const contentHtml = this.extractContentHtml(item as CustomItem);
       const rawAuthor = item.creator ?? item.author;
       const author = typeof rawAuthor === 'string' && rawAuthor.length > 0 ? rawAuthor : null;
       const htmlForImage =
@@ -99,6 +127,7 @@ export class FeedParserService {
         guid,
         title,
         description: description || null,
+        contentHtml,
         url,
         author,
         imageUrl,
@@ -177,5 +206,47 @@ export class FeedParserService {
       .trim();
 
     return truncate(text, 500);
+  }
+
+  /**
+   * Pick the fullest HTML body the feed shipped for an item.
+   *
+   * Prefers `content:encoded` (WordPress/CMS full post), then falls back to the
+   * longest of `content` / `summary` / `description` — Blogger feeds (Animeholik)
+   * carry the full post inside `<description>`. Unlike {@link cleanDescription}
+   * the markup is kept verbatim and NOT truncated; sanitization is the
+   * renderer's job (DOMPurify). Returns `null` for teaser-only feeds (body below
+   * {@link MIN_CONTENT_HTML_CHARS}) or bodies over {@link MAX_CONTENT_HTML_BYTES}.
+   */
+  extractContentHtml(item: CustomItem): string | null {
+    const candidates = [
+      item.contentEncoded,
+      item['content:encoded'],
+      item.content,
+      item.summary,
+      item.description,
+    ];
+
+    let best: string | null = null;
+    for (const candidate of candidates) {
+      if (typeof candidate !== 'string') continue;
+      const trimmed = candidate.trim();
+      if (trimmed.length === 0) continue;
+      if (best === null || trimmed.length > best.length) best = trimmed;
+    }
+
+    if (best === null) return null;
+
+    // Teaser-length bodies add nothing over the existing `description` field.
+    if (best.length < MIN_CONTENT_HTML_CHARS) return null;
+
+    // Cap stored size to keep the SQLite file bounded. Oversized bodies fall
+    // back to the teaser + CTA rather than bloating every row.
+    if (Buffer.byteLength(best, 'utf8') > MAX_CONTENT_HTML_BYTES) {
+      logger.debug(`Dropping oversized article body (${best.length} chars) for "${item.title}"`);
+      return null;
+    }
+
+    return best;
   }
 }

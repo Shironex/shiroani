@@ -93,6 +93,8 @@ export const FeedEvents = {
   GET_SOURCES: 'feed:get-sources',
   TOGGLE_SOURCE: 'feed:toggle-source',
   REFRESH: 'feed:refresh',
+  /** On-demand full-article extraction for teaser-only feeds. */
+  GET_ARTICLE: 'feed:get-article',
 
   // Server -> Client (broadcasts)
   ITEMS_RESULT: 'feed:items-result',

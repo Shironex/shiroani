@@ -152,6 +152,8 @@ export function useFeedView() {
       sourceColor: snap.sourceColor,
       sourceCategory: 'news',
       sourceLanguage: 'en',
+      // Snapshots carry no source context; don't attempt on-demand extraction.
+      sourceSupportsFullContent: false,
       guid: '',
       title: snap.title,
       description: snap.description,

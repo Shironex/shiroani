@@ -19,6 +19,7 @@ export interface FeedSourceRow {
   last_etag: string | null;
   consecutive_failures: number;
   last_error: string | null;
+  supports_full_content: number; // SQLite boolean
   created_at: string;
 }
 
@@ -28,6 +29,7 @@ export interface FeedItemRow {
   guid: string;
   title: string;
   description: string | null;
+  content_html: string | null;
   url: string;
   author: string | null;
   image_url: string | null;
@@ -41,6 +43,7 @@ export interface FeedItemRow {
   source_icon?: string | null;
   source_category?: string;
   source_language?: string;
+  source_supports_full_content?: number;
 }
 
 // ============================================
@@ -63,6 +66,7 @@ export function rowToSource(row: FeedSourceRow): FeedSource {
     lastFetchedAt: row.last_fetched_at ?? undefined,
     consecutiveFailures: row.consecutive_failures,
     lastError: row.last_error ?? undefined,
+    supportsFullContent: row.supports_full_content !== 0,
   };
 }
 
@@ -79,6 +83,8 @@ export function rowToItem(row: FeedItemRow): FeedItem {
     guid: row.guid,
     title: row.title,
     description: row.description ?? undefined,
+    contentHtml: row.content_html ?? undefined,
+    sourceSupportsFullContent: row.source_supports_full_content !== 0,
     url: row.url,
     author: row.author ?? undefined,
     imageUrl: row.image_url ?? undefined,

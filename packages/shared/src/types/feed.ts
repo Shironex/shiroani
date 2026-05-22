@@ -23,6 +23,13 @@ export interface FeedSource {
   lastFetchedAt?: string;
   consecutiveFailures: number;
   lastError?: string;
+  /**
+   * Whether on-demand article extraction (Phase 2) should be attempted for this
+   * source's teaser items. `false` for sources where Readability extraction is
+   * noisy (navigation/archive bleed), fails (SPA pages), or is pointless
+   * (episode-metadata feeds) — those fall back to the teaser + CTA.
+   */
+  supportsFullContent: boolean;
 }
 
 // ============================================
@@ -40,6 +47,19 @@ export interface FeedItem {
   guid: string;
   title: string;
   description?: string;
+  /**
+   * Sanitized full-article HTML when the source ships a complete body in its
+   * feed (e.g. `content:encoded`). Absent for teaser-only feeds — the reader
+   * falls back to the `description` teaser + "open on site" CTA, or to
+   * on-demand article extraction.
+   */
+  contentHtml?: string;
+  /**
+   * Denormalized from the item's source: whether on-demand extraction may be
+   * attempted for this item. Lets the reader skip the loading spinner and show
+   * the teaser + CTA immediately for extraction-disabled sources.
+   */
+  sourceSupportsFullContent: boolean;
   url: string;
   author?: string;
   imageUrl?: string;
@@ -77,6 +97,22 @@ export interface FeedToggleSourcePayload {
   enabled: boolean;
 }
 
+export interface FeedGetArticlePayload {
+  /** The feed item's article URL to extract. */
+  url: string;
+}
+
+export interface FeedGetArticleResult {
+  /**
+   * Extracted, sanitized article HTML, or `null` when extraction failed,
+   * the host wasn't allowlisted, the page was empty/paywalled/Cloudflare-gated,
+   * etc. The reader falls back to the teaser + CTA on `null`.
+   */
+  contentHtml: string | null;
+  /** Set when extraction was attempted but failed (for logging/telemetry). */
+  error?: string;
+}
+
 // ============================================
 // Default Feed Sources
 // ============================================
@@ -90,6 +126,11 @@ export interface DefaultFeedSource {
   color: string;
   icon?: string;
   pollIntervalMinutes: number;
+  /**
+   * Attempt on-demand article extraction for this source's teaser items.
+   * Defaults to `true` when omitted. Set `false` for SPA/teaser-noisy sources.
+   */
+  supportsFullContent?: boolean;
 }
 
 export const DEFAULT_FEED_SOURCES: DefaultFeedSource[] = [
@@ -102,6 +143,8 @@ export const DEFAULT_FEED_SOURCES: DefaultFeedSource[] = [
     language: 'en',
     color: '#1d4999',
     pollIntervalMinutes: 30,
+    // Article pages bleed the "latest news" archive list into Readability output.
+    supportsFullContent: false,
   },
   {
     name: 'MyAnimeList',
@@ -111,6 +154,7 @@ export const DEFAULT_FEED_SOURCES: DefaultFeedSource[] = [
     language: 'en',
     color: '#2e51a2',
     pollIntervalMinutes: 60,
+    supportsFullContent: false,
   },
   {
     name: 'Crunchyroll',
@@ -120,6 +164,8 @@ export const DEFAULT_FEED_SOURCES: DefaultFeedSource[] = [
     language: 'en',
     color: '#f47521',
     pollIntervalMinutes: 60,
+    // SPA pages have no server-rendered body for Readability; feed ships content.
+    supportsFullContent: false,
   },
   {
     name: 'Anime Corner',
@@ -129,6 +175,7 @@ export const DEFAULT_FEED_SOURCES: DefaultFeedSource[] = [
     language: 'en',
     color: '#e74c3c',
     pollIntervalMinutes: 60,
+    supportsFullContent: false,
   },
   // English - Episodes
   {
@@ -139,6 +186,8 @@ export const DEFAULT_FEED_SOURCES: DefaultFeedSource[] = [
     language: 'en',
     color: '#00c853',
     pollIntervalMinutes: 30,
+    // Episode-notification feed — no article body to extract.
+    supportsFullContent: false,
   },
   {
     name: 'AnimeSchedule (Subs)',
@@ -148,6 +197,7 @@ export const DEFAULT_FEED_SOURCES: DefaultFeedSource[] = [
     language: 'en',
     color: '#9c27b0',
     pollIntervalMinutes: 15,
+    supportsFullContent: false,
   },
   // English - Reviews
   {
@@ -158,6 +208,7 @@ export const DEFAULT_FEED_SOURCES: DefaultFeedSource[] = [
     language: 'en',
     color: '#1d4999',
     pollIntervalMinutes: 120,
+    supportsFullContent: false,
   },
   // Polish - News
   {

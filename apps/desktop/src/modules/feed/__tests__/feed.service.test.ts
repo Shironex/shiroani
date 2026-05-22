@@ -7,6 +7,7 @@
 
 import type { DatabaseService } from '../../database';
 import type { FeedCacheService } from '../feed-cache.service';
+import type { ArticleExtractorService } from '../article-extractor.service';
 import type { ParsedFeedItem } from '../feed-parser.service';
 import { FeedService } from '../feed.service';
 import { rowToItem, rowToSource, type FeedItemRow, type FeedSourceRow } from '../feed.types';
@@ -27,6 +28,7 @@ function makeSourceRow(overrides: Partial<FeedSourceRow> = {}): FeedSourceRow {
     last_etag: null,
     consecutive_failures: 0,
     last_error: null,
+    supports_full_content: 1,
     created_at: '2024-01-01T00:00:00Z',
     ...overrides,
   };
@@ -39,6 +41,7 @@ function makeItemRow(overrides: Partial<FeedItemRow> = {}): FeedItemRow {
     guid: 'guid-1',
     title: 'Item Title',
     description: 'desc',
+    content_html: null,
     url: 'https://example.com/post',
     author: 'Alice',
     image_url: 'https://example.com/img.jpg',
@@ -51,6 +54,7 @@ function makeItemRow(overrides: Partial<FeedItemRow> = {}): FeedItemRow {
     source_icon: null,
     source_category: 'news',
     source_language: 'en',
+    source_supports_full_content: 1,
     ...overrides,
   };
 }
@@ -60,6 +64,7 @@ function stubParsedItem(overrides: Partial<ParsedFeedItem> = {}): ParsedFeedItem
     guid: 'g1',
     title: 'Title',
     description: 'desc',
+    contentHtml: null,
     url: 'https://example.com/post',
     author: 'Alice',
     imageUrl: null,
@@ -99,6 +104,7 @@ describe('rowToSource', () => {
       lastFetchedAt: '2024-02-01T00:00:00Z',
       consecutiveFailures: 3,
       lastError: 'timeout',
+      supportsFullContent: true,
     });
   });
 
@@ -147,6 +153,7 @@ describe('rowToItem', () => {
     const item = rowToItem(
       makeItemRow({
         description: null,
+        content_html: null,
         author: null,
         image_url: null,
         published_at: null,
@@ -154,10 +161,16 @@ describe('rowToItem', () => {
       })
     );
     expect(item.description).toBeUndefined();
+    expect(item.contentHtml).toBeUndefined();
     expect(item.author).toBeUndefined();
     expect(item.imageUrl).toBeUndefined();
     expect(item.publishedAt).toBeUndefined();
     expect(item.sourceIcon).toBeUndefined();
+  });
+
+  it('maps a populated content_html column to contentHtml', () => {
+    const item = rowToItem(makeItemRow({ content_html: '<p>Full body</p>' }));
+    expect(item.contentHtml).toBe('<p>Full body</p>');
   });
 });
 
@@ -176,6 +189,7 @@ describe('FeedService', () => {
   let db: { prepare: jest.Mock; transaction: jest.Mock };
   let dbService: Pick<DatabaseService, 'db'>;
   let cache: { fetch: jest.Mock };
+  let extractor: { extract: jest.Mock };
   let service: FeedService;
 
   function addStmt(matcher: (sql: string) => boolean, stmt: Partial<Stmt> = {}): Stmt {
@@ -214,7 +228,12 @@ describe('FeedService', () => {
     };
     dbService = { db } as unknown as Pick<DatabaseService, 'db'>;
     cache = { fetch: jest.fn().mockResolvedValue([]) };
-    service = new FeedService(dbService as DatabaseService, cache as unknown as FeedCacheService);
+    extractor = { extract: jest.fn().mockResolvedValue({ contentHtml: null }) };
+    service = new FeedService(
+      dbService as DatabaseService,
+      cache as unknown as FeedCacheService,
+      extractor as unknown as ArticleExtractorService
+    );
   });
 
   describe('seedDefaultSources', () => {
@@ -395,10 +414,11 @@ describe('FeedService', () => {
   describe('fetchFeed', () => {
     it('inserts parsed items via cache.fetch and returns new count', async () => {
       cache.fetch.mockResolvedValueOnce([
-        stubParsedItem({ guid: 'a', contentHash: 'h1' }),
+        stubParsedItem({ guid: 'a', contentHash: 'h1', contentHtml: '<p>full body</p>' }),
         stubParsedItem({ guid: 'b', contentHash: 'h2' }),
       ]);
 
+      let insertSql = '';
       const insertStmt: Stmt = {
         all: jest.fn(),
         get: jest.fn(),
@@ -415,7 +435,10 @@ describe('FeedService', () => {
 
       db.prepare.mockReset();
       db.prepare.mockImplementation((sql: string) => {
-        if (sql.includes('INSERT OR IGNORE INTO feed_items')) return insertStmt;
+        if (sql.includes('INSERT OR IGNORE INTO feed_items')) {
+          insertSql = sql;
+          return insertStmt;
+        }
         if (sql.includes('consecutive_failures = 0')) return successUpdate;
         return { all: jest.fn(), get: jest.fn(), run: jest.fn() };
       });
@@ -427,6 +450,47 @@ describe('FeedService', () => {
       expect(insertStmt.run).toHaveBeenCalledTimes(2);
       expect(successUpdate.run).toHaveBeenCalledWith(source.id);
       expect(newCount).toBe(1);
+      // The INSERT must include the content_html column and forward the body.
+      expect(insertSql).toContain('content_html');
+      expect(insertStmt.run.mock.calls[0]).toContain('<p>full body</p>');
+    });
+
+    it('backfills content_html onto an existing item that has no stored body', async () => {
+      cache.fetch.mockResolvedValueOnce([
+        // Existing GUID (INSERT OR IGNORE → changes 0) that now carries a body.
+        stubParsedItem({ guid: 'old', contentHash: 'h1', contentHtml: '<p>backfilled</p>' }),
+      ]);
+
+      const insertStmt: Stmt = {
+        all: jest.fn(),
+        get: jest.fn(),
+        run: jest.fn(() => ({ changes: 0, lastInsertRowid: 0 })),
+      };
+      const backfillStmt: Stmt = {
+        all: jest.fn(),
+        get: jest.fn(),
+        run: jest.fn(() => ({ changes: 1, lastInsertRowid: 0 })),
+      };
+      const successUpdate: Stmt = {
+        all: jest.fn(),
+        get: jest.fn(),
+        run: jest.fn(() => ({ changes: 1, lastInsertRowid: 0 })),
+      };
+
+      db.prepare.mockReset();
+      db.prepare.mockImplementation((sql: string) => {
+        if (sql.includes('INSERT OR IGNORE INTO feed_items')) return insertStmt;
+        if (sql.includes('content_html = ?') && sql.includes('content_html IS NULL'))
+          return backfillStmt;
+        if (sql.includes('consecutive_failures = 0')) return successUpdate;
+        return { all: jest.fn(), get: jest.fn(), run: jest.fn() };
+      });
+
+      const source = makeSourceRow();
+      const newCount = await service.fetchFeed(source);
+
+      expect(newCount).toBe(0); // existing item is not counted as new
+      expect(backfillStmt.run).toHaveBeenCalledWith('<p>backfilled</p>', source.id, 'old');
     });
 
     it('records a failure when cache.fetch throws', async () => {
@@ -451,6 +515,92 @@ describe('FeedService', () => {
 
       expect(newCount).toBe(0);
       expect(failureUpdate.run).toHaveBeenCalledWith('network down', 9);
+    });
+  });
+
+  describe('getArticleContent', () => {
+    it('returns the stored content_html without re-extracting when present', async () => {
+      const selectStmt: Stmt = {
+        all: jest.fn(),
+        get: jest.fn(() => ({ content_html: '<p>cached body</p>' })),
+        run: jest.fn(),
+      };
+      db.prepare.mockReset();
+      db.prepare.mockImplementation((sql: string) => {
+        if (sql.includes('SELECT content_html FROM feed_items')) return selectStmt;
+        return { all: jest.fn(), get: jest.fn(), run: jest.fn() };
+      });
+
+      const result = await service.getArticleContent('https://example.com/post');
+      expect(result.contentHtml).toBe('<p>cached body</p>');
+      expect(extractor.extract).not.toHaveBeenCalled();
+    });
+
+    it('extracts and persists the body when none is stored', async () => {
+      extractor.extract.mockResolvedValueOnce({ contentHtml: '<p>extracted</p>' });
+
+      const selectStmt: Stmt = {
+        all: jest.fn(),
+        get: jest.fn(() => undefined),
+        run: jest.fn(),
+      };
+      const updateStmt: Stmt = {
+        all: jest.fn(),
+        get: jest.fn(),
+        run: jest.fn(() => ({ changes: 1, lastInsertRowid: 0 })),
+      };
+      db.prepare.mockReset();
+      db.prepare.mockImplementation((sql: string) => {
+        if (sql.includes('SELECT content_html FROM feed_items')) return selectStmt;
+        if (sql.includes('UPDATE feed_items SET content_html')) return updateStmt;
+        return { all: jest.fn(), get: jest.fn(), run: jest.fn() };
+      });
+
+      const result = await service.getArticleContent('https://example.com/post');
+      expect(extractor.extract).toHaveBeenCalledWith('https://example.com/post');
+      expect(result.contentHtml).toBe('<p>extracted</p>');
+      expect(updateStmt.run).toHaveBeenCalledWith('<p>extracted</p>', 'https://example.com/post');
+    });
+
+    it('returns null without persisting when extraction fails', async () => {
+      extractor.extract.mockResolvedValueOnce({ contentHtml: null, error: 'host-not-allowed' });
+
+      const selectStmt: Stmt = {
+        all: jest.fn(),
+        get: jest.fn(() => undefined),
+        run: jest.fn(),
+      };
+      const updateStmt: Stmt = {
+        all: jest.fn(),
+        get: jest.fn(),
+        run: jest.fn(),
+      };
+      db.prepare.mockReset();
+      db.prepare.mockImplementation((sql: string) => {
+        if (sql.includes('SELECT content_html FROM feed_items')) return selectStmt;
+        if (sql.includes('UPDATE feed_items SET content_html')) return updateStmt;
+        return { all: jest.fn(), get: jest.fn(), run: jest.fn() };
+      });
+
+      const result = await service.getArticleContent('https://blocked.example.com/post');
+      expect(result.contentHtml).toBeNull();
+      expect(updateStmt.run).not.toHaveBeenCalled();
+    });
+
+    it('skips extraction for sources with supports_full_content = 0', async () => {
+      const noStored: Stmt = { all: jest.fn(), get: jest.fn(() => undefined), run: jest.fn() };
+      const flagStmt: Stmt = { all: jest.fn(), get: jest.fn(() => ({ flag: 0 })), run: jest.fn() };
+      db.prepare.mockReset();
+      db.prepare.mockImplementation((sql: string) => {
+        if (sql.includes('SELECT content_html FROM feed_items')) return noStored;
+        if (sql.includes('supports_full_content')) return flagStmt;
+        return { all: jest.fn(), get: jest.fn(), run: jest.fn() };
+      });
+
+      const result = await service.getArticleContent('https://www.animenewsnetwork.com/x');
+      expect(result.contentHtml).toBeNull();
+      expect(result.error).toBe('extraction-disabled');
+      expect(extractor.extract).not.toHaveBeenCalled();
     });
   });
 });
