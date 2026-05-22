@@ -1,6 +1,6 @@
 {
   "name": "@shiroani/web",
-  "version": "0.10.1",
+  "version": "0.11.0",
   "description": "ShiroAni web frontend",
   "private": true,
   "sideEffects": [
