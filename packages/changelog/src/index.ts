@@ -133,10 +133,117 @@ export function localizeReleases(locale: Locale): ResolvedRelease[] {
 
 export const RELEASES: readonly Release[] = [
   {
+    version: '0.11.0',
+    shortDate: '22.05.2026',
+    type: 'minor',
+    latest: true,
+    pl: {
+      date: '22 maja 2026',
+      title: 'Personalizacja nowej karty i własna kolejność widoków',
+      description:
+        'Strona nowej karty w przeglądarce jest teraz w pełni do dopasowania — w ustawieniach można pokazać lub ukryć poszczególne panele, ustawić ich kolejność i zobaczyć podgląd na żywo. Widoki w docku również można przeciągać i układać po swojemu. Pod maską aplikacja przeszła duże porządki w kodzie, dzięki którym łatwiej będzie o kolejne funkcje.',
+      categories: [
+        {
+          kind: 'feature',
+          label: 'Personalizacja nowej karty',
+          entries: [
+            'Nowa sekcja „Nowa karta" w ustawieniach pozwala dopasować stronę nowej karty we wbudowanej przeglądarce',
+            'Można pokazać lub ukryć poszczególne panele: powitanie, „Emitowane dzisiaj", szybki dostęp, ostatnio odwiedzane i „Kontynuuj oglądanie" — oraz znak wodny kanji w tle',
+            'Panele można przeciągać i ustawić we własnej kolejności, a jeden przycisk przywraca układ domyślny',
+            'Suwak ustawia liczbę kafelków w sekcji „Emitowane dzisiaj" (od 6 do 20)',
+            'Przełącznik decyduje, czy w powitaniu pokazywać Twoje imię',
+            'Podgląd na żywo od razu pokazuje, jak będzie wyglądać nowa karta',
+          ],
+        },
+        {
+          kind: 'feature',
+          label: 'Własna kolejność widoków',
+          entries: [
+            'Widoki w docku można teraz przeciągać i układać w dowolnej kolejności (Ustawienia → Wygląd → Widoki)',
+            'Wybrana kolejność obowiązuje wszędzie: w docku, w podglądach w ustawieniach i w onboardingu',
+            'Przycisk „Przywróć domyślne" cofa kolejność i widoczność do ustawień startowych',
+            'Listę można przestawiać także z klawiatury, nie tylko myszą',
+          ],
+        },
+        {
+          kind: 'polish',
+          label: 'Drobne dopracowania',
+          entries: [
+            'Po otwarciu pustej nowej karty kursor od razu ląduje w pasku adresu — można zacząć pisać bez klikania',
+          ],
+        },
+        {
+          kind: 'fix',
+          label: 'Poprawki',
+          entries: [
+            'Na macOS zniknęły ustawienia maskotki, które i tak nic nie robiły (maskotka działa tylko na Windowsie)',
+          ],
+        },
+        {
+          kind: 'polish',
+          label: 'Stabilność i porządki',
+          entries: [
+            'Duże porządki w kodzie aplikacji i strony: rozbite zbyt duże pliki, usunięty nieużywany kod, ujednolicone wzorce i dołożone testy — bez zmian w działaniu, ale z mniejszą liczbą okazji do błędów',
+          ],
+        },
+      ],
+    },
+    en: {
+      date: 'May 22, 2026',
+      title: 'New Tab customization and your own view order',
+      description:
+        "The browser's New Tab page is now fully yours to shape — show or hide individual panels in settings, set their order, and watch a live preview. Views in the dock can be dragged into your own order too. Under the hood the app went through a big code cleanup that makes future features easier.",
+      categories: [
+        {
+          kind: 'feature',
+          label: 'New Tab customization',
+          entries: [
+            'A new “New Tab” settings section lets you customize the in-app browser’s New Tab page',
+            'Show or hide individual panels: greeting, “Airing today”, quick access, recent visits and “Resume watching” — plus the kanji watermark in the background',
+            'Drag the panels into any order you like, and one button restores the default layout',
+            'A slider sets how many cards appear in “Airing today” (6 to 20)',
+            'A toggle decides whether your name shows in the greeting',
+            'A live preview shows exactly how the New Tab page will look',
+          ],
+        },
+        {
+          kind: 'feature',
+          label: 'Your own view order',
+          entries: [
+            'Views in the dock can now be dragged into any order you like (Settings → Appearance → Views)',
+            'The order you choose applies everywhere: the dock, the settings previews and onboarding',
+            'A “Reset to defaults” button returns the order and visibility to their starting state',
+            'You can reorder the list with the keyboard too, not just the mouse',
+          ],
+        },
+        {
+          kind: 'polish',
+          label: 'Small refinements',
+          entries: [
+            'Opening a blank new tab puts the cursor straight in the address bar — start typing without clicking first',
+          ],
+        },
+        {
+          kind: 'fix',
+          label: 'Fixes',
+          entries: [
+            'On macOS the mascot settings that did nothing anyway are gone (the mascot is Windows-only)',
+          ],
+        },
+        {
+          kind: 'polish',
+          label: 'Stability & cleanup',
+          entries: [
+            'A big code cleanup across the app and website: oversized files split up, unused code removed, patterns unified and tests added — no change in behavior, just fewer chances for bugs',
+          ],
+        },
+      ],
+    },
+  },
+  {
     version: '0.10.1',
     shortDate: '17.05.2026',
     type: 'minor',
-    latest: true,
     pl: {
       date: '17 maja 2026',
       title: 'Pełna kontrola nad własnym tłem',
