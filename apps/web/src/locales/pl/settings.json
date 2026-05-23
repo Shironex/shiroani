@@ -520,7 +520,8 @@
       "p2": "Aplikacja jest darmowa i zawsze taka będzie. Ale jeśli weszła Ci w nawyk i chcesz podziękować, możesz <1>postawić mi kawę</1>, to naprawdę dodaje mi motywacji do dalszej pracy.",
       "p3": "Bez żadnej presji. To, że tu jesteś i z niej korzystasz, już znaczy dla mnie bardzo dużo."
     },
-    "action": "Postaw mi kawę"
+    "action": "Postaw mi kawę",
+    "sponsor": "Wesprzyj na GitHubie"
   },
   "developer": {
     "card": {

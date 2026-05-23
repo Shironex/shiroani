@@ -13,6 +13,9 @@ export const MASCOT_SLEEP_URL = `${import.meta.env.BASE_URL}chibi_sleep.png`;
 /** Buy Me a Coffee support link (mirrors `.github/FUNDING.yml`). Single source for the support section + launch banner. */
 export const BUY_ME_A_COFFEE_URL = 'https://www.buymeacoffee.com/shirone';
 
+/** GitHub Sponsors link (mirrors `.github/FUNDING.yml`). Companion to BUY_ME_A_COFFEE_URL for the support section + launch banner. */
+export const GITHUB_SPONSORS_URL = 'https://github.com/sponsors/Shironex';
+
 /**
  * Upper bound for episode-count inputs when the real total is unknown.
  * Used as the `max` for current/total episode number fields.

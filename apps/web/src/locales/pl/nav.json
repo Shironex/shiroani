@@ -39,6 +39,7 @@
   "supportBanner": {
     "message": "ShiroAni robię sam, po godzinach. Jeśli Ci się podoba, możesz postawić mi kawę 💛",
     "action": "Postaw mi kawę",
+    "sponsor": "Wesprzyj na GitHubie",
     "dismiss": "Zamknij"
   },
   "comingSoon": {

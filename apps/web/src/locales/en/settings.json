@@ -520,7 +520,8 @@
       "p2": "The app is free and always will be. But if it's become part of your routine and you'd like to say thanks, you can <1>buy me a coffee</1>, it genuinely keeps me motivated to keep building.",
       "p3": "No pressure either way. Just having you here using it already means a lot."
     },
-    "action": "Buy me a coffee"
+    "action": "Buy me a coffee",
+    "sponsor": "Sponsor on GitHub"
   },
   "developer": {
     "card": {

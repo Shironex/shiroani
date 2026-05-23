@@ -1,11 +1,15 @@
 import { useTranslation, Trans } from 'react-i18next';
-import { Coffee, Heart } from 'lucide-react';
-import { BUY_ME_A_COFFEE_URL } from '@/lib/constants';
+import { Coffee, Heart, HeartHandshake } from 'lucide-react';
+import { BUY_ME_A_COFFEE_URL, GITHUB_SPONSORS_URL } from '@/lib/constants';
 import { Button } from '@/components/ui/button';
 import { SettingsCard } from '@/components/settings/SettingsCard';
 
 function openCoffeeLink() {
   window.open(BUY_ME_A_COFFEE_URL, '_blank', 'noopener,noreferrer');
+}
+
+function openSponsorsLink() {
+  window.open(GITHUB_SPONSORS_URL, '_blank', 'noopener,noreferrer');
 }
 
 export function SupportSection() {
@@ -34,6 +38,10 @@ export function SupportSection() {
           <Button size="sm" onClick={openCoffeeLink}>
             <Coffee className="w-3.5 h-3.5" />
             {t('support.action')}
+          </Button>
+          <Button size="sm" variant="outline" onClick={openSponsorsLink}>
+            <HeartHandshake className="w-3.5 h-3.5" />
+            {t('support.sponsor')}
           </Button>
         </div>
       </SettingsCard>
