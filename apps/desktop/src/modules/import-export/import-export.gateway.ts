@@ -11,6 +11,7 @@ import {
   ImportExportEvents,
   LibraryEvents,
   DiaryEvents,
+  CrudActions,
   exportRequestSchema,
   importRequestSchema,
   type ExportResponse,
@@ -36,7 +37,7 @@ export class ImportExportGateway {
   handleExport(@MessageBody() payload: unknown) {
     return handleGatewayRequest({
       logger,
-      action: 'data:export',
+      action: ImportExportEvents.EXPORT,
       defaultResult: { data: null, totalExported: 0 },
       schema: exportRequestSchema,
       payload,
@@ -52,7 +53,7 @@ export class ImportExportGateway {
   handleImport(@MessageBody() payload: unknown) {
     return handleGatewayRequest({
       logger,
-      action: 'data:import',
+      action: ImportExportEvents.IMPORT,
       defaultResult: { results: [], totalImported: 0, totalSkipped: 0, totalErrors: 0 },
       schema: importRequestSchema,
       payload,
@@ -64,10 +65,10 @@ export class ImportExportGateway {
 
         // Notify existing stores to refresh
         if (hasLibrary) {
-          this.server.emit(LibraryEvents.UPDATED, { action: 'imported' });
+          this.server.emit(LibraryEvents.UPDATED, { action: CrudActions.IMPORTED });
         }
         if (hasDiary) {
-          this.server.emit(DiaryEvents.UPDATED, { action: 'imported' });
+          this.server.emit(DiaryEvents.UPDATED, { action: CrudActions.IMPORTED });
         }
 
         return response;

@@ -60,5 +60,12 @@
   "dialog": {
     "areYouSure": "Are you sure?",
     "thisCannotBeUndone": "This cannot be undone."
-  }
+  },
+  "errors": {
+    "loadFailed": "Couldn't load the latest data.",
+    "saveFailed": "Couldn't save your change — it was reverted.",
+    "removeFailed": "Couldn't remove the item — it was restored.",
+    "addFailed": "Couldn't add the item."
+  },
+  "unknownAnime": "Unknown anime"
 }

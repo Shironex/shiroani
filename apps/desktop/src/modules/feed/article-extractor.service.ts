@@ -17,6 +17,7 @@ function getJSDOM(): JSDOMCtor {
 import {
   createLogger,
   extractErrorMessage,
+  isPrivateHostLiteral,
   DEFAULT_FEED_SOURCES,
   type FeedGetArticleResult,
 } from '@shiroani/shared';
@@ -111,40 +112,6 @@ const FORBID_TAGS = [
   'source',
   'track',
 ];
-
-/**
- * Block literal private/loopback/link-local addresses. Defence-in-depth against
- * SSRF via IP-literal URLs (we don't resolve DNS — the OS fetch races anyway).
- * Lifted verbatim from `app-image-fetch.ts` to keep one canonical guard shape.
- */
-function isPrivateHostLiteral(host: string): boolean {
-  const normalized = host.trim().toLowerCase();
-  if (!normalized) return true;
-
-  const unbracketed =
-    normalized.startsWith('[') && normalized.endsWith(']') ? normalized.slice(1, -1) : normalized;
-
-  if (unbracketed === '::1' || unbracketed === '::') return true;
-  if (/^f[cd][0-9a-f]{0,2}:/.test(unbracketed)) return true;
-  if (/^fe[89ab][0-9a-f]?:/.test(unbracketed)) return true;
-
-  const ipv4 = unbracketed.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
-  if (ipv4) {
-    const [, aStr, bStr] = ipv4;
-    const a = Number(aStr);
-    const b = Number(bStr);
-    if (a === 10) return true;
-    if (a === 127) return true;
-    if (a === 0) return true;
-    if (a === 169 && b === 254) return true;
-    if (a === 172 && b >= 16 && b <= 31) return true;
-    if (a === 192 && b === 168) return true;
-  }
-
-  if (unbracketed === 'localhost' || unbracketed.endsWith('.localhost')) return true;
-
-  return false;
-}
 
 /**
  * Build the host allowlist from the known feed sources' `siteUrl` hosts. We only

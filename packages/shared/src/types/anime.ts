@@ -356,6 +356,33 @@ export interface UserProfile {
 }
 
 // ============================================
+// Discover (AniList browse) Types
+// ============================================
+
+/**
+ * AniList media shape returned by the discover gateway handlers
+ * (`anime:get-trending` / `-popular` / `-seasonal` / `-random`) and consumed by
+ * the web discover store and grid. Cross-app contract — kept here so the store
+ * and its consumers share one definition.
+ */
+export interface DiscoverMedia {
+  id: number;
+  title: { romaji?: string; english?: string; native?: string };
+  coverImage: { large?: string; medium?: string; extraLarge?: string; color?: string };
+  bannerImage?: string;
+  episodes?: number;
+  status?: string;
+  format?: string;
+  genres?: string[];
+  averageScore?: number;
+  popularity?: number;
+  season?: string;
+  seasonYear?: number;
+  nextAiringEpisode?: { airingAt: number; episode: number };
+  description?: string;
+}
+
+// ============================================
 // Discord Rich Presence Types
 // ============================================
 

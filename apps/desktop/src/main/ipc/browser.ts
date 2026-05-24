@@ -1,4 +1,5 @@
 import { BrowserWindow, ipcMain } from 'electron';
+import { ADBLOCK_WHITELIST_MAX_ENTRIES } from '@shiroani/shared';
 import { createMainLogger } from '../logging/logger';
 import { BrowserManager } from '../browser/browser-manager';
 import { isExternalUrlAllowed } from '../url-utils';
@@ -28,8 +29,7 @@ const POPUP_ALLOWLIST = new Set([
 /** Popup block switch: `true` blocks all cross-origin popups except the OAuth allowlist. */
 let popupBlockEnabled = true;
 
-/** Input validation limits for the adblock whitelist. */
-const MAX_WHITELIST_ENTRIES = 500;
+/** Input validation limit for an individual whitelist host (RFC 1035 cap). */
 const MAX_HOST_LENGTH = 253;
 
 export function getPopupBlockEnabled(): boolean {
@@ -141,7 +141,7 @@ export function registerBrowserHandlers(
         return;
       }
       const cleaned: string[] = [];
-      for (const entry of hosts.slice(0, MAX_WHITELIST_ENTRIES)) {
+      for (const entry of hosts.slice(0, ADBLOCK_WHITELIST_MAX_ENTRIES)) {
         if (typeof entry !== 'string') continue;
         const trimmed = entry.trim();
         if (!trimmed || trimmed.length > MAX_HOST_LENGTH) continue;

@@ -1,7 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { Notification, BrowserWindow, nativeImage } from 'electron';
 import https from 'https';
-import type { AiringAnime, NotificationSettings } from '@shiroani/shared';
+import {
+  isPrivateHostLiteral,
+  type AiringAnime,
+  type NotificationSettings,
+} from '@shiroani/shared';
 import { NotificationHostPort } from '../../modules/notifications/notification-host.port';
 import { resolveAnimeTitle, buildLocalizedNotificationBody } from './notification-strings';
 import {
@@ -100,7 +104,9 @@ function downloadImage(url: string): Promise<Electron.NativeImage | null> {
       return resolve(null);
     }
 
-    if (parsed.protocol !== 'https:') {
+    if (parsed.protocol !== 'https:' || isPrivateHostLiteral(parsed.hostname)) {
+      // Matches the SSRF guard on the app image proxy + article extractor; the
+      // URL is AniList-sourced today, but keep the three fetchers consistent.
       return resolve(null);
     }
 

@@ -10,13 +10,13 @@ import { getTitle } from '@/components/discover/random/random-utils';
  * Shared add-to-library flow for AniList-sourced Discover media. Folds in the
  * dedupe check (AniList id + title), the `DiscoverMedia` → library payload
  * mapping, and the success/error toasts so the Discover grid and the Random
- * showcase stay in lockstep. Returns one `(media) => void`.
+ * showcase stay in lockstep. Returns one `(media) => Promise<void>`.
  */
-export function useAddDiscoverMediaToLibrary(): (media: DiscoverMedia) => void {
+export function useAddDiscoverMediaToLibrary(): (media: DiscoverMedia) => Promise<void> {
   const { t } = useTranslation('discover');
 
   return useCallback(
-    (media: DiscoverMedia) => {
+    async (media: DiscoverMedia) => {
       const title = getTitle(media.title);
       const entries = useLibraryStore.getState().entries;
       if (isAlreadyInLibrary(entries, { anilistId: media.id, title })) {
@@ -24,19 +24,21 @@ export function useAddDiscoverMediaToLibrary(): (media: DiscoverMedia) => void {
         return;
       }
 
-      try {
-        useLibraryStore.getState().addToLibrary({
-          anilistId: media.id,
-          title,
-          titleRomaji: media.title.romaji,
-          titleNative: media.title.native,
-          coverImage:
-            media.coverImage.large || media.coverImage.extraLarge || media.coverImage.medium,
-          episodes: media.episodes,
-          status: 'plan_to_watch',
-        });
+      // Gate the success toast on the real persist result.
+      const ok = await useLibraryStore.getState().addToLibrary({
+        anilistId: media.id,
+        title,
+        titleRomaji: media.title.romaji,
+        titleNative: media.title.native,
+        coverImage:
+          media.coverImage.large || media.coverImage.extraLarge || media.coverImage.medium,
+        episodes: media.episodes,
+        status: 'plan_to_watch',
+      });
+
+      if (ok) {
         toast.success(t('toast.addedToLibrary'), { description: title });
-      } catch {
+      } else {
         toast.error(t('toast.addFailed'));
       }
     },

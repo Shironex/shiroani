@@ -7,6 +7,7 @@ import { logger } from './logging/logger';
 import { getBackendPort } from './backend-port';
 import { BrowserManager } from './browser/browser-manager';
 import { isExternalUrlAllowed } from './url-utils';
+import { isHardCrashReason } from './cleanup-utils';
 
 // Re-export for callers that still pull it from `./window`. The actual
 // implementation lives in `./url-utils` so IPC modules can import it
@@ -265,11 +266,7 @@ function attachWebContentsDiagnostics(webContents: WebContents): void {
   instrumentedWebContents.add(webContents);
 
   webContents.on('render-process-gone', (_event, details) => {
-    const isError =
-      details.reason === 'crashed' ||
-      details.reason === 'oom' ||
-      details.reason === 'launch-failed' ||
-      details.reason === 'integrity-failure';
+    const isError = isHardCrashReason(details.reason);
     const payload = {
       reason: details.reason,
       exitCode: details.exitCode,

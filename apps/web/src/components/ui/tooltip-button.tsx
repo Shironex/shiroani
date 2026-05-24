@@ -8,16 +8,23 @@ interface TooltipButtonProps extends ButtonProps {
 }
 
 const TooltipButton = React.forwardRef<HTMLButtonElement, TooltipButtonProps>(
-  ({ tooltip, tooltipSide, children, ...buttonProps }, ref) => (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <Button ref={ref} {...buttonProps}>
-          {children}
-        </Button>
-      </TooltipTrigger>
-      <TooltipContent side={tooltipSide}>{tooltip}</TooltipContent>
-    </Tooltip>
-  )
+  ({ tooltip, tooltipSide, children, 'aria-label': ariaLabel, ...buttonProps }, ref) => {
+    // A tooltip is only wired as `aria-describedby`, not the accessible NAME, so
+    // an icon-only TooltipButton would announce as just "button". Derive the
+    // name from the string tooltip when the caller hasn't supplied an explicit
+    // aria-label — covers every icon-only TooltipButton in one place.
+    const accessibleName = ariaLabel ?? (typeof tooltip === 'string' ? tooltip : undefined);
+    return (
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button ref={ref} aria-label={accessibleName} {...buttonProps}>
+            {children}
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent side={tooltipSide}>{tooltip}</TooltipContent>
+      </Tooltip>
+    );
+  }
 );
 TooltipButton.displayName = 'TooltipButton';
 

@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import App from './App';
 import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
+import { ErrorBoundary } from '@/components/shared/ErrorBoundary';
 
 // Side-effect import: runs `i18next.init()` synchronously before React mounts
 // so the first paint already has the correct language. Must precede the
@@ -27,9 +28,13 @@ if (!rootElement) {
 
 createRoot(rootElement).render(
   <StrictMode>
-    <TooltipProvider delayDuration={300}>
-      <App />
-      <Toaster />
-    </TooltipProvider>
+    {/* App-shell boundary — a render throw in the splash, onboarding, title bar,
+        or any view subtree surfaces the recovery UI instead of a blank window. */}
+    <ErrorBoundary>
+      <TooltipProvider delayDuration={300}>
+        <App />
+        <Toaster />
+      </TooltipProvider>
+    </ErrorBoundary>
   </StrictMode>
 );

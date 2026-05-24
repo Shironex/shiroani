@@ -21,11 +21,6 @@ export const AnimeEvents = {
   GET_SEASONAL: 'anime:get-seasonal',
   GET_RANDOM: 'anime:get-random',
   GET_USER_PROFILE: 'anime:get-user-profile',
-
-  // Server -> Client (broadcasts)
-  SEARCH_RESULT: 'anime:search-result',
-  DETAILS_RESULT: 'anime:details-result',
-  AIRING_RESULT: 'anime:airing-result',
 } as const;
 
 // ============================================
@@ -40,7 +35,6 @@ export const LibraryEvents = {
   REMOVE: 'library:remove',
 
   // Server -> Client (broadcasts)
-  RESULT: 'library:result',
   UPDATED: 'library:updated',
 } as const;
 
@@ -68,7 +62,6 @@ export const DiaryEvents = {
   REMOVE: 'diary:remove',
 
   // Server -> Client (broadcasts)
-  RESULT: 'diary:result',
   UPDATED: 'diary:updated',
 } as const;
 
@@ -97,7 +90,6 @@ export const FeedEvents = {
   GET_ARTICLE: 'feed:get-article',
 
   // Server -> Client (broadcasts)
-  ITEMS_RESULT: 'feed:items-result',
   SOURCES_RESULT: 'feed:sources-result',
   NEW_ITEMS: 'feed:new-items',
 } as const;
@@ -110,3 +102,25 @@ export const SystemEvents = {
   ERROR: 'system:error',
   THROTTLED: 'system:throttled',
 } as const;
+
+// ============================================
+// CRUD broadcast actions
+// ============================================
+/**
+ * The `action` discriminator carried by `*:updated` broadcasts so the client
+ * knows how to reconcile its list. Single source of truth shared by the
+ * library/diary gateways (producers) and {@link createCrudResource} (consumer)
+ * to prevent the `'added'` vs `'created'` drift from re-appearing.
+ */
+export const CrudActions = {
+  /** A library entry was created (library uses `added`). */
+  ADDED: 'added',
+  /** A diary entry was created (diary uses `created`). */
+  CREATED: 'created',
+  UPDATED: 'updated',
+  REMOVED: 'removed',
+  /** A bulk import landed — consumers re-fetch the whole collection. */
+  IMPORTED: 'imported',
+} as const;
+
+export type CrudAction = (typeof CrudActions)[keyof typeof CrudActions];

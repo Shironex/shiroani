@@ -1,7 +1,12 @@
 import { create } from 'zustand';
 import { maybeDevtools } from '@/stores/utils/maybeDevtools';
-import { AnimeEvents } from '@shiroani/shared';
-import { createLogger } from '@shiroani/shared';
+import {
+  AnimeEvents,
+  createLogger,
+  getCurrentAniListSeason,
+  shuffleArray,
+  type DiscoverMedia,
+} from '@shiroani/shared';
 import { emitWithErrorHandling } from '@/lib/socket';
 import i18n from '@/lib/i18n';
 
@@ -11,22 +16,9 @@ const logger = createLogger('DiscoverStore');
 
 export type DiscoverTab = 'trending' | 'popular' | 'seasonal' | 'random';
 
-export interface DiscoverMedia {
-  id: number;
-  title: { romaji?: string; english?: string; native?: string };
-  coverImage: { large?: string; medium?: string; extraLarge?: string; color?: string };
-  bannerImage?: string;
-  episodes?: number;
-  status?: string;
-  format?: string;
-  genres?: string[];
-  averageScore?: number;
-  popularity?: number;
-  season?: string;
-  seasonYear?: number;
-  nextAiringEpisode?: { airingAt: number; episode: number };
-  description?: string;
-}
+// Re-exported so existing consumers can keep importing `DiscoverMedia` from the
+// store module unchanged (canonical definition now lives in `@shiroani/shared`).
+export type { DiscoverMedia };
 
 interface PageInfo {
   current: number;
@@ -36,24 +28,6 @@ interface PageInfo {
 interface PaginatedResponse {
   results: DiscoverMedia[];
   pageInfo: { total: number; currentPage: number; lastPage: number; hasNextPage: boolean };
-}
-
-// ── Season helpers ───────────────────────────────────────────────
-
-type AniListSeason = 'WINTER' | 'SPRING' | 'SUMMER' | 'FALL';
-
-function getCurrentSeason(): { year: number; season: AniListSeason } {
-  const now = new Date();
-  const month = now.getMonth(); // 0-indexed
-  const year = now.getFullYear();
-
-  let season: AniListSeason;
-  if (month <= 2) season = 'WINTER';
-  else if (month <= 5) season = 'SPRING';
-  else if (month <= 8) season = 'SUMMER';
-  else season = 'FALL';
-
-  return { year, season };
 }
 
 // ── State ────────────────────────────────────────────────────────
@@ -101,15 +75,6 @@ interface DiscoverActions {
 type DiscoverStore = DiscoverState & DiscoverActions;
 
 const initialPage: PageInfo = { current: 1, hasNext: false };
-
-function shuffleArray<T>(arr: T[]): T[] {
-  const out = [...arr];
-  for (let i = out.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [out[i], out[j]] = [out[j], out[i]];
-  }
-  return out;
-}
 
 function toUserError(err: Error): string {
   if (err.message.includes('rate limit') || err.message.includes('429')) {
@@ -266,7 +231,7 @@ export const useDiscoverStore = create<DiscoverStore>()(
       },
 
       fetchSeasonal: () => {
-        const { year, season } = getCurrentSeason();
+        const { year, season } = getCurrentAniListSeason();
         logger.info(`Fetching seasonal: ${season} ${year} (page 1)`);
         set({ isLoading: true, error: null }, undefined, 'discover/fetchingSeasonal');
 
@@ -433,7 +398,7 @@ export const useDiscoverStore = create<DiscoverStore>()(
             payload = { page: nextPage };
             break;
           case 'seasonal': {
-            const { year, season } = getCurrentSeason();
+            const { year, season } = getCurrentAniListSeason();
             event = AnimeEvents.GET_SEASONAL;
             payload = { year, season, page: nextPage };
             break;

@@ -89,7 +89,8 @@ export class LibraryService {
         payload.resumeUrl ?? null
       );
 
-    const entry = this.getEntryById(Number(result.lastInsertRowid))!;
+    const entry = this.getEntryById(Number(result.lastInsertRowid));
+    if (!entry) throw new Error('Library entry vanished immediately after INSERT');
     logger.info(`Added "${entry.title}" to library (id=${entry.id})`);
     return entry;
   }

@@ -136,7 +136,7 @@ function App() {
               hasBg ? 'bg-transparent' : 'bg-background'
             )}
           >
-            <ErrorBoundary>
+            <ErrorBoundary resetKeys={[activeView]}>
               <div
                 style={{
                   display: activeView === 'browser' ? 'flex' : 'none',

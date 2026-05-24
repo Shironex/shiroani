@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { createLogger, extractErrorMessage } from '@shiroani/shared';
+import { createLogger, extractErrorMessage, getCurrentAniListSeason } from '@shiroani/shared';
 import type { UserProfile } from '@shiroani/shared';
 import { AniListClient } from './anilist-client';
 import {
@@ -15,7 +15,6 @@ import type {
   AniListMedia,
   AniListPageInfo,
   AniListAiringSchedule,
-  MediaSeason,
   SearchAnimeResponse,
   AnimeDetailsResponse,
   AiringScheduleResponse,
@@ -27,6 +26,9 @@ import type {
 const logger = createLogger('AnimeService');
 
 const DEFAULT_PER_PAGE = 20;
+
+/** Cache lifetime for a fetched AniList user profile. */
+const PROFILE_CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutes
 
 export interface PaginatedMediaResult {
   media: AniListMedia[];
@@ -138,8 +140,7 @@ export class AnimeService {
    * Automatically detects the current season and year.
    */
   async getPopularThisSeason(page = 1, perPage = DEFAULT_PER_PAGE): Promise<PaginatedMediaResult> {
-    const season = getCurrentSeason();
-    const seasonYear = new Date().getFullYear();
+    const { year: seasonYear, season } = getCurrentAniListSeason();
 
     return this.queryPagedMedia(
       `Fetching popular anime for ${season} ${seasonYear}`,
@@ -231,8 +232,6 @@ export class AnimeService {
    */
   async getUserProfile(username: string): Promise<UserProfile> {
     logger.info(`Fetching AniList profile for "${username}"`);
-
-    const PROFILE_CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutes
 
     try {
       const cacheKey = `user-profile:${username.toLowerCase()}`;
@@ -351,20 +350,4 @@ export class AnimeService {
       throw error;
     }
   }
-}
-
-/**
- * Determine the current anime season based on the current month.
- *
- * - WINTER: January, February, March
- * - SPRING: April, May, June
- * - SUMMER: July, August, September
- * - FALL: October, November, December
- */
-function getCurrentSeason(): MediaSeason {
-  const month = new Date().getMonth(); // 0-indexed
-  if (month <= 2) return 'WINTER';
-  if (month <= 5) return 'SPRING';
-  if (month <= 8) return 'SUMMER';
-  return 'FALL';
 }

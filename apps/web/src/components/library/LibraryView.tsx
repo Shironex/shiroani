@@ -285,7 +285,7 @@ export function LibraryView() {
                     nextAiring={
                       entry.anilistId ? (nextAiringMap.get(entry.anilistId) ?? null) : null
                     }
-                    onClick={() => openDetail(entry)}
+                    onClick={openDetail}
                   />
                 ))}
               </div>

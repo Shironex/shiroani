@@ -127,6 +127,7 @@ export function ViewHeader<T extends string = string>({
                 value={searchQuery ?? ''}
                 onChange={e => onSearchChange?.(e.target.value)}
                 placeholder={finalSearchPlaceholder}
+                aria-label={finalSearchPlaceholder}
                 className="pl-8 h-8 text-sm"
               />
               {searchQuery && (

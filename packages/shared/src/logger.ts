@@ -401,7 +401,11 @@ function formatFileLog(
   tags?: Partial<LogEntry>
 ): string {
   try {
-    const firstArg = args.length > 0 ? args[0] : '';
+    // Redact home-dir paths, URL query secrets, and deny-listed keys BEFORE the
+    // value reaches disk. The in-memory buffer already redacts via
+    // `safeStringify`; the rotated JSONL file is the artifact users attach to
+    // bug reports, so it must get the same pass (covers the updater shim too).
+    const firstArg = args.length > 0 ? redactForLogs(args[0]) : '';
     const message = typeof firstArg === 'string' ? firstArg : JSON.stringify(firstArg);
     const base: LogEntry = {
       timestamp: formatTimestamp(),
@@ -410,7 +414,7 @@ function formatFileLog(
       message,
     };
     if (args.length > 1) {
-      base.data = args.length === 2 ? args[1] : args.slice(1);
+      base.data = args.length === 2 ? redactForLogs(args[1]) : redactForLogs(args.slice(1));
     }
     return JSON.stringify(buildLogEntry(base, tags)) + '\n';
   } catch {

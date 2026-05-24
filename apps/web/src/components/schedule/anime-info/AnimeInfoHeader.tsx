@@ -1,4 +1,5 @@
 import type { MouseEvent } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Bell, BellRing } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { AnimeDetail } from '@shiroani/shared';
@@ -22,6 +23,7 @@ export function AnimeInfoHeader({
   isSubscribed,
   onToggleSubscribe,
 }: AnimeInfoHeaderProps) {
+  const { t } = useTranslation('schedule');
   return (
     <div className="relative h-44 overflow-hidden rounded-t-lg shrink-0">
       {bannerUrl ? (
@@ -69,6 +71,8 @@ export function AnimeInfoHeader({
           size="icon"
           className="shrink-0 w-8 h-8 bg-background/60 backdrop-blur-sm"
           onClick={onToggleSubscribe}
+          aria-pressed={isSubscribed}
+          aria-label={isSubscribed ? t('subscribe.disable') : t('subscribe.enable')}
         >
           {isSubscribed ? (
             <BellRing className="w-3.5 h-3.5 text-primary" />

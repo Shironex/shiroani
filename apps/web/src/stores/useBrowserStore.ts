@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { maybeDevtools } from '@/stores/utils/maybeDevtools';
 import { arrayMove } from '@dnd-kit/sortable';
 import type { BrowserLeafNode, BrowserNode, BrowserSplitNode, BrowserTab } from '@shiroani/shared';
-import { createLogger, NEW_TAB_URL } from '@shiroani/shared';
+import { createLogger, NEW_TAB_URL, ADBLOCK_WHITELIST_MAX_ENTRIES } from '@shiroani/shared';
 import { getWebview, unregisterWebview } from '@/components/browser/webviewRefs';
 import { normalizeUrl, normalizeWhitelistHost } from '@/lib/url-utils';
 import { electronStoreGet, electronStoreSet, electronStoreDelete } from '@/lib/electron-store';
@@ -32,9 +32,6 @@ import {
 export { findLeafById };
 
 const logger = createLogger('BrowserStore');
-
-/** Keep renderer state in lockstep with the main-process slice in browser IPC. */
-const MAX_ADBLOCK_WHITELIST_ENTRIES = 500;
 
 interface BrowserState {
   tabs: BrowserNode[];
@@ -425,9 +422,9 @@ export const useBrowserStore = create<BrowserStore>()(
 
         const current = get().adblockWhitelist;
         if (current.includes(normalized)) return;
-        // Main process silently slices to MAX_ADBLOCK_WHITELIST_ENTRIES; mirror
+        // Main process silently slices to ADBLOCK_WHITELIST_MAX_ENTRIES; mirror
         // that here so renderer state matches what's actually applied.
-        if (current.length >= MAX_ADBLOCK_WHITELIST_ENTRIES) return;
+        if (current.length >= ADBLOCK_WHITELIST_MAX_ENTRIES) return;
 
         const next = [...current, normalized];
         set({ adblockWhitelist: next }, undefined, 'browser/addAdblockDomain');

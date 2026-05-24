@@ -51,6 +51,17 @@ export const NEW_TAB_URL = 'shiroani://newtab';
 export const isNewTabUrl = (url: string) => url === NEW_TAB_URL;
 
 // =============================================================================
+// Browser / Adblock
+// =============================================================================
+
+/**
+ * Maximum number of host entries allowed in the adblock whitelist. Enforced on
+ * BOTH sides of the process boundary (renderer store + main-process IPC), so it
+ * lives here as the single source of truth to prevent the two caps drifting.
+ */
+export const ADBLOCK_WHITELIST_MAX_ENTRIES = 500;
+
+// =============================================================================
 // Logging
 // =============================================================================
 
