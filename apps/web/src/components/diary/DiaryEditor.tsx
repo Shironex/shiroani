@@ -27,8 +27,9 @@ const MAX_CONTENT_LENGTH = 2000;
 interface DiaryEditorProps {
   entry: DiaryEntry | null;
   onClose: () => void;
-  onCreate: (payload: DiaryCreatePayload) => void;
-  onUpdate: (payload: DiaryUpdatePayload) => void;
+  /** Resolves `true` when persisted; `false` keeps the editor open (input preserved). */
+  onCreate: (payload: DiaryCreatePayload) => Promise<boolean>;
+  onUpdate: (payload: DiaryUpdatePayload) => Promise<boolean>;
 }
 
 /**
@@ -54,6 +55,7 @@ export function DiaryEditor({ entry, onClose, onCreate, onUpdate }: DiaryEditorP
   const [isPinned, setIsPinned] = useState(entry?.isPinned ?? false);
   const [tagInput, setTagInput] = useState('');
   const [tags, setTags] = useState<string[]>(entry?.tags ?? []);
+  const [isSaving, setIsSaving] = useState(false);
 
   const initialContent = useMemo(() => {
     if (!entry?.contentJson) return undefined;
@@ -84,35 +86,42 @@ export function DiaryEditor({ entry, onClose, onCreate, onUpdate }: DiaryEditorP
     },
   });
 
-  const handleSave = useCallback(() => {
-    if (!editor) return;
+  const handleSave = useCallback(async () => {
+    if (!editor || isSaving) return;
     // Silent-bail when over the cap — the footer counter already turns red,
     // so the user sees why the save button "doesn't do anything".
     if (editor.getText().length > MAX_CONTENT_LENGTH) return;
     const contentJson = JSON.stringify(editor.getJSON());
 
-    if (isEditing) {
-      onUpdate({
-        id: entry!.id,
-        title,
-        contentJson,
-        coverGradient: coverGradient ?? null,
-        mood: mood ?? null,
-        tags: tags.length > 0 ? tags : null,
-        isPinned,
-      });
-    } else {
-      onCreate({
-        title: title || t('editor.defaultTitle'),
-        contentJson,
-        coverGradient,
-        mood,
-        tags: tags.length > 0 ? tags : undefined,
-      });
+    // Await the persist outcome and only close on success — a failed save keeps
+    // the editor (and the user's written content) on screen instead of
+    // discarding it. The store surfaces the failure toast.
+    setIsSaving(true);
+    try {
+      const ok = isEditing
+        ? await onUpdate({
+            id: entry!.id,
+            title,
+            contentJson,
+            coverGradient: coverGradient ?? null,
+            mood: mood ?? null,
+            tags: tags.length > 0 ? tags : null,
+            isPinned,
+          })
+        : await onCreate({
+            title: title || t('editor.defaultTitle'),
+            contentJson,
+            coverGradient,
+            mood,
+            tags: tags.length > 0 ? tags : undefined,
+          });
+      if (ok) onClose();
+    } finally {
+      setIsSaving(false);
     }
-    onClose();
   }, [
     editor,
+    isSaving,
     title,
     coverGradient,
     mood,
@@ -123,6 +132,7 @@ export function DiaryEditor({ entry, onClose, onCreate, onUpdate }: DiaryEditorP
     onCreate,
     onUpdate,
     onClose,
+    t,
   ]);
 
   const handleTagAdd = useCallback(() => {
@@ -349,9 +359,18 @@ export function DiaryEditor({ entry, onClose, onCreate, onUpdate }: DiaryEditorP
             <Button variant="ghost" size="sm" onClick={onClose} className="h-8 gap-1.5 text-xs">
               {t('editor.cancel')}
             </Button>
-            <Button size="sm" onClick={handleSave} className="h-8 gap-1.5 text-xs">
+            <Button
+              size="sm"
+              onClick={handleSave}
+              disabled={isSaving}
+              className="h-8 gap-1.5 text-xs"
+            >
               <Check className="w-3.5 h-3.5" />
-              {isEditing ? t('editor.save') : t('editor.create')}
+              {isSaving
+                ? t('state.saving', { ns: 'common' })
+                : isEditing
+                  ? t('editor.save')
+                  : t('editor.create')}
             </Button>
           </div>
         </header>

@@ -9,6 +9,12 @@ const logger = createLogger('ErrorBoundary');
 
 interface Props {
   children: ReactNode;
+  /**
+   * When any value here changes (shallow compare) after an error, the boundary
+   * clears itself. Pass `[activeView]` so navigating away from a crashed view
+   * recovers automatically instead of trapping every view behind the fallback.
+   */
+  resetKeys?: ReadonlyArray<unknown>;
 }
 
 interface State {
@@ -16,11 +22,23 @@ interface State {
   error: Error | null;
 }
 
+function resetKeysChanged(a?: ReadonlyArray<unknown>, b?: ReadonlyArray<unknown>): boolean {
+  if (a === b) return false;
+  if (!a || !b || a.length !== b.length) return true;
+  return a.some((value, i) => !Object.is(value, b[i]));
+}
+
 export class ErrorBoundary extends Component<Props, State> {
   state: State = { hasError: false, error: null };
 
   static getDerivedStateFromError(error: Error): State {
     return { hasError: true, error };
+  }
+
+  componentDidUpdate(prevProps: Props) {
+    if (this.state.hasError && resetKeysChanged(prevProps.resetKeys, this.props.resetKeys)) {
+      this.setState({ hasError: false, error: null });
+    }
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {

@@ -14,9 +14,10 @@ import {
   type LibraryAddPayload,
   type LibraryUpdatePayload,
   LibraryEvents,
+  CrudActions,
+  createLogger,
 } from '@shiroani/shared';
 import { emitWithErrorHandling } from '@/lib/socket';
-import { createLogger } from '@shiroani/shared';
 
 const logger = createLogger('LibraryStore');
 
@@ -39,7 +40,8 @@ interface LibraryState extends SocketStoreSlice {
  */
 interface LibraryActions {
   fetchLibrary: () => void;
-  addToLibrary: (payload: LibraryAddPayload) => void;
+  /** Resolves `true` when the entry was added, `false` on failure (caller surfaces UX). */
+  addToLibrary: (payload: LibraryAddPayload) => Promise<boolean>;
   updateEntry: (payload: LibraryUpdatePayload) => void;
   removeFromLibrary: (id: number) => void;
   setFilter: (filter: AnimeStatus | 'all') => void;
@@ -72,7 +74,7 @@ export const useLibraryStore = create<LibraryStore>()(
       });
 
       const onLibraryUpdated = crud.createUpdatedListener({
-        addActions: ['added'],
+        addActions: [CrudActions.ADDED],
         onAdded: (state, entry) => ({ entries: [...state.entries, entry] }),
         onUpdated: (state, entry) => ({
           entries: state.entries.map(e => (e.id === entry.id ? entry : e)),
@@ -86,13 +88,6 @@ export const useLibraryStore = create<LibraryStore>()(
         'library',
         {
           listeners: [
-            {
-              event: LibraryEvents.RESULT,
-              handler: data => {
-                const entries = data as AnimeEntry[];
-                set({ entries, isLoading: false }, undefined, 'library/result');
-              },
-            },
             {
               event: LibraryEvents.UPDATED,
               handler: onLibraryUpdated,
@@ -125,14 +120,19 @@ export const useLibraryStore = create<LibraryStore>()(
         },
 
         addToLibrary: (payload: LibraryAddPayload) => {
-          emitWithErrorHandling(LibraryEvents.ADD, payload)
+          // Returns the outcome so the caller (dialog / discover hook) can gate
+          // its success toast + dialog-close on the real result instead of
+          // assuming success on a fire-and-forget emit.
+          return emitWithErrorHandling(LibraryEvents.ADD, payload)
             .then(() => {
               // Refetch library to include the new entry
               get().fetchLibrary();
+              return true;
             })
             .catch((err: Error) => {
               logger.error('Failed to add to library:', err.message);
               set({ error: err.message }, undefined, 'library/addError');
+              return false;
             });
         },
 

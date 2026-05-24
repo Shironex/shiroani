@@ -20,9 +20,11 @@ import {
   FeedEvents,
   FEED_STARTUP_REFRESH_SETTING_KEY,
 } from '@shiroani/shared';
+import { toast } from 'sonner';
 import { emitWithErrorHandling } from '@/lib/socket';
 import { electronStoreSet } from '@/lib/electron-store';
 import { createLocalStorageAccessor } from '@/lib/persisted-storage';
+import i18n from '@/lib/i18n';
 import { createLogger } from '@shiroani/shared';
 
 const logger = createLogger('FeedStore');
@@ -177,6 +179,16 @@ export const useFeedStore = create<FeedStore>()(
         createSocketListeners<FeedStore>(get, set, 'feed', {
           listeners: [
             {
+              // Broadcast after a source is toggled (in this or another window).
+              // Previously emitted by the gateway but consumed by nobody, so a
+              // toggle wouldn't propagate; wire it to keep source state in sync.
+              event: FeedEvents.SOURCES_RESULT,
+              handler: data => {
+                const { sources } = data as FeedGetSourcesResult;
+                set({ sources: sources ?? [] }, undefined, 'feed/sourcesBroadcast');
+              },
+            },
+            {
               event: FeedEvents.NEW_ITEMS,
               handler: data => {
                 const { newItemsCount } = data as { newItemsCount: number };
@@ -317,6 +329,9 @@ export const useFeedStore = create<FeedStore>()(
             })
             .catch((err: Error) => {
               logger.error('Failed to fetch feed sources:', err.message);
+              // Surface it — a silent failure leaves the source filter empty
+              // with no explanation. (The items path already renders an error.)
+              toast.error(i18n.t('common:errors.loadFailed'));
             });
         },
 

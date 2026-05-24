@@ -1,6 +1,8 @@
 import type { NamedSet } from 'zustand/middleware';
+import { toast } from 'sonner';
 import { emitWithErrorHandling } from '@/lib/socket';
-import type { Logger } from '@shiroani/shared';
+import i18n from '@/lib/i18n';
+import { CrudActions, type CrudAction, type Logger } from '@shiroani/shared';
 
 /**
  * Minimal shape a CRUD entity must satisfy: a numeric identity used for
@@ -97,14 +99,30 @@ export function createCrudResource<
   const { set, get, storeName, logger, events } = options;
 
   /**
+   * Monotonic sequence stamping every fetch and every state mutation. A
+   * `fetchAll` only commits its response if no newer fetch *or* mutation has
+   * happened since it started — this prevents a slow/stale `getAll` reply
+   * (e.g. the error-recovery refetch below, or a reconnect refetch) from
+   * clobbering a newer optimistic edit or broadcast. See `bumpSeq`.
+   */
+  let latestSeq = 0;
+  /** Mark that authoritative/optimistic state changed, invalidating any in-flight fetch. */
+  const bumpSeq = () => {
+    latestSeq += 1;
+  };
+
+  /**
    * Fetch the full collection: flip loading on, request, then commit the
    * result (or record the error). Mutation error paths call this to restore
-   * authoritative state.
+   * authoritative state. A stale reply (superseded by a newer mutation/fetch)
+   * is dropped instead of overwriting fresher local state.
    */
-  const fetchAll = () => {
+  const fetchAll = (): Promise<void> => {
+    const seq = (latestSeq += 1);
     set({ isLoading: true } as Partial<TState>, undefined, `${storeName}/fetching`);
-    emitWithErrorHandling<Record<string, never>, { entries: TItem[] }>(events.getAll, {})
+    return emitWithErrorHandling<Record<string, never>, { entries: TItem[] }>(events.getAll, {})
       .then(data => {
+        if (seq !== latestSeq) return; // a newer mutation/fetch superseded this reply
         const entries = data.entries ?? [];
         set(
           { entries, isLoading: false, error: null } as Partial<TState>,
@@ -113,21 +131,28 @@ export function createCrudResource<
         );
       })
       .catch((err: Error) => {
+        if (seq !== latestSeq) return; // stale failure — don't toast or clobber loading
         logger.error(`Failed to fetch ${storeName}:`, err.message);
         set(
           { isLoading: false, error: err.message } as Partial<TState>,
           undefined,
           `${storeName}/fetchError`
         );
+        toast.error(i18n.t('common:errors.loadFailed'));
       });
   };
 
   /**
    * Optimistically patch one row, emit the mutation, and re-fetch on failure to
-   * restore authoritative state.
+   * restore authoritative state. Resolves `true` on success, `false` on failure
+   * (after toasting + reverting) so callers can gate UI (e.g. closing an editor)
+   * on the real outcome instead of assuming success.
    */
-  const optimisticUpdate = <TPayload>(config: OptimisticUpdateConfig<TItem, TPayload>) => {
+  const optimisticUpdate = <TPayload>(
+    config: OptimisticUpdateConfig<TItem, TPayload>
+  ): Promise<boolean> => {
     const { event, payload, id, applyUpdate, label = 'optimisticUpdate' } = config;
+    bumpSeq();
     set(
       state =>
         ({
@@ -136,20 +161,25 @@ export function createCrudResource<
       undefined,
       `${storeName}/${label}`
     );
-    emitWithErrorHandling(event, payload).catch((err: Error) => {
-      logger.error(`Failed to update ${storeName} entry:`, err.message);
-      fetchAll();
-    });
+    return emitWithErrorHandling(event, payload)
+      .then(() => true)
+      .catch((err: Error) => {
+        logger.error(`Failed to update ${storeName} entry:`, err.message);
+        toast.error(i18n.t('common:errors.saveFailed'));
+        fetchAll();
+        return false;
+      });
   };
 
   /**
    * Optimistically remove one row (plus any selection/panel sync via `extra`),
    * emit the mutation, and roll back to the captured snapshot on failure.
    */
-  const optimisticRemove = (config: OptimisticRemoveConfig<TState>) => {
+  const optimisticRemove = (config: OptimisticRemoveConfig<TState>): Promise<boolean> => {
     const { event, id, extra, label = 'optimisticRemove' } = config;
     const previousState = get();
     const extraSnapshot = extra?.(previousState) ?? ({} as Partial<TState>);
+    bumpSeq();
     set(
       state =>
         ({
@@ -159,14 +189,18 @@ export function createCrudResource<
       undefined,
       `${storeName}/${label}`
     );
-    emitWithErrorHandling(event, { id }).catch((err: Error) => {
-      logger.error(`Failed to remove ${storeName} entry:`, err.message);
-      const rollback: Partial<TState> = { entries: previousState.entries } as Partial<TState>;
-      for (const key of Object.keys(extraSnapshot) as (keyof TState)[]) {
-        (rollback as Record<keyof TState, TState[keyof TState]>)[key] = previousState[key];
-      }
-      set(rollback, undefined, `${storeName}/removeError`);
-    });
+    return emitWithErrorHandling(event, { id })
+      .then(() => true)
+      .catch((err: Error) => {
+        logger.error(`Failed to remove ${storeName} entry:`, err.message);
+        const rollback: Partial<TState> = { entries: previousState.entries } as Partial<TState>;
+        for (const key of Object.keys(extraSnapshot) as (keyof TState)[]) {
+          (rollback as Record<keyof TState, TState[keyof TState]>)[key] = previousState[key];
+        }
+        set(rollback, undefined, `${storeName}/removeError`);
+        toast.error(i18n.t('common:errors.removeFailed'));
+        return false;
+      });
   };
 
   /**
@@ -177,17 +211,20 @@ export function createCrudResource<
   const createUpdatedListener = (config: CrudUpdatedListenerConfig<TItem, TState>) => {
     const { addActions, onAdded, onUpdated, onRemoved, addedLabel = 'entryAdded' } = config;
     return (data: unknown) => {
-      const { action } = data as { action: string };
+      const { action } = data as { action: CrudAction };
       if (addActions.includes(action)) {
         const { entry } = data as { entry: TItem };
+        bumpSeq();
         set(state => onAdded(state, entry), undefined, `${storeName}/${addedLabel}`);
-      } else if (action === 'updated') {
+      } else if (action === CrudActions.UPDATED) {
         const { entry } = data as { entry: TItem };
+        bumpSeq();
         set(state => onUpdated(state, entry), undefined, `${storeName}/entryUpdated`);
-      } else if (action === 'removed') {
+      } else if (action === CrudActions.REMOVED) {
         const { id } = data as { id: number };
+        bumpSeq();
         set(state => onRemoved(state, id), undefined, `${storeName}/entryRemoved`);
-      } else if (action === 'imported') {
+      } else if (action === CrudActions.IMPORTED) {
         fetchAll();
       }
     };

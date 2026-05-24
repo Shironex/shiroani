@@ -13,7 +13,8 @@ import type { AnimeEntry } from '@shiroani/shared';
 interface LibraryListItemProps {
   entry: AnimeEntry;
   nextAiring?: { episode: number; airingAt: number } | null;
-  onClick: () => void;
+  /** Receives the entry so the parent can pass a STABLE callback (keeps memo intact). */
+  onClick: (entry: AnimeEntry) => void;
 }
 
 const STATUS_PILL_VARIANT: Record<
@@ -45,11 +46,11 @@ const LibraryListItem = memo(function LibraryListItem({
     <div
       role="button"
       tabIndex={0}
-      onClick={onClick}
+      onClick={() => onClick(entry)}
       onKeyDown={e => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
-          onClick();
+          onClick(entry);
         }
       }}
       className={cn(

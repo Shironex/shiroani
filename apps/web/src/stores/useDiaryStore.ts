@@ -8,14 +8,17 @@ import {
 } from '@/stores/utils/createSocketStore';
 import { createFilteredListSelector } from '@/stores/utils/createFilteredListSelector';
 import { createCrudResource } from '@/stores/utils/createCrudResource';
+import { toast } from 'sonner';
 import {
   type DiaryEntry,
   type DiaryCreatePayload,
   type DiaryUpdatePayload,
   DiaryEvents,
+  CrudActions,
+  createLogger,
 } from '@shiroani/shared';
 import { emitWithErrorHandling } from '@/lib/socket';
-import { createLogger } from '@shiroani/shared';
+import i18n from '@/lib/i18n';
 
 const logger = createLogger('DiaryStore');
 
@@ -35,9 +38,11 @@ interface DiaryState extends SocketStoreSlice {
 
 interface DiaryActions {
   fetchEntries: () => void;
-  createEntry: (payload: DiaryCreatePayload) => void;
-  updateEntry: (payload: DiaryUpdatePayload) => void;
-  removeEntry: (id: number) => void;
+  /** Resolves `true` when persisted, `false` on failure (editor stays open). */
+  createEntry: (payload: DiaryCreatePayload) => Promise<boolean>;
+  /** Resolves `true` when persisted, `false` on failure (optimistic edit reverts). */
+  updateEntry: (payload: DiaryUpdatePayload) => Promise<boolean>;
+  removeEntry: (id: number) => Promise<boolean>;
   setFilter: (filter: DiaryFilter) => void;
   setSearchQuery: (query: string) => void;
   setViewMode: (mode: 'grid' | 'list') => void;
@@ -64,7 +69,7 @@ export const useDiaryStore = create<DiaryStore>()(
       });
 
       const onDiaryUpdated = crud.createUpdatedListener({
-        addActions: ['created'],
+        addActions: [CrudActions.CREATED],
         addedLabel: 'entryCreated',
         onAdded: (state, entry) => ({ entries: [entry, ...state.entries] }),
         onUpdated: (state, entry) => ({
@@ -84,13 +89,6 @@ export const useDiaryStore = create<DiaryStore>()(
         'diary',
         {
           listeners: [
-            {
-              event: DiaryEvents.RESULT,
-              handler: data => {
-                const entries = data as DiaryEntry[];
-                set({ entries, isLoading: false }, undefined, 'diary/result');
-              },
-            },
             {
               event: DiaryEvents.UPDATED,
               handler: onDiaryUpdated,
@@ -120,18 +118,23 @@ export const useDiaryStore = create<DiaryStore>()(
         },
 
         createEntry: (payload: DiaryCreatePayload) => {
-          emitWithErrorHandling(DiaryEvents.CREATE, payload)
+          // Returns the outcome so the editor keeps the user's content visible
+          // and stays open on failure instead of closing over lost input.
+          return emitWithErrorHandling(DiaryEvents.CREATE, payload)
             .then(() => {
               get().fetchEntries();
+              return true;
             })
             .catch((err: Error) => {
               logger.error('Failed to create diary entry:', err.message);
               set({ error: err.message }, undefined, 'diary/createError');
+              toast.error(i18n.t('common:errors.saveFailed'));
+              return false;
             });
         },
 
         updateEntry: (payload: DiaryUpdatePayload) => {
-          crud.optimisticUpdate({
+          return crud.optimisticUpdate({
             event: DiaryEvents.UPDATE,
             payload,
             id: payload.id,
@@ -148,7 +151,7 @@ export const useDiaryStore = create<DiaryStore>()(
         },
 
         removeEntry: (id: number) => {
-          crud.optimisticRemove({
+          return crud.optimisticRemove({
             event: DiaryEvents.REMOVE,
             id,
             extra: state => ({

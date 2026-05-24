@@ -60,5 +60,12 @@
   "dialog": {
     "areYouSure": "Czy na pewno?",
     "thisCannotBeUndone": "Tej akcji nie można cofnąć."
-  }
+  },
+  "errors": {
+    "loadFailed": "Nie udało się wczytać najnowszych danych.",
+    "saveFailed": "Nie udało się zapisać zmiany — została cofnięta.",
+    "removeFailed": "Nie udało się usunąć — element został przywrócony.",
+    "addFailed": "Nie udało się dodać elementu."
+  },
+  "unknownAnime": "Nieznane anime"
 }

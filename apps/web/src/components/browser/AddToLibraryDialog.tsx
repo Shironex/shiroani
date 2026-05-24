@@ -47,6 +47,7 @@ export function AddToLibraryDialog({ open, onOpenChange, url, title }: AddToLibr
   const [currentEpisode, setCurrentEpisode] = useState(0);
   const [totalEpisodes, setTotalEpisodes] = useState(0);
   const [coverImage, setCoverImage] = useState('');
+  const [isAdding, setIsAdding] = useState(false);
   const { state, transition } = useDialogStateMachine<AddToLibraryStep>({ step: 'ready' });
 
   const isFetchingCover = state.step === 'fetching';
@@ -105,7 +106,8 @@ export function AddToLibraryDialog({ open, onOpenChange, url, title }: AddToLibr
     }
   }, [status, totalEpisodes]);
 
-  const handleAdd = useCallback(() => {
+  const handleAdd = useCallback(async () => {
+    if (isAdding) return;
     if (!editableTitle.trim()) {
       toast.error(t('addDialog.toast.titleEmpty'));
       return;
@@ -117,8 +119,11 @@ export function AddToLibraryDialog({ open, onOpenChange, url, title }: AddToLibr
       return;
     }
 
+    // Gate the success toast + close on the real persist result — a fire-and-
+    // forget emit could reject and previously still showed "added".
+    setIsAdding(true);
     try {
-      addToLibrary({
+      const ok = await addToLibrary({
         title: editableTitle.trim(),
         status,
         currentEpisode: currentEpisode > 0 ? currentEpisode : undefined,
@@ -127,15 +132,17 @@ export function AddToLibraryDialog({ open, onOpenChange, url, title }: AddToLibr
         resumeUrl: url || undefined,
       });
 
-      toast.success(t('addDialog.toast.added'), {
-        description: editableTitle.trim(),
-      });
-
-      onOpenChange(false);
-    } catch {
-      toast.error(t('addDialog.toast.failed'));
+      if (ok) {
+        toast.success(t('addDialog.toast.added'), { description: editableTitle.trim() });
+        onOpenChange(false);
+      } else {
+        toast.error(t('addDialog.toast.failed'));
+      }
+    } finally {
+      setIsAdding(false);
     }
   }, [
+    isAdding,
     editableTitle,
     status,
     currentEpisode,
@@ -291,7 +298,7 @@ export function AddToLibraryDialog({ open, onOpenChange, url, title }: AddToLibr
           <Button variant="outline" size="sm" onClick={() => onOpenChange(false)}>
             {t('actions.cancel', { ns: 'common' })}
           </Button>
-          <Button size="sm" onClick={handleAdd} disabled={!editableTitle.trim()}>
+          <Button size="sm" onClick={handleAdd} disabled={!editableTitle.trim() || isAdding}>
             <BookmarkPlus className="w-4 h-4" />
             {t('addDialog.submit')}
           </Button>

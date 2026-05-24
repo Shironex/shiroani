@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { maybeDevtools } from '@/stores/utils/maybeDevtools';
-import type { NotificationSubscription, AiringAnime } from '@shiroani/shared';
-import { createLogger } from '@shiroani/shared';
+import { createLogger, type NotificationSubscription, type AiringAnime } from '@shiroani/shared';
+import i18n from '@/lib/i18n';
 
 const logger = createLogger('NotificationStore');
 
@@ -50,7 +50,8 @@ export const useNotificationStore = create<NotificationStore>()(
 
       subscribe: async (anime: AiringAnime) => {
         const mediaId = anime.media.id;
-        const title = anime.media.title.english || anime.media.title.romaji || 'Nieznane anime';
+        const title =
+          anime.media.title.english || anime.media.title.romaji || i18n.t('common:unknownAnime');
         const titleRomaji = anime.media.title.romaji;
         const coverImage = anime.media.coverImage.large || anime.media.coverImage.medium;
 
