@@ -99,30 +99,44 @@ export function createCrudResource<
   const { set, get, storeName, logger, events } = options;
 
   /**
-   * Monotonic sequence stamping every fetch and every state mutation. A
-   * `fetchAll` only commits its response if no newer fetch *or* mutation has
-   * happened since it started — this prevents a slow/stale `getAll` reply
-   * (e.g. the error-recovery refetch below, or a reconnect refetch) from
-   * clobbering a newer optimistic edit or broadcast. See `bumpSeq`.
+   * Two counters keep the loading flag and the data write independent:
+   *  - `fetchSeq` is bumped only by `fetchAll`; the latest fetch owns `isLoading`.
+   *  - `mutationSeq` is bumped by every optimistic edit / broadcast via `bumpSeq`.
+   * A fetch commits its `entries` only if NO mutation happened since it started
+   * (so a stale reply can't clobber a newer optimistic edit), but it always
+   * clears its own `isLoading` when it is still the latest fetch — otherwise a
+   * mutation landing mid-fetch would leave the spinner stuck forever.
    */
-  let latestSeq = 0;
-  /** Mark that authoritative/optimistic state changed, invalidating any in-flight fetch. */
+  let fetchSeq = 0;
+  let mutationSeq = 0;
+  /** Mark that authoritative/optimistic state changed, invalidating an in-flight fetch's data write. */
   const bumpSeq = () => {
-    latestSeq += 1;
+    mutationSeq += 1;
   };
 
   /**
    * Fetch the full collection: flip loading on, request, then commit the
    * result (or record the error). Mutation error paths call this to restore
-   * authoritative state. A stale reply (superseded by a newer mutation/fetch)
-   * is dropped instead of overwriting fresher local state.
+   * authoritative state. A reply superseded by a newer fetch is dropped
+   * entirely; a reply superseded only by a mutation still clears loading but
+   * keeps the fresher optimistic `entries`.
    */
   const fetchAll = (): Promise<void> => {
-    const seq = (latestSeq += 1);
+    const myFetch = (fetchSeq += 1);
+    const mutationAtStart = mutationSeq;
     set({ isLoading: true } as Partial<TState>, undefined, `${storeName}/fetching`);
     return emitWithErrorHandling<Record<string, never>, { entries: TItem[] }>(events.getAll, {})
       .then(data => {
-        if (seq !== latestSeq) return; // a newer mutation/fetch superseded this reply
+        if (myFetch !== fetchSeq) return; // a newer fetch owns loading + data now
+        if (mutationSeq !== mutationAtStart) {
+          // A mutation landed mid-fetch — keep the optimistic entries, just stop loading.
+          set(
+            { isLoading: false, error: null } as Partial<TState>,
+            undefined,
+            `${storeName}/result`
+          );
+          return;
+        }
         const entries = data.entries ?? [];
         set(
           { entries, isLoading: false, error: null } as Partial<TState>,
@@ -131,7 +145,7 @@ export function createCrudResource<
         );
       })
       .catch((err: Error) => {
-        if (seq !== latestSeq) return; // stale failure — don't toast or clobber loading
+        if (myFetch !== fetchSeq) return; // a newer fetch supersedes this failure
         logger.error(`Failed to fetch ${storeName}:`, err.message);
         set(
           { isLoading: false, error: err.message } as Partial<TState>,
