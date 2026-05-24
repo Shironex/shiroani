@@ -75,8 +75,11 @@ export class DiaryService {
         payload.animeCoverImage ?? null
       );
 
-    const entry = this.getEntryById(Number(result.lastInsertRowid))!;
-    logger.info(`Created diary entry "${entry.title}" (id=${entry.id})`);
+    const entry = this.getEntryById(Number(result.lastInsertRowid));
+    if (!entry) throw new Error('Diary entry vanished immediately after INSERT');
+    // Log only the id — the title is user-authored content (matches the
+    // update/remove lines, which already omit it).
+    logger.info(`Created diary entry id=${entry.id}`);
     return entry;
   }
 

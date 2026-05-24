@@ -109,9 +109,16 @@ export class FeedService implements OnModuleInit {
          JOIN feed_sources fs ON fi.feed_source_id = fs.id ${whereClause}`
       )
       .get(...params) as { total: number };
+    // Project only the columns `rowToItem` reads — deliberately EXCLUDING
+    // `fi.content_html` (a full article body up to 256KB/row) and `fi.content_hash`,
+    // neither of which the list renders. The reader fetches the body separately
+    // by URL via getArticleContent(), so a `SELECT fi.*` here would ship MBs of
+    // unused HTML through SQLite + IPC on the default feed list.
     const rows = db
       .prepare(
-        `SELECT fi.*, fs.name as source_name, fs.color as source_color, fs.icon as source_icon,
+        `SELECT fi.id, fi.feed_source_id, fi.guid, fi.title, fi.description, fi.url,
+                fi.author, fi.image_url, fi.published_at, fi.categories, fi.created_at,
+                fs.name as source_name, fs.color as source_color, fs.icon as source_icon,
                 fs.category as source_category, fs.language as source_language,
                 fs.supports_full_content as source_supports_full_content
          FROM feed_items fi

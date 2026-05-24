@@ -28,6 +28,9 @@ const logger = createLogger('NotificationsService');
 export class NotificationsService implements OnModuleDestroy {
   private checkInterval: ReturnType<typeof setInterval> | null = null;
   private initialTimeout: ReturnType<typeof setTimeout> | null = null;
+  /** In-flight guard: prevents a slow check (awaiting the schedule fetch) from
+   *  overlapping the next interval tick and double-firing the same toast. */
+  private isChecking = false;
   private sentNotifications = new Set<string>();
   private cachedSchedule: AiringAnime[] | null = null;
   private cacheTimestamp = 0;
@@ -286,6 +289,22 @@ export class NotificationsService implements OnModuleDestroy {
   }
 
   private async checkAndNotify(): Promise<void> {
+    // Reentrancy guard — `getScheduleData()` awaits a network fetch, so without
+    // this a slow run would overlap the next interval tick and both runs could
+    // pass the dedupe check before either records the dispatch.
+    if (this.isChecking) {
+      logger.debug('Skipping notification check: a previous check is still running');
+      return;
+    }
+    this.isChecking = true;
+    try {
+      await this.runCheck();
+    } finally {
+      this.isChecking = false;
+    }
+  }
+
+  private async runCheck(): Promise<void> {
     const settings = this.getSettings();
     if (!settings.enabled) return;
 
@@ -326,14 +345,14 @@ export class NotificationsService implements OnModuleDestroy {
       if (this.sentNotifications.has(dedupeKey)) continue;
 
       dispatchCount++;
-      this.host
-        .showAiringNotification(airing, settings)
-        .then(() => {
-          this.sentNotifications.add(dedupeKey);
-        })
-        .catch(error => {
-          logger.warn(`Failed to dispatch notification for ${dedupeKey}:`, error);
-        });
+      // Reserve the dedupe key synchronously (before the async dispatch) so the
+      // initial-timeout/first-interval pair can't both pass the has() check;
+      // release it if the dispatch fails so a retry can fire later.
+      this.sentNotifications.add(dedupeKey);
+      this.host.showAiringNotification(airing, settings).catch(error => {
+        this.sentNotifications.delete(dedupeKey);
+        logger.warn(`Failed to dispatch notification for ${dedupeKey}:`, error);
+      });
     }
 
     if (dispatchCount > 0) {

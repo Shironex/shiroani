@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { createHash } from 'crypto';
 import Parser from 'rss-parser';
-import { createLogger, truncate } from '@shiroani/shared';
+import { createLogger, truncate, isPrivateHostLiteral } from '@shiroani/shared';
 
 const logger = createLogger('FeedParserService');
 
@@ -91,6 +91,14 @@ export class FeedParserService {
 
   /** Fetch an RSS/Atom feed and normalize its items. */
   async parse(feedUrl: string): Promise<ParsedFeedItem[]> {
+    // SSRF guard: feed URLs are seeded from DEFAULT_FEED_SOURCES today, but
+    // guard here so a future custom-feed/add-source UI can't be pointed at
+    // localhost / private ranges. https-only + private-host literal block.
+    const parsedUrl = new URL(feedUrl);
+    if (parsedUrl.protocol !== 'https:' || isPrivateHostLiteral(parsedUrl.hostname)) {
+      throw new Error(`Refusing to fetch feed from disallowed URL: ${parsedUrl.protocol}//…`);
+    }
+
     const feed = await this.parser.parseURL(feedUrl);
     const items: ParsedFeedItem[] = [];
 
@@ -150,39 +158,51 @@ export class FeedParserService {
    * Tries: media:thumbnail, media:content, enclosure, then regex for <img> in content.
    */
   extractImageUrl(item: CustomItem, htmlContent?: string | null): string | null {
-    // Try media:thumbnail
-    if (item.mediaThumbnail?.$?.url) {
-      return item.mediaThumbnail.$.url;
-    }
+    const candidate = ((): string | null => {
+      // Try media:thumbnail
+      if (item.mediaThumbnail?.$?.url) {
+        return item.mediaThumbnail.$.url;
+      }
 
-    // Try media:content
-    if (Array.isArray(item.mediaContent)) {
-      for (const media of item.mediaContent) {
-        if (media.$?.url) {
-          return media.$.url;
+      // Try media:content
+      if (Array.isArray(item.mediaContent)) {
+        for (const media of item.mediaContent) {
+          if (media.$?.url) {
+            return media.$.url;
+          }
         }
       }
-    }
 
-    // Try enclosure
-    if (item.enclosure) {
-      const enclosures = Array.isArray(item.enclosure) ? item.enclosure : [item.enclosure];
-      for (const enc of enclosures) {
-        if (enc.$?.url && enc.$?.type?.startsWith('image/')) {
-          return enc.$.url;
+      // Try enclosure
+      if (item.enclosure) {
+        const enclosures = Array.isArray(item.enclosure) ? item.enclosure : [item.enclosure];
+        for (const enc of enclosures) {
+          if (enc.$?.url && enc.$?.type?.startsWith('image/')) {
+            return enc.$.url;
+          }
         }
       }
-    }
 
-    // Try regex for <img> tag in HTML content
-    if (htmlContent) {
-      const imgMatch = htmlContent.match(/<img[^>]+src=["']([^"']+)["']/i);
-      if (imgMatch?.[1]) {
-        return imgMatch[1];
+      // Try regex for <img> tag in HTML content
+      if (htmlContent) {
+        const imgMatch = htmlContent.match(/<img[^>]+src=["']([^"']+)["']/i);
+        if (imgMatch?.[1]) {
+          return imgMatch[1];
+        }
       }
-    }
 
-    return null;
+      return null;
+    })();
+
+    // Persist only https image URLs — feed content is attacker-influenced and
+    // the renderer's CSP blocks non-https `img-src` anyway, so a non-https
+    // candidate is a broken image / tracking-pixel beacon at best.
+    if (!candidate) return null;
+    try {
+      return new URL(candidate).protocol === 'https:' ? candidate : null;
+    } catch {
+      return null;
+    }
   }
 
   /** Strip HTML tags, decode common entities, and truncate to 500 chars. */

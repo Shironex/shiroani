@@ -9,6 +9,7 @@ import { Server } from 'socket.io';
 import {
   createLogger,
   DiaryEvents,
+  CrudActions,
   diaryCreatePayloadSchema,
   diaryUpdatePayloadSchema,
   diaryRemovePayloadSchema,
@@ -34,7 +35,7 @@ export class DiaryGateway {
   handleGetAll() {
     return handleGatewayRequest({
       logger,
-      action: 'diary:get-all',
+      action: DiaryEvents.GET_ALL,
       defaultResult: { entries: [] },
       handler: async () => {
         const entries = this.diaryService.getAllEntries();
@@ -47,13 +48,13 @@ export class DiaryGateway {
   handleCreate(@MessageBody() payload: unknown) {
     return handleGatewayRequest({
       logger,
-      action: 'diary:create',
+      action: DiaryEvents.CREATE,
       defaultResult: { entry: null },
       schema: diaryCreatePayloadSchema,
       payload,
       handler: async parsed => {
         const entry = this.diaryService.createEntry(parsed);
-        this.server.emit(DiaryEvents.UPDATED, { entry, action: 'created' });
+        this.server.emit(DiaryEvents.UPDATED, { entry, action: CrudActions.CREATED });
         return { entry };
       },
     });
@@ -63,7 +64,7 @@ export class DiaryGateway {
   handleUpdate(@MessageBody() payload: unknown) {
     return handleGatewayRequest({
       logger,
-      action: 'diary:update',
+      action: DiaryEvents.UPDATE,
       defaultResult: { entry: null },
       schema: diaryUpdatePayloadSchema,
       payload,
@@ -73,7 +74,7 @@ export class DiaryGateway {
         if (!entry) {
           return { entry: null, error: `Entry with id ${id} not found` };
         }
-        this.server.emit(DiaryEvents.UPDATED, { entry, action: 'updated' });
+        this.server.emit(DiaryEvents.UPDATED, { entry, action: CrudActions.UPDATED });
         return { entry };
       },
     });
@@ -83,7 +84,7 @@ export class DiaryGateway {
   handleRemove(@MessageBody() payload: unknown) {
     return handleGatewayRequest({
       logger,
-      action: 'diary:remove',
+      action: DiaryEvents.REMOVE,
       defaultResult: { success: false },
       schema: diaryRemovePayloadSchema,
       payload,
@@ -92,7 +93,7 @@ export class DiaryGateway {
         if (!deleted) {
           return { success: false, error: `Entry with id ${parsed.id} not found` };
         }
-        this.server.emit(DiaryEvents.UPDATED, { id: parsed.id, action: 'removed' });
+        this.server.emit(DiaryEvents.UPDATED, { id: parsed.id, action: CrudActions.REMOVED });
         return { success: true };
       },
     });

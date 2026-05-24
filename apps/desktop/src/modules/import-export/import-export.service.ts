@@ -83,13 +83,14 @@ export class ImportExportService {
 
     try {
       const allEntries = this.libraryService.getAllEntries();
+      // Match on the AniList id (DB-unique) or an exact title only. `resumeUrl`
+      // was intentionally dropped: two different shows on the same player/landing
+      // site share a URL, so keying on it merged distinct entries (and with the
+      // overwrite strategy, clobbered one with the other).
       const duplicate = allEntries.find(
         existing =>
           (entry.anilistId !== undefined && existing.anilistId === entry.anilistId) ||
-          existing.title === entry.title ||
-          (entry.resumeUrl !== undefined &&
-            entry.resumeUrl !== '' &&
-            existing.resumeUrl === entry.resumeUrl)
+          existing.title === entry.title
       );
 
       if (duplicate) {

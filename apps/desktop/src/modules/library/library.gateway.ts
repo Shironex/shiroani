@@ -9,6 +9,7 @@ import { Server } from 'socket.io';
 import {
   createLogger,
   LibraryEvents,
+  CrudActions,
   libraryGetAllPayloadSchema,
   libraryAddPayloadSchema,
   libraryUpdatePayloadSchema,
@@ -35,7 +36,7 @@ export class LibraryGateway {
   handleGetAll(@MessageBody() payload: unknown) {
     return handleGatewayRequest({
       logger,
-      action: 'library:get-all',
+      action: LibraryEvents.GET_ALL,
       defaultResult: { entries: [] },
       schema: libraryGetAllPayloadSchema,
       payload,
@@ -50,13 +51,13 @@ export class LibraryGateway {
   handleAdd(@MessageBody() payload: unknown) {
     return handleGatewayRequest({
       logger,
-      action: 'library:add',
+      action: LibraryEvents.ADD,
       defaultResult: { entry: null },
       schema: libraryAddPayloadSchema,
       payload,
       handler: async parsed => {
         const entry = this.libraryService.addEntry(parsed);
-        this.server.emit(LibraryEvents.UPDATED, { entry, action: 'added' });
+        this.server.emit(LibraryEvents.UPDATED, { entry, action: CrudActions.ADDED });
         return { entry };
       },
     });
@@ -66,7 +67,7 @@ export class LibraryGateway {
   handleUpdate(@MessageBody() payload: unknown) {
     return handleGatewayRequest({
       logger,
-      action: 'library:update',
+      action: LibraryEvents.UPDATE,
       defaultResult: { entry: null },
       schema: libraryUpdatePayloadSchema,
       payload,
@@ -76,7 +77,7 @@ export class LibraryGateway {
         if (!entry) {
           return { entry: null, error: `Entry with id ${id} not found` };
         }
-        this.server.emit(LibraryEvents.UPDATED, { entry, action: 'updated' });
+        this.server.emit(LibraryEvents.UPDATED, { entry, action: CrudActions.UPDATED });
         return { entry };
       },
     });
@@ -86,7 +87,7 @@ export class LibraryGateway {
   handleGetStats() {
     return handleGatewayRequest({
       logger,
-      action: 'library:get-stats',
+      action: LibraryEvents.GET_STATS,
       defaultResult: { stats: null },
       handler: async () => {
         const stats = this.libraryService.getStats();
@@ -99,7 +100,7 @@ export class LibraryGateway {
   handleRemove(@MessageBody() payload: unknown) {
     return handleGatewayRequest({
       logger,
-      action: 'library:remove',
+      action: LibraryEvents.REMOVE,
       defaultResult: { success: false },
       schema: libraryRemovePayloadSchema,
       payload,
@@ -108,7 +109,7 @@ export class LibraryGateway {
         if (!deleted) {
           return { success: false, error: `Entry with id ${parsed.id} not found` };
         }
-        this.server.emit(LibraryEvents.UPDATED, { id: parsed.id, action: 'removed' });
+        this.server.emit(LibraryEvents.UPDATED, { id: parsed.id, action: CrudActions.REMOVED });
         return { success: true };
       },
     });

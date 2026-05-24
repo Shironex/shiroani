@@ -32,7 +32,7 @@ export class AnimeGateway {
   async handleSearch(@MessageBody() payload: unknown) {
     return handleGatewayRequest({
       logger,
-      action: 'anime:search',
+      action: AnimeEvents.SEARCH,
       defaultResult: { results: [], pageInfo: EMPTY_PAGE_INFO },
       schema: animeSearchPayloadSchema,
       payload,
@@ -47,7 +47,7 @@ export class AnimeGateway {
   async handleGetDetails(@MessageBody() payload: unknown) {
     return handleGatewayRequest({
       logger,
-      action: 'anime:get-details',
+      action: AnimeEvents.GET_DETAILS,
       defaultResult: { anime: null },
       schema: animeGetDetailsPayloadSchema,
       payload,
@@ -62,7 +62,7 @@ export class AnimeGateway {
   async handleGetAiring(@MessageBody() payload: unknown) {
     return handleGatewayRequest({
       logger,
-      action: 'anime:get-airing',
+      action: AnimeEvents.GET_AIRING,
       defaultResult: { airingSchedules: [], pageInfo: EMPTY_PAGE_INFO },
       schema: animeGetAiringPayloadSchema,
       payload,
@@ -79,7 +79,7 @@ export class AnimeGateway {
   async handleGetTrending(@MessageBody() payload: unknown) {
     return handleGatewayRequest({
       logger,
-      action: 'anime:get-trending',
+      action: AnimeEvents.GET_TRENDING,
       defaultResult: { results: [], pageInfo: EMPTY_PAGE_INFO },
       schema: animeGetTrendingPayloadSchema,
       payload,
@@ -94,7 +94,7 @@ export class AnimeGateway {
   async handleGetPopular(@MessageBody() payload: unknown) {
     return handleGatewayRequest({
       logger,
-      action: 'anime:get-popular',
+      action: AnimeEvents.GET_POPULAR,
       defaultResult: { results: [], pageInfo: EMPTY_PAGE_INFO },
       schema: animeGetPopularPayloadSchema,
       payload,
@@ -109,7 +109,7 @@ export class AnimeGateway {
   async handleGetSeasonal(@MessageBody() payload: unknown) {
     return handleGatewayRequest({
       logger,
-      action: 'anime:get-seasonal',
+      action: AnimeEvents.GET_SEASONAL,
       defaultResult: { results: [], pageInfo: EMPTY_PAGE_INFO },
       schema: animeGetSeasonalPayloadSchema,
       payload,
@@ -128,7 +128,7 @@ export class AnimeGateway {
   async handleGetRandom(@MessageBody() payload: unknown) {
     return handleGatewayRequest({
       logger,
-      action: 'anime:get-random',
+      action: AnimeEvents.GET_RANDOM,
       defaultResult: { results: [], pageInfo: EMPTY_PAGE_INFO },
       schema: animeGetRandomPayloadSchema,
       payload,
@@ -147,7 +147,7 @@ export class AnimeGateway {
   async handleGetUserProfile(@MessageBody() payload: unknown) {
     return handleGatewayRequest({
       logger,
-      action: 'anime:get-user-profile',
+      action: AnimeEvents.GET_USER_PROFILE,
       defaultResult: { profile: null },
       schema: animeGetUserProfilePayloadSchema,
       payload,

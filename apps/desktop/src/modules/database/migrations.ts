@@ -192,6 +192,19 @@ const MIGRATIONS: Migration[] = [
       CREATE INDEX IF NOT EXISTS idx_feed_items_url ON feed_items(url);
     `,
   },
+  {
+    version: 11,
+    description: 'Composite index for library list ORDER BY (status, updated_at)',
+    // getAllEntries() always sorts by `updated_at DESC` — both the unfiltered
+    // list and the `WHERE status = ? ORDER BY updated_at DESC` variant. The
+    // existing single-column status index can satisfy the WHERE but not the
+    // sort, forcing a filesort on every library read. A composite
+    // (status, updated_at) index covers both shapes.
+    up: `
+      CREATE INDEX IF NOT EXISTS idx_anime_library_status_updated
+        ON anime_library(status, updated_at);
+    `,
+  },
 ];
 
 /**
@@ -235,7 +248,17 @@ export function runMigrations(db: Database.Database): void {
       );
     });
 
-    applyMigration();
+    try {
+      applyMigration();
+    } catch (error) {
+      // Name the failing version explicitly — the transaction rolls back, but
+      // without this the only trace is the generic onModuleInit/uncaught handler.
+      logger.error(
+        `Migration v${migration.version} (${migration.description}) failed; rolled back`,
+        error
+      );
+      throw error;
+    }
     logger.info(`Applied migration v${migration.version}: ${migration.description}`);
   }
 

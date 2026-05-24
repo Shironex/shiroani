@@ -47,7 +47,7 @@ import {
 } from './mascot/context-menu';
 import { isMascotEnabled } from './mascot/overlay-state';
 import { createTray, destroyTray } from './tray';
-import { safeCleanup } from './cleanup-utils';
+import { safeCleanup, isHardCrashReason } from './cleanup-utils';
 import { appStatsTracker } from './stats/app-stats-tracker';
 
 // Override Electron's default User-Agent so "Electron/<version>" and the app
@@ -414,11 +414,7 @@ process.on('unhandledRejection', reason => {
 // OOM, launch failures, and integrity failures are errors; everything else
 // (killed, clean-exit, abnormal-exit, memory-eviction) is a warn.
 app.on('render-process-gone', (_event, webContents, details) => {
-  const isError =
-    details.reason === 'crashed' ||
-    details.reason === 'oom' ||
-    details.reason === 'launch-failed' ||
-    details.reason === 'integrity-failure';
+  const isError = isHardCrashReason(details.reason);
   const payload = {
     reason: details.reason,
     exitCode: details.exitCode,

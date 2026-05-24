@@ -34,7 +34,7 @@ export class FeedGateway {
   handleGetItems(@MessageBody() payload: unknown) {
     return handleGatewayRequest({
       logger,
-      action: 'feed:get-items',
+      action: FeedEvents.GET_ITEMS,
       defaultResult: { items: [], total: 0, hasMore: false },
       schema: feedGetItemsPayloadSchema,
       payload,
@@ -48,7 +48,7 @@ export class FeedGateway {
   handleGetSources() {
     return handleGatewayRequest({
       logger,
-      action: 'feed:get-sources',
+      action: FeedEvents.GET_SOURCES,
       defaultResult: { sources: [] },
       handler: async () => {
         const sources = this.feedService.getAllSources();
@@ -61,7 +61,7 @@ export class FeedGateway {
   handleToggleSource(@MessageBody() payload: unknown) {
     return handleGatewayRequest({
       logger,
-      action: 'feed:toggle-source',
+      action: FeedEvents.TOGGLE_SOURCE,
       defaultResult: { sources: [] },
       schema: feedToggleSourcePayloadSchema,
       payload,
@@ -78,7 +78,7 @@ export class FeedGateway {
   handleGetArticle(@MessageBody() payload: unknown) {
     return handleGatewayRequest({
       logger,
-      action: 'feed:get-article',
+      action: FeedEvents.GET_ARTICLE,
       defaultResult: { contentHtml: null },
       schema: feedGetArticlePayloadSchema,
       payload,

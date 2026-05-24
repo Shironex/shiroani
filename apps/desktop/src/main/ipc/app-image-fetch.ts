@@ -1,4 +1,5 @@
 import { ipcMain } from 'electron';
+import { isPrivateHostLiteral } from '@shiroani/shared';
 import { createMainLogger } from '../logging/logger';
 import { handleWithFallback } from './with-ipc-handler';
 import { appFetchImageBase64Schema } from './schemas';
@@ -27,49 +28,6 @@ const FETCH_IMAGE_HOST_SUFFIXES: readonly string[] = [
   '.gstatic.com', // Google static assets (occasional redirect target)
   'gstatic.com',
 ];
-
-/**
- * Block literal private, loopback, and link-local addresses. We don't do DNS
- * resolution (the OS fetch happens after this check and would race anyway);
- * this is a defence-in-depth layer against URLs that use literal IPs.
- *
- * Covers IPv4 RFC1918 (`10/8`, `172.16/12`, `192.168/16`), loopback (`127/8`),
- * link-local (`169.254/16`), the `::1` IPv6 loopback, and the `fd00::/8`
- * IPv6 ULA range.
- */
-function isPrivateHostLiteral(host: string): boolean {
-  const normalized = host.trim().toLowerCase();
-  if (!normalized) return true;
-
-  // IPv6: strip brackets if present (URL.hostname for [::1] returns '[::1]')
-  const unbracketed =
-    normalized.startsWith('[') && normalized.endsWith(']') ? normalized.slice(1, -1) : normalized;
-
-  if (unbracketed === '::1' || unbracketed === '::') return true;
-  // IPv6 ULA fd00::/8 — hex byte starting with 'fc' or 'fd'
-  if (/^f[cd][0-9a-f]{0,2}:/.test(unbracketed)) return true;
-  // IPv6 link-local fe80::/10
-  if (/^fe[89ab][0-9a-f]?:/.test(unbracketed)) return true;
-
-  // IPv4 dotted-quad checks
-  const ipv4 = unbracketed.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
-  if (ipv4) {
-    const [, aStr, bStr] = ipv4;
-    const a = Number(aStr);
-    const b = Number(bStr);
-    if (a === 10) return true;
-    if (a === 127) return true;
-    if (a === 0) return true;
-    if (a === 169 && b === 254) return true;
-    if (a === 172 && b >= 16 && b <= 31) return true;
-    if (a === 192 && b === 168) return true;
-  }
-
-  // Hostnames that should never be fetched
-  if (unbracketed === 'localhost' || unbracketed.endsWith('.localhost')) return true;
-
-  return false;
-}
 
 /** Whether `host` matches one of the configured allowlist suffixes. */
 function isAllowedImageHost(host: string): boolean {
