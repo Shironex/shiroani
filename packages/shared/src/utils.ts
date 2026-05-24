@@ -2,6 +2,72 @@
  * Shared Utilities
  */
 
+/** AniList media season enum (also matches the desktop `MediaSeason` union). */
+export type AniListSeason = 'WINTER' | 'SPRING' | 'SUMMER' | 'FALL';
+
+/**
+ * Current AniList season + year from the local clock. Boundaries match
+ * AniList's quirk: WINTER = Jan–Mar, SPRING = Apr–Jun, SUMMER = Jul–Sep,
+ * FALL = Oct–Dec. Single source of truth so the desktop anime service and the
+ * web discover store can't drift on the month cutoffs.
+ */
+export function getCurrentAniListSeason(): { year: number; season: AniListSeason } {
+  const now = new Date();
+  const month = now.getMonth(); // 0-indexed
+  const year = now.getFullYear();
+  let season: AniListSeason;
+  if (month <= 2) season = 'WINTER';
+  else if (month <= 5) season = 'SPRING';
+  else if (month <= 8) season = 'SUMMER';
+  else season = 'FALL';
+  return { year, season };
+}
+
+/**
+ * True if `host` is a private/loopback/link-local literal — defence-in-depth
+ * against SSRF via IP-literal URLs (no DNS resolution; the OS fetch races
+ * anyway). Single canonical guard shared by every outbound-fetch site (app
+ * image proxy, article extractor, RSS fetch, notification cover download).
+ */
+export function isPrivateHostLiteral(host: string): boolean {
+  const normalized = host.trim().toLowerCase();
+  if (!normalized) return true;
+
+  const unbracketed =
+    normalized.startsWith('[') && normalized.endsWith(']') ? normalized.slice(1, -1) : normalized;
+
+  if (unbracketed === '::1' || unbracketed === '::') return true;
+  if (/^f[cd][0-9a-f]{0,2}:/.test(unbracketed)) return true;
+  if (/^fe[89ab][0-9a-f]?:/.test(unbracketed)) return true;
+
+  const ipv4 = unbracketed.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
+  if (ipv4) {
+    const [, aStr, bStr] = ipv4;
+    const a = Number(aStr);
+    const b = Number(bStr);
+    if (a === 10) return true;
+    if (a === 127) return true;
+    if (a === 0) return true;
+    if (a === 169 && b === 254) return true;
+    if (a === 172 && b >= 16 && b <= 31) return true;
+    if (a === 192 && b === 168) return true;
+  }
+
+  if (unbracketed === 'localhost' || unbracketed.endsWith('.localhost')) return true;
+
+  return false;
+}
+
+/** Fisher–Yates shuffle returning a new array (input left unmodified). */
+export function shuffleArray<T>(arr: T[]): T[] {
+  const out = [...arr];
+  for (let i = out.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [out[i], out[j]] = [out[j], out[i]];
+  }
+  return out;
+}
+
 /**
  * Extract a human-readable error message from an unknown error value.
  *
