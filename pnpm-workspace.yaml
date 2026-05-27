@@ -1,3 +1,48 @@
 packages:
   - 'apps/*'
   - 'packages/*'
+
+onlyBuiltDependencies:
+  - '@nestjs/core'
+  - '@prisma/client'
+  - '@prisma/engines'
+  - '@swc/core'
+  - electron
+  - esbuild
+  - better-sqlite3
+  - necord
+  - prisma
+
+overrides:
+  file-type: '>=21.3.1'
+  multer: '>=2.1.1'
+  'undici@<7': '>=6.23.0'
+  undici: '8.1.0'
+  'jsdom>undici': '^7.25.0'
+  tar: '>=7.5.11'
+  hono: '>=4.12.18 <5'
+  axios: '>=1.15.2'
+  follow-redirects: '>=1.16.0'
+  '@hono/node-server': '>=1.19.13 <2'
+  lodash: '>=4.18.1 <5'
+  handlebars: '>=4.7.9'
+  '@xmldom/xmldom': '>=0.8.13 <0.9.0'
+  path-to-regexp: '>=8.4.0'
+  picomatch: '>=4.0.4'
+  h3: '>=1.15.11'
+  'brace-expansion@<1.1.13': '1.1.13'
+  'brace-expansion@>=2.0.0 <2.0.3': '2.0.3'
+  smol-toml: '>=1.6.1'
+  electron: '>=41.3.0 <42'
+  '@nestjs/core': '>=11.1.18 <12'
+  'astro>vite': '>=7.3.2 <8'
+  defu: '>=6.1.5 <7'
+  fast-uri: '>=3.1.2'
+  devalue: '>=5.8.1 <6'
+  yaml: '>=2.8.3 <3'
+  # CVE pins
+  qs: '>=6.15.2'
+  ws: '>=8.20.1'
+  'engine.io': '>=6.6.8'
+  tmp: '>=0.2.6'
+  'brace-expansion@>=5.0.0 <5.0.6': '5.0.6'
