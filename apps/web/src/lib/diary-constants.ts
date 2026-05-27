@@ -1,4 +1,4 @@
-import { Sparkles, Heart, Minus, ThumbsDown, Frown } from 'lucide-react';
+import { Sparkles, Heart, Minus, ThumbsDown, Frown, type LucideIcon } from 'lucide-react';
 import type { DiaryMood } from '@shiroani/shared';
 import i18n from '@/lib/i18n';
 
@@ -59,13 +59,13 @@ export const DIARY_GRADIENTS: Record<string, { labelKey: string; css: string }> 
   },
 };
 
-export const MOOD_ICONS = {
+export const MOOD_ICONS: Record<DiaryMood, { Icon: LucideIcon; color: string }> = {
   great: { Icon: Sparkles, color: 'text-yellow-400' },
   good: { Icon: Heart, color: 'text-pink-400' },
   neutral: { Icon: Minus, color: 'text-muted-foreground' },
   bad: { Icon: ThumbsDown, color: 'text-orange-400' },
   terrible: { Icon: Frown, color: 'text-red-400' },
-} as const;
+};
 
 export const MOOD_EMOJI: Record<DiaryMood, string> = {
   great: '✨',

@@ -35,7 +35,7 @@ const BrowserWebviewInner = function BrowserWebview({
       ref={webviewRef as React.Ref<HTMLElement>}
       src={initialUrl}
       partition="persist:browser"
-      allowpopups=""
+      allowpopups
       style={isActive ? ACTIVE_STYLE : HIDDEN_STYLE}
     />
   );

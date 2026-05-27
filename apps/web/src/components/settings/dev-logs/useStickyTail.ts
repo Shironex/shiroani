@@ -4,7 +4,7 @@ const SCROLL_STICKY_THRESHOLD = 20;
 
 export interface StickyTail {
   /** Attach to the scrollable list container. */
-  listRef: React.RefObject<HTMLDivElement>;
+  listRef: React.RefObject<HTMLDivElement | null>;
   /** True while the view is following the tail (auto-scrolling to bottom). */
   autoScroll: boolean;
   /** True when the user has scrolled up and a "jump to tail" affordance applies. */

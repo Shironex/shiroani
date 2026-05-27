@@ -28,7 +28,7 @@ export function MascotSection() {
   const [loaded, setLoaded] = useState(false);
   const [picking, setPicking] = useState(false);
   const [pickError, setPickError] = useState<string | null>(null);
-  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   const customSpriteUrl = useMascotSpriteStore(s => s.customSpriteUrl);
   const scaleMode = useMascotSpriteStore(s => s.scaleMode);

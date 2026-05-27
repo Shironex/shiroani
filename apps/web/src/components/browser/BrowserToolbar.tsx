@@ -163,7 +163,7 @@ export function BrowserToolbar({
           <Globe2 className="w-3.5 h-3.5 shrink-0 text-muted-foreground/70" />
         )}
         <Input
-          ref={urlInputRef as RefObject<HTMLInputElement>}
+          ref={urlInputRef as RefObject<HTMLInputElement | null>}
           value={urlInput}
           onChange={e => onUrlInputChange(e.target.value)}
           onKeyDown={handleUrlSubmit}
