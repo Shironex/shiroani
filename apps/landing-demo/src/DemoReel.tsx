@@ -464,9 +464,9 @@ const ScenesWithDock: React.FC<{ lang: Lang }> = ({ lang }) => {
   );
 };
 
-export interface DemoReelProps {
+export type DemoReelProps = {
   lang: Lang;
-}
+};
 
 export const DemoReel: React.FC<DemoReelProps> = ({ lang }) => {
   const scenesDuration = SCENES.length * (SCENE_FRAMES - SCENE_OVERLAP) + SCENE_OVERLAP;
