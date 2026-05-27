@@ -18,14 +18,14 @@
     "@shiroani/shared": "workspace:*",
     "@tailwindcss/vite": "^4.2.4",
     "astro": "^6.3.8",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
+    "react": "19.2.6",
+    "react-dom": "19.2.6",
     "tailwindcss": "^4.2.4",
     "typescript": "^5.9.3"
   },
   "devDependencies": {
-    "@types/react": "^18.3.23",
-    "@types/react-dom": "^18.3.7",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
     "sharp": "^0.33.5"
   }
 }
