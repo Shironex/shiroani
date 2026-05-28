@@ -10,6 +10,7 @@ import {
   browserGetPopupBlockEnabledSchema,
   browserSetPopupBlockEnabledSchema,
   browserSetAdblockWhitelistSchema,
+  browserClearSessionSchema,
 } from './schemas';
 
 const logger = createMainLogger('IPC:Browser');
@@ -153,6 +154,18 @@ export function registerBrowserHandlers(
     { schema: browserSetAdblockWhitelistSchema }
   );
 
+  // Wipe the built-in browser session (cookies, logins, cache, storage) for the
+  // "delete all data" factory reset. Surfaces failure to the renderer, which
+  // treats it as best-effort within the larger wipe sequence.
+  handle(
+    'browser:clear-session',
+    async () => {
+      logger.warn('browser:clear-session invoked — clearing built-in browser session data');
+      await browserManager.clearBrowsingData();
+    },
+    { schema: browserClearSessionSchema }
+  );
+
   // Intercept window.open calls from webview guest pages.
   // Since the `new-window` event was removed in Electron 22, we must use
   // `did-attach-webview` to access each webview's webContents and set up
@@ -237,4 +250,5 @@ export function cleanupBrowserHandlers(): void {
   ipcMain.removeHandler('browser:get-popup-block-enabled');
   ipcMain.removeHandler('browser:set-popup-block-enabled');
   ipcMain.removeHandler('browser:set-adblock-whitelist');
+  ipcMain.removeHandler('browser:clear-session');
 }

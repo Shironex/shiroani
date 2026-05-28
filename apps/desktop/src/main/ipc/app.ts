@@ -1,9 +1,11 @@
 import { ipcMain, app, clipboard, nativeImage } from 'electron';
-import { resolve, sep } from 'path';
-import { writeFile } from 'fs/promises';
+import { resolve, sep, join } from 'path';
+import { writeFile, rm } from 'fs/promises';
 import { release as osRelease } from 'os';
 import { getLogsDir, createMainLogger } from '../logging/logger';
 import { getBackendPort } from '../backend-port';
+import { BACKGROUNDS_DIR_NAME } from './background';
+import { MASCOT_SPRITES_DIR_NAME } from '../mascot/overlay-state';
 import { handle, handleWithFallback } from './with-ipc-handler';
 import {
   appGetPathSchema,
@@ -15,6 +17,8 @@ import {
   appGetAutoLaunchSchema,
   appSetAutoLaunchSchema,
   appGetBackendPortSchema,
+  appRelaunchSchema,
+  appClearUserFilesSchema,
 } from './schemas';
 import { registerAppImageFetchHandlers, cleanupAppImageFetchHandlers } from './app-image-fetch';
 import { registerAppLogHandlers, cleanupAppLogHandlers } from './app-logs';
@@ -167,6 +171,39 @@ export function registerAppHandlers(): void {
     { schema: appGetBackendPortSchema }
   );
 
+  // Delete user-uploaded asset directories under userData (custom backgrounds,
+  // mascot sprites) for the "delete all data" factory reset. The DB +
+  // electron-store wipes don't touch these on-disk files, so without this they
+  // survive a reset as unreferenced dead files. force:true makes a missing dir
+  // a no-op; the renderer treats this as a best-effort step.
+  handle(
+    'app:clear-user-files',
+    async () => {
+      logger.warn('app:clear-user-files invoked — removing user-uploaded asset directories');
+      const userData = app.getPath('userData');
+      await Promise.all(
+        [BACKGROUNDS_DIR_NAME, MASCOT_SPRITES_DIR_NAME].map(dir =>
+          rm(join(userData, dir), { recursive: true, force: true })
+        )
+      );
+    },
+    { schema: appClearUserFilesSchema }
+  );
+
+  // Relaunch the app from scratch (used by the "delete all data" factory reset
+  // to drop all in-memory state after persistence is wiped). app.exit(0) kills
+  // the process synchronously, so this handler never returns a value to the
+  // renderer — the caller must not await the invoke.
+  handle(
+    'app:relaunch',
+    () => {
+      logger.warn('app:relaunch invoked — relaunching application');
+      app.relaunch();
+      app.exit(0);
+    },
+    { schema: appRelaunchSchema }
+  );
+
   registerAppImageFetchHandlers();
   registerAppLogHandlers();
 }
@@ -184,6 +221,8 @@ export function cleanupAppHandlers(): void {
   ipcMain.removeHandler('app:get-auto-launch');
   ipcMain.removeHandler('app:set-auto-launch');
   ipcMain.removeHandler('app:get-backend-port');
+  ipcMain.removeHandler('app:clear-user-files');
+  ipcMain.removeHandler('app:relaunch');
 
   cleanupAppImageFetchHandlers();
   cleanupAppLogHandlers();

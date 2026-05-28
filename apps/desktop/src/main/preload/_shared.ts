@@ -13,6 +13,7 @@ export const ALLOWED_IPC_CHANNELS: ReadonlySet<string> = new Set([
   'store:get',
   'store:set',
   'store:delete',
+  'store:clear',
   // app / diagnostics
   'app:get-version',
   'app:get-system-info',
@@ -29,6 +30,8 @@ export const ALLOWED_IPC_CHANNELS: ReadonlySet<string> = new Set([
   'app:set-log-level',
   'app:get-auto-launch',
   'app:set-auto-launch',
+  'app:relaunch',
+  'app:clear-user-files',
   // dialog
   'dialog:open-directory',
   'dialog:open-file',
@@ -47,6 +50,7 @@ export const ALLOWED_IPC_CHANNELS: ReadonlySet<string> = new Set([
   'browser:get-popup-block-enabled',
   'browser:set-popup-block-enabled',
   'browser:set-adblock-whitelist',
+  'browser:clear-session',
   // updater
   'updater:check-for-updates',
   'updater:start-download',
