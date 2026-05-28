@@ -66,17 +66,39 @@ export async function wipeAllData(): Promise<void> {
 
   // 2–5. Local stores + on-disk assets. Best-effort: one failure must not block
   // the rest or the relaunch, since the bulk of user content (the DB) is gone.
-  await runBestEffort('electron-store', () => window.electronAPI?.store?.clear?.());
-  await runBestEffort('browser-session', () => window.electronAPI?.browser?.clearSession?.());
-  await runBestEffort('user-files', () => window.electronAPI?.app?.clearUserFiles?.());
+  // Each step asserts its bridge method exists and throws if not, so a preload
+  // regression surfaces as a logged warning rather than a silent no-op.
+  await runBestEffort('electron-store', () => {
+    const clear = window.electronAPI?.store?.clear;
+    if (!clear) throw new Error('electronAPI.store.clear is unavailable');
+    return clear();
+  });
+  await runBestEffort('browser-session', () => {
+    const clearSession = window.electronAPI?.browser?.clearSession;
+    if (!clearSession) throw new Error('electronAPI.browser.clearSession is unavailable');
+    return clearSession();
+  });
+  await runBestEffort('user-files', () => {
+    const clearUserFiles = window.electronAPI?.app?.clearUserFiles;
+    if (!clearUserFiles) throw new Error('electronAPI.app.clearUserFiles is unavailable');
+    return clearUserFiles();
+  });
   runBestEffortSync('web-storage', () => {
     localStorage.clear();
     sessionStorage.clear();
   });
 
   // 6. Restart into a clean boot. Fire-and-forget: app.relaunch() + app.exit(0)
-  // kills the process, so the IPC promise never resolves — never await it.
-  void window.electronAPI?.app?.relaunch?.();
+  // kills the process, so the IPC promise never resolves — never await it. If the
+  // bridge method is missing (preload regression), fall back to a reload so the
+  // user is never stranded in a half-wiped app that never restarts.
+  const relaunch = window.electronAPI?.app?.relaunch;
+  if (relaunch) {
+    void relaunch();
+  } else {
+    logger.warn('electronAPI.app.relaunch unavailable; falling back to window.location.reload()');
+    window.location.reload();
+  }
 }
 
 async function runBestEffort(label: string, fn: () => Promise<void> | undefined): Promise<void> {

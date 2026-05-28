@@ -103,6 +103,18 @@ describe('wipeAllData', () => {
       expect(api.app.relaunch).not.toHaveBeenCalled();
     });
 
+    it('falls back to window.location.reload() when the relaunch bridge is missing', async () => {
+      const api = makeElectronApi();
+      (api.app as { relaunch?: unknown }).relaunch = undefined;
+      (window as unknown as { electronAPI: ElectronApiMock }).electronAPI = api;
+
+      await wipeAllData();
+
+      // local clears still ran; the missing relaunch must not strand the user
+      expect(api.store.clear).toHaveBeenCalledOnce();
+      expect(reload).toHaveBeenCalledOnce();
+    });
+
     it('still relaunches when a best-effort local clear fails', async () => {
       const api = makeElectronApi();
       api.store.clear.mockRejectedValue(new Error('store boom'));
