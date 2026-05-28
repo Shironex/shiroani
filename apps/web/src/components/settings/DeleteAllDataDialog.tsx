@@ -14,6 +14,7 @@ import { Input } from '@/components/ui/input';
 import { useDialogStateMachine } from '@/hooks/useDialogStateMachine';
 import { wipeAllData } from '@/lib/wipe-all-data';
 import { confirmKeywordMatches } from '@/lib/confirm-keyword';
+import { IS_ELECTRON } from '@/lib/platform';
 import { createLogger } from '@shiroani/shared';
 
 const logger = createLogger('DeleteAllDataDialog');
@@ -104,7 +105,10 @@ export function DeleteAllDataDialog({
 
         <div className="space-y-4 py-2">
           <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2.5 text-[12px] leading-relaxed text-destructive">
-            {t('data.danger.confirm.warning')}
+            {/* Desktop wipes the DB, browser session and on-disk files and relaunches;
+                the web build only clears browser storage and reloads — so the copy
+                must not promise a session wipe / fresh-install restart it can't deliver. */}
+            {t(IS_ELECTRON ? 'data.danger.confirm.warning' : 'data.danger.confirm.warningWeb')}
           </div>
 
           <div className="space-y-1.5">

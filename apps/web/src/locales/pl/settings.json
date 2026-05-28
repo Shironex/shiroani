@@ -494,6 +494,7 @@
         "title": "Usunąć wszystkie dane?",
         "description": "Ta operacja jest nieodwracalna. Aby potwierdzić, wpisz poniżej słowo.",
         "warning": "Usuniesz bibliotekę, pamiętnik, subskrypcje, historię i zakładki przeglądarki, wszystkie ustawienia oraz sesję wbudowanej przeglądarki (ciasteczka i zapisane logowania). Aplikacja uruchomi się ponownie jak po świeżej instalacji.",
+        "warningWeb": "Usuniesz wszystkie dane ShiroAni zapisane w tej przeglądarce — bibliotekę, pamiętnik, subskrypcje i ustawienia — a aplikacja zostanie ponownie załadowana.",
         "keyword": "USUŃ",
         "inputLabel": "Wpisz {{keyword}}, aby potwierdzić",
         "exportFirst": "Najpierw eksportuj kopię",

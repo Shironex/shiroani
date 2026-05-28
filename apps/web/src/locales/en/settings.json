@@ -494,6 +494,7 @@
         "title": "Delete all data?",
         "description": "This action is permanent. Type the word below to confirm.",
         "warning": "You'll erase your library, diary, subscriptions, browsing history & bookmarks, all settings, and the built-in browser session (cookies and saved logins). The app will restart as if freshly installed.",
+        "warningWeb": "You'll erase all ShiroAni data stored in this browser — your library, diary, subscriptions and settings — and the app will reload.",
         "keyword": "DELETE",
         "inputLabel": "Type {{keyword}} to confirm",
         "exportFirst": "Export a backup first",
