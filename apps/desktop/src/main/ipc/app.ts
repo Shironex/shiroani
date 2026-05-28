@@ -182,9 +182,16 @@ export function registerAppHandlers(): void {
       logger.warn('app:clear-user-files invoked — removing user-uploaded asset directories');
       const userData = app.getPath('userData');
       await Promise.all(
-        [BACKGROUNDS_DIR_NAME, MASCOT_SPRITES_DIR_NAME].map(dir =>
-          rm(join(userData, dir), { recursive: true, force: true })
-        )
+        [BACKGROUNDS_DIR_NAME, MASCOT_SPRITES_DIR_NAME].map(dir => {
+          // Guard against a misconfigured constant collapsing join() back to
+          // userData itself: an empty, relative, or separator-bearing name would
+          // rm the entire user-data directory (live DB, logs and all). Fail loud
+          // rather than silently skip, so a regression here is caught, not hidden.
+          if (!dir || dir === '.' || dir === '..' || dir.includes('/') || dir.includes('\\')) {
+            throw new Error(`Refusing to clear unsafe user-files dir name: "${dir}"`);
+          }
+          return rm(join(userData, dir), { recursive: true, force: true });
+        })
       );
     },
     { schema: appClearUserFilesSchema }
