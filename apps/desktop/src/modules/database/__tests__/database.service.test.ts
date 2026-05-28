@@ -12,8 +12,12 @@ function makeWipeDbStub(tableNames: string[], hasSequence = true) {
   const prepared: string[] = [];
   const runs: string[] = [];
   const execs: string[] = [];
+  const pragmas: string[] = [];
 
   const db = {
+    pragma(source: string) {
+      pragmas.push(source.replace(/\s+/g, ' ').trim());
+    },
     prepare(sql: string) {
       const trimmed = sql.replace(/\s+/g, ' ').trim();
       prepared.push(trimmed);
@@ -43,7 +47,7 @@ function makeWipeDbStub(tableNames: string[], hasSequence = true) {
     },
   } as unknown as Database.Database;
 
-  return { db, prepared, runs, execs };
+  return { db, prepared, runs, execs, pragmas };
 }
 
 function buildService(tableNames: string[], hasSequence = true) {
@@ -83,6 +87,13 @@ describe('DatabaseService.clearAllData', () => {
     const { service, runs } = buildService(['anime_library'], false);
     service.clearAllData();
     expect(runs).not.toContain('DELETE FROM sqlite_sequence');
+  });
+
+  it('brackets the wipe with foreign_keys OFF/ON so order and RESTRICT cannot block it', () => {
+    const { service, pragmas } = buildService(['anime_library']);
+    service.clearAllData();
+    expect(pragmas).toContain('foreign_keys = OFF');
+    expect(pragmas).toContain('foreign_keys = ON');
   });
 
   it('VACUUMs after the wipe to reclaim disk space', () => {

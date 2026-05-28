@@ -49,8 +49,9 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
    * enumerated dynamically from `sqlite_master` so new tables — and the
    * `resolve_cache` branch tables that exist on some local DBs — are covered
    * without being hardcoded here. Every foreign key in the schema is
-   * `ON DELETE CASCADE` or `SET NULL` (no `RESTRICT`), so deletion order is
-   * irrelevant: emptying a parent cascades into its children harmlessly.
+   * `ON DELETE CASCADE` or `SET NULL` today, but the bulk delete also runs with
+   * `foreign_keys = OFF` so the wipe stays order-independent and immune to any
+   * future `RESTRICT` constraint.
    */
   clearAllData(): void {
     const db = this._db;
@@ -80,7 +81,16 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
       }
     });
 
-    wipe();
+    // Disable FK enforcement around the bulk delete so the wipe is correct
+    // regardless of the (arbitrary) sqlite_master order and immune to any future
+    // RESTRICT constraint. PRAGMA foreign_keys is a no-op inside a transaction,
+    // so it must bracket wipe(), not live inside it; always restored in finally.
+    db.pragma('foreign_keys = OFF');
+    try {
+      wipe();
+    } finally {
+      db.pragma('foreign_keys = ON');
+    }
 
     // Reclaim the freed pages so the on-disk file shrinks to fresh-install size.
     // VACUUM cannot run inside a transaction, so it follows the wipe; failure is
