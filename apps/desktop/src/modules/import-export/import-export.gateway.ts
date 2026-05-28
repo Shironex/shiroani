@@ -75,4 +75,21 @@ export class ImportExportGateway {
       },
     });
   }
+
+  @SubscribeMessage(ImportExportEvents.CLEAR_ALL)
+  handleClearAll() {
+    return handleGatewayRequest({
+      logger,
+      action: ImportExportEvents.CLEAR_ALL,
+      defaultResult: { success: false },
+      handler: async () => {
+        this.importExportService.clearAllData();
+        // Intentionally NO `library:updated` / `diary:updated` / feed broadcasts:
+        // the renderer relaunches immediately after a successful wipe, and
+        // refresh events would make connected stores re-query an empty DB and
+        // flash empty states in the brief window before the process exits.
+        return { success: true };
+      },
+    });
+  }
 }

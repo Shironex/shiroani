@@ -11,6 +11,7 @@ import {
 } from '@shiroani/shared';
 import { LibraryService } from '../library';
 import { DiaryService } from '../diary';
+import { DatabaseService } from '../database';
 
 const logger = createLogger('ImportExportService');
 
@@ -33,9 +34,22 @@ export interface ImportBatchResult {
 export class ImportExportService {
   constructor(
     private readonly libraryService: LibraryService,
-    private readonly diaryService: DiaryService
+    private readonly diaryService: DiaryService,
+    private readonly databaseService: DatabaseService
   ) {
     logger.info('ImportExportService initialized');
+  }
+
+  /**
+   * Factory reset: erase every user table (library, diary, feed, bookmarks,
+   * watch history, …). Delegates to {@link DatabaseService.clearAllData}, which
+   * owns the wipe — this method lives in the `data:` domain so the gateway has a
+   * single service to call alongside export/import. (Minor: the service is
+   * named for import/export but also fronts the full-data wipe.)
+   */
+  clearAllData(): void {
+    this.databaseService.clearAllData();
+    logger.info('All user data cleared');
   }
 
   /** Export library and/or diary entries into the ShiroaniExportFormat. */
