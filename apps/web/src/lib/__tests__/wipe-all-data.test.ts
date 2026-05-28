@@ -87,6 +87,22 @@ describe('wipeAllData', () => {
       expect(api.app.relaunch).not.toHaveBeenCalled();
     });
 
+    it('aborts before touching local state if the DB wipe resolves unsuccessfully', async () => {
+      // Distinct from the reject path above: the gateway can *resolve* with
+      // { success: false } (handleGatewayRequest catches handler errors and
+      // returns the default result rather than throwing).
+      const api = makeElectronApi();
+      (window as unknown as { electronAPI: ElectronApiMock }).electronAPI = api;
+      mocks.emitWithErrorHandling.mockResolvedValue({ success: false });
+
+      await expect(wipeAllData()).rejects.toThrow(/did not complete successfully/);
+
+      expect(api.store.clear).not.toHaveBeenCalled();
+      expect(api.browser.clearSession).not.toHaveBeenCalled();
+      expect(api.app.clearUserFiles).not.toHaveBeenCalled();
+      expect(api.app.relaunch).not.toHaveBeenCalled();
+    });
+
     it('still relaunches when a best-effort local clear fails', async () => {
       const api = makeElectronApi();
       api.store.clear.mockRejectedValue(new Error('store boom'));
