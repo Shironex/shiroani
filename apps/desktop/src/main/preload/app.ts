@@ -23,4 +23,6 @@ export const appApi: ElectronAPI['app'] = {
     ipcRenderer.invoke('app:set-auto-launch', enabled) as Promise<boolean>,
   setLogLevel: (level: string) =>
     ipcRenderer.invoke('app:set-log-level', { level }) as Promise<{ ok: boolean; level: string }>,
+  relaunch: () => ipcRenderer.invoke('app:relaunch') as Promise<void>,
+  clearUserFiles: () => ipcRenderer.invoke('app:clear-user-files') as Promise<void>,
 };

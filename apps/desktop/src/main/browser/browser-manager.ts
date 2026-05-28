@@ -111,6 +111,22 @@ export class BrowserManager {
   }
 
   /**
+   * Clear all persisted data for the built-in browser session: cookies, saved
+   * logins, local/session/IndexedDB storage, and the HTTP cache. Backs the
+   * "delete all data" factory reset. Safe to call before init() — it just
+   * no-ops (there is nothing to clear yet).
+   */
+  async clearBrowsingData(): Promise<void> {
+    if (!this.browserSession) {
+      logger.warn('clearBrowsingData called before init — nothing to clear');
+      return;
+    }
+    await this.browserSession.clearStorageData();
+    await this.browserSession.clearCache();
+    logger.info('Cleared built-in browser session data (storage + cache)');
+  }
+
+  /**
    * Initialize the browser session. Must be called after app.whenReady().
    */
   init(): void {

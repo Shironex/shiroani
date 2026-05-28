@@ -13,7 +13,7 @@ import { backgroundPickSchema, backgroundRemoveSchema, backgroundGetUrlSchema } 
 const logger = createMainLogger('IPC:Background');
 
 /** Directory inside userData where background images are stored */
-const BACKGROUNDS_DIR_NAME = 'backgrounds';
+export const BACKGROUNDS_DIR_NAME = 'backgrounds';
 
 /** Allowed image extensions (lowercase, without dot) */
 const ALLOWED_EXTENSIONS = new Set(['png', 'jpg', 'jpeg', 'gif', 'webp']);

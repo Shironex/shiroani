@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { SettingsCard } from '@/components/settings/SettingsCard';
+import { DeleteAllDataDialog } from '@/components/settings/DeleteAllDataDialog';
 import { ExportDialog } from '@/components/shared/ExportDialog';
 import { ImportDialog } from '@/components/shared/ImportDialog';
 import { useLibraryStore } from '@/stores/useLibraryStore';
@@ -21,6 +22,7 @@ export function DataSection() {
   const { t } = useTranslation('settings');
   const [exportOpen, setExportOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   const libraryCount = useLibraryStore(s => s.entries.length);
   const diaryCount = useDiaryStore(s => s.entries.length);
@@ -97,7 +99,7 @@ export function DataSection() {
           variant="outline"
           size="sm"
           className="border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive"
-          disabled
+          onClick={() => setDeleteOpen(true)}
         >
           {t('data.danger.action')}
         </Button>
@@ -105,6 +107,14 @@ export function DataSection() {
 
       <ExportDialog open={exportOpen} onOpenChange={setExportOpen} type="all" />
       <ImportDialog open={importOpen} onOpenChange={setImportOpen} type="all" />
+      <DeleteAllDataDialog
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        onExportFirst={() => {
+          setDeleteOpen(false);
+          setExportOpen(true);
+        }}
+      />
     </div>
   );
 }

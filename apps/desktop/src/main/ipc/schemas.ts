@@ -129,6 +129,7 @@ export const dialogMessageSchema = z.tuple([messageDialogOptionsSchema]);
 export const storeGetSchema = z.tuple([z.string().min(1)]);
 export const storeSetSchema = z.tuple([z.string().min(1), z.unknown().nonoptional()]);
 export const storeDeleteSchema = z.tuple([z.string().min(1)]);
+export const storeClearSchema = z.tuple([]);
 
 // ============================================================================
 // App channels
@@ -156,6 +157,8 @@ export const appLogWriteSchema = z.tuple([
 ]);
 export const appSetLogLevelSchema = z.tuple([z.object({ level: z.string() })]);
 export const appReadLogFileSchema = z.tuple([z.string()]);
+export const appRelaunchSchema = z.tuple([]);
+export const appClearUserFilesSchema = z.tuple([]);
 
 // ============================================================================
 // Updater channels
@@ -176,6 +179,7 @@ export const browserSetFullscreenSchema = z.tuple([z.boolean()]);
 export const browserGetPopupBlockEnabledSchema = z.tuple([]);
 export const browserSetPopupBlockEnabledSchema = z.tuple([z.boolean()]);
 export const browserSetAdblockWhitelistSchema = z.tuple([z.unknown()]);
+export const browserClearSessionSchema = z.tuple([]);
 
 // ============================================================================
 // Background channels

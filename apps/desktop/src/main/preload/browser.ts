@@ -13,6 +13,7 @@ export const browserApi: ElectronAPI['browser'] = {
     ipcRenderer.invoke('browser:set-popup-block-enabled', enabled) as Promise<void>,
   setAdblockWhitelist: (hosts: string[]) =>
     ipcRenderer.invoke('browser:set-adblock-whitelist', hosts) as Promise<void>,
+  clearSession: () => ipcRenderer.invoke('browser:clear-session') as Promise<void>,
   onNewWindowRequest: createIpcListener<string>('browser:new-window-request'),
   onShortcut: createIpcListener<{ key: string; ctrl?: boolean; shift?: boolean; alt?: boolean }>(
     'browser:shortcut'

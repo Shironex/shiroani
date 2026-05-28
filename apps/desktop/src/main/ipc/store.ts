@@ -4,7 +4,7 @@ import { createMainLogger } from '../logging/logger';
 import { store } from '../store';
 import { rebuildTrayMenu } from '../tray';
 import { handle, handleWithFallback } from './with-ipc-handler';
-import { storeGetSchema, storeSetSchema, storeDeleteSchema } from './schemas';
+import { storeGetSchema, storeSetSchema, storeDeleteSchema, storeClearSchema } from './schemas';
 
 const logger = createMainLogger('IPC:Store');
 
@@ -166,6 +166,19 @@ export function registerStoreHandlers(): void {
     },
     { schema: storeDeleteSchema }
   );
+
+  // Factory reset — wipe ALL persisted settings. Deliberately bypasses the
+  // per-key allowlist (which guards targeted get/set/delete): this is the
+  // dedicated "delete all data" entry point, so clearing everything is the
+  // intended effect, not an escalation.
+  handle(
+    'store:clear',
+    () => {
+      logger.warn('store:clear invoked — wiping all electron-store settings');
+      store.clear();
+    },
+    { schema: storeClearSchema }
+  );
 }
 
 /**
@@ -175,4 +188,5 @@ export function cleanupStoreHandlers(): void {
   ipcMain.removeHandler('store:get');
   ipcMain.removeHandler('store:set');
   ipcMain.removeHandler('store:delete');
+  ipcMain.removeHandler('store:clear');
 }

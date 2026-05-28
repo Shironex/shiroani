@@ -72,6 +72,8 @@ export const ImportExportEvents = {
   // Client -> Server (requests)
   EXPORT: 'data:export',
   IMPORT: 'data:import',
+  /** Factory reset: wipe every user table from the database. */
+  CLEAR_ALL: 'data:clear-all',
 
   // Server -> Client (broadcasts)
   IMPORT_PROGRESS: 'data:import-progress',

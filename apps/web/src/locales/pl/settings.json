@@ -489,7 +489,20 @@
       "title": "Usuń wszystkie dane",
       "subtitle": "Usuwa wszystkie dane bez możliwości cofnięcia.",
       "description": "Usuniesz bibliotekę, pamiętnik, subskrypcje i ustawienia. Tego nie można cofnąć.",
-      "action": "Usuń wszystkie dane"
+      "action": "Usuń wszystkie dane",
+      "confirm": {
+        "title": "Usunąć wszystkie dane?",
+        "description": "Ta operacja jest nieodwracalna. Aby potwierdzić, wpisz poniżej słowo.",
+        "warning": "Usuniesz bibliotekę, pamiętnik, subskrypcje, historię i zakładki przeglądarki, wszystkie ustawienia oraz sesję wbudowanej przeglądarki (ciasteczka i zapisane logowania). Aplikacja uruchomi się ponownie jak po świeżej instalacji.",
+        "warningWeb": "Usuniesz wszystkie dane ShiroAni zapisane w tej przeglądarce — bibliotekę, pamiętnik, subskrypcje i ustawienia — a aplikacja zostanie ponownie załadowana.",
+        "keyword": "USUŃ",
+        "inputLabel": "Wpisz {{keyword}}, aby potwierdzić",
+        "exportFirst": "Najpierw eksportuj kopię",
+        "cancel": "Anuluj",
+        "confirm": "Usuń wszystko",
+        "wiping": "Usuwanie…",
+        "error": "Nie udało się usunąć wszystkich danych. Spróbuj ponownie."
+      }
     }
   },
   "about": {

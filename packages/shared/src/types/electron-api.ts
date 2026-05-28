@@ -71,6 +71,8 @@ export interface ElectronAPI {
     get: <T>(key: string) => Promise<T | undefined>;
     set: <T>(key: string, value: T) => Promise<void>;
     delete: (key: string) => Promise<void>;
+    /** Wipe every persisted setting (factory reset). */
+    clear: () => Promise<void>;
   };
   dialog: {
     openDirectory: (options?: unknown) => Promise<string | null>;
@@ -108,6 +110,17 @@ export interface ElectronAPI {
     getAutoLaunch: () => Promise<boolean>;
     setAutoLaunch: (enabled: boolean) => Promise<boolean>;
     setLogLevel: (level: string) => Promise<{ ok: boolean; level: string }>;
+    /**
+     * Relaunch the application from scratch. Fire-and-forget: the main process
+     * calls `app.relaunch()` then `app.exit(0)`, so the returned promise never
+     * resolves (the process is gone) — callers must not `await` it.
+     */
+    relaunch: () => Promise<void>;
+    /**
+     * Delete user-uploaded asset directories under userData (custom backgrounds,
+     * mascot sprites) as part of the "delete all data" factory reset.
+     */
+    clearUserFiles: () => Promise<void>;
   };
   log: {
     /**
@@ -123,6 +136,8 @@ export interface ElectronAPI {
     getPopupBlockEnabled: () => Promise<boolean>;
     setPopupBlockEnabled: (enabled: boolean) => Promise<void>;
     setAdblockWhitelist: (hosts: string[]) => Promise<void>;
+    /** Wipe the built-in browser session: cookies, logins, cache, storage (factory reset). */
+    clearSession: () => Promise<void>;
     onNewWindowRequest: (callback: (url: string) => void) => () => void;
     onShortcut: (
       callback: (data: { key: string; ctrl?: boolean; shift?: boolean; alt?: boolean }) => void
