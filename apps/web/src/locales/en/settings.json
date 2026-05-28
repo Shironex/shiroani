@@ -489,7 +489,19 @@
       "title": "Delete all data",
       "subtitle": "Permanently deletes all data — cannot be undone.",
       "description": "You'll lose your library, diary, subscriptions and settings. This can't be undone.",
-      "action": "Delete all data"
+      "action": "Delete all data",
+      "confirm": {
+        "title": "Delete all data?",
+        "description": "This action is permanent. Type the word below to confirm.",
+        "warning": "You'll erase your library, diary, subscriptions, browsing history & bookmarks, all settings, and the built-in browser session (cookies and saved logins). The app will restart as if freshly installed.",
+        "keyword": "DELETE",
+        "inputLabel": "Type {{keyword}} to confirm",
+        "exportFirst": "Export a backup first",
+        "cancel": "Cancel",
+        "confirm": "Delete everything",
+        "wiping": "Deleting…",
+        "error": "Couldn't delete all data. Please try again."
+      }
     }
   },
   "about": {
