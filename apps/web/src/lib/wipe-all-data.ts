@@ -66,23 +66,17 @@ export async function wipeAllData(): Promise<void> {
 
   // 2–5. Local stores + on-disk assets. Best-effort: one failure must not block
   // the rest or the relaunch, since the bulk of user content (the DB) is gone.
-  // Each step asserts its bridge method exists and throws if not, so a preload
-  // regression surfaces as a logged warning rather than a silent no-op.
-  await runBestEffort('electron-store', () => {
-    const clear = window.electronAPI?.store?.clear;
-    if (!clear) throw new Error('electronAPI.store.clear is unavailable');
-    return clear();
-  });
-  await runBestEffort('browser-session', () => {
-    const clearSession = window.electronAPI?.browser?.clearSession;
-    if (!clearSession) throw new Error('electronAPI.browser.clearSession is unavailable');
-    return clearSession();
-  });
-  await runBestEffort('user-files', () => {
-    const clearUserFiles = window.electronAPI?.app?.clearUserFiles;
-    if (!clearUserFiles) throw new Error('electronAPI.app.clearUserFiles is unavailable');
-    return clearUserFiles();
-  });
+  // requireBridge throws if a method is missing, so a preload regression
+  // surfaces as a logged warning rather than a silent no-op.
+  await runBestEffort('electron-store', () =>
+    requireBridge('electronAPI.store.clear', window.electronAPI?.store?.clear)()
+  );
+  await runBestEffort('browser-session', () =>
+    requireBridge('electronAPI.browser.clearSession', window.electronAPI?.browser?.clearSession)()
+  );
+  await runBestEffort('user-files', () =>
+    requireBridge('electronAPI.app.clearUserFiles', window.electronAPI?.app?.clearUserFiles)()
+  );
   runBestEffortSync('web-storage', () => {
     localStorage.clear();
     sessionStorage.clear();
@@ -99,6 +93,15 @@ export async function wipeAllData(): Promise<void> {
     logger.warn('electronAPI.app.relaunch unavailable; falling back to window.location.reload()');
     window.location.reload();
   }
+}
+
+/**
+ * Resolve a preload bridge method, throwing a labelled error when it is missing
+ * so the best-effort wrapper logs the gap instead of silently skipping the step.
+ */
+function requireBridge<T>(name: string, method: T | undefined): T {
+  if (!method) throw new Error(`${name} is unavailable`);
+  return method;
 }
 
 async function runBestEffort(label: string, fn: () => Promise<void> | undefined): Promise<void> {
