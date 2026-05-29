@@ -1,11 +1,15 @@
 import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
 import { maybeDevtools } from '@/stores/utils/maybeDevtools';
 import {
   AnimeEvents,
   createLogger,
   getCurrentAniListSeason,
   shuffleArray,
+  hasActiveDiscoverFilters,
   type DiscoverMedia,
+  type DiscoverSort,
+  type DiscoverFilters,
 } from '@shiroani/shared';
 import { emitWithErrorHandling } from '@/lib/socket';
 import i18n from '@/lib/i18n';
@@ -53,6 +57,12 @@ interface DiscoverState {
   searchResults: DiscoverMedia[];
   searchPage: PageInfo;
   isSearching: boolean;
+  // Browse sort (item 2) + advanced filters (item 6) — apply to all browse
+  // tabs and to search results alike.
+  sort: DiscoverSort;
+  filters: DiscoverFilters;
+  // Hide media already in the user's library by status (item 14).
+  excludeLibrary: boolean;
   // General
   isLoading: boolean;
   error: string | null;
@@ -68,6 +78,10 @@ interface DiscoverActions {
   fetchRandomPool: () => void;
   reshuffleRandom: () => void;
   setRandomGenres: (included: string[], excluded: string[]) => void;
+  setSort: (sort: DiscoverSort) => void;
+  setFilters: (filters: DiscoverFilters) => void;
+  setExcludeLibrary: (exclude: boolean) => void;
+  refetchActive: () => void;
   loadMore: () => void;
   clearSearch: () => void;
 }
@@ -83,9 +97,24 @@ function toUserError(err: Error): string {
   return err.message;
 }
 
+/**
+ * Sort + filters to attach to a browse/search payload. Omits an empty filter
+ * object so the backend keeps its pristine cache keys when no filters are set.
+ */
+function querySortAndFilters(state: DiscoverState): {
+  sort: DiscoverSort;
+  filters?: DiscoverFilters;
+} {
+  return {
+    sort: state.sort,
+    filters: hasActiveDiscoverFilters(state.filters) ? state.filters : undefined,
+  };
+}
+
 export const useDiscoverStore = create<DiscoverStore>()(
-  maybeDevtools(
-    (set, get) => ({
+  persist(
+    maybeDevtools(
+      (set, get) => ({
       // State
       activeTab: 'trending',
       trending: [],
@@ -103,6 +132,9 @@ export const useDiscoverStore = create<DiscoverStore>()(
       searchResults: [],
       searchPage: { ...initialPage },
       isSearching: false,
+      sort: 'popularity',
+      filters: {},
+      excludeLibrary: false,
       isLoading: false,
       error: null,
 
@@ -143,10 +175,14 @@ export const useDiscoverStore = create<DiscoverStore>()(
           'discover/searching'
         );
 
-        emitWithErrorHandling<{ query: string; page?: number }, PaginatedResponse>(
-          AnimeEvents.SEARCH,
-          { query: query.trim(), page: 1 }
-        )
+        emitWithErrorHandling<
+          { query: string; page?: number; sort?: DiscoverSort; filters?: DiscoverFilters },
+          PaginatedResponse
+        >(AnimeEvents.SEARCH, {
+          query: query.trim(),
+          page: 1,
+          ...querySortAndFilters(get()),
+        })
           .then(data => {
             logger.info(
               `Search results: ${data.results.length} items (page ${data.pageInfo.currentPage}/${data.pageInfo.lastPage})`
@@ -176,8 +212,12 @@ export const useDiscoverStore = create<DiscoverStore>()(
         logger.info('Fetching trending (page 1)');
         set({ isLoading: true, error: null }, undefined, 'discover/fetchingTrending');
 
-        emitWithErrorHandling<{ page?: number }, PaginatedResponse>(AnimeEvents.GET_TRENDING, {
+        emitWithErrorHandling<
+          { page?: number; sort?: DiscoverSort; filters?: DiscoverFilters },
+          PaginatedResponse
+        >(AnimeEvents.GET_TRENDING, {
           page: 1,
+          ...querySortAndFilters(get()),
         })
           .then(data => {
             logger.info(`Trending: ${data.results.length} items loaded`);
@@ -205,8 +245,12 @@ export const useDiscoverStore = create<DiscoverStore>()(
         logger.info('Fetching popular (page 1)');
         set({ isLoading: true, error: null }, undefined, 'discover/fetchingPopular');
 
-        emitWithErrorHandling<{ page?: number }, PaginatedResponse>(AnimeEvents.GET_POPULAR, {
+        emitWithErrorHandling<
+          { page?: number; sort?: DiscoverSort; filters?: DiscoverFilters },
+          PaginatedResponse
+        >(AnimeEvents.GET_POPULAR, {
           page: 1,
+          ...querySortAndFilters(get()),
         })
           .then(data => {
             logger.info(`Popular: ${data.results.length} items loaded`);
@@ -235,10 +279,16 @@ export const useDiscoverStore = create<DiscoverStore>()(
         logger.info(`Fetching seasonal: ${season} ${year} (page 1)`);
         set({ isLoading: true, error: null }, undefined, 'discover/fetchingSeasonal');
 
-        emitWithErrorHandling<{ year: number; season: string; page?: number }, PaginatedResponse>(
-          AnimeEvents.GET_SEASONAL,
-          { year, season, page: 1 }
-        )
+        emitWithErrorHandling<
+          {
+            year: number;
+            season: string;
+            page?: number;
+            sort?: DiscoverSort;
+            filters?: DiscoverFilters;
+          },
+          PaginatedResponse
+        >(AnimeEvents.GET_SEASONAL, { year, season, page: 1, ...querySortAndFilters(get()) })
           .then(data => {
             logger.info(`Seasonal: ${data.results.length} items loaded`);
             set(
@@ -330,6 +380,61 @@ export const useDiscoverStore = create<DiscoverStore>()(
         get().fetchRandomPool();
       },
 
+      setSort: (sort: DiscoverSort) => {
+        if (get().sort === sort) return;
+        set({ sort }, undefined, 'discover/setSort');
+        get().refetchActive();
+      },
+
+      setFilters: (filters: DiscoverFilters) => {
+        set({ filters }, undefined, 'discover/setFilters');
+        get().refetchActive();
+      },
+
+      setExcludeLibrary: (exclude: boolean) => {
+        // Pure client-side post-filter — no refetch needed; consumers read the
+        // flag and drop library members from the rendered list.
+        set({ excludeLibrary: exclude }, undefined, 'discover/setExcludeLibrary');
+      },
+
+      /**
+       * Re-run the active view after a sort/filter change. Clears cached browse
+       * results so the new params take effect, then refetches the current tab
+       * (or re-runs the active search).
+       */
+      refetchActive: () => {
+        const state = get();
+        set(
+          {
+            trending: [],
+            popular: [],
+            seasonal: [],
+            trendingPage: { ...initialPage },
+            popularPage: { ...initialPage },
+            seasonalPage: { ...initialPage },
+          },
+          undefined,
+          'discover/refetchActive'
+        );
+
+        if (state.isSearching && state.searchQuery.trim()) {
+          state.search(state.searchQuery.trim());
+          return;
+        }
+
+        switch (state.activeTab) {
+          case 'trending':
+            state.fetchTrending();
+            break;
+          case 'popular':
+            state.fetchPopular();
+            break;
+          case 'seasonal':
+            state.fetchSeasonal();
+            break;
+        }
+      },
+
       loadMore: () => {
         const state = get();
         if (state.isLoading) return;
@@ -342,10 +447,14 @@ export const useDiscoverStore = create<DiscoverStore>()(
           logger.info(`Search load more: "${state.searchQuery.trim()}" (page ${nextPage})`);
           set({ isLoading: true, error: null }, undefined, 'discover/loadMoreSearch');
 
-          emitWithErrorHandling<{ query: string; page?: number }, PaginatedResponse>(
-            AnimeEvents.SEARCH,
-            { query: state.searchQuery.trim(), page: nextPage }
-          )
+          emitWithErrorHandling<
+            { query: string; page?: number; sort?: DiscoverSort; filters?: DiscoverFilters },
+            PaginatedResponse
+          >(AnimeEvents.SEARCH, {
+            query: state.searchQuery.trim(),
+            page: nextPage,
+            ...querySortAndFilters(state),
+          })
             .then(data => {
               set(
                 s => ({
@@ -387,20 +496,21 @@ export const useDiscoverStore = create<DiscoverStore>()(
 
         let event: string;
         let payload: Record<string, unknown>;
+        const sortAndFilters = querySortAndFilters(state);
 
         switch (activeTab) {
           case 'trending':
             event = AnimeEvents.GET_TRENDING;
-            payload = { page: nextPage };
+            payload = { page: nextPage, ...sortAndFilters };
             break;
           case 'popular':
             event = AnimeEvents.GET_POPULAR;
-            payload = { page: nextPage };
+            payload = { page: nextPage, ...sortAndFilters };
             break;
           case 'seasonal': {
             const { year, season } = getCurrentAniListSeason();
             event = AnimeEvents.GET_SEASONAL;
-            payload = { year, season, page: nextPage };
+            payload = { year, season, page: nextPage, ...sortAndFilters };
             break;
           }
           default:
@@ -447,7 +557,19 @@ export const useDiscoverStore = create<DiscoverStore>()(
           'discover/clearSearch'
         );
       },
-    }),
-    { name: 'discover' }
+      }),
+      { name: 'discover' }
+    ),
+    {
+      name: 'discover-prefs',
+      storage: createJSONStorage(() => localStorage),
+      // Only the user's sort + filter preferences survive reloads (item 2);
+      // fetched media and transient flags are intentionally not persisted.
+      partialize: state => ({
+        sort: state.sort,
+        filters: state.filters,
+        excludeLibrary: state.excludeLibrary,
+      }),
+    }
   )
 );
