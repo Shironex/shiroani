@@ -26,3 +26,4 @@ export {
 export * from './discord';
 export * from './events';
 export * from './genres';
+export * from './discover-filters';

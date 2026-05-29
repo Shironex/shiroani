@@ -1,4 +1,4 @@
-import { memo, useCallback } from 'react';
+import { memo, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Sparkles } from 'lucide-react';
 import { EmptyState } from '@/components/shared/EmptyState';
@@ -14,17 +14,24 @@ import { buildShowcaseMeta } from './random/random-utils';
 
 interface RandomDiscoveryPanelProps {
   libraryIds: Set<number>;
+  /** anilistIds to drop from the pool when the exclude toggle is on (item 14). */
+  excludedIds: Set<number>;
   onCardClick: (media: DiscoverMedia) => void;
   onError: () => void;
 }
 
 export const RandomDiscoveryPanel = memo(function RandomDiscoveryPanel({
   libraryIds,
+  excludedIds,
   onCardClick,
   onError,
 }: RandomDiscoveryPanelProps) {
   const { t } = useTranslation('discover');
-  const pool = useDiscoverStore(s => s.randomShuffled);
+  const shuffled = useDiscoverStore(s => s.randomShuffled);
+  const pool = useMemo(
+    () => (excludedIds.size === 0 ? shuffled : shuffled.filter(m => !excludedIds.has(m.id))),
+    [shuffled, excludedIds]
+  );
   const included = useDiscoverStore(s => s.randomIncludedGenres);
   const excluded = useDiscoverStore(s => s.randomExcludedGenres);
   const isLoading = useDiscoverStore(s => s.isRandomLoading);

@@ -8,14 +8,28 @@ import { KanjiWatermark } from '@/components/shared/KanjiWatermark';
 import { ViewHeader } from '@/components/shared/ViewHeader';
 import { DiscoverCard } from '@/components/discover/DiscoverCard';
 import { DiscoverSkeleton } from '@/components/discover/DiscoverSkeleton';
+import { DiscoverSortSelect } from '@/components/discover/DiscoverSortSelect';
+import { DiscoverFiltersPanel } from '@/components/discover/DiscoverFiltersPanel';
 import { RandomDiscoveryPanel } from '@/components/discover/RandomDiscoveryPanel';
 import { useAddDiscoverMediaToLibrary } from '@/components/discover/useAddDiscoverMediaToLibrary';
 import { AnimeInfoDialog } from '@/components/schedule/AnimeInfoDialog';
+import { Switch } from '@/components/ui/switch';
 import { useDiscoverStore, type DiscoverMedia } from '@/stores/useDiscoverStore';
 import { useLibraryStore } from '@/stores/useLibraryStore';
-import type { AiringAnime } from '@shiroani/shared';
+import type { AiringAnime, AnimeStatus } from '@shiroani/shared';
 
 type Tab = 'trending' | 'popular' | 'seasonal' | 'random';
+
+/**
+ * Library statuses that count as "already handled" for the exclude toggle
+ * (item 14): watched, dropped, planned. On-hold and currently-watching stay
+ * visible so users can still rediscover what they're mid-way through.
+ */
+const EXCLUDED_LIBRARY_STATUSES: ReadonlySet<AnimeStatus> = new Set<AnimeStatus>([
+  'completed',
+  'dropped',
+  'plan_to_watch',
+]);
 
 /** Set of anilistIds present in the user's library */
 function useLibraryAnilistIds(): Set<number> {
@@ -24,6 +38,22 @@ function useLibraryAnilistIds(): Set<number> {
     () => new Set(entries.map(e => e.anilistId).filter(Boolean) as number[]),
     [entries]
   );
+}
+
+/**
+ * anilistIds the exclude toggle should hide — entries marked watched, dropped
+ * or planned (item 14). Empty set when the toggle is off, so the filter is a
+ * no-op until opted in.
+ */
+function useExcludedLibraryIds(active: boolean): Set<number> {
+  const entries = useLibraryStore(s => s.entries);
+  return useMemo(() => {
+    if (!active) return new Set<number>();
+    const ids = entries
+      .filter(e => EXCLUDED_LIBRARY_STATUSES.has(e.status) && e.anilistId)
+      .map(e => e.anilistId as number);
+    return new Set(ids);
+  }, [active, entries]);
 }
 
 export function DiscoverView() {
@@ -53,7 +83,12 @@ export function DiscoverView() {
   const seasonalPage = useDiscoverStore(s => s.seasonalPage);
   const searchPage = useDiscoverStore(s => s.searchPage);
 
+  const sort = useDiscoverStore(s => s.sort);
+  const filters = useDiscoverStore(s => s.filters);
+  const excludeLibrary = useDiscoverStore(s => s.excludeLibrary);
+
   const libraryIds = useLibraryAnilistIds();
+  const excludedIds = useExcludedLibraryIds(excludeLibrary);
 
   const [selectedAnime, setSelectedAnime] = useState<AiringAnime | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -123,6 +158,18 @@ export function DiscoverView() {
     useDiscoverStore.getState().clearSearch();
   }, []);
 
+  const handleSortChange = useCallback((next: typeof sort) => {
+    useDiscoverStore.getState().setSort(next);
+  }, []);
+
+  const handleFiltersChange = useCallback((next: typeof filters) => {
+    useDiscoverStore.getState().setFilters(next);
+  }, []);
+
+  const handleExcludeToggle = useCallback((next: boolean) => {
+    useDiscoverStore.getState().setExcludeLibrary(next);
+  }, []);
+
   const handleRetry = useCallback(() => {
     const store = useDiscoverStore.getState();
     if (store.isSearching && store.searchQuery.trim()) {
@@ -169,7 +216,7 @@ export function DiscoverView() {
   const isSearchMode = searchQuery.trim().length > 0;
   const isRandomMode = !isSearchMode && activeTab === 'random';
 
-  const items = isSearchMode
+  const rawItems = isSearchMode
     ? searchResults
     : activeTab === 'trending'
       ? trending
@@ -178,6 +225,12 @@ export function DiscoverView() {
         : activeTab === 'seasonal'
           ? seasonal
           : [];
+
+  // Opt-in client-side exclusion of already-handled library entries (item 14).
+  const items = useMemo(
+    () => (excludedIds.size === 0 ? rawItems : rawItems.filter(m => !excludedIds.has(m.id))),
+    [rawItems, excludedIds]
+  );
 
   const page = isSearchMode
     ? searchPage
@@ -237,10 +290,48 @@ export function DiscoverView() {
 
         <div className="absolute inset-0 overflow-y-auto overflow-x-hidden">
           <div className="relative z-[1] px-7 pt-5 pb-24">
+            {/* Browse/search controls: sort (item 2), advanced filters (item 6)
+                and the library-exclude toggle (item 14). The Random tab keeps
+                its own genre picker but still honours the exclude toggle. */}
+            <div className="flex flex-col gap-3 mb-5">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                {!isRandomMode ? (
+                  <DiscoverSortSelect
+                    value={sort}
+                    onChange={handleSortChange}
+                    disabled={showLoading}
+                  />
+                ) : (
+                  <span />
+                )}
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <Switch
+                    checked={excludeLibrary}
+                    onCheckedChange={handleExcludeToggle}
+                    aria-label={t('controls.excludeLibrary')}
+                  />
+                  <span
+                    className="text-xs text-muted-foreground"
+                    title={t('controls.excludeLibraryHint')}
+                  >
+                    {t('controls.excludeLibrary')}
+                  </span>
+                </label>
+              </div>
+              {!isRandomMode && (
+                <DiscoverFiltersPanel
+                  filters={filters}
+                  disabled={showLoading}
+                  onChange={handleFiltersChange}
+                />
+              )}
+            </div>
+
             {/* Random discovery — owns its own loading/error/empty */}
             {isRandomMode && (
               <RandomDiscoveryPanel
                 libraryIds={libraryIds}
+                excludedIds={excludedIds}
                 onCardClick={handleCardClick}
                 onError={handleRetry}
               />

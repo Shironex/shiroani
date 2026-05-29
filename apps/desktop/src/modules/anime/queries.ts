@@ -20,21 +20,6 @@ const MEDIA_FIELDS_BASIC = `
   nextAiringEpisode { airingAt episode }
 `;
 
-export const SEARCH_ANIME_QUERY = `
-query SearchAnime($search: String!, $page: Int, $perPage: Int) {
-  Page(page: $page, perPage: $perPage) {
-    pageInfo { total currentPage lastPage hasNextPage }
-    media(search: $search, type: ANIME, sort: POPULARITY_DESC) {
-      ${MEDIA_FIELDS_BASIC}
-      bannerImage
-      season
-      seasonYear
-      description(asHtml: false)
-    }
-  }
-}
-`;
-
 export const ANIME_DETAILS_QUERY = `
 query AnimeDetails($id: Int!) {
   Media(id: $id, type: ANIME) {
@@ -144,17 +129,6 @@ query AiringSchedule($airingAt_greater: Int, $airingAt_lesser: Int, $page: Int, 
 }
 `;
 
-export const TRENDING_ANIME_QUERY = `
-query TrendingAnime($page: Int, $perPage: Int) {
-  Page(page: $page, perPage: $perPage) {
-    pageInfo { total currentPage lastPage hasNextPage }
-    media(type: ANIME, sort: TRENDING_DESC) {
-      ${MEDIA_FIELDS_BASIC}
-    }
-  }
-}
-`;
-
 export const RANDOM_BY_GENRE_QUERY = `
 query RandomByGenre($page: Int, $perPage: Int, $genre_in: [String], $genre_not_in: [String]) {
   Page(page: $page, perPage: $perPage) {
@@ -170,12 +144,53 @@ query RandomByGenre($page: Int, $perPage: Int, $genre_in: [String], $genre_not_i
 }
 `;
 
-export const POPULAR_THIS_SEASON_QUERY = `
-query PopularThisSeason($season: MediaSeason, $seasonYear: Int, $page: Int, $perPage: Int) {
+/**
+ * Unified browse/search query (items 2 + 6).
+ *
+ * One parameterized `media()` call drives every browse mode (trending,
+ * popular, seasonal, search) plus the advanced filters. The caller supplies a
+ * `MediaSort` array and any subset of the filter args; unused args are passed
+ * as `undefined` and AniList ignores them. Carries the richer card fields
+ * (banner/season/year/description) so filtered results render in the grid and
+ * the info dialog identically to search results.
+ */
+export const BROWSE_MEDIA_QUERY = `
+query BrowseMedia(
+  $page: Int,
+  $perPage: Int,
+  $search: String,
+  $sort: [MediaSort],
+  $season: MediaSeason,
+  $seasonYear: Int,
+  $format: MediaFormat,
+  $status: MediaStatus,
+  $genre_in: [String],
+  $genre_not_in: [String],
+  $tag_in: [String],
+  $averageScore_greater: Int,
+  $averageScore_lesser: Int
+) {
   Page(page: $page, perPage: $perPage) {
     pageInfo { total currentPage lastPage hasNextPage }
-    media(type: ANIME, season: $season, seasonYear: $seasonYear, sort: POPULARITY_DESC) {
+    media(
+      type: ANIME,
+      search: $search,
+      sort: $sort,
+      season: $season,
+      seasonYear: $seasonYear,
+      format: $format,
+      status: $status,
+      genre_in: $genre_in,
+      genre_not_in: $genre_not_in,
+      tag_in: $tag_in,
+      averageScore_greater: $averageScore_greater,
+      averageScore_lesser: $averageScore_lesser
+    ) {
       ${MEDIA_FIELDS_BASIC}
+      bannerImage
+      season
+      seasonYear
+      description(asHtml: false)
     }
   }
 }
