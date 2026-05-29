@@ -10,7 +10,9 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
+import { cn } from '@/lib/utils';
 import { useLibraryStore } from '@/stores/useLibraryStore';
+import { useDockStore } from '@/stores/useDockStore';
 import { getStatusOptions } from '@/lib/constants';
 import type { AnimeStatus } from '@shiroani/shared';
 
@@ -32,6 +34,14 @@ export function BatchActionBar() {
 
   const [showConfirm, setShowConfirm] = useState(false);
 
+  // The NavigationDock floats over content (position: fixed) and, at its default
+  // bottom-center position, sits directly on top of this full-width bar. Reserve
+  // vertical space below the bar's content so the dock clears it. Only the bottom
+  // edge collides — other edges float beside the content and need no spacing.
+  const dockOnBottom = useDockStore(s => s.edge === 'bottom');
+  // Dock pill (~60px) + its 12px viewport margin + breathing room.
+  const dockClearanceClass = dockOnBottom ? 'pb-[5.5rem]' : '';
+
   const handleStatusChange = useCallback((value: string) => {
     batchUpdateStatus(value as AnimeStatus);
     clearSelection();
@@ -46,7 +56,12 @@ export function BatchActionBar() {
     // Selection mode is on but nothing is picked yet — keep a slim hint bar so
     // the user can still exit the mode.
     return (
-      <div className="flex-shrink-0 px-7 py-2.5 border-t border-border-glass bg-background/60 flex items-center gap-2">
+      <div
+        className={cn(
+          'flex-shrink-0 px-7 py-2.5 border-t border-border-glass bg-background/60 flex items-center gap-2',
+          dockClearanceClass
+        )}
+      >
         <ListChecks className="w-4 h-4 text-muted-foreground" />
         <span className="text-xs text-muted-foreground">{t('batch.hint')}</span>
         <Button
@@ -64,7 +79,12 @@ export function BatchActionBar() {
 
   return (
     <>
-      <div className="flex-shrink-0 px-7 py-2.5 border-t border-border-glass bg-background/60 flex items-center gap-2 flex-wrap">
+      <div
+        className={cn(
+          'flex-shrink-0 px-7 py-2.5 border-t border-border-glass bg-background/60 flex items-center gap-2 flex-wrap',
+          dockClearanceClass
+        )}
+      >
         <span className="text-xs font-medium text-foreground">
           {t('batch.selectedCount', { count })}
         </span>
