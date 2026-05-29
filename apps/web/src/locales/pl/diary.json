@@ -70,7 +70,8 @@
     "footerPinned": "Przypięte",
     "footerCount": "{{count}} / {{max}} znaków",
     "placeholder": "Zacznij pisać…",
-    "defaultTitle": "Bez tytułu"
+    "defaultTitle": "Bez tytułu",
+    "limitReached": "Przekroczono limit znaków"
   },
   "toolbar": {
     "undo": "Cofnij",

@@ -70,7 +70,8 @@
     "footerPinned": "Pinned",
     "footerCount": "{{count}} / {{max}} characters",
     "placeholder": "Start writing…",
-    "defaultTitle": "Untitled"
+    "defaultTitle": "Untitled",
+    "limitReached": "Character limit reached"
   },
   "toolbar": {
     "undo": "Undo",
