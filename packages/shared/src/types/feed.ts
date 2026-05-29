@@ -97,6 +97,26 @@ export interface FeedToggleSourcePayload {
   enabled: boolean;
 }
 
+export interface FeedMarkReadPayload {
+  /** Feed item ids to flag as read. */
+  ids: number[];
+}
+
+export interface FeedGetReadIdsResult {
+  /** Ids of all feed items currently flagged as read. */
+  ids: number[];
+}
+
+export interface FeedSetLastVisitedPayload {
+  /** Epoch ms of when the user last opened the Feed view. */
+  lastVisitedAt: number;
+}
+
+export interface FeedGetLastVisitedResult {
+  /** Persisted last-visited timestamp, or `null` when never recorded. */
+  lastVisitedAt: number | null;
+}
+
 export interface FeedGetArticlePayload {
   /** The feed item's article URL to extract. */
   url: string;

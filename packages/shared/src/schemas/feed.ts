@@ -28,3 +28,12 @@ export const feedToggleSourcePayloadSchema = z.object({
 export const feedGetArticlePayloadSchema = z.object({
   url: z.string().url().max(2048),
 });
+
+export const feedMarkReadPayloadSchema = z.object({
+  // Cap the batch so a malformed client can't issue an unbounded UPDATE loop.
+  ids: z.array(z.number().int().positive()).max(5000),
+});
+
+export const feedSetLastVisitedPayloadSchema = z.object({
+  lastVisitedAt: z.number().int().nonnegative(),
+});

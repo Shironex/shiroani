@@ -83,6 +83,53 @@ export class FeedService implements OnModuleInit {
     logger.info(`Source id=${id} ${enabled ? 'enabled' : 'disabled'}`);
   }
 
+  /**
+   * Mark feed items as read. Idempotent — re-marking an already-read item is a
+   * no-op UPDATE. Unknown ids are silently ignored (the row may have been
+   * pruned), which keeps the client's fire-and-forget call simple.
+   */
+  markRead(ids: number[]): void {
+    const clean = ids.filter(id => Number.isInteger(id) && id > 0);
+    if (clean.length === 0) return;
+    const db = this.databaseService.db;
+    const update = db.prepare('UPDATE feed_items SET is_read = 1 WHERE id = ?');
+    db.transaction(() => {
+      for (const id of clean) update.run(id);
+    })();
+  }
+
+  /** Read-state rehydration: ids of every item currently flagged as read. */
+  getReadIds(): number[] {
+    const db = this.databaseService.db;
+    const rows = db.prepare('SELECT id FROM feed_items WHERE is_read = 1').all() as {
+      id: number;
+    }[];
+    return rows.map(r => r.id);
+  }
+
+  /** Key under which the newtab greeting's last-visited stamp lives in feed_meta. */
+  private static readonly LAST_VISITED_KEY = 'last_visited_at';
+
+  /** Persist the "last visited the feed" timestamp (newtab unread baseline). */
+  setLastVisited(lastVisitedAt: number): void {
+    const db = this.databaseService.db;
+    db.prepare(
+      `INSERT INTO feed_meta (key, value) VALUES (?, ?)
+       ON CONFLICT(key) DO UPDATE SET value = excluded.value`
+    ).run(FeedService.LAST_VISITED_KEY, String(lastVisitedAt));
+  }
+
+  /** Read the persisted last-visited timestamp, or null when never recorded. */
+  getLastVisited(): number | null {
+    const db = this.databaseService.db;
+    const row = db
+      .prepare('SELECT value FROM feed_meta WHERE key = ?')
+      .get(FeedService.LAST_VISITED_KEY) as { value: string } | undefined;
+    if (!row) return null;
+    const parsed = Number(row.value);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+
   /** Get feed items with filtering and pagination. */
   getItems(payload: FeedGetItemsPayload): FeedGetItemsResult {
     const db = this.databaseService.db;

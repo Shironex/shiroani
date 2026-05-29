@@ -13,6 +13,8 @@ export {
   feedGetItemsPayloadSchema,
   feedToggleSourcePayloadSchema,
   feedGetArticlePayloadSchema,
+  feedMarkReadPayloadSchema,
+  feedSetLastVisitedPayloadSchema,
 } from './feed';
 export * from './import-export';
 export * from './schedule';

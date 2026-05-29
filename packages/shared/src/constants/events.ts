@@ -90,6 +90,14 @@ export const FeedEvents = {
   REFRESH: 'feed:refresh',
   /** On-demand full-article extraction for teaser-only feeds. */
   GET_ARTICLE: 'feed:get-article',
+  /** Mark one or more feed items as read (durable in the feed DB). */
+  MARK_READ: 'feed:mark-read',
+  /** Fetch the ids of all feed items marked read, to rehydrate the client on startup. */
+  GET_READ_IDS: 'feed:get-read-ids',
+  /** Persist the newtab greeting's "last visited the feed" timestamp (durable). */
+  SET_LAST_VISITED: 'feed:set-last-visited',
+  /** Read the persisted "last visited the feed" timestamp on startup. */
+  GET_LAST_VISITED: 'feed:get-last-visited',
 
   // Server -> Client (broadcasts)
   SOURCES_RESULT: 'feed:sources-result',

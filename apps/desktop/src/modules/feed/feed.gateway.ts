@@ -12,6 +12,8 @@ import {
   feedGetItemsPayloadSchema,
   feedToggleSourcePayloadSchema,
   feedGetArticlePayloadSchema,
+  feedMarkReadPayloadSchema,
+  feedSetLastVisitedPayloadSchema,
 } from '@shiroani/shared';
 import { CORS_CONFIG } from '../kernel/cors.config';
 import { WsThrottlerGuard } from '../kernel/ws-throttler.guard';
@@ -84,6 +86,60 @@ export class FeedGateway {
       payload,
       handler: async parsed => {
         return this.feedService.getArticleContent(parsed.url);
+      },
+    });
+  }
+
+  @SubscribeMessage(FeedEvents.MARK_READ)
+  handleMarkRead(@MessageBody() payload: unknown) {
+    return handleGatewayRequest({
+      logger,
+      action: FeedEvents.MARK_READ,
+      defaultResult: { ok: false },
+      schema: feedMarkReadPayloadSchema,
+      payload,
+      handler: async parsed => {
+        this.feedService.markRead(parsed.ids);
+        return { ok: true };
+      },
+    });
+  }
+
+  @SubscribeMessage(FeedEvents.GET_READ_IDS)
+  handleGetReadIds() {
+    return handleGatewayRequest({
+      logger,
+      action: FeedEvents.GET_READ_IDS,
+      defaultResult: { ids: [] },
+      handler: async () => {
+        return { ids: this.feedService.getReadIds() };
+      },
+    });
+  }
+
+  @SubscribeMessage(FeedEvents.SET_LAST_VISITED)
+  handleSetLastVisited(@MessageBody() payload: unknown) {
+    return handleGatewayRequest({
+      logger,
+      action: FeedEvents.SET_LAST_VISITED,
+      defaultResult: { ok: false },
+      schema: feedSetLastVisitedPayloadSchema,
+      payload,
+      handler: async parsed => {
+        this.feedService.setLastVisited(parsed.lastVisitedAt);
+        return { ok: true };
+      },
+    });
+  }
+
+  @SubscribeMessage(FeedEvents.GET_LAST_VISITED)
+  handleGetLastVisited() {
+    return handleGatewayRequest({
+      logger,
+      action: FeedEvents.GET_LAST_VISITED,
+      defaultResult: { lastVisitedAt: null },
+      handler: async () => {
+        return { lastVisitedAt: this.feedService.getLastVisited() };
       },
     });
   }
