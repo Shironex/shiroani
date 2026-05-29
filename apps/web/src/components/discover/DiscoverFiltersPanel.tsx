@@ -279,6 +279,7 @@ export const DiscoverFiltersPanel = memo(function DiscoverFiltersPanel({
                 }
               }}
               disabled={disabled}
+              maxLength={50}
               placeholder={t('controls.tagsPlaceholder')}
               className="w-full rounded-md border border-border-glass bg-foreground/[0.04] px-2.5 py-1.5 text-xs text-foreground placeholder:text-muted-foreground/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
             />
