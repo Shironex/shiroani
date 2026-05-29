@@ -26,9 +26,16 @@ function scaleToPreview(real: number, min: number, max: number): number {
 }
 
 /**
- * CSS `object-fit` value matching the native overlay's scale mode. `stretch`
- * has no direct CSS equivalent; `fill` is the closest match (fills the box,
- * ignores aspect ratio).
+ * Map a sprite scale mode to the CSS `object-fit` that reproduces the native
+ * Win32 overlay's behaviour, so the macOS preview (where the desktop overlay
+ * doesn't exist) and the Windows overlay scale a sprite identically.
+ *
+ * The overlay always composites into a square surface (see `RebuildScaledImage`
+ * in desktop_overlay.cpp), and the preview box is likewise square — so the
+ * mapping is exact on both axes:
+ *   - contain → letterbox, aspect preserved        (CSS `contain`)
+ *   - cover   → crop-to-fill, aspect preserved      (CSS `cover`)
+ *   - stretch → fit-to-square, aspect ignored       (CSS `fill`)
  */
 function objectFitFor(mode: MascotSpriteScaleMode): 'contain' | 'cover' | 'fill' {
   if (mode === 'cover') return 'cover';
