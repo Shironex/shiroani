@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Flame,
@@ -9,7 +9,9 @@ import {
   Building2,
   RotateCw,
 } from 'lucide-react';
+import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { createLocalStorageAccessor } from '@/lib/persisted-storage';
 import { StatCell } from '@/components/shared/StatCell';
 import { ProgressBar } from '@/components/shared/ProgressBar';
 import { PillTag } from '@/components/ui/pill-tag';
@@ -135,6 +137,31 @@ function computeStats(entries: DiaryEntry[]): DiaryStats {
   };
 }
 
+// Streak lengths that earn a one-time celebration (toast + badge). A subset of
+// the progress-bar milestones below — the early, achievable ones worth a payoff.
+const CELEBRATION_MILESTONES = [7, 14, 30] as const;
+
+const CELEBRATED_MILESTONES_STORAGE_KEY = 'shiroani:diaryCelebratedStreaks';
+
+// Persist which milestones already fired so the toast doesn't re-trigger on
+// every mount (or for a user who's already long past a milestone).
+const celebratedMilestonesStorage = createLocalStorageAccessor<Set<number>>(
+  CELEBRATED_MILESTONES_STORAGE_KEY,
+  {
+    parse: raw => {
+      const parsed: unknown = JSON.parse(raw);
+      if (!Array.isArray(parsed)) return new Set();
+      const out = new Set<number>();
+      for (const v of parsed) {
+        if (typeof v === 'number' && Number.isFinite(v)) out.add(v);
+      }
+      return out;
+    },
+    serialize: ids => JSON.stringify(Array.from(ids)),
+    fallback: new Set(),
+  }
+);
+
 const STREAK_MILESTONES = [7, 14, 30, 60, 90, 180, 365];
 function nextStreakMilestone(streak: number): { target: number; progress: number } {
   const target =
@@ -155,6 +182,34 @@ export function DiarySidebar({ entries }: DiarySidebarProps) {
   const { t } = useTranslation('diary');
   const stats = useMemo(() => computeStats(entries), [entries]);
   const milestone = nextStreakMilestone(stats.currentStreak);
+
+  // Fire a one-time celebration when the streak first reaches 7 / 14 / 30 days.
+  // On the very first evaluation we silently seed already-passed milestones so a
+  // returning long-streak user isn't spammed; only milestones crossed live
+  // afterwards toast.
+  const celebrationSeeded = useRef(false);
+  const celebratedRef = useRef<Set<number>>(celebratedMilestonesStorage.get());
+  useEffect(() => {
+    const streak = stats.currentStreak;
+    const celebrated = celebratedRef.current;
+    const reached = CELEBRATION_MILESTONES.filter(m => streak >= m && !celebrated.has(m));
+    if (reached.length === 0) return;
+
+    for (const m of reached) celebrated.add(m);
+    celebratedMilestonesStorage.set(celebrated);
+
+    if (!celebrationSeeded.current) {
+      // First pass after mount — just record the baseline, don't toast.
+      celebrationSeeded.current = true;
+      return;
+    }
+
+    const top = reached[reached.length - 1]!;
+    toast.success(t('sidebar.celebration.title', { count: top }), {
+      description: t('sidebar.celebration.description'),
+      icon: '🔥',
+    });
+  }, [stats.currentStreak, t]);
 
   // Prime the AniList-detail cache so the genre/studio breakdowns can populate.
   // Walks diary entries → library entries → anilistIds once, fires parallel
@@ -210,6 +265,9 @@ export function DiarySidebar({ entries }: DiarySidebarProps) {
         current={stats.currentStreak}
         longest={stats.longestStreak}
         milestone={milestone}
+        achievedMilestone={[...CELEBRATION_MILESTONES]
+          .reverse()
+          .find(m => stats.currentStreak >= m)}
       />
 
       <SidebarSection>
@@ -293,9 +351,11 @@ interface StreakCardProps {
   current: number;
   longest: number;
   milestone: { target: number; progress: number };
+  /** Highest celebration milestone (7/14/30) the current streak has reached. */
+  achievedMilestone?: number;
 }
 
-function StreakCard({ current, longest, milestone }: StreakCardProps) {
+function StreakCard({ current, longest, milestone, achievedMilestone }: StreakCardProps) {
   const { t } = useTranslation('diary');
   const dotsCount = Math.min(current, 23);
   const dots = Array.from({ length: 23 }, (_, i) => i < dotsCount);
@@ -323,6 +383,16 @@ function StreakCard({ current, longest, milestone }: StreakCardProps) {
       <div className="mb-1.5 flex items-center gap-2 font-mono text-[10px] font-semibold uppercase tracking-[0.2em] text-[oklch(0.8_0.14_70)]">
         <Flame className="w-3.5 h-3.5" aria-hidden="true" />
         {t('sidebar.currentStreak')}
+        {achievedMilestone != null && (
+          <span
+            className={cn(
+              'ml-auto rounded-full border border-[oklch(0.8_0.14_70/0.45)] bg-[oklch(0.8_0.14_70/0.15)]',
+              'px-2 py-[2px] text-[9px] tracking-[0.12em] text-[oklch(0.8_0.14_70)]'
+            )}
+          >
+            {t('sidebar.celebration.badge', { count: achievedMilestone })}
+          </span>
+        )}
       </div>
       <div className="flex items-baseline gap-2 font-serif text-[38px] font-extrabold leading-none text-[oklch(0.8_0.14_70)]">
         {current}

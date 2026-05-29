@@ -158,6 +158,17 @@
     "breakdownRetry_one": "Nie udało się wczytać metadanych {{count}} anime — spróbuj ponownie",
     "breakdownRetry_few": "Nie udało się wczytać metadanych {{count}} anime — spróbuj ponownie",
     "breakdownRetry_many": "Nie udało się wczytać metadanych {{count}} anime — spróbuj ponownie",
-    "breakdownRetry_other": "Nie udało się wczytać metadanych {{count}} anime — spróbuj ponownie"
+    "breakdownRetry_other": "Nie udało się wczytać metadanych {{count}} anime — spróbuj ponownie",
+    "celebration": {
+      "title_one": "Passa {{count}} dnia! 🔥",
+      "title_few": "Passa {{count}} dni! 🔥",
+      "title_many": "Passa {{count}} dni! 🔥",
+      "title_other": "Passa {{count}} dni! 🔥",
+      "description": "Świetna robota — pisz dalej, aby utrzymać passę.",
+      "badge_one": "{{count}} dzień",
+      "badge_few": "{{count}} dni",
+      "badge_many": "{{count}} dni",
+      "badge_other": "{{count}} dni"
+    }
   }
 }
