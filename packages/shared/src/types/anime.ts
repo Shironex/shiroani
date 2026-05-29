@@ -322,6 +322,21 @@ export interface FrequentSite {
   lastVisited: number;
 }
 
+/**
+ * A single chronological browsing-history entry. Distinct from `FrequentSite`,
+ * which aggregates visits by URL — history preserves every visit in order so
+ * the user can scan, search and selectively delete what they've seen.
+ */
+export interface BrowserHistoryEntry {
+  /** Stable id so the UI can delete a single entry. */
+  id: string;
+  url: string;
+  title: string;
+  favicon?: string;
+  /** Epoch millis of the visit. */
+  visitedAt: number;
+}
+
 // ============================================
 // User Profile Types
 // ============================================

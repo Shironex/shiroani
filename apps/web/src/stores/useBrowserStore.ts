@@ -1,30 +1,52 @@
 import { create } from 'zustand';
 import { maybeDevtools } from '@/stores/utils/maybeDevtools';
 import { arrayMove } from '@dnd-kit/sortable';
-import type { BrowserLeafNode, BrowserNode, BrowserSplitNode, BrowserTab } from '@shiroani/shared';
-import { createLogger, NEW_TAB_URL, ADBLOCK_WHITELIST_MAX_ENTRIES } from '@shiroani/shared';
+import type {
+  BrowserHistoryEntry,
+  BrowserLeafNode,
+  BrowserNode,
+  BrowserSplitNode,
+  BrowserTab,
+} from '@shiroani/shared';
+import {
+  createLogger,
+  NEW_TAB_URL,
+  ADBLOCK_WHITELIST_MAX_ENTRIES,
+  isNewTabUrl,
+} from '@shiroani/shared';
 import { getWebview, unregisterWebview } from '@/components/browser/webviewRefs';
 import { normalizeUrl, normalizeWhitelistHost } from '@/lib/url-utils';
-import { electronStoreGet, electronStoreSet, electronStoreDelete } from '@/lib/electron-store';
+import {
+  electronStoreGet,
+  electronStoreSet,
+  electronStoreDelete,
+  createDebouncedPersist,
+} from '@/lib/electron-store';
 import { updateAnimePresenceDebounced } from '@/lib/anime-detection';
 import {
   applySplitRatio,
   collectLeaves,
+  deserializeNode,
   findLeaf,
   findLeafById,
   findParentSplit,
   findTabContainingPane,
   firstLeaf,
   replaceNode,
+  serializeNode,
   updateLeaf,
 } from '@/stores/browser/browserTree';
 import {
+  BROWSER_HISTORY_KEY,
+  BROWSER_HISTORY_MAX_ENTRIES,
   BROWSER_SETTINGS_KEY,
   BROWSER_TABS_KEY,
+  migratePersistedHistory,
   migratePersistedTabs,
   PERSIST_DEBOUNCE_MS,
   persistBrowserSettings,
   type RawBrowserSettings,
+  type SerializedBrowserNode,
 } from '@/stores/browser/browserPersistence';
 
 // Re-exported so existing consumers can keep importing the pure tree lookup
@@ -51,6 +73,8 @@ interface BrowserState {
   /** Whether dragging a tab onto another opens them side by side. */
   splitTabsEnabled: boolean;
   isFullScreen: boolean;
+  /** Chronological browsing history, newest first. Capped + persisted. */
+  history: BrowserHistoryEntry[];
 }
 
 interface BrowserActions {
@@ -83,12 +107,20 @@ interface BrowserActions {
   closeFocusedPane: () => void;
   persistTabs: () => void;
   restoreTabs: () => Promise<void>;
+  // ── History ───────────────────────────────────────────────────
+  recordHistory: (url: string, title: string, favicon?: string) => void;
+  removeHistoryEntry: (id: string) => void;
+  clearHistory: () => void;
 }
 
 type BrowserStore = BrowserState & BrowserActions;
 
 // Debounce timer for tab persistence
 let persistTimer: ReturnType<typeof setTimeout> | null = null;
+
+// Debounced writer for the history slice — coalesces rapid visits into a single
+// disk write, mirroring the quick-access store's frequent-sites persistence.
+const persistHistoryDebounced = createDebouncedPersist(BROWSER_HISTORY_KEY);
 
 export const useBrowserStore = create<BrowserStore>()(
   maybeDevtools(
@@ -104,6 +136,7 @@ export const useBrowserStore = create<BrowserStore>()(
       restoreTabsOnStartup: true,
       splitTabsEnabled: true,
       isFullScreen: false,
+      history: [],
 
       // ── Tab CRUD (all local now) ────────────────────────────────
 
@@ -174,6 +207,8 @@ export const useBrowserStore = create<BrowserStore>()(
 
         const paneId = firstLeaf(tab).id;
         set({ activeTabId: tabId, activePaneId: paneId }, undefined, 'browser/switchTab');
+        // Persist so the restored session reopens on the tab the user left on.
+        get().persistTabs();
         // Re-evaluate anime detection on the newly-focused pane. Without this,
         // switching from an anime tab to a non-anime tab whose URL/title
         // doesn't change leaves `setWatchingAnime(true)` stuck and
@@ -333,6 +368,9 @@ export const useBrowserStore = create<BrowserStore>()(
           const next = tabs.slice();
           next[i] = result.node;
           set({ tabs: next }, undefined, 'browser/setSplitRatio');
+          // Persist the new ratio so resized panes survive a restart. The
+          // 1s debounce coalesces the splitter drag's rapid-fire updates.
+          get().persistTabs();
           return;
         }
       },
@@ -342,6 +380,8 @@ export const useBrowserStore = create<BrowserStore>()(
         const tab = findTabContainingPane(tabs, paneId);
         if (!tab) return;
         set({ activeTabId: tab.id, activePaneId: paneId }, undefined, 'browser/focusPane');
+        // Persist so the focused pane is restored as active across a restart.
+        get().persistTabs();
         updateAnimePresenceDebounced(paneId);
       },
 
@@ -513,39 +553,23 @@ export const useBrowserStore = create<BrowserStore>()(
         if (persistTimer) clearTimeout(persistTimer);
         persistTimer = setTimeout(() => {
           const { tabs, activePaneId } = get();
-          // Splits flatten to two adjacent leaves on disk: across a restart,
-          // the user sees two regular tabs side-by-side in the strip rather
-          // than a re-hydrated split. Session state (the split structure)
-          // is intentionally not preserved.
-          const flat: Array<{ url: string; title: string; isActive: boolean }> = [];
+          // Persist the full split-pane structure (orientation, ratio, which
+          // panes, active pane) so multi-pane layouts survive a restart rather
+          // than flattening to adjacent tabs. Top-level blank/new-tab nodes are
+          // dropped; blanks inside a split are kept so the split isn't broken.
+          const serialized: SerializedBrowserNode[] = [];
           for (const tab of tabs) {
-            const leaves = collectLeaves(tab).filter(l => l.url && l.url !== 'about:blank');
-            for (const leaf of leaves) {
-              flat.push({
-                url: leaf.url,
-                title: leaf.title,
-                isActive: leaf.id === activePaneId,
-              });
-            }
+            const node = serializeNode(tab, activePaneId);
+            if (node) serialized.push(node);
           }
 
-          if (flat.length === 0) {
+          if (serialized.length === 0) {
             electronStoreDelete(BROWSER_TABS_KEY);
             return;
           }
 
-          const activeIndex = Math.max(
-            0,
-            flat.findIndex(t => t.isActive)
-          );
-
-          const state = {
-            tabs: flat.map(({ url, title }) => ({ url, title })),
-            activeIndex,
-          };
-
-          electronStoreSet(BROWSER_TABS_KEY, state);
-          logger.debug(`Persisted ${flat.length} tab(s)`);
+          electronStoreSet(BROWSER_TABS_KEY, { tabs: serialized });
+          logger.debug(`Persisted ${serialized.length} top-level tab(s)`);
         }, PERSIST_DEBOUNCE_MS);
       },
 
@@ -598,6 +622,13 @@ export const useBrowserStore = create<BrowserStore>()(
           }
         }
 
+        // Restore browsing history (independent of the tab-restore toggle).
+        const savedHistory = await electronStoreGet<unknown>(BROWSER_HISTORY_KEY);
+        const history = migratePersistedHistory(savedHistory);
+        if (history.length > 0) {
+          set({ history }, undefined, 'browser/restoreHistory');
+        }
+
         // Restore tabs (unless the user disabled session restore)
         if (!get().restoreTabsOnStartup) return;
 
@@ -605,31 +636,79 @@ export const useBrowserStore = create<BrowserStore>()(
         const migrated = migratePersistedTabs(saved);
 
         if (migrated && migrated.tabs.length > 0) {
-          const restoredTabs: BrowserNode[] = migrated.tabs.map(t => ({
-            kind: 'leaf',
-            id: crypto.randomUUID(),
-            url: t.url,
-            title: t.title || 'Nowa karta',
-            isLoading: t.url !== NEW_TAB_URL, // New tab pages don't load
-            canGoBack: false,
-            canGoForward: false,
-          }));
+          const focus = { activePaneId: null as string | null };
+          const restoredTabs: BrowserNode[] = migrated.tabs.map(node =>
+            deserializeNode(node, focus)
+          );
 
-          const activeIndex = Math.min(migrated.activeIndex, restoredTabs.length - 1);
-          const activeNode = restoredTabs[Math.max(0, activeIndex)];
+          // Fall back to the first tab's first leaf when no leaf was flagged
+          // active (e.g. a corrupt or pre-active-flag payload).
+          const activeNode = restoredTabs[0] ?? null;
+          const fallbackPaneId = activeNode ? firstLeaf(activeNode).id : null;
+          const activePaneId = focus.activePaneId ?? fallbackPaneId;
+          const activeTab = activePaneId
+            ? findTabContainingPane(restoredTabs, activePaneId)
+            : activeNode;
 
           set(
             {
               tabs: restoredTabs,
-              activeTabId: activeNode?.id ?? null,
-              activePaneId: activeNode ? firstLeaf(activeNode).id : null,
+              activeTabId: activeTab?.id ?? null,
+              activePaneId,
             },
             undefined,
             'browser/restoreTabs'
           );
 
-          logger.debug(`Restored ${restoredTabs.length} tab(s)`);
+          logger.debug(`Restored ${restoredTabs.length} top-level tab(s)`);
         }
+      },
+
+      // ── History ───────────────────────────────────────────────
+
+      recordHistory: (url: string, title: string, favicon?: string) => {
+        // Skip internal surfaces — they aren't navigable destinations.
+        if (isNewTabUrl(url) || url === 'about:blank' || !url) return;
+
+        set(
+          state => {
+            const entry: BrowserHistoryEntry = {
+              id: crypto.randomUUID(),
+              url,
+              title: title || url,
+              favicon,
+              visitedAt: Date.now(),
+            };
+            // Collapse consecutive duplicate visits (same URL as the newest
+            // entry) into a single refreshed entry rather than stacking them.
+            const head = state.history[0];
+            const rest = head && head.url === url ? state.history.slice(1) : state.history;
+            const next = [entry, ...rest].slice(0, BROWSER_HISTORY_MAX_ENTRIES);
+            return { history: next };
+          },
+          undefined,
+          'browser/recordHistory'
+        );
+        persistHistoryDebounced(get().history);
+      },
+
+      removeHistoryEntry: (id: string) => {
+        set(
+          state => ({ history: state.history.filter(h => h.id !== id) }),
+          undefined,
+          'browser/removeHistoryEntry'
+        );
+        const { history } = get();
+        if (history.length === 0) {
+          electronStoreDelete(BROWSER_HISTORY_KEY);
+        } else {
+          persistHistoryDebounced(history);
+        }
+      },
+
+      clearHistory: () => {
+        set({ history: [] }, undefined, 'browser/clearHistory');
+        electronStoreDelete(BROWSER_HISTORY_KEY);
       },
     }),
     { name: 'browser' }
