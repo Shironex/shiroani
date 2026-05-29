@@ -1,4 +1,4 @@
-import { memo, useCallback, useMemo, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import * as SliderPrimitive from '@radix-ui/react-slider';
 import { SlidersHorizontal, X } from 'lucide-react';
@@ -90,10 +90,26 @@ export const DiscoverFiltersPanel = memo(function DiscoverFiltersPanel({
     [patch]
   );
 
-  const scoreMin = filters.scoreMin ?? DISCOVER_SCORE_MIN;
-  const scoreMax = filters.scoreMax ?? DISCOVER_SCORE_MAX;
+  // Local slider state keeps dragging responsive without firing a network
+  // request (and burning AniList rate limit) on every pixel of movement —
+  // the store only updates on release (onValueCommit).
+  const [localScore, setLocalScore] = useState<[number, number]>([
+    filters.scoreMin ?? DISCOVER_SCORE_MIN,
+    filters.scoreMax ?? DISCOVER_SCORE_MAX,
+  ]);
 
-  const handleScore = useCallback(
+  useEffect(() => {
+    setLocalScore([
+      filters.scoreMin ?? DISCOVER_SCORE_MIN,
+      filters.scoreMax ?? DISCOVER_SCORE_MAX,
+    ]);
+  }, [filters.scoreMin, filters.scoreMax]);
+
+  const handleScoreChange = useCallback((val: number[]) => {
+    setLocalScore(val as [number, number]);
+  }, []);
+
+  const handleScoreCommit = useCallback(
     ([min, max]: number[]) =>
       patch({
         scoreMin: min > DISCOVER_SCORE_MIN ? min : undefined,
@@ -212,7 +228,7 @@ export const DiscoverFiltersPanel = memo(function DiscoverFiltersPanel({
                 {t('controls.scoreLabel')}
               </span>
               <span className="text-2xs text-foreground/80 tabular-nums">
-                {t('controls.scoreRange', { min: scoreMin, max: scoreMax })}
+                {t('controls.scoreRange', { min: localScore[0], max: localScore[1] })}
               </span>
             </div>
             <SliderPrimitive.Root
@@ -220,8 +236,9 @@ export const DiscoverFiltersPanel = memo(function DiscoverFiltersPanel({
               min={DISCOVER_SCORE_MIN}
               max={DISCOVER_SCORE_MAX}
               step={5}
-              value={[scoreMin, scoreMax]}
-              onValueChange={handleScore}
+              value={localScore}
+              onValueChange={handleScoreChange}
+              onValueCommit={handleScoreCommit}
               disabled={disabled}
               aria-label={t('controls.scoreLabel')}
             >
