@@ -75,7 +75,9 @@ export function AnimeDetailModal({ entry, open, onOpenChange }: AnimeDetailModal
       anilistId: parsedAnilistId && !isNaN(parsedAnilistId) ? parsedAnilistId : null,
       status,
       currentEpisode,
-      score: score > 0 ? score : undefined,
+      // Send score directly (incl. 0) so clearing a rating persists — buildUpdate
+      // skips `undefined`, which would otherwise leave the old score in the DB.
+      score,
       notes: notes.trim() || undefined,
       resumeUrl: resumeUrl.trim() || undefined,
     });
