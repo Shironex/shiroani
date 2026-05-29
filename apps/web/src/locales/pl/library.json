@@ -86,5 +86,45 @@
     "title": "Usuń z biblioteki",
     "description": "Czy na pewno chcesz usunąć to anime z biblioteki?",
     "descriptionWithTitle": "Czy na pewno chcesz usunąć \"{{title}}\" z biblioteki?"
+  },
+  "batch": {
+    "toggleSelect": "Tryb zaznaczania",
+    "selectAll": "Zaznacz wszystkie",
+    "hint": "Zaznacz pozycje, aby wykonać operację zbiorczą",
+    "exit": "Zakończ",
+    "selectedCount_one": "Zaznaczono {{count}} pozycję",
+    "selectedCount_few": "Zaznaczono {{count}} pozycje",
+    "selectedCount_many": "Zaznaczono {{count}} pozycji",
+    "selectedCount_other": "Zaznaczono {{count}} pozycji",
+    "setStatus": "Zmień status",
+    "setScore": "Ustaw ocenę",
+    "clearScore": "Wyczyść ocenę",
+    "delete": "Usuń",
+    "confirmDeleteTitle": "Usuń zaznaczone",
+    "confirmDeleteDescription_one": "Czy na pewno chcesz usunąć {{count}} pozycję z biblioteki?",
+    "confirmDeleteDescription_few": "Czy na pewno chcesz usunąć {{count}} pozycje z biblioteki?",
+    "confirmDeleteDescription_many": "Czy na pewno chcesz usunąć {{count}} pozycji z biblioteki?",
+    "confirmDeleteDescription_other": "Czy na pewno chcesz usunąć {{count}} pozycji z biblioteki?"
+  },
+  "relations": {
+    "title": "Powiązane",
+    "empty": "Brak powiązanych pozycji",
+    "openInLibrary": "Otwórz w bibliotece",
+    "notInLibrary": "Brak w bibliotece",
+    "type": {
+      "PREQUEL": "Prequel",
+      "SEQUEL": "Sequel",
+      "SIDE_STORY": "Historia poboczna",
+      "PARENT": "Główna seria",
+      "SUMMARY": "Podsumowanie",
+      "ALTERNATIVE": "Wersja alternatywna",
+      "SPIN_OFF": "Spin-off",
+      "CHARACTER": "Wspólni bohaterowie",
+      "ADAPTATION": "Adaptacja",
+      "OTHER": "Inne",
+      "SOURCE": "Materiał źródłowy",
+      "COMPILATION": "Kompilacja",
+      "CONTAINS": "Zawiera"
+    }
   }
 }

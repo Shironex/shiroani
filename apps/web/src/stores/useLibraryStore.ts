@@ -22,6 +22,21 @@ import { emitWithErrorHandling } from '@/lib/socket';
 const logger = createLogger('LibraryStore');
 
 /**
+ * Merge a {@link LibraryUpdatePayload} onto an existing entry, normalizing the
+ * nullable `anilistId` to `undefined` for {@link AnimeEntry} compatibility.
+ * Shared by both the single-entry `updateEntry` and the batch mutations so the
+ * optimistic patch semantics stay identical.
+ */
+function applyLibraryUpdate(existing: AnimeEntry, payload: LibraryUpdatePayload): AnimeEntry {
+  const { anilistId, ...rest } = payload;
+  return {
+    ...existing,
+    ...rest,
+    ...(anilistId !== undefined ? { anilistId: anilistId ?? undefined } : {}),
+  };
+}
+
+/**
  * Library store state
  */
 interface LibraryState extends SocketStoreSlice {
@@ -33,6 +48,10 @@ interface LibraryState extends SocketStoreSlice {
   sortOrder: 'asc' | 'desc';
   selectedEntry: AnimeEntry | null;
   isDetailOpen: boolean;
+  /** Whether multi-select mode is active (shows checkboxes + batch action bar). */
+  selectionMode: boolean;
+  /** Ids of entries currently selected for a batch operation. */
+  selectedIds: Set<number>;
 }
 
 /**
@@ -54,6 +73,21 @@ interface LibraryActions {
   selectEntry: (entry: AnimeEntry | null) => void;
   openDetail: (entry: AnimeEntry) => void;
   closeDetail: () => void;
+  // --- Bulk selection ---
+  /** Enter/exit multi-select mode. Exiting clears the current selection. */
+  setSelectionMode: (active: boolean) => void;
+  /** Toggle a single entry's membership in the selection (also enters selection mode). */
+  toggleSelected: (id: number) => void;
+  /** Replace the selection with the given ids (e.g. "select all visible"). */
+  setSelected: (ids: number[]) => void;
+  /** Clear the current selection without leaving selection mode. */
+  clearSelection: () => void;
+  /** Optimistically change status for every selected entry. */
+  batchUpdateStatus: (status: AnimeStatus) => void;
+  /** Optimistically set/clear score for every selected entry (0 clears). */
+  batchUpdateScore: (score: number) => void;
+  /** Optimistically remove every selected entry. */
+  batchRemove: () => void;
   initListeners: () => void;
   cleanupListeners: () => void;
 }
@@ -79,7 +113,17 @@ export const useLibraryStore = create<LibraryStore>()(
         onUpdated: (state, entry) => ({
           entries: state.entries.map(e => (e.id === entry.id ? entry : e)),
         }),
-        onRemoved: (state, id) => ({ entries: state.entries.filter(e => e.id !== id) }),
+        onRemoved: (state, id) => {
+          if (!state.selectedIds.has(id)) {
+            return { entries: state.entries.filter(e => e.id !== id) };
+          }
+          const nextSelected = new Set(state.selectedIds);
+          nextSelected.delete(id);
+          return {
+            entries: state.entries.filter(e => e.id !== id),
+            selectedIds: nextSelected,
+          };
+        },
       });
 
       const { initListeners, cleanupListeners } = createSocketListeners<LibraryStore>(
@@ -110,6 +154,8 @@ export const useLibraryStore = create<LibraryStore>()(
         sortOrder: 'desc',
         selectedEntry: null,
         isDetailOpen: false,
+        selectionMode: false,
+        selectedIds: new Set<number>(),
 
         // Socket actions
         ...socketActions,
@@ -141,15 +187,7 @@ export const useLibraryStore = create<LibraryStore>()(
             event: LibraryEvents.UPDATE,
             payload,
             id: payload.id,
-            applyUpdate: (existing, p) => {
-              // Normalize null anilistId to undefined for AnimeEntry compat
-              const { anilistId, ...rest } = p;
-              return {
-                ...existing,
-                ...rest,
-                ...(anilistId !== undefined ? { anilistId: anilistId ?? undefined } : {}),
-              };
-            },
+            applyUpdate: applyLibraryUpdate,
           });
         },
 
@@ -190,6 +228,90 @@ export const useLibraryStore = create<LibraryStore>()(
 
         closeDetail: () => {
           set({ isDetailOpen: false, selectedEntry: null }, undefined, 'library/closeDetail');
+        },
+
+        setSelectionMode: (active: boolean) => {
+          set(
+            active
+              ? { selectionMode: true }
+              : { selectionMode: false, selectedIds: new Set<number>() },
+            undefined,
+            'library/setSelectionMode'
+          );
+        },
+
+        toggleSelected: (id: number) => {
+          set(
+            state => {
+              const next = new Set(state.selectedIds);
+              if (next.has(id)) next.delete(id);
+              else next.add(id);
+              return { selectedIds: next, selectionMode: true };
+            },
+            undefined,
+            'library/toggleSelected'
+          );
+        },
+
+        setSelected: (ids: number[]) => {
+          set({ selectedIds: new Set(ids) }, undefined, 'library/setSelected');
+        },
+
+        clearSelection: () => {
+          set({ selectedIds: new Set<number>() }, undefined, 'library/clearSelection');
+        },
+
+        batchUpdateStatus: (status: AnimeStatus) => {
+          const ids = [...get().selectedIds];
+          for (const id of ids) {
+            crud.optimisticUpdate({
+              event: LibraryEvents.UPDATE,
+              payload: { id, status },
+              id,
+              applyUpdate: applyLibraryUpdate,
+              label: 'batchUpdateStatus',
+            });
+          }
+        },
+
+        batchUpdateScore: (score: number) => {
+          const ids = [...get().selectedIds];
+          // Persist the chosen score directly. A `clear` selection arrives as 0,
+          // which we send through as 0 rather than `undefined`: the schema is
+          // non-nullable (`score: number().min(0)`), and `buildUpdate` skips
+          // `undefined` fields entirely — so emitting `undefined` would leave the
+          // old score untouched in SQLite while the UI optimistically shows it
+          // cleared (a silent desync). All score UI gates on `score > 0`, so a
+          // stored 0 renders as "no score".
+          for (const id of ids) {
+            crud.optimisticUpdate({
+              event: LibraryEvents.UPDATE,
+              payload: { id, score },
+              id,
+              applyUpdate: applyLibraryUpdate,
+              label: 'batchUpdateScore',
+            });
+          }
+        },
+
+        batchRemove: () => {
+          const ids = [...get().selectedIds];
+          for (const id of ids) {
+            crud.optimisticRemove({
+              event: LibraryEvents.REMOVE,
+              id,
+              extra: state =>
+                state.selectedEntry?.id === id
+                  ? { isDetailOpen: false, selectedEntry: null }
+                  : {},
+              label: 'batchRemove',
+            });
+          }
+          set(
+            { selectedIds: new Set<number>(), selectionMode: false },
+            undefined,
+            'library/batchRemoveClear'
+          );
         },
 
         initListeners,

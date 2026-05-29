@@ -9,6 +9,8 @@ import {
   Upload,
   ArrowUpDown,
   Dices,
+  ListChecks,
+  CheckSquare,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { TooltipButton } from '@/components/ui/tooltip-button';
@@ -31,6 +33,7 @@ import { AnimeDetailModal } from '@/components/library/AnimeDetailModal';
 import { LibraryListItem } from '@/components/library/LibraryListItem';
 import { LibrarySkeleton } from '@/components/library/LibrarySkeleton';
 import { LibraryStats } from '@/components/library/LibraryStats';
+import { BatchActionBar } from '@/components/library/BatchActionBar';
 import { useBrowserStore } from '@/stores/useBrowserStore';
 import { useAppStore } from '@/stores/useAppStore';
 import { useTranslation } from 'react-i18next';
@@ -54,6 +57,8 @@ const {
   openDetail,
   closeDetail,
   removeFromLibrary,
+  setSelectionMode,
+  setSelected,
 } = useLibraryStore.getState();
 
 export function LibraryView() {
@@ -67,6 +72,7 @@ export function LibraryView() {
   const isLoading = useLibraryStore(s => s.isLoading);
   const isDetailOpen = useLibraryStore(s => s.isDetailOpen);
   const selectedEntry = useLibraryStore(s => s.selectedEntry);
+  const selectionMode = useLibraryStore(s => s.selectionMode);
 
   const [showStats, setShowStats] = useState(false);
   const [entryToRemove, setEntryToRemove] = useState<AnimeEntry | null>(null);
@@ -110,6 +116,11 @@ export function LibraryView() {
     () => getFilteredEntries({ entries, activeFilter, searchQuery, sortBy, sortOrder }),
     [entries, activeFilter, searchQuery, sortBy, sortOrder]
   );
+
+  // Select every currently-visible (filtered) entry for a batch operation.
+  const handleSelectAllVisible = useCallback(() => {
+    setSelected(filteredEntries.map(e => e.id));
+  }, [filteredEntries]);
 
   // Per-status counts for the filter chips, matching mock "Wszystko · 184".
   const statusCounts = useMemo(() => {
@@ -194,6 +205,31 @@ export function LibraryView() {
               <Upload className="w-4 h-4" />
             </TooltipButton>
             <div className="w-px h-4 bg-border-glass mx-1" />
+            {selectionMode && (
+              <TooltipButton
+                variant="ghost"
+                size="icon"
+                className="w-8 h-8"
+                disabled={filteredEntries.length === 0}
+                onClick={handleSelectAllVisible}
+                tooltip={t('batch.selectAll')}
+              >
+                <CheckSquare className="w-4 h-4" />
+              </TooltipButton>
+            )}
+            <TooltipButton
+              variant={selectionMode ? 'secondary' : 'ghost'}
+              size="icon"
+              className={cn(
+                'w-8 h-8 transition-all duration-200',
+                selectionMode && 'bg-primary/10 text-primary hover:bg-primary/15'
+              )}
+              disabled={entries.length === 0}
+              onClick={() => setSelectionMode(!selectionMode)}
+              tooltip={t('batch.toggleSelect')}
+            >
+              <ListChecks className="w-4 h-4" />
+            </TooltipButton>
             <TooltipButton
               variant="ghost"
               size="icon"
@@ -293,6 +329,9 @@ export function LibraryView() {
           </div>
         </div>
       </div>
+
+      {/* Batch action bar — bottom dock, only while multi-select mode is active */}
+      {selectionMode && <BatchActionBar />}
 
       {/* Detail modal */}
       <AnimeDetailModal

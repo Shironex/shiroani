@@ -25,6 +25,7 @@ import { tDynamic } from '@/lib/i18n';
 import { useAnimeDetailForm } from '@/hooks/useAnimeDetailForm';
 import { useNavigateToBrowser } from '@/hooks/useNavigateToBrowser';
 import { SliderInputField } from './SliderInputField';
+import { RelationsSection } from './RelationsSection';
 
 const { updateEntry, removeFromLibrary } = useLibraryStore.getState();
 
@@ -74,7 +75,9 @@ export function AnimeDetailModal({ entry, open, onOpenChange }: AnimeDetailModal
       anilistId: parsedAnilistId && !isNaN(parsedAnilistId) ? parsedAnilistId : null,
       status,
       currentEpisode,
-      score: score > 0 ? score : undefined,
+      // Send score directly (incl. 0) so clearing a rating persists — buildUpdate
+      // skips `undefined`, which would otherwise leave the old score in the DB.
+      score,
       notes: notes.trim() || undefined,
       resumeUrl: resumeUrl.trim() || undefined,
     });
@@ -385,6 +388,9 @@ export function AnimeDetailModal({ entry, open, onOpenChange }: AnimeDetailModal
                   className="h-8 text-xs w-32"
                 />
               </div>
+
+              {/* Related entries (AniList relations) */}
+              {entry.anilistId ? <RelationsSection anilistId={entry.anilistId} /> : null}
             </div>
 
             {/* Bottom action bar */}
