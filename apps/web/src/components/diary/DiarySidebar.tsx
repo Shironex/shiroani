@@ -186,7 +186,7 @@ export function DiarySidebar({ entries }: DiarySidebarProps) {
   // Fire a one-time celebration when the streak reaches 7 / 14 / 30 days. The
   // persisted set guarantees once-per-milestone across sessions, so any
   // milestone already recorded never re-fires — no extra mount guard needed.
-  const celebratedRef = useRef<Set<number>>(celebratedMilestonesStorage.get());
+  const celebratedRef = useRef<Set<number>>(new Set(celebratedMilestonesStorage.get()));
   useEffect(() => {
     const streak = stats.currentStreak;
     const celebrated = celebratedRef.current;
