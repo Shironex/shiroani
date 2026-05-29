@@ -1,7 +1,8 @@
 {
   "urlBar": {
     "placeholder": "Wpisz adres albo szukaj",
-    "ariaLabel": "Pasek adresu"
+    "ariaLabel": "Pasek adresu",
+    "suggestions": "Podpowiedzi adresu"
   },
   "toolbar": {
     "back": "Wstecz",
@@ -9,7 +10,26 @@
     "reload": "Odśwież",
     "loading": "Ładowanie",
     "home": "Strona główna",
-    "addToLibrary": "Dodaj do biblioteki"
+    "addToLibrary": "Dodaj do biblioteki",
+    "history": "Historia"
+  },
+  "find": {
+    "placeholder": "Znajdź na stronie",
+    "ariaLabel": "Znajdź na stronie",
+    "count": "{{current}} z {{total}}",
+    "next": "Następny",
+    "previous": "Poprzedni",
+    "close": "Zamknij"
+  },
+  "history": {
+    "title": "Historia przeglądania",
+    "description": "Przeglądaj i zarządzaj odwiedzonymi stronami.",
+    "searchPlaceholder": "Szukaj w historii",
+    "searchAria": "Szukaj w historii",
+    "empty": "Brak historii",
+    "noResults": "Brak wyników",
+    "removeEntry": "Usuń wpis",
+    "clearAll": "Wyczyść wszystko"
   },
   "tabs": {
     "newTab": "Nowa karta",

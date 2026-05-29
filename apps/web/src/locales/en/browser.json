@@ -1,7 +1,8 @@
 {
   "urlBar": {
     "placeholder": "Type a URL or search",
-    "ariaLabel": "Address bar"
+    "ariaLabel": "Address bar",
+    "suggestions": "Address suggestions"
   },
   "toolbar": {
     "back": "Back",
@@ -9,7 +10,26 @@
     "reload": "Reload",
     "loading": "Loading",
     "home": "Home",
-    "addToLibrary": "Add to library"
+    "addToLibrary": "Add to library",
+    "history": "History"
+  },
+  "find": {
+    "placeholder": "Find in page",
+    "ariaLabel": "Find in page",
+    "count": "{{current}} of {{total}}",
+    "next": "Next",
+    "previous": "Previous",
+    "close": "Close"
+  },
+  "history": {
+    "title": "Browsing history",
+    "description": "Browse and manage the pages you've visited.",
+    "searchPlaceholder": "Search history",
+    "searchAria": "Search history",
+    "empty": "No history yet",
+    "noResults": "No results",
+    "removeEntry": "Remove entry",
+    "clearAll": "Clear all"
   },
   "tabs": {
     "newTab": "New tab",

@@ -215,6 +215,7 @@ export function registerBrowserHandlers(
           case 'w':
           case 't':
           case 'l':
+          case 'f':
           case 'r':
           case 'Tab':
             event.preventDefault();

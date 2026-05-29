@@ -5,12 +5,19 @@ import { BrowserToolbar } from '../BrowserToolbar';
 
 const mockSetAddressBarFocused = vi.fn();
 
-vi.mock('@/stores/useBrowserStore', () => ({
-  useBrowserStore: {
-    getState: () => ({
-      setAddressBarFocused: mockSetAddressBarFocused,
-    }),
-  },
+vi.mock('@/stores/useBrowserStore', () => {
+  const useBrowserStore = (() => undefined) as unknown as {
+    (selector: unknown): unknown;
+    getState: () => { setAddressBarFocused: typeof mockSetAddressBarFocused };
+  };
+  useBrowserStore.getState = () => ({ setAddressBarFocused: mockSetAddressBarFocused });
+  return { useBrowserStore };
+});
+
+// The smart address bar pulls suggestions from multiple stores; stub it out so
+// these toolbar tests stay focused on the navigation chrome.
+vi.mock('../useAddressSuggestions', () => ({
+  useAddressSuggestions: () => [],
 }));
 
 function getDefaultProps() {
@@ -27,6 +34,7 @@ function getDefaultProps() {
     onNavigate: vi.fn(),
     onGoHome: vi.fn(),
     onAddToLibrary: vi.fn(),
+    onOpenHistory: vi.fn(),
   };
 }
 

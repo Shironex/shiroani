@@ -26,7 +26,22 @@ export type WebviewElement = HTMLElement & {
   setAudioMuted: (muted: boolean) => void;
   isAudioMuted: () => boolean;
   openDevTools: () => void;
+  /**
+   * Highlight matches of `text` in the guest page. Returns a request id; match
+   * counts arrive asynchronously via the `found-in-page` event.
+   */
+  findInPage: (text: string, options?: { forward?: boolean; findNext?: boolean }) => number;
+  /** Clear find highlights. `action` controls how the selection is left. */
+  stopFindInPage: (action: 'clearSelection' | 'keepSelection' | 'activateSelection') => void;
 };
+
+/** Shape of the `found-in-page` event's `result` payload (Electron). */
+export interface FoundInPageResult {
+  requestId: number;
+  activeMatchOrdinal: number;
+  matches: number;
+  finalUpdate: boolean;
+}
 
 const webviewRefs = new Map<string, WebviewElement>();
 

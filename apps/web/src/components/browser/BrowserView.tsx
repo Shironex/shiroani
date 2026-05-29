@@ -25,6 +25,8 @@ import { AddToLibraryDialog } from '@/components/browser/AddToLibraryDialog';
 import { BrowserTabBar } from '@/components/browser/BrowserTabBar';
 import { BrowserToolbar } from '@/components/browser/BrowserToolbar';
 import { BrowserWebview } from '@/components/browser/BrowserWebview';
+import { FindBar } from '@/components/browser/FindBar';
+import { BrowserHistoryDialog } from '@/components/browser/BrowserHistoryDialog';
 import { NewTabPage } from '@/components/browser/NewTabPage';
 import { useBrowserInit } from '@/components/browser/useBrowserInit';
 import { unregisterWebview } from '@/components/browser/webviewRefs';
@@ -252,6 +254,8 @@ export function BrowserView() {
   const [urlInput, setUrlInput] = useState('');
   const [isAddToLibraryOpen, setIsAddToLibraryOpen] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
+  const [isFindOpen, setIsFindOpen] = useState(false);
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
 
   const activePane = activePaneId ? findLeafById(tabs, activePaneId) : null;
 
@@ -278,6 +282,9 @@ export function BrowserView() {
         switchTab(t[next].id);
       } else if (input.ctrl && input.key === 'l') {
         urlInputRef.current?.focus();
+      } else if (input.ctrl && input.key === 'f') {
+        // Open (or re-focus) the in-page find bar for the active pane.
+        setIsFindOpen(true);
       } else if (input.ctrl && input.key === 'r') {
         reload();
       } else if (input.alt && input.key === 'ArrowLeft') {
@@ -299,7 +306,13 @@ export function BrowserView() {
       const key = e.key;
 
       const isHandled =
-        (ctrl && (key === 'w' || key === 't' || key === 'Tab' || key === 'l' || key === 'r')) ||
+        (ctrl &&
+          (key === 'w' ||
+            key === 't' ||
+            key === 'Tab' ||
+            key === 'l' ||
+            key === 'f' ||
+            key === 'r')) ||
         (alt && (key === 'ArrowLeft' || key === 'ArrowRight'));
 
       if (isHandled) {
@@ -531,8 +544,14 @@ export function BrowserView() {
           onNavigate={navigate}
           onGoHome={handleGoHome}
           onAddToLibrary={() => setIsAddToLibraryOpen(true)}
+          onOpenHistory={() => setIsHistoryOpen(true)}
           urlInputRef={urlInputRef}
         />
+      )}
+
+      {/* In-page find bar (Ctrl+F) — mounted only while active */}
+      {!isFullScreen && isFindOpen && (
+        <FindBar activePaneId={activePaneId} onClose={() => setIsFindOpen(false)} />
       )}
 
       {/* Tab content — every tab stays mounted to preserve webview state */}
@@ -577,6 +596,13 @@ export function BrowserView() {
           </>
         )}
       </div>
+
+      {/* Browsing history */}
+      <BrowserHistoryDialog
+        open={isHistoryOpen}
+        onOpenChange={setIsHistoryOpen}
+        onNavigate={navigate}
+      />
 
       {/* Add to Library dialog */}
       <AddToLibraryDialog
