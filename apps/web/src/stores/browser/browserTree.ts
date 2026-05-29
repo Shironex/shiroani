@@ -180,7 +180,7 @@ export function deserializeNode(
       kind: 'leaf',
       id,
       url: node.url,
-      title: node.title || 'Nowa karta',
+      title: node.title || '',
       isLoading: node.url !== NEW_TAB_URL,
       canGoBack: false,
       canGoForward: false,
