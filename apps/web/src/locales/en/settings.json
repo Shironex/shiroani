@@ -147,7 +147,18 @@
       "invalidFile": "Invalid file format",
       "limitReached": "Theme limit reached ({{limit}})",
       "imported": "Theme imported",
-      "importFailed": "Failed to import theme"
+      "importFailed": "Failed to import theme",
+      "invalidField": {
+        "format": "Unsupported theme file format or version",
+        "theme": "The file contains no theme data",
+        "name": "The theme has no valid name",
+        "baseTheme": "Unknown base theme",
+        "isDark": "Invalid dark-mode setting",
+        "color": "Invalid theme color",
+        "variables": "Invalid theme variables",
+        "unknownVariable": "Unknown theme variable: {{variable}}",
+        "variableValue": "Invalid value for variable: {{variable}}"
+      }
     },
     "editor": {
       "newTitle": "New theme",

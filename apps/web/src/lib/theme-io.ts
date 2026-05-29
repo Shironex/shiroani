@@ -80,52 +80,56 @@ export function sanitizeFileName(name: string): string {
  * stores in apps/web/src/stores.
  */
 export function validateImportData(data: unknown): string | null {
-  const invalidMessage = () => i18n.t('settings:themes.toast.invalidFile');
+  // Field-specific messages pinpoint *which* part of the file is wrong so the
+  // toast tells the user what to fix instead of a blanket "invalid file".
+  const invalidFile = () => i18n.t('settings:themes.toast.invalidFile');
+  const invalidField = (field: string) =>
+    i18n.t(`settings:themes.toast.invalidField.${field}`);
 
   if (!data || typeof data !== 'object') {
-    return invalidMessage();
+    return invalidFile();
   }
 
   const obj = data as Record<string, unknown>;
 
   if (obj.version !== 1 || obj.type !== 'shiroani-custom-theme') {
-    return invalidMessage();
+    return invalidField('format');
   }
 
   if (!obj.theme || typeof obj.theme !== 'object') {
-    return invalidMessage();
+    return invalidField('theme');
   }
 
   const theme = obj.theme as Record<string, unknown>;
 
   if (typeof theme.name !== 'string' || theme.name.trim().length === 0) {
-    return invalidMessage();
+    return invalidField('name');
   }
 
   if (typeof theme.baseTheme !== 'string' || !isBuiltInTheme(theme.baseTheme)) {
-    return invalidMessage();
+    return invalidField('baseTheme');
   }
 
   if (typeof theme.isDark !== 'boolean') {
-    return invalidMessage();
+    return invalidField('isDark');
   }
 
   if (typeof theme.color !== 'string') {
-    return invalidMessage();
+    return invalidField('color');
   }
 
   if (!theme.variables || typeof theme.variables !== 'object') {
-    return invalidMessage();
+    return invalidField('variables');
   }
 
   const validNames = new Set<string>(THEME_VARIABLE_NAMES);
   const variables = theme.variables as Record<string, unknown>;
   for (const [key, val] of Object.entries(variables)) {
     if (!validNames.has(key)) {
-      return invalidMessage();
+      return i18n.t('settings:themes.toast.invalidField.unknownVariable', { variable: key });
     }
     if (typeof val !== 'string') {
-      return invalidMessage();
+      return i18n.t('settings:themes.toast.invalidField.variableValue', { variable: key });
     }
   }
 
