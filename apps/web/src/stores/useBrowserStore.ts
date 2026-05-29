@@ -698,17 +698,12 @@ export const useBrowserStore = create<BrowserStore>()(
           undefined,
           'browser/removeHistoryEntry'
         );
-        const { history } = get();
-        if (history.length === 0) {
-          electronStoreDelete(BROWSER_HISTORY_KEY);
-        } else {
-          persistHistoryDebounced(history);
-        }
+        persistHistoryDebounced(get().history);
       },
 
       clearHistory: () => {
         set({ history: [] }, undefined, 'browser/clearHistory');
-        electronStoreDelete(BROWSER_HISTORY_KEY);
+        persistHistoryDebounced([]);
       },
     }),
     { name: 'browser' }
