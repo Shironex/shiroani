@@ -15,7 +15,7 @@ export function formatRelativeTime(timestamp: number, t: TFunction<'browser'>): 
   const days = Math.floor(hours / 24);
   if (days < 7) return t('newTab.recents.relative.days', { count: days });
   const weeks = Math.floor(days / 7);
-  if (weeks < 4) return t('newTab.recents.relative.weeks', { count: weeks });
   const months = Math.floor(days / 30);
+  if (months < 1) return t('newTab.recents.relative.weeks', { count: weeks });
   return t('newTab.recents.relative.months', { count: months });
 }
