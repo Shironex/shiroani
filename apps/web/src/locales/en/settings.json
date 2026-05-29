@@ -187,6 +187,10 @@
         "saved": "Theme saved",
         "changesSaved": "Changes saved"
       }
+    },
+    "system": {
+      "title": "System",
+      "subtitle": "Match the light or dark theme to your OS setting"
     }
   },
   "background": {

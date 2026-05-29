@@ -183,11 +183,9 @@ export function DiarySidebar({ entries }: DiarySidebarProps) {
   const stats = useMemo(() => computeStats(entries), [entries]);
   const milestone = nextStreakMilestone(stats.currentStreak);
 
-  // Fire a one-time celebration when the streak first reaches 7 / 14 / 30 days.
-  // On the very first evaluation we silently seed already-passed milestones so a
-  // returning long-streak user isn't spammed; only milestones crossed live
-  // afterwards toast.
-  const celebrationSeeded = useRef(false);
+  // Fire a one-time celebration when the streak reaches 7 / 14 / 30 days. The
+  // persisted set guarantees once-per-milestone across sessions, so any
+  // milestone already recorded never re-fires — no extra mount guard needed.
   const celebratedRef = useRef<Set<number>>(celebratedMilestonesStorage.get());
   useEffect(() => {
     const streak = stats.currentStreak;
@@ -197,12 +195,6 @@ export function DiarySidebar({ entries }: DiarySidebarProps) {
 
     for (const m of reached) celebrated.add(m);
     celebratedMilestonesStorage.set(celebrated);
-
-    if (!celebrationSeeded.current) {
-      // First pass after mount — just record the baseline, don't toast.
-      celebrationSeeded.current = true;
-      return;
-    }
 
     const top = reached[reached.length - 1]!;
     toast.success(t('sidebar.celebration.title', { count: top }), {

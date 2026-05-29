@@ -187,6 +187,10 @@
         "saved": "Motyw zapisany",
         "changesSaved": "Zapisano zmiany"
       }
+    },
+    "system": {
+      "title": "System",
+      "subtitle": "Dopasuj jasny lub ciemny motyw do ustawień systemu"
     }
   },
   "background": {
