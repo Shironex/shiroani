@@ -154,6 +154,10 @@
     "topTags": "Popularne tagi",
     "topTagsHint": "Dodaj tagi do wpisów, żeby śledzić tematy.",
     "genres": "Gatunki",
-    "studios": "Studia"
+    "studios": "Studia",
+    "breakdownRetry_one": "Nie udało się wczytać metadanych {{count}} anime — spróbuj ponownie",
+    "breakdownRetry_few": "Nie udało się wczytać metadanych {{count}} anime — spróbuj ponownie",
+    "breakdownRetry_many": "Nie udało się wczytać metadanych {{count}} anime — spróbuj ponownie",
+    "breakdownRetry_other": "Nie udało się wczytać metadanych {{count}} anime — spróbuj ponownie"
   }
 }

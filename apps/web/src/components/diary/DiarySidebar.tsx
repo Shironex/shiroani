@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Flame,
@@ -7,6 +7,7 @@ import {
   Sparkles,
   Clapperboard,
   Building2,
+  RotateCw,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { StatCell } from '@/components/shared/StatCell';
@@ -161,6 +162,8 @@ export function DiarySidebar({ entries }: DiarySidebarProps) {
   const libraryEntries = useLibraryStore(s => s.entries);
   const ensureDetails = useAnimeDetailStore(s => s.ensureDetails);
   const animeDetails = useAnimeDetailStore(s => s.details);
+  const failedDetails = useAnimeDetailStore(s => s.failed);
+  const retryDetail = useAnimeDetailStore(s => s.retry);
 
   const relevantAnilistIds = useMemo(() => {
     if (entries.length === 0) return [] as number[];
@@ -180,6 +183,18 @@ export function DiarySidebar({ entries }: DiarySidebarProps) {
   useEffect(() => {
     if (relevantAnilistIds.length > 0) ensureDetails(relevantAnilistIds);
   }, [relevantAnilistIds, ensureDetails]);
+
+  // Per-item AniList failures (e.g. rate-limit) leave gaps in the breakdown
+  // rather than blanking it. Surface how many and offer a one-tap retry so a
+  // transient failure on this flagship surface is recoverable.
+  const failedIds = useMemo(
+    () => relevantAnilistIds.filter(id => failedDetails.has(id)),
+    [relevantAnilistIds, failedDetails]
+  );
+
+  const retryFailedDetails = useCallback(() => {
+    for (const id of failedIds) retryDetail(id);
+  }, [failedIds, retryDetail]);
 
   const { genres, studios } = useDiaryBreakdowns(entries, animeDetails);
 
@@ -225,6 +240,22 @@ export function DiarySidebar({ entries }: DiarySidebarProps) {
       />
 
       <TopTagsBlock tags={stats.topTags} />
+
+      {failedIds.length > 0 && (
+        <button
+          type="button"
+          onClick={retryFailedDetails}
+          className={cn(
+            'flex w-full items-center justify-center gap-2 rounded-[9px] border border-border-glass',
+            'bg-foreground/[0.03] px-3 py-2 text-[11px] text-muted-foreground',
+            'transition-colors hover:bg-foreground/[0.06] hover:text-foreground',
+            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
+          )}
+        >
+          <RotateCw className="w-3.5 h-3.5" aria-hidden="true" />
+          {t('sidebar.breakdownRetry', { count: failedIds.length })}
+        </button>
+      )}
 
       <SidebarSection>
         <SidebarLabel icon={Clapperboard}>{t('sidebar.genres')}</SidebarLabel>

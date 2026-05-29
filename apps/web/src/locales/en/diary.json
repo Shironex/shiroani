@@ -154,6 +154,8 @@
     "topTags": "Popular tags",
     "topTagsHint": "Add tags to entries to track topics.",
     "genres": "Genres",
-    "studios": "Studios"
+    "studios": "Studios",
+    "breakdownRetry_one": "Metadata for {{count}} anime failed to load — retry",
+    "breakdownRetry_other": "Metadata for {{count}} anime failed to load — retry"
   }
 }
