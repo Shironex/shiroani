@@ -113,7 +113,7 @@ export function BrowserToolbar({
         return;
       }
       if (e.key === 'Enter') {
-        if (showSuggestions && activeIndex >= 0) {
+        if (showSuggestions && activeIndex >= 0 && suggestions[activeIndex]) {
           e.preventDefault();
           commitNavigation(suggestions[activeIndex].url);
           return;
@@ -146,7 +146,9 @@ export function BrowserToolbar({
 
   const handleUrlBlur = useCallback(() => {
     useBrowserStore.getState().setAddressBarFocused(false);
-    // Defer so a mousedown on a suggestion still resolves before unmount.
+    // AddressSuggestions commits a row on onMouseDown + preventDefault, so the
+    // selection lands before blur fires; closeSuggestions() then unmounts the
+    // list synchronously here.
     closeSuggestions();
   }, [closeSuggestions]);
 
