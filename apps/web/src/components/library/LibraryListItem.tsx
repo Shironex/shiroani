@@ -1,6 +1,6 @@
-import { memo } from 'react';
+import { memo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Star } from 'lucide-react';
+import { Star, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { PillTag } from '@/components/ui/pill-tag';
 import { ProgressBar } from '@/components/shared/ProgressBar';
@@ -8,7 +8,10 @@ import { CountdownBadge } from '@/components/library/CountdownBadge';
 import { formatEpisodeProgress } from '@/lib/anime-utils';
 import { STATUS_LABEL_KEY } from '@/lib/constants';
 import { tDynamic } from '@/lib/i18n';
+import { useLibraryStore } from '@/stores/useLibraryStore';
 import type { AnimeEntry } from '@shiroani/shared';
+
+const { toggleSelected } = useLibraryStore.getState();
 
 interface LibraryListItemProps {
   entry: AnimeEntry;
@@ -35,6 +38,15 @@ const LibraryListItem = memo(function LibraryListItem({
 }: LibraryListItemProps) {
   const { t, i18n } = useTranslation(['library', 'status', 'common']);
   const { t: tc } = useTranslation('common');
+  // Granular per-row subscriptions keep React.memo effective during selection.
+  const selectionMode = useLibraryStore(s => s.selectionMode);
+  const isSelected = useLibraryStore(s => s.selectedIds.has(entry.id));
+
+  const handleActivate = useCallback(() => {
+    if (selectionMode) toggleSelected(entry.id);
+    else onClick(entry);
+  }, [selectionMode, onClick, entry]);
+
   const progressPercent = entry.episodes
     ? Math.min(100, Math.round((entry.currentEpisode / entry.episodes) * 100))
     : 0;
@@ -44,24 +56,42 @@ const LibraryListItem = memo(function LibraryListItem({
 
   return (
     <div
-      role="button"
+      role={selectionMode ? 'checkbox' : 'button'}
+      aria-checked={selectionMode ? isSelected : undefined}
       tabIndex={0}
-      onClick={() => onClick(entry)}
+      onClick={handleActivate}
       onKeyDown={e => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
-          onClick(entry);
+          handleActivate();
         }
       }}
       className={cn(
         'grid items-center gap-3 px-3.5 py-2.5 rounded-[8px] cursor-pointer',
-        'grid-cols-[44px_minmax(0,1fr)_auto_minmax(140px,1fr)_auto]',
+        selectionMode
+          ? 'grid-cols-[20px_44px_minmax(0,1fr)_auto_minmax(140px,1fr)_auto]'
+          : 'grid-cols-[44px_minmax(0,1fr)_auto_minmax(140px,1fr)_auto]',
         'hover:bg-foreground/4 transition-colors duration-150',
-        'border border-transparent hover:border-border-glass',
+        'border hover:border-border-glass',
+        isSelected ? 'border-primary/60 bg-primary/5' : 'border-transparent',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:bg-foreground/5',
         'group/list-item'
       )}
     >
+      {/* Selection checkbox (multi-select mode only) */}
+      {selectionMode && (
+        <div
+          className={cn(
+            'w-5 h-5 rounded-[5px] border flex items-center justify-center shrink-0 transition-colors',
+            isSelected
+              ? 'bg-primary border-primary text-primary-foreground'
+              : 'bg-background/40 border-border-glass'
+          )}
+        >
+          {isSelected && <Check className="w-3.5 h-3.5" strokeWidth={3} />}
+        </div>
+      )}
+
       {/* Thumbnail */}
       {entry.coverImage ? (
         <img

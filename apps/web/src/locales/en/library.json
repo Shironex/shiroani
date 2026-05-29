@@ -86,5 +86,45 @@
     "title": "Remove from library",
     "description": "Are you sure you want to remove this anime from your library?",
     "descriptionWithTitle": "Are you sure you want to remove \"{{title}}\" from your library?"
+  },
+  "batch": {
+    "toggleSelect": "Selection mode",
+    "selectAll": "Select all",
+    "hint": "Select entries to run a batch operation",
+    "exit": "Done",
+    "selectedCount_one": "{{count}} entry selected",
+    "selectedCount_few": "{{count}} entries selected",
+    "selectedCount_many": "{{count}} entries selected",
+    "selectedCount_other": "{{count}} entries selected",
+    "setStatus": "Change status",
+    "setScore": "Set score",
+    "clearScore": "Clear score",
+    "delete": "Delete",
+    "confirmDeleteTitle": "Delete selected",
+    "confirmDeleteDescription_one": "Are you sure you want to remove {{count}} entry from your library?",
+    "confirmDeleteDescription_few": "Are you sure you want to remove {{count}} entries from your library?",
+    "confirmDeleteDescription_many": "Are you sure you want to remove {{count}} entries from your library?",
+    "confirmDeleteDescription_other": "Are you sure you want to remove {{count}} entries from your library?"
+  },
+  "relations": {
+    "title": "Related",
+    "empty": "No related entries",
+    "openInLibrary": "Open in library",
+    "notInLibrary": "Not in library",
+    "type": {
+      "PREQUEL": "Prequel",
+      "SEQUEL": "Sequel",
+      "SIDE_STORY": "Side story",
+      "PARENT": "Parent story",
+      "SUMMARY": "Summary",
+      "ALTERNATIVE": "Alternative",
+      "SPIN_OFF": "Spin-off",
+      "CHARACTER": "Shared characters",
+      "ADAPTATION": "Adaptation",
+      "OTHER": "Other",
+      "SOURCE": "Source",
+      "COMPILATION": "Compilation",
+      "CONTAINS": "Contains"
+    }
   }
 }

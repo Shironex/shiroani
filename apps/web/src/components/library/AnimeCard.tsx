@@ -1,12 +1,15 @@
 import { memo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Play, Pencil, Trash2, Film, Star } from 'lucide-react';
+import { Play, Pencil, Trash2, Film, Star, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { PillTag } from '@/components/ui/pill-tag';
 import { CountdownBadge } from '@/components/library/CountdownBadge';
 import type { AnimeEntry } from '@shiroani/shared';
 import { STATUS_LABEL_KEY } from '@/lib/constants';
 import { tDynamic } from '@/lib/i18n';
+import { useLibraryStore } from '@/stores/useLibraryStore';
+
+const { toggleSelected } = useLibraryStore.getState();
 
 interface AnimeCardProps {
   entry: AnimeEntry;
@@ -24,14 +27,28 @@ const AnimeCard = memo(function AnimeCard({
   onRemove,
 }: AnimeCardProps) {
   const { t, i18n } = useTranslation(['library', 'status', 'common']);
+  // Granular per-card subscriptions: each card reads ONLY its own selection
+  // membership + the global mode flag, so toggling one card never re-renders
+  // the rest of the grid (keeps React.memo effective).
+  const selectionMode = useLibraryStore(s => s.selectionMode);
+  const isSelected = useLibraryStore(s => s.selectedIds.has(entry.id));
+
+  const handleActivate = useCallback(() => {
+    if (selectionMode) {
+      toggleSelected(entry.id);
+    } else {
+      onSelect(entry);
+    }
+  }, [selectionMode, onSelect, entry]);
+
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
-        onSelect(entry);
+        handleActivate();
       }
     },
-    [onSelect, entry]
+    [handleActivate]
   );
 
   const progressText = entry.episodes
@@ -56,17 +73,19 @@ const AnimeCard = memo(function AnimeCard({
 
   return (
     <div
-      role="button"
+      role={selectionMode ? 'checkbox' : 'button'}
+      aria-checked={selectionMode ? isSelected : undefined}
       tabIndex={0}
       aria-label={t('library:card.ariaLabel', { title: entry.title, status: statusLabel })}
       className={cn(
         'group relative rounded-[10px] overflow-hidden cursor-pointer',
-        'border border-border-glass bg-card/60',
+        'border bg-card/60',
         'transition-transform duration-200 ease-out',
         'hover:-translate-y-0.5 hover:shadow-primary-glow',
-        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:-translate-y-0.5'
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:-translate-y-0.5',
+        isSelected ? 'border-primary ring-2 ring-primary/60' : 'border-border-glass'
       )}
-      onClick={() => onSelect(entry)}
+      onClick={handleActivate}
       onKeyDown={handleKeyDown}
     >
       {/* Cover image — 2:3 aspect per mock */}
@@ -99,8 +118,29 @@ const AnimeCard = memo(function AnimeCard({
           }}
         />
 
+        {/* Selection checkbox — top-left, shown only in multi-select mode */}
+        {selectionMode && (
+          <div className="absolute top-2 left-2 z-[4]">
+            <div
+              className={cn(
+                'w-5 h-5 rounded-[5px] border flex items-center justify-center shadow-sm transition-colors',
+                isSelected
+                  ? 'bg-primary border-primary text-primary-foreground'
+                  : 'bg-black/55 border-white/60'
+              )}
+            >
+              {isSelected && <Check className="w-3.5 h-3.5" strokeWidth={3} />}
+            </div>
+          </div>
+        )}
+
         {/* Status pill — top-left */}
-        <div className="absolute top-2 left-2 z-[2] max-w-[calc(100%-52px)] overflow-hidden">
+        <div
+          className={cn(
+            'absolute top-2 z-[2] max-w-[calc(100%-52px)] overflow-hidden',
+            selectionMode ? 'left-9' : 'left-2'
+          )}
+        >
           <PillTag
             variant={statusVariant}
             className="shadow-[0_1px_4px_oklch(0_0_0/0.5)] truncate max-w-full"
@@ -161,7 +201,8 @@ const AnimeCard = memo(function AnimeCard({
           </div>
         )}
 
-        {/* Hover overlay with action buttons */}
+        {/* Hover overlay with action buttons — suppressed in selection mode */}
+        {!selectionMode && (
         <div
           className={cn(
             'absolute inset-0 z-[3]',
@@ -223,6 +264,7 @@ const AnimeCard = memo(function AnimeCard({
             </button>
           )}
         </div>
+        )}
       </div>
     </div>
   );
