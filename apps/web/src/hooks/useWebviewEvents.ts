@@ -130,6 +130,8 @@ export function useWebviewEvents(webviewRef: RefObject<WebviewElement | null>, p
         const currentTitle = el.getTitle();
         const leaf = findLeafById(useBrowserStore.getState().tabs, paneId);
         useQuickAccessStore.getState().recordVisit(currentUrl, currentTitle, leaf?.favicon);
+        // Chronological history (distinct from the aggregated frequent-sites list).
+        useBrowserStore.getState().recordHistory(currentUrl, currentTitle, leaf?.favicon);
       } catch {
         // Non-critical — skip tracking
       }

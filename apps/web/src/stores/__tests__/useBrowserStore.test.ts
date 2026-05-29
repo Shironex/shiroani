@@ -512,7 +512,7 @@ describe('useBrowserStore', () => {
       vi.useRealTimers();
     });
 
-    it('flattens splits to two adjacent leaves on disk', async () => {
+    it('preserves the split structure on disk', async () => {
       const store = useBrowserStore.getState();
       store.openTab('https://a.com');
       store.openTab('https://b.com');
@@ -523,14 +523,20 @@ describe('useBrowserStore', () => {
       await vi.runAllTimersAsync();
 
       const persisted = electronStoreData.get('browser-tabs') as {
-        tabs: Array<{ url: string; title: string }>;
-        activeIndex: number;
+        tabs: Array<Record<string, unknown>>;
       };
-      expect(persisted.tabs.map(t => t.url)).toEqual(['https://b.com', 'https://a.com']);
-      expect(persisted.activeIndex).toBe(0);
+      expect(persisted.tabs).toHaveLength(1);
+      const split = persisted.tabs[0] as {
+        kind: string;
+        left: { url: string };
+        right: { url: string };
+      };
+      expect(split.kind).toBe('split');
+      expect(split.left.url).toBe('https://b.com');
+      expect(split.right.url).toBe('https://a.com');
     });
 
-    it('points activeIndex at the persisted slot of the focused pane', async () => {
+    it('flags the focused pane as active on disk', async () => {
       const store = useBrowserStore.getState();
       store.openTab('https://a.com');
       store.openTab('https://b.com');
@@ -546,10 +552,31 @@ describe('useBrowserStore', () => {
       await vi.runAllTimersAsync();
 
       const persisted = electronStoreData.get('browser-tabs') as {
-        tabs: Array<{ url: string; title: string }>;
-        activeIndex: number;
+        tabs: Array<{ right: { url: string; active?: boolean } }>;
       };
-      expect(persisted.activeIndex).toBe(1);
+      expect(persisted.tabs[0].right.url).toBe('https://a.com');
+      expect(persisted.tabs[0].right.active).toBe(true);
+    });
+
+    it('round-trips a split back through restoreTabs', async () => {
+      const store = useBrowserStore.getState();
+      store.openTab('https://a.com');
+      store.openTab('https://b.com');
+      const [aId, bId] = useBrowserStore.getState().tabs.map(t => t.id);
+      store.splitTabs(aId, bId);
+
+      store.persistTabs();
+      await vi.runAllTimersAsync();
+
+      useBrowserStore.setState({ tabs: [], activeTabId: null, activePaneId: null });
+      await useBrowserStore.getState().restoreTabs();
+
+      const tabs = useBrowserStore.getState().tabs;
+      expect(tabs).toHaveLength(1);
+      const split = tabs[0];
+      if (split.kind !== 'split') throw new Error('expected split');
+      expect(expectLeaf(split.left).url).toBe('https://b.com');
+      expect(expectLeaf(split.right).url).toBe('https://a.com');
     });
 
     it('round-trips a flat tab list back through restoreTabs', async () => {

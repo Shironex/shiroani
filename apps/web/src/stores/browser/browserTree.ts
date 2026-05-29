@@ -1,4 +1,6 @@
 import type { BrowserLeafNode, BrowserNode, BrowserSplitNode, BrowserTab } from '@shiroani/shared';
+import { NEW_TAB_URL } from '@shiroani/shared';
+import type { SerializedBrowserNode } from '@/stores/browser/browserPersistence';
 
 /**
  * Pure tree algebra for the browser tab/split tree. Every function here is a
@@ -127,4 +129,69 @@ export function applySplitRatio(node: BrowserNode, id: string, ratio: number): S
     return { kind: 'updated', node: { ...node, right: right.node } };
   }
   return null;
+}
+
+// ── Serialization (split-pane config persistence) ─────────────────
+
+/**
+ * Serialize a tab tree to its persisted form, dropping runtime-only fields.
+ * `activePaneId` marks which leaf is the focused pane so it can be restored.
+ * Returns null for a top-level leaf that is a blank/new-tab page so the strip
+ * isn't repopulated with empty tabs — but blanks *inside* a split are kept,
+ * since dropping one would collapse the split.
+ */
+export function serializeNode(
+  node: BrowserNode,
+  activePaneId: string | null,
+  isTopLevel = true
+): SerializedBrowserNode | null {
+  if (node.kind === 'leaf') {
+    const isBlank = node.url === NEW_TAB_URL || node.url === 'about:blank' || node.url === '';
+    if (isTopLevel && isBlank) return null;
+    return {
+      kind: 'leaf',
+      url: node.url,
+      title: node.title,
+      active: node.id === activePaneId,
+    };
+  }
+  const left = serializeNode(node.left, activePaneId, false);
+  const right = serializeNode(node.right, activePaneId, false);
+  // Children inside a split are never blank-dropped (isTopLevel=false), so both
+  // are always present here; the guards keep the function total regardless.
+  if (!left) return right;
+  if (!right) return left;
+  return { kind: 'split', orientation: node.orientation, ratio: node.ratio, left, right };
+}
+
+/**
+ * Rebuild a live tab tree from its serialized form, minting fresh ids and
+ * resetting navigation/loading flags. Collects the id of the leaf flagged
+ * `active` into `out.activePaneId` so the caller can restore focus.
+ */
+export function deserializeNode(
+  node: SerializedBrowserNode,
+  out: { activePaneId: string | null }
+): BrowserNode {
+  if (node.kind === 'leaf') {
+    const id = crypto.randomUUID();
+    if (node.active) out.activePaneId = id;
+    return {
+      kind: 'leaf',
+      id,
+      url: node.url,
+      title: node.title || '',
+      isLoading: node.url !== NEW_TAB_URL,
+      canGoBack: false,
+      canGoForward: false,
+    };
+  }
+  return {
+    kind: 'split',
+    id: crypto.randomUUID(),
+    orientation: node.orientation,
+    ratio: node.ratio,
+    left: deserializeNode(node.left, out),
+    right: deserializeNode(node.right, out),
+  };
 }
