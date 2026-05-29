@@ -1,13 +1,19 @@
 import { Injectable } from '@nestjs/common';
-import { createLogger, extractErrorMessage, getCurrentAniListSeason } from '@shiroani/shared';
-import type { UserProfile } from '@shiroani/shared';
+import {
+  createLogger,
+  extractErrorMessage,
+  getCurrentAniListSeason,
+  DISCOVER_SORT_TO_ANILIST,
+  DISCOVER_SCORE_MIN,
+  DISCOVER_SCORE_MAX,
+  discoverFilterSignature,
+} from '@shiroani/shared';
+import type { UserProfile, DiscoverSort, DiscoverFilters } from '@shiroani/shared';
 import { AniListClient } from './anilist-client';
 import {
-  SEARCH_ANIME_QUERY,
   ANIME_DETAILS_QUERY,
   AIRING_SCHEDULE_QUERY,
-  TRENDING_ANIME_QUERY,
-  POPULAR_THIS_SEASON_QUERY,
+  BROWSE_MEDIA_QUERY,
   RANDOM_BY_GENRE_QUERY,
   USER_PROFILE_QUERY,
 } from './queries';
@@ -15,11 +21,9 @@ import type {
   AniListMedia,
   AniListPageInfo,
   AniListAiringSchedule,
-  SearchAnimeResponse,
+  PaginatedMediaResponse,
   AnimeDetailsResponse,
   AiringScheduleResponse,
-  TrendingAnimeResponse,
-  PopularThisSeasonResponse,
   UserProfileResponse,
 } from './types';
 
@@ -47,17 +51,24 @@ export class AnimeService {
   }
 
   /**
-   * Search anime by title with pagination.
+   * Search anime by title with pagination, optional user sort + advanced
+   * filters (items 2 + 6). Search defaults to POPULARITY_DESC relevance unless
+   * the user picks a sort.
    */
   async searchAnime(
     query: string,
     page = 1,
-    perPage = DEFAULT_PER_PAGE
+    perPage = DEFAULT_PER_PAGE,
+    sort?: DiscoverSort,
+    filters?: DiscoverFilters
   ): Promise<PaginatedMediaResult> {
-    return this.queryPagedMedia('Searching anime', SEARCH_ANIME_QUERY, {
-      search: query,
+    return this.browseMedia('Searching anime', 'search', {
       page,
       perPage,
+      search: query,
+      defaultSort: 'POPULARITY_DESC',
+      sort,
+      filters,
     });
   }
 
@@ -121,33 +132,47 @@ export class AnimeService {
   }
 
   /**
-   * Get currently trending anime with pagination.
+   * Get currently trending anime with pagination. Defaults to TRENDING_DESC
+   * unless the user overrides the sort; advanced filters layer on top.
    */
-  async getTrending(page = 1, perPage = DEFAULT_PER_PAGE): Promise<PaginatedMediaResult> {
-    return this.queryPagedMedia(
-      'Fetching trending anime',
-      TRENDING_ANIME_QUERY,
-      {
-        page,
-        perPage,
-      },
-      `trending:${page}`
-    );
+  async getTrending(
+    page = 1,
+    perPage = DEFAULT_PER_PAGE,
+    sort?: DiscoverSort,
+    filters?: DiscoverFilters
+  ): Promise<PaginatedMediaResult> {
+    return this.browseMedia('Fetching trending anime', 'trending', {
+      page,
+      perPage,
+      defaultSort: 'TRENDING_DESC',
+      sort,
+      filters,
+    });
   }
 
   /**
    * Get popular anime for the current season.
-   * Automatically detects the current season and year.
+   * Automatically detects the current season and year. Defaults to
+   * POPULARITY_DESC; user sort + filters layer on top. Explicit year/season
+   * filters override the auto-detected current season.
    */
-  async getPopularThisSeason(page = 1, perPage = DEFAULT_PER_PAGE): Promise<PaginatedMediaResult> {
+  async getPopularThisSeason(
+    page = 1,
+    perPage = DEFAULT_PER_PAGE,
+    sort?: DiscoverSort,
+    filters?: DiscoverFilters
+  ): Promise<PaginatedMediaResult> {
     const { year: seasonYear, season } = getCurrentAniListSeason();
 
-    return this.queryPagedMedia(
-      `Fetching popular anime for ${season} ${seasonYear}`,
-      POPULAR_THIS_SEASON_QUERY,
-      { season, seasonYear, page, perPage },
-      `popular:${season}:${seasonYear}:${page}`
-    );
+    return this.browseMedia(`Fetching popular anime for ${season} ${seasonYear}`, 'popular', {
+      page,
+      perPage,
+      season,
+      seasonYear,
+      defaultSort: 'POPULARITY_DESC',
+      sort,
+      filters,
+    });
   }
 
   /**
@@ -217,14 +242,19 @@ export class AnimeService {
     year: number,
     season: string,
     page = 1,
-    perPage = DEFAULT_PER_PAGE
+    perPage = DEFAULT_PER_PAGE,
+    sort?: DiscoverSort,
+    filters?: DiscoverFilters
   ): Promise<PaginatedMediaResult> {
-    return this.queryPagedMedia(
-      `Fetching seasonal anime for ${season} ${year}`,
-      POPULAR_THIS_SEASON_QUERY,
-      { season: season.toUpperCase(), seasonYear: year, page, perPage },
-      `seasonal:${season.toUpperCase()}:${year}:${page}`
-    );
+    return this.browseMedia(`Fetching seasonal anime for ${season} ${year}`, 'seasonal', {
+      page,
+      perPage,
+      season: season.toUpperCase(),
+      seasonYear: year,
+      defaultSort: 'POPULARITY_DESC',
+      sort,
+      filters,
+    });
   }
 
   /**
@@ -323,6 +353,76 @@ export class AnimeService {
   }
 
   /**
+   * Unified browse/search path (items 2 + 6). Builds the `BROWSE_MEDIA_QUERY`
+   * variable set from a mode default plus the optional user sort and advanced
+   * filters, then routes through `queryPagedMedia`.
+   *
+   * Cache key folds in a filter+sort signature so filtered results never serve
+   * stale unfiltered data under the same `mode:page` key. The pristine
+   * (no sort, no filters) case keeps the original short keys for cache reuse.
+   */
+  private browseMedia(
+    description: string,
+    mode: 'trending' | 'popular' | 'seasonal' | 'search',
+    opts: {
+      page: number;
+      perPage: number;
+      search?: string;
+      season?: string;
+      seasonYear?: number;
+      defaultSort: string;
+      sort?: DiscoverSort;
+      filters?: DiscoverFilters;
+    }
+  ): Promise<PaginatedMediaResult> {
+    const { page, perPage, search, season, seasonYear, defaultSort, sort, filters } = opts;
+
+    const f = filters ?? {};
+    const anilistSort = sort ? DISCOVER_SORT_TO_ANILIST[sort] : defaultSort;
+
+    // Explicit year/season filters override the mode's intrinsic season.
+    const effectiveSeason = f.season ?? season;
+    const effectiveYear = f.year ?? seasonYear;
+
+    // AniList averageScore_greater/_lesser are exclusive — convert inclusive
+    // bounds and drop the no-op extremes.
+    const scoreGreater =
+      f.scoreMin != null && f.scoreMin > DISCOVER_SCORE_MIN ? f.scoreMin - 1 : undefined;
+    const scoreLesser =
+      f.scoreMax != null && f.scoreMax < DISCOVER_SCORE_MAX ? f.scoreMax + 1 : undefined;
+
+    const variables: Record<string, unknown> = {
+      page,
+      perPage,
+      search: search || undefined,
+      sort: [anilistSort],
+      season: effectiveSeason,
+      seasonYear: effectiveYear,
+      format: f.format,
+      status: f.status,
+      genre_in: f.includedGenres?.length ? f.includedGenres : undefined,
+      genre_not_in: f.excludedGenres?.length ? f.excludedGenres : undefined,
+      tag_in: f.tags?.length ? f.tags : undefined,
+      averageScore_greater: scoreGreater,
+      averageScore_lesser: scoreLesser,
+    };
+
+    // Search is never cached (query-space too large); browse tabs cache by
+    // mode:season:year:page plus the filter/sort signature.
+    let cacheKey: string | undefined;
+    if (mode !== 'search') {
+      const sig = discoverFilterSignature(sort, filters);
+      const base =
+        mode === 'trending'
+          ? `trending:${page}`
+          : `${mode}:${effectiveSeason}:${effectiveYear}:${page}`;
+      cacheKey = sig ? `${base}:${sig}` : base;
+    }
+
+    return this.queryPagedMedia(description, BROWSE_MEDIA_QUERY, variables, cacheKey);
+  }
+
+  /**
    * Execute a paged media query against AniList and extract media + pageInfo.
    * Centralizes the common log/try/query/extract/catch pattern.
    */
@@ -335,12 +435,10 @@ export class AnimeService {
     const page = (variables.page as number) ?? 1;
     logger.debug(`${description} (page ${page})`);
 
-    type PagedResponse = TrendingAnimeResponse | PopularThisSeasonResponse | SearchAnimeResponse;
-
     try {
       const data = cacheKey
-        ? await this.anilistClient.cachedQuery<PagedResponse>(cacheKey, query, variables)
-        : await this.anilistClient.query<PagedResponse>(query, variables);
+        ? await this.anilistClient.cachedQuery<PaginatedMediaResponse>(cacheKey, query, variables)
+        : await this.anilistClient.query<PaginatedMediaResponse>(query, variables);
       return {
         media: data.Page.media,
         pageInfo: data.Page.pageInfo,

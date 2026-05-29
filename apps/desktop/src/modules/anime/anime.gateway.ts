@@ -37,7 +37,13 @@ export class AnimeGateway {
       schema: animeSearchPayloadSchema,
       payload,
       handler: async parsed => {
-        const result = await this.animeService.searchAnime(parsed.query, parsed.page);
+        const result = await this.animeService.searchAnime(
+          parsed.query,
+          parsed.page,
+          undefined,
+          parsed.sort,
+          parsed.filters
+        );
         return { results: result.media, pageInfo: result.pageInfo };
       },
     });
@@ -84,7 +90,12 @@ export class AnimeGateway {
       schema: animeGetTrendingPayloadSchema,
       payload,
       handler: async parsed => {
-        const result = await this.animeService.getTrending(parsed.page);
+        const result = await this.animeService.getTrending(
+          parsed.page,
+          undefined,
+          parsed.sort,
+          parsed.filters
+        );
         return { results: result.media, pageInfo: result.pageInfo };
       },
     });
@@ -99,7 +110,12 @@ export class AnimeGateway {
       schema: animeGetPopularPayloadSchema,
       payload,
       handler: async parsed => {
-        const result = await this.animeService.getPopularThisSeason(parsed.page);
+        const result = await this.animeService.getPopularThisSeason(
+          parsed.page,
+          undefined,
+          parsed.sort,
+          parsed.filters
+        );
         return { results: result.media, pageInfo: result.pageInfo };
       },
     });
@@ -117,7 +133,10 @@ export class AnimeGateway {
         const result = await this.animeService.getSeasonalAnime(
           parsed.year,
           parsed.season,
-          parsed.page
+          parsed.page,
+          undefined,
+          parsed.sort,
+          parsed.filters
         );
         return { results: result.media, pageInfo: result.pageInfo };
       },

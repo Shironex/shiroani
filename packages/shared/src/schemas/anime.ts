@@ -6,6 +6,39 @@
  */
 
 import { z } from 'zod';
+import {
+  DISCOVER_SORTS,
+  DISCOVER_FORMATS,
+  DISCOVER_STATUSES,
+  DISCOVER_SEASONS,
+  DISCOVER_MIN_YEAR,
+  DISCOVER_SCORE_MIN,
+  DISCOVER_SCORE_MAX,
+} from '../constants/discover-filters';
+
+/** User-selectable sort mode for the browse tabs (item 2). */
+export const discoverSortSchema = z.enum(DISCOVER_SORTS);
+
+/**
+ * Advanced browse/search filters (item 6). All optional — shared by the
+ * trending/popular/seasonal/search payloads.
+ */
+export const discoverFiltersSchema = z.object({
+  includedGenres: z.array(z.string().min(1).max(50)).max(20).optional(),
+  excludedGenres: z.array(z.string().min(1).max(50)).max(20).optional(),
+  tags: z.array(z.string().min(1).max(50)).max(20).optional(),
+  format: z.enum(DISCOVER_FORMATS).optional(),
+  status: z.enum(DISCOVER_STATUSES).optional(),
+  year: z
+    .number()
+    .int()
+    .min(DISCOVER_MIN_YEAR)
+    .max(2100)
+    .optional(),
+  season: z.enum(DISCOVER_SEASONS).optional(),
+  scoreMin: z.number().int().min(DISCOVER_SCORE_MIN).max(DISCOVER_SCORE_MAX).optional(),
+  scoreMax: z.number().int().min(DISCOVER_SCORE_MIN).max(DISCOVER_SCORE_MAX).optional(),
+});
 
 export const animeStatusSchema = z.enum([
   'watching',
@@ -22,6 +55,8 @@ export const animeStatusSchema = z.enum([
 export const animeSearchPayloadSchema = z.object({
   query: z.string().trim().min(1).max(200),
   page: z.number().int().positive().max(500).optional(),
+  sort: discoverSortSchema.optional(),
+  filters: discoverFiltersSchema.optional(),
 });
 
 export const animeGetDetailsPayloadSchema = z.object({
@@ -36,16 +71,22 @@ export const animeGetAiringPayloadSchema = z.object({
 
 export const animeGetTrendingPayloadSchema = z.object({
   page: z.number().int().positive().max(500).optional(),
+  sort: discoverSortSchema.optional(),
+  filters: discoverFiltersSchema.optional(),
 });
 
 export const animeGetPopularPayloadSchema = z.object({
   page: z.number().int().positive().max(500).optional(),
+  sort: discoverSortSchema.optional(),
+  filters: discoverFiltersSchema.optional(),
 });
 
 export const animeGetSeasonalPayloadSchema = z.object({
   year: z.number().int().min(1940).max(2100),
   season: z.enum(['WINTER', 'SPRING', 'SUMMER', 'FALL', 'winter', 'spring', 'summer', 'fall']),
   page: z.number().int().positive().max(500).optional(),
+  sort: discoverSortSchema.optional(),
+  filters: discoverFiltersSchema.optional(),
 });
 
 export const animeGetRandomPayloadSchema = z.object({
