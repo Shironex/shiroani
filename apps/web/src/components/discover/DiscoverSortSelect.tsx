@@ -17,12 +17,12 @@ interface DiscoverSortSelectProps {
 }
 
 /** i18n key suffix per sort mode (controls.sort*). */
-const SORT_LABEL_KEY: Record<DiscoverSort, string> = {
+const SORT_LABEL_KEY = {
   score: 'controls.sortScore',
   popularity: 'controls.sortPopularity',
   releaseDate: 'controls.sortReleaseDate',
   title: 'controls.sortTitle',
-};
+} as const satisfies Record<DiscoverSort, string>;
 
 /**
  * User-selectable sort for the browse tabs + search (item 2). Wraps the shared
