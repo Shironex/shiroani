@@ -276,13 +276,17 @@ export const useLibraryStore = create<LibraryStore>()(
 
         batchUpdateScore: (score: number) => {
           const ids = [...get().selectedIds];
-          // A score of 0 clears the rating; emit `undefined` so the backend drops it,
-          // matching the single-entry editor's `score > 0 ? score : undefined`.
-          const nextScore = score > 0 ? score : undefined;
+          // Persist the chosen score directly. A `clear` selection arrives as 0,
+          // which we send through as 0 rather than `undefined`: the schema is
+          // non-nullable (`score: number().min(0)`), and `buildUpdate` skips
+          // `undefined` fields entirely — so emitting `undefined` would leave the
+          // old score untouched in SQLite while the UI optimistically shows it
+          // cleared (a silent desync). All score UI gates on `score > 0`, so a
+          // stored 0 renders as "no score".
           for (const id of ids) {
             crud.optimisticUpdate({
               event: LibraryEvents.UPDATE,
-              payload: { id, score: nextScore },
+              payload: { id, score },
               id,
               applyUpdate: applyLibraryUpdate,
               label: 'batchUpdateScore',
