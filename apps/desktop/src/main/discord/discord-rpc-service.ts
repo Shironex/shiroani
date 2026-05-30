@@ -150,7 +150,12 @@ async function resolveCoverUrl(url: string | undefined): Promise<string | undefi
   const timer = setTimeout(() => controller.abort(), COVER_PROBE_TIMEOUT_MS);
   let ok = false;
   try {
-    const res = await fetch(url, { method: 'HEAD', signal: controller.signal });
+    let res = await fetch(url, { method: 'HEAD', signal: controller.signal });
+    // Some CDNs reject HEAD with 403/405 even when the image is valid via GET.
+    // Fall back to a GET (still timeout-bounded) before treating it as unreachable.
+    if (!res.ok && (res.status === 403 || res.status === 405)) {
+      res = await fetch(url, { method: 'GET', signal: controller.signal });
+    }
     ok = res.ok;
   } catch {
     // Unreachable/timeout — `ok` stays false and the cover is stripped.
