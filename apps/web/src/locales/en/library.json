@@ -80,7 +80,8 @@
   },
   "toast": {
     "noBrowserTab": "No tab is open in the browser",
-    "linkUpdated": "Link updated"
+    "linkUpdated": "Link updated",
+    "progressTracked": "Progress updated: {{title}} — ep. {{episode}}"
   },
   "remove": {
     "title": "Remove from library",

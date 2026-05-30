@@ -338,6 +338,14 @@
       "trackTitle": "Zapisz historię przeglądania",
       "trackDescription": "Lokalna historia. Nigdzie nie jest wysyłana."
     },
+    "tracking": {
+      "card": {
+        "title": "Śledzenie postępu",
+        "subtitle": "Automatycznie aktualizuj postęp oglądania w bibliotece."
+      },
+      "toggleTitle": "Automatyczne śledzenie odcinków",
+      "toggleDescription": "Gdy oglądasz anime z biblioteki na stronie streamingowej, aktualizuje numer odcinka. Postęp tylko rośnie — nigdy się nie cofa."
+    },
     "general": {
       "card": {
         "title": "Przeglądarka internetowa",

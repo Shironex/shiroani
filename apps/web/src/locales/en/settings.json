@@ -338,6 +338,14 @@
       "trackTitle": "Save browsing history",
       "trackDescription": "Local history. Never sent anywhere."
     },
+    "tracking": {
+      "card": {
+        "title": "Progress tracking",
+        "subtitle": "Automatically update your library watch progress."
+      },
+      "toggleTitle": "Automatic episode tracking",
+      "toggleDescription": "When you watch an anime from your library on a streaming site, updates the episode number. Progress only advances — it never goes backwards."
+    },
     "general": {
       "card": {
         "title": "Web browser",

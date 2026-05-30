@@ -42,6 +42,11 @@ interface SettingsState {
   displayName: string;
   /** Developer mode — surfaces DevTools, diagnostics copy, and the log viewer. */
   devModeEnabled: boolean;
+  /**
+   * Automatically advance library episode progress while watching a detected
+   * anime on a streaming site. Advance-only + clamped, so safe to default ON.
+   */
+  autoTrackProgress: boolean;
 }
 
 /**
@@ -60,6 +65,8 @@ interface SettingsActions {
   setDisplayName: (name: string) => void;
   /** Toggle developer mode — persisted across sessions. */
   setDevModeEnabled: (enabled: boolean) => void;
+  /** Toggle automatic library progress tracking — persisted across sessions. */
+  setAutoTrackProgress: (enabled: boolean) => void;
   /** Initialize persisted visual settings */
   initSettings: () => Promise<void>;
 }
@@ -67,6 +74,8 @@ interface SettingsActions {
 const DISPLAY_NAME_STORAGE_KEY = 'shiroani:displayName';
 const DEV_MODE_STORAGE_KEY = 'shiroani:devMode';
 const DEV_MODE_SETTING_KEY = 'settings.devMode';
+const AUTO_TRACK_STORAGE_KEY = 'shiroani:autoTrackProgress';
+const AUTO_TRACK_SETTING_KEY = 'settings.autoTrackProgress';
 
 // Stored as the string `'true'`; any other value (including missing keys left
 // over from the old removeItem-on-disable shape) reads as disabled.
@@ -74,6 +83,14 @@ const devModeStorage = createLocalStorageAccessor<boolean>(DEV_MODE_STORAGE_KEY,
   parse: raw => raw === 'true',
   serialize: enabled => (enabled ? 'true' : ''),
   fallback: false,
+});
+
+// Default ON: only the explicit string `'false'` disables it; a missing key
+// (first run / never toggled) reads as enabled.
+const autoTrackStorage = createLocalStorageAccessor<boolean>(AUTO_TRACK_STORAGE_KEY, {
+  parse: raw => raw !== 'false',
+  serialize: enabled => (enabled ? 'true' : 'false'),
+  fallback: true,
 });
 
 const displayNameStorage = createLocalStorageAccessor<string>(DISPLAY_NAME_STORAGE_KEY, {
@@ -88,6 +105,14 @@ function getPersistedDevMode(): boolean {
 
 function persistDevModeLocally(enabled: boolean) {
   devModeStorage.set(enabled);
+}
+
+function getPersistedAutoTrackProgress(): boolean {
+  return autoTrackStorage.get();
+}
+
+function persistAutoTrackProgressLocally(enabled: boolean) {
+  autoTrackStorage.set(enabled);
 }
 
 function getPersistedDisplayName(): string {
@@ -238,6 +263,8 @@ export const useSettingsStore = create<SettingsStore>()(
 
       const initialDisplayName = typeof window !== 'undefined' ? getPersistedDisplayName() : '';
       const initialDevMode = typeof window !== 'undefined' ? getPersistedDevMode() : false;
+      const initialAutoTrack =
+        typeof window !== 'undefined' ? getPersistedAutoTrackProgress() : true;
 
       return {
         // Initial state
@@ -247,6 +274,7 @@ export const useSettingsStore = create<SettingsStore>()(
         preferredLanguage: 'romaji',
         displayName: initialDisplayName,
         devModeEnabled: initialDevMode,
+        autoTrackProgress: initialAutoTrack,
 
         // Actions
         setTheme: (theme: Theme) => {
@@ -305,6 +333,16 @@ export const useSettingsStore = create<SettingsStore>()(
           });
         },
 
+        setAutoTrackProgress: (enabled: boolean) => {
+          if (get().autoTrackProgress === enabled) return;
+          logger.debug('setAutoTrackProgress', enabled);
+          set({ autoTrackProgress: enabled }, undefined, 'settings/setAutoTrackProgress');
+          persistAutoTrackProgressLocally(enabled);
+          void electronStoreSet(AUTO_TRACK_SETTING_KEY, enabled).catch(error => {
+            logger.warn('Failed to persist auto-track progress:', error);
+          });
+        },
+
         initSettings: async () => {
           logger.debug('initSettings');
           if (settingsInitPromise) {
@@ -357,6 +395,24 @@ export const useSettingsStore = create<SettingsStore>()(
               }
             } catch (error) {
               logger.warn('Failed to restore dev mode:', error);
+            }
+
+            try {
+              const persistedAutoTrack =
+                await electronStoreGet<boolean>(AUTO_TRACK_SETTING_KEY);
+              if (
+                typeof persistedAutoTrack === 'boolean' &&
+                persistedAutoTrack !== get().autoTrackProgress
+              ) {
+                set(
+                  { autoTrackProgress: persistedAutoTrack },
+                  undefined,
+                  'settings/initAutoTrackProgress'
+                );
+                persistAutoTrackProgressLocally(persistedAutoTrack);
+              }
+            } catch (error) {
+              logger.warn('Failed to restore auto-track progress:', error);
             }
           })().catch(error => {
             settingsInitPromise = null;

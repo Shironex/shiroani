@@ -1,11 +1,12 @@
 import { useCallback, useState, type KeyboardEvent } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Globe, Shield, X, AppWindow, Copy } from 'lucide-react';
+import { Globe, Shield, X, AppWindow, Copy, ListVideo } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { PillTag } from '@/components/ui/pill-tag';
 import { useBrowserStore } from '@/stores/useBrowserStore';
 import { useQuickAccessStore } from '@/stores/useQuickAccessStore';
+import { useSettingsStore } from '@/stores/useSettingsStore';
 import { SettingsCard, SettingsToggleRow } from '@/components/settings/SettingsCard';
 import { cn } from '@/lib/utils';
 
@@ -26,6 +27,8 @@ export function BrowserSection() {
   const setSplitTabsEnabled = useBrowserStore(state => state.setSplitTabsEnabled);
   const trackFrequentSites = useQuickAccessStore(state => state.trackFrequentSites);
   const setTrackFrequentSites = useQuickAccessStore(state => state.setTrackFrequentSites);
+  const autoTrackProgress = useSettingsStore(state => state.autoTrackProgress);
+  const setAutoTrackProgress = useSettingsStore(state => state.setAutoTrackProgress);
 
   const [whitelistInput, setWhitelistInput] = useState('');
 
@@ -189,6 +192,21 @@ export function BrowserSection() {
           description={t('browser.tabs.trackDescription')}
           checked={trackFrequentSites}
           onCheckedChange={setTrackFrequentSites}
+        />
+      </SettingsCard>
+
+      <SettingsCard
+        icon={ListVideo}
+        title={t('browser.tracking.card.title')}
+        subtitle={t('browser.tracking.card.subtitle')}
+        tone="green"
+      >
+        <SettingsToggleRow
+          id="browser-auto-track-label"
+          title={t('browser.tracking.toggleTitle')}
+          description={t('browser.tracking.toggleDescription')}
+          checked={autoTrackProgress}
+          onCheckedChange={setAutoTrackProgress}
         />
       </SettingsCard>
 

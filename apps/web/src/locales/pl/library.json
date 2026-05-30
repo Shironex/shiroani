@@ -80,7 +80,8 @@
   },
   "toast": {
     "noBrowserTab": "Nie ma otwartej karty w przeglądarce",
-    "linkUpdated": "Link zaktualizowany"
+    "linkUpdated": "Link zaktualizowany",
+    "progressTracked": "Postęp zaktualizowano: {{title}} — odc. {{episode}}"
   },
   "remove": {
     "title": "Usuń z biblioteki",
