@@ -1,0 +1,72 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const lang = 'pl';
+---
+
+<BaseLayout
+  title="404 · Strona nie znaleziona — ShiroAni"
+  description="Ta strona nie istnieje albo została przeniesiona. Wróć na stronę główną ShiroAni."
+  lang={lang}
+  noindex
+>
+  <main id="main" class="notfound">
+    <div class="notfound-wrap">
+      <img
+        src="/mascot-think.png"
+        alt="Shiro-chan zamyślona"
+        width={240}
+        height={240}
+        loading="eager"
+        decoding="async"
+      />
+      <p class="notfound-code">404</p>
+      <h1 class="notfound-title">Strona nie znaleziona</h1>
+      <p class="notfound-body">
+        Hmm… Shiro-chan szukała tej strony na każdej półce, ale jej nie ma.
+        Może została przeniesiona albo nigdy nie istniała.
+      </p>
+      <a href="/" class="btn btn-primary">Wróć na stronę główną</a>
+    </div>
+  </main>
+
+  <style>
+    .notfound {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 4rem 1.5rem;
+    }
+    .notfound-wrap {
+      max-width: 32rem;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .notfound-wrap img {
+      width: 240px;
+      height: auto;
+      margin-bottom: 1rem;
+    }
+    .notfound-code {
+      font-family: var(--font-display);
+      font-size: clamp(3.5rem, 12vw, 6rem);
+      font-weight: 800;
+      line-height: 1;
+      color: var(--color-brand);
+      margin: 0;
+    }
+    .notfound-title {
+      font-family: var(--font-display);
+      font-size: clamp(1.5rem, 5vw, 2rem);
+      margin: 0.25rem 0 0.5rem;
+    }
+    .notfound-body {
+      opacity: 0.8;
+      line-height: 1.6;
+      margin: 0 0 1.75rem;
+    }
+  </style>
+</BaseLayout>
