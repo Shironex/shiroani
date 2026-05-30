@@ -248,6 +248,7 @@ export const overlayGetAnimationEnabledSchema = z.tuple([]);
 // ============================================================================
 
 export const discordRpcGetSettingsSchema = z.tuple([]);
+export const discordRpcGetStatusSchema = z.tuple([]);
 export const discordRpcUpdateSettingsSchema = z.tuple([discordRpcSettingsPartialSchema]);
 export const discordRpcUpdatePresenceSchema = z.tuple([discordPresenceActivitySchema]);
 export const discordRpcClearPresenceSchema = z.tuple([]);

@@ -401,6 +401,9 @@ export interface DiscoverMedia {
 // Discord Rich Presence Types
 // ============================================
 
+/** RPC connection lifecycle state, surfaced to the renderer for a status indicator. */
+export type DiscordRpcStatus = 'connected' | 'connecting' | 'disconnected' | 'error';
+
 export interface DiscordPresenceActivity {
   /** Current view/activity: browser, library, diary, schedule, settings */
   view: string;

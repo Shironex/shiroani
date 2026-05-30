@@ -368,6 +368,13 @@
       "save": "Save",
       "saved": "Saved"
     },
+    "status": {
+      "aria": "Discord connection status",
+      "connected": "Connected",
+      "connecting": "Connecting…",
+      "disconnected": "Disconnected",
+      "error": "Connection error"
+    },
     "preview": {
       "title": "Preview",
       "subtitle": "How your status will look on Discord.",

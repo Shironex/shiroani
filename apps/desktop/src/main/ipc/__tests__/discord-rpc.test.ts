@@ -78,6 +78,7 @@ describe('registerDiscordRpcHandlers', () => {
       cleanupDiscordRpcHandlers();
       [
         'discord-rpc:get-settings',
+        'discord-rpc:get-status',
         'discord-rpc:update-settings',
         'discord-rpc:update-presence',
         'discord-rpc:clear-presence',

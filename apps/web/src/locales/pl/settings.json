@@ -368,6 +368,13 @@
       "save": "Zapisz",
       "saved": "Zapisano"
     },
+    "status": {
+      "aria": "Status połączenia z Discordem",
+      "connected": "Połączono",
+      "connecting": "Łączenie…",
+      "disconnected": "Rozłączono",
+      "error": "Błąd połączenia"
+    },
     "preview": {
       "title": "Podgląd",
       "subtitle": "Tak będzie wyglądał Twój status na Discordzie.",

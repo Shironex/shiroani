@@ -67,6 +67,7 @@ export const ALLOWED_IPC_CHANNELS: ReadonlySet<string> = new Set([
   'notifications:is-subscribed',
   // discord rpc
   'discord-rpc:get-settings',
+  'discord-rpc:get-status',
   'discord-rpc:update-settings',
   'discord-rpc:update-presence',
   'discord-rpc:clear-presence',

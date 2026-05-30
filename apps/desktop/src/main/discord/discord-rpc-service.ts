@@ -1,6 +1,11 @@
 import { Client } from '@xhayper/discord-rpc';
+import type { BrowserWindow } from 'electron';
 import { DEFAULT_DISCORD_TEMPLATES } from '@shiroani/shared';
-import type { DiscordRpcSettings, DiscordPresenceActivity } from '@shiroani/shared';
+import type {
+  DiscordRpcSettings,
+  DiscordPresenceActivity,
+  DiscordRpcStatus,
+} from '@shiroani/shared';
 import { store } from '../store';
 import { buildPresence } from './discord-presence-builder';
 import { createMainLogger } from '../logging/logger';
@@ -33,6 +38,29 @@ let activityStartTime: Date | null = null;
 let idleTimer: ReturnType<typeof setTimeout> | null = null;
 let isIdle = false;
 const IDLE_TIMEOUT_MS = 20_000;
+
+const STATUS_CHANNEL = 'discord-rpc:status-changed';
+let currentStatus: DiscordRpcStatus = 'disconnected';
+let mainWindowRef: BrowserWindow | null = null;
+
+/** Registered by bootstrap so the service can push status transitions to the renderer. */
+export function setDiscordRpcWindow(window: BrowserWindow | null): void {
+  mainWindowRef = window;
+}
+
+export function getDiscordRpcStatus(): DiscordRpcStatus {
+  return currentStatus;
+}
+
+/** Update the tracked status and broadcast it to the renderer when it changes. */
+function setStatus(status: DiscordRpcStatus): void {
+  if (status === currentStatus) return;
+  currentStatus = status;
+  logger.debug(`Discord RPC status: ${status}`);
+  if (mainWindowRef && !mainWindowRef.isDestroyed()) {
+    mainWindowRef.webContents.send(STATUS_CHANNEL, status);
+  }
+}
 
 function getSettings(): DiscordRpcSettings {
   const stored = store.get(STORE_KEY) as Partial<DiscordRpcSettings> | undefined;
@@ -88,11 +116,61 @@ function scheduleReconnect(): void {
   reconnectDelay = Math.min(reconnectDelay * 2, RECONNECT_MAX_MS);
 }
 
+const COVER_PROBE_TIMEOUT_MS = 4_000;
+// Per-URL reachability cache so we don't re-probe the network on every (15s-
+// throttled) presence update. `true` = reachable, `false` = 404/timeout/invalid.
+const coverProbeCache = new Map<string, boolean>();
+
+/** Only http(s) URLs can be a Discord large-image asset. */
+function isValidCoverUrl(url: string): boolean {
+  try {
+    const { protocol } = new URL(url);
+    return protocol === 'https:' || protocol === 'http:';
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Validate + probe the anime cover URL. Returns the URL when it is well-formed
+ * and reachable, otherwise undefined so the presence builder falls back to the
+ * known-good `shiroani` logo asset instead of a broken-image placeholder.
+ */
+async function resolveCoverUrl(url: string | undefined): Promise<string | undefined> {
+  if (!url) return undefined;
+  if (!isValidCoverUrl(url)) return undefined;
+
+  const cached = coverProbeCache.get(url);
+  if (cached !== undefined) return cached ? url : undefined;
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), COVER_PROBE_TIMEOUT_MS);
+  let ok = false;
+  try {
+    const res = await fetch(url, { method: 'HEAD', signal: controller.signal });
+    ok = res.ok;
+  } catch {
+    ok = false;
+  } finally {
+    clearTimeout(timer);
+  }
+
+  coverProbeCache.set(url, ok);
+  return ok ? url : undefined;
+}
+
 async function sendPresenceUpdate(activity: DiscordPresenceActivity): Promise<void> {
   if (!client || !isConnected) return;
 
   const settings = getSettings();
-  const presence = buildPresence(activity, settings, activityStartTime);
+  // Guard the cover art: strip an unreachable URL so the builder's logo
+  // fallback applies. Keeps buildPresence pure/synchronous.
+  const safeCoverUrl = await resolveCoverUrl(activity.animeCoverUrl);
+  const safeActivity: DiscordPresenceActivity =
+    safeCoverUrl === activity.animeCoverUrl
+      ? activity
+      : { ...activity, animeCoverUrl: safeCoverUrl };
+  const presence = buildPresence(safeActivity, settings, activityStartTime);
 
   try {
     await client.user?.setActivity(presence as never);
@@ -145,10 +223,12 @@ async function doConnect(): Promise<void> {
   }
 
   client = new Client({ clientId: DISCORD_CLIENT_ID });
+  setStatus('connecting');
 
   client.on('ready', () => {
     isConnected = true;
     reconnectDelay = RECONNECT_BASE_MS;
+    setStatus('connected');
     logger.info('Discord RPC connected');
 
     activityStartTime = new Date();
@@ -161,6 +241,7 @@ async function doConnect(): Promise<void> {
 
   client.on('disconnected', () => {
     isConnected = false;
+    setStatus('disconnected');
     logger.info('Discord RPC disconnected');
     scheduleReconnect();
   });
@@ -170,6 +251,7 @@ async function doConnect(): Promise<void> {
   } catch {
     logger.debug('Discord not available, scheduling reconnect');
     isConnected = false;
+    setStatus('error');
     scheduleReconnect();
   }
 }
@@ -192,6 +274,7 @@ async function disconnectClient(): Promise<void> {
     client = null;
     isConnected = false;
   }
+  setStatus('disconnected');
 }
 
 // ========================================

@@ -30,6 +30,7 @@ import {
   cleanupDiscordRpc,
   onWindowBlur,
   onWindowFocus,
+  setDiscordRpcWindow,
 } from './discord/discord-rpc-service';
 import { store } from './store';
 import { setPopupBlockEnabled } from './ipc/browser';
@@ -245,6 +246,9 @@ function setupWindowDependentServices(win: BrowserWindow): void {
   // Set up mascot overlay with main window reference
   setMascotMainWindow(win);
 
+  // Let the Discord RPC service push connection-status updates to this window.
+  setDiscordRpcWindow(win);
+
   win.on('close', event => {
     if (process.platform === 'darwin' && !isShuttingDown) {
       // On macOS the red traffic-light button should hide the app instead of
@@ -302,7 +306,8 @@ async function bootstrap(): Promise<void> {
   mainWindow = await createMainWindow(browserManager);
   setMascotMainWindow(mainWindow);
 
-  // Initialize Discord Rich Presence (non-blocking, handles Discord not running)
+  // Initialize Discord Rich Presence (non-blocking, handles Discord not running).
+  // The window ref is wired in setupWindowDependentServices below.
   initializeDiscordRpc();
 
   // Initialize adblocker after window creation, then enable on browser session
