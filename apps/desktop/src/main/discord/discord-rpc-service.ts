@@ -43,10 +43,30 @@ const IDLE_TIMEOUT_MS = 20_000;
 const STATUS_CHANNEL = 'discord-rpc:status-changed';
 let currentStatus: DiscordRpcStatus = 'disconnected';
 let mainWindowRef: BrowserWindow | null = null;
+let mainWindowClosedHandler: (() => void) | null = null;
 
 /** Registered by bootstrap so the service can push status transitions to the renderer. */
 export function setDiscordRpcWindow(window: BrowserWindow | null): void {
+  // Detach any prior 'closed' listener so we don't leak handlers across calls.
+  if (mainWindowRef && mainWindowClosedHandler && !mainWindowRef.isDestroyed()) {
+    mainWindowRef.off('closed', mainWindowClosedHandler);
+  }
+  mainWindowClosedHandler = null;
+
   mainWindowRef = window;
+
+  if (window) {
+    // Drop the reference when the window is destroyed so we don't pin a dead
+    // BrowserWindow in memory (Electron leak).
+    const handler = (): void => {
+      if (mainWindowRef === window) {
+        mainWindowRef = null;
+        mainWindowClosedHandler = null;
+      }
+    };
+    mainWindowClosedHandler = handler;
+    window.on('closed', handler);
+  }
 }
 
 export function getDiscordRpcStatus(): DiscordRpcStatus {
