@@ -59,6 +59,10 @@ export function trackDetectedProgress(detection: AnimeDetection | null): void {
 
   const key = `${detection.anilistId ?? detection.animeTitle}#${detection.episode}`;
 
+  // A different target arrived — cancel any stale dwell timer first, so a
+  // matched lastBumpKey (early return below) can't leave it running.
+  if (pending && pending.key !== key) clearPending();
+
   // Same target already pending/handled — let the running dwell timer finish.
   if (pending?.key === key || lastBumpKey === key) return;
 
