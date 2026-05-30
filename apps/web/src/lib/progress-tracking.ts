@@ -47,8 +47,8 @@ export function matchEntry(
     entries.find(
       e =>
         normalizeTitle(e.title) === target ||
-        (e.titleRomaji !== undefined && normalizeTitle(e.titleRomaji) === target) ||
-        (e.titleNative !== undefined && normalizeTitle(e.titleNative) === target)
+        (typeof e.titleRomaji === 'string' && normalizeTitle(e.titleRomaji) === target) ||
+        (typeof e.titleNative === 'string' && normalizeTitle(e.titleNative) === target)
     ) ?? null
   );
 }

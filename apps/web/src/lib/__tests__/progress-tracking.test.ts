@@ -49,6 +49,23 @@ describe('matchEntry', () => {
     expect(m?.id).toBe(2);
   });
 
+  it('does not throw when title fields are null at runtime', () => {
+    // AniList-sourced entries may carry `null` for optional titles despite the
+    // `?: string` type; the guard must not call normalizeTitle on them.
+    const nullish = [
+      makeEntry({
+        id: 3,
+        title: 'Bleach',
+        titleRomaji: null as unknown as string,
+        titleNative: null as unknown as string,
+      }),
+    ];
+    expect(() => matchEntry(nullish, { animeTitle: 'Something Else' })).not.toThrow();
+    expect(matchEntry(nullish, { animeTitle: 'Something Else' })).toBeNull();
+    // Real `title` still matches.
+    expect(matchEntry(nullish, { animeTitle: 'bleach' })?.id).toBe(3);
+  });
+
   it('returns null when no confident match exists', () => {
     expect(matchEntry(entries, { animeTitle: 'Naruto' })).toBeNull();
   });
