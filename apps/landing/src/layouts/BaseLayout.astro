@@ -8,9 +8,19 @@ interface Props {
   titleKey?: string;
   descriptionKey?: string;
   lang?: SupportedLanguage;
+  ogImage?: string;
+  noindex?: boolean;
 }
 
-const { title, description, titleKey, descriptionKey, lang = 'pl' } = Astro.props;
+const {
+  title,
+  description,
+  titleKey,
+  descriptionKey,
+  lang = 'pl',
+  ogImage,
+  noindex,
+} = Astro.props;
 ---
 
 <!doctype html>
@@ -22,6 +32,8 @@ const { title, description, titleKey, descriptionKey, lang = 'pl' } = Astro.prop
       titleKey={titleKey}
       descriptionKey={descriptionKey}
       lang={lang}
+      ogImage={ogImage}
+      noindex={noindex}
     />
   </head>
   <body>
