@@ -36,6 +36,16 @@ export const translations: Record<SupportedLanguage, Record<string, string>> = {
     'meta.download.title': 'Pobierz · ShiroAni',
     'meta.download.description':
       'Pobierz najnowszą wersję ShiroAni — przeglądarkę i tracker anime. Windows i macOS.',
+    'meta.404.title': '404 · Strona nie znaleziona — ShiroAni',
+    'meta.404.description':
+      'Ta strona nie istnieje albo została przeniesiona. Wróć na stronę główną ShiroAni.',
+
+    // 404 page
+    'notfound.mascotAlt': 'Shiro-chan zamyślona',
+    'notfound.title': 'Strona nie znaleziona',
+    'notfound.body':
+      'Hmm… Shiro-chan szukała tej strony na każdej półce, ale jej nie ma. Może została przeniesiona albo nigdy nie istniała.',
+    'notfound.cta': 'Wróć na stronę główną',
 
     // Navbar
     'nav.primary': 'Nawigacja główna',
@@ -375,6 +385,16 @@ export const translations: Record<SupportedLanguage, Record<string, string>> = {
     'meta.download.title': 'Download · ShiroAni',
     'meta.download.description':
       'Download the latest ShiroAni — anime browser & tracker. Windows and macOS.',
+    'meta.404.title': '404 · Page not found — ShiroAni',
+    'meta.404.description':
+      'This page doesn’t exist or has been moved. Head back to the ShiroAni home page.',
+
+    // 404 page
+    'notfound.mascotAlt': 'Shiro-chan, lost in thought',
+    'notfound.title': 'Page not found',
+    'notfound.body':
+      'Hmm… Shiro-chan searched every shelf for this page, but it isn’t here. Maybe it was moved, or never existed at all.',
+    'notfound.cta': 'Back to home',
 
     // Navbar
     'nav.primary': 'Primary navigation',

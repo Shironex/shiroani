@@ -7,6 +7,8 @@ const lang = 'pl';
 <BaseLayout
   title="404 · Strona nie znaleziona — ShiroAni"
   description="Ta strona nie istnieje albo została przeniesiona. Wróć na stronę główną ShiroAni."
+  titleKey="meta.404.title"
+  descriptionKey="meta.404.description"
   lang={lang}
   noindex
 >
@@ -15,18 +17,19 @@ const lang = 'pl';
       <img
         src="/mascot-think.png"
         alt="Shiro-chan zamyślona"
+        data-i18n-alt="notfound.mascotAlt"
         width={240}
         height={240}
         loading="eager"
         decoding="async"
       />
       <p class="notfound-code">404</p>
-      <h1 class="notfound-title">Strona nie znaleziona</h1>
-      <p class="notfound-body">
+      <h1 class="notfound-title" data-i18n="notfound.title">Strona nie znaleziona</h1>
+      <p class="notfound-body" data-i18n="notfound.body">
         Hmm… Shiro-chan szukała tej strony na każdej półce, ale jej nie ma.
         Może została przeniesiona albo nigdy nie istniała.
       </p>
-      <a href="/" class="btn btn-primary">Wróć na stronę główną</a>
+      <a href="/" class="btn btn-primary" data-i18n="notfound.cta">Wróć na stronę główną</a>
     </div>
   </main>
 
