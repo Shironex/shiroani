@@ -24,6 +24,8 @@ const ALLOWED_STORE_KEYS = new Set([
   'settings.uiFontScale',
   'settings.displayName',
   'settings.devMode',
+  'settings.autoTrackProgress',
+  'settings.feedRefreshOnStartup',
   // Library bookmarks
   'library-bookmarks',
   // Update channel
@@ -52,6 +54,8 @@ const ALLOWED_STORE_KEYS = new Set([
   'discord-rpc-settings',
   // Browser tab persistence (renderer saves/loads tabs directly)
   'browser-tabs',
+  // Browser history (renderer persists visited entries)
+  'browser-history',
   // Quick access sites and frequent visits
   'quick-access-sites',
   'quick-access-frequent',

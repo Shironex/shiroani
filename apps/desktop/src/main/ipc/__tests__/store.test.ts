@@ -78,6 +78,23 @@ describe('registerStoreHandlers', () => {
       expect(mockStore.set).not.toHaveBeenCalled();
     });
 
+    it.each(['browser-history', 'settings.autoTrackProgress', 'settings.feedRefreshOnStartup'])(
+      'sets value for explicitly-allowed key %s',
+      async key => {
+        registerStoreHandlers();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await (ipcMain as any).__invoke('store:set', key, true);
+        expect(mockStore.set).toHaveBeenCalledWith(key, true);
+      }
+    );
+
+    it('BLOCKS writes to an un-enumerated settings.* key (writes are exact-match only)', async () => {
+      registerStoreHandlers();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await (ipcMain as any).__invoke('store:set', 'settings.somethingElse', 'x');
+      expect(mockStore.set).not.toHaveBeenCalled();
+    });
+
     it('throws when value is too large', async () => {
       registerStoreHandlers();
       const huge = 'x'.repeat(1_000_001);
@@ -102,6 +119,13 @@ describe('registerStoreHandlers', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       await (ipcMain as any).__invoke('store:delete', 'library-bookmarks');
       expect(mockStore.delete).toHaveBeenCalledWith('library-bookmarks');
+    });
+
+    it('deletes newly-allowed browser-history key', async () => {
+      registerStoreHandlers();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await (ipcMain as any).__invoke('store:delete', 'browser-history');
+      expect(mockStore.delete).toHaveBeenCalledWith('browser-history');
     });
 
     it('does NOT delete disallowed key', async () => {
