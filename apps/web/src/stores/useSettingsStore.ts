@@ -167,6 +167,35 @@ function applyThemeToDOM(theme: Theme) {
 const DEFAULT_THEME: Theme = 'plum';
 
 /**
+ * Sentinel theme value meaning "follow the OS prefers-color-scheme". Stored
+ * as-is so the choice stays reactive; resolved to a concrete built-in theme
+ * via {@link resolveSystemTheme} right before it touches the DOM.
+ */
+export const SYSTEM_THEME = 'system' as const;
+
+/** Built-in theme applied when the OS reports a dark preference. */
+const SYSTEM_DARK_THEME: Theme = 'plum';
+/** Built-in theme applied when the OS reports a light preference. */
+const SYSTEM_LIGHT_THEME: Theme = 'paper';
+
+function prefersDark(): boolean {
+  return (
+    typeof window !== 'undefined' &&
+    typeof window.matchMedia === 'function' &&
+    window.matchMedia('(prefers-color-scheme: dark)').matches
+  );
+}
+
+/**
+ * Resolve a stored theme to a concrete theme class. Only the `'system'`
+ * sentinel is rewritten; every other value (built-in or custom) passes through.
+ */
+function resolveTheme(theme: Theme): Theme {
+  if (theme !== SYSTEM_THEME) return theme;
+  return prefersDark() ? SYSTEM_DARK_THEME : SYSTEM_LIGHT_THEME;
+}
+
+/**
  * Settings store using Zustand
  */
 export const useSettingsStore = create<SettingsStore>()(
@@ -175,10 +204,11 @@ export const useSettingsStore = create<SettingsStore>()(
       // Resolve initial theme from localStorage (instant) or fall back to default.
       // Validate against known built-in themes and custom themes.
       const persisted = typeof document !== 'undefined' ? getPersistedTheme() : DEFAULT_THEME;
+      const isSystem = persisted === SYSTEM_THEME;
       const isBuiltIn = themeOptions.some(t => t.value === persisted);
       const customThemeStore = useCustomThemeStore.getState();
       const isCustom = !isBuiltIn && customThemeStore.customThemes.some(t => t.id === persisted);
-      const isValidTheme = isBuiltIn || isCustom;
+      const isValidTheme = isSystem || isBuiltIn || isCustom;
 
       // If the persisted theme is not recognized, it may be a custom theme whose
       // store hasn't loaded yet. Store the ID so we can apply it once loaded.
@@ -194,9 +224,9 @@ export const useSettingsStore = create<SettingsStore>()(
         initialTheme = DEFAULT_THEME;
       }
 
-      // Apply initial theme on store initialization
+      // Apply initial theme on store initialization (system → resolved class)
       if (typeof document !== 'undefined') {
-        applyThemeToDOM(initialTheme);
+        applyThemeToDOM(resolveTheme(initialTheme));
       }
 
       const initialFontScale =
@@ -222,7 +252,7 @@ export const useSettingsStore = create<SettingsStore>()(
         setTheme: (theme: Theme) => {
           logger.debug('setTheme', theme);
           set({ theme, previewTheme: null }, undefined, 'settings/setTheme');
-          applyThemeToDOM(theme);
+          applyThemeToDOM(resolveTheme(theme));
           persistTheme(theme);
         },
 
@@ -231,10 +261,10 @@ export const useSettingsStore = create<SettingsStore>()(
           set({ previewTheme: theme }, undefined, 'settings/setPreviewTheme');
 
           if (theme) {
-            applyThemeToDOM(theme);
+            applyThemeToDOM(resolveTheme(theme));
           } else {
             // Restore actual theme when preview ends
-            applyThemeToDOM(state.theme);
+            applyThemeToDOM(resolveTheme(state.theme));
           }
         },
 
@@ -350,6 +380,21 @@ if (typeof document !== 'undefined') {
       useSettingsStore.getState().setTheme(themeId);
     }
   });
+}
+
+// React live to OS light/dark changes while the user is on the 'system' theme.
+// Re-resolving on each change keeps the app in lockstep with the OS toggle.
+if (typeof window !== 'undefined' && typeof window.matchMedia === 'function') {
+  const media = window.matchMedia('(prefers-color-scheme: dark)');
+  const onSchemeChange = () => {
+    const { theme, previewTheme } = useSettingsStore.getState();
+    // Don't fight an active hover-preview; it restores the real theme on exit.
+    if (previewTheme !== null) return;
+    if (theme === SYSTEM_THEME) {
+      applyThemeToDOM(resolveTheme(theme));
+    }
+  };
+  media.addEventListener('change', onSchemeChange);
 }
 
 // Selectors

@@ -151,6 +151,10 @@ export function DiaryEditor({ entry, onClose, onCreate, onUpdate }: DiaryEditorP
   // Re-read on each render — `useEditor` subscribes and triggers re-renders
   // on editor state changes, so this stays live without extra plumbing.
   const textLength = editor?.getText().length ?? 0;
+  const isOverLimit = textLength > MAX_CONTENT_LENGTH;
+  // Warn once the user is within the final 10% of the budget so the red
+  // "save disabled" state never appears without a prior heads-up.
+  const isNearLimit = !isOverLimit && textLength >= MAX_CONTENT_LENGTH * 0.9;
 
   const gradientCss = coverGradient
     ? DIARY_GRADIENTS[coverGradient]?.css
@@ -362,7 +366,7 @@ export function DiaryEditor({ entry, onClose, onCreate, onUpdate }: DiaryEditorP
             <Button
               size="sm"
               onClick={handleSave}
-              disabled={isSaving}
+              disabled={isSaving || isOverLimit}
               className="h-8 gap-1.5 text-xs"
             >
               <Check className="w-3.5 h-3.5" />
@@ -416,7 +420,22 @@ export function DiaryEditor({ entry, onClose, onCreate, onUpdate }: DiaryEditorP
               {t('editor.footerPinned')}
             </PillTag>
           )}
-          <span className="ml-auto font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
+          {isOverLimit && (
+            <PillTag variant="muted" className="flex items-center gap-1.5 text-destructive">
+              {t('editor.limitReached')}
+            </PillTag>
+          )}
+          <span
+            className={cn(
+              'ml-auto font-mono text-[10px] uppercase tracking-[0.12em] transition-colors',
+              isOverLimit
+                ? 'font-semibold text-destructive'
+                : isNearLimit
+                  ? 'text-[oklch(0.8_0.14_70)]'
+                  : 'text-muted-foreground'
+            )}
+            aria-live="polite"
+          >
             {t('editor.footerCount', {
               count: textLength,
               max: MAX_CONTENT_LENGTH,

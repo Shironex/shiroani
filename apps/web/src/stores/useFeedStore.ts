@@ -17,12 +17,15 @@ import {
   type FeedGetSourcesResult,
   type FeedGetArticlePayload,
   type FeedGetArticleResult,
+  type FeedMarkReadPayload,
+  type FeedGetReadIdsResult,
+  type FeedSetLastVisitedPayload,
+  type FeedGetLastVisitedResult,
   FeedEvents,
   FEED_STARTUP_REFRESH_SETTING_KEY,
 } from '@shiroani/shared';
 import { toast } from 'sonner';
 import { emitWithErrorHandling } from '@/lib/socket';
-import { electronStoreSet } from '@/lib/electron-store';
 import { createLocalStorageAccessor } from '@/lib/persisted-storage';
 import i18n from '@/lib/i18n';
 import { createLogger } from '@shiroani/shared';
@@ -87,6 +90,12 @@ interface FeedActions {
   /** Persist a single feed item as "read" (idempotent). */
   markRead: (id: number) => void;
   /**
+   * Pull the durable read-id set from the feed DB and merge it into local state.
+   * Called on socket connect so read indicators survive a reinstall (the DB
+   * outlives the renderer's localStorage cache).
+   */
+  rehydrateReadIds: () => void;
+  /**
    * Lazily extract the full article body for a teaser-only item (Phase 2).
    * No-op when the item already carries `contentHtml`, when extraction has
    * already succeeded, or while a request is in flight. On failure leaves the
@@ -134,18 +143,37 @@ function getPersistedLastVisitedAt(): number {
 }
 
 function persistLastVisitedAt(ts: number) {
+  // Local cache for instant startup; the durable copy lives in the feed DB.
   lastVisitedStorage.set(ts);
+  void emitWithErrorHandling<FeedSetLastVisitedPayload, { ok: boolean }>(
+    FeedEvents.SET_LAST_VISITED,
+    { lastVisitedAt: ts }
+  ).catch((err: Error) => {
+    logger.warn('Failed to persist feed last-visited to DB:', err.message);
+  });
 }
 
 function getPersistedReadIds(): Set<number> {
   return readIdsStorage.get();
 }
 
-function persistReadIds(ids: Set<number>) {
+/**
+ * Mirror the read-id set to localStorage. This is now a fast local cache for
+ * instant UI on next launch (and the only store on web builds without the feed
+ * DB); the durable source of truth is the feed DB via {@link FeedEvents.MARK_READ},
+ * which survives a reinstall.
+ */
+function cacheReadIdsLocally(ids: Set<number>) {
   readIdsStorage.set(ids);
-  // Fire-and-forget mirror to electron-store so main-process consumers can read it.
-  void electronStoreSet(READ_IDS_STORAGE_KEY, Array.from(ids)).catch(() => {
-    // ignore — localStorage is the primary store
+}
+
+/** Persist newly-read ids to the feed DB (durable across reinstall). */
+function persistReadIdsToDb(ids: number[]) {
+  if (ids.length === 0) return;
+  void emitWithErrorHandling<FeedMarkReadPayload, { ok: boolean }>(FeedEvents.MARK_READ, {
+    ids,
+  }).catch((err: Error) => {
+    logger.warn('Failed to persist feed read-state to DB:', err.message);
   });
 }
 
@@ -210,6 +238,7 @@ export const useFeedStore = create<FeedStore>()(
           ],
           onConnect: () => {
             get().fetchSources();
+            get().rehydrateReadIds();
             void isStartupRefreshEnabled().then(enabled => {
               get().fetchItems(false, { bootstrapIfEmpty: enabled });
             });
@@ -419,7 +448,54 @@ export const useFeedStore = create<FeedStore>()(
           }
 
           set({ readIds: next }, undefined, 'feed/markRead');
-          persistReadIds(next);
+          cacheReadIdsLocally(next);
+          persistReadIdsToDb([id]);
+        },
+
+        rehydrateReadIds: () => {
+          // Restore the durable last-visited stamp (newtab unread baseline). The
+          // DB copy survives a reinstall where the localStorage cache wouldn't.
+          emitWithErrorHandling<Record<string, never>, FeedGetLastVisitedResult>(
+            FeedEvents.GET_LAST_VISITED,
+            {}
+          )
+            .then(result => {
+              const dbTs = result.lastVisitedAt;
+              // Keep whichever stamp is newer so a visit recorded offline this
+              // session isn't clobbered by a stale DB value.
+              if (dbTs != null && dbTs > get().lastVisitedAt) {
+                set({ lastVisitedAt: dbTs }, undefined, 'feed/rehydrateLastVisited');
+                lastVisitedStorage.set(dbTs);
+              }
+            })
+            .catch((err: Error) => {
+              logger.warn('Failed to rehydrate feed last-visited from DB:', err.message);
+            });
+
+          emitWithErrorHandling<Record<string, never>, FeedGetReadIdsResult>(
+            FeedEvents.GET_READ_IDS,
+            {}
+          )
+            .then(result => {
+              const dbIds = result.ids ?? [];
+              if (dbIds.length === 0) return;
+
+              // Merge DB (durable) with whatever the local cache already had so a
+              // read marked while offline this session isn't dropped.
+              let merged = new Set(get().readIds);
+              for (const id of dbIds) merged.add(id);
+
+              if (merged.size > MAX_READ_IDS) {
+                const arr = Array.from(merged);
+                merged = new Set(arr.slice(arr.length - MAX_READ_IDS));
+              }
+
+              set({ readIds: merged }, undefined, 'feed/rehydrateReadIds');
+              cacheReadIdsLocally(merged);
+            })
+            .catch((err: Error) => {
+              logger.warn('Failed to rehydrate feed read-state from DB:', err.message);
+            });
         },
 
         loadArticleContent: (item: FeedItem) => {
@@ -480,10 +556,17 @@ export const useFeedStore = create<FeedStore>()(
           const { readIds, items } = get();
           if (items.length === 0) return;
 
+          // Track which ids are newly read so only those hit the DB.
+          const newlyRead: number[] = [];
           let next = new Set(readIds);
-          for (const item of items) next.add(item.id);
+          for (const item of items) {
+            if (!next.has(item.id)) {
+              next.add(item.id);
+              newlyRead.push(item.id);
+            }
+          }
 
-          if (next.size === readIds.size) return; // no change
+          if (newlyRead.length === 0) return; // no change
 
           if (next.size > MAX_READ_IDS) {
             // Truncate oldest entries to stay within cap.
@@ -492,7 +575,8 @@ export const useFeedStore = create<FeedStore>()(
           }
 
           set({ readIds: next }, undefined, 'feed/markAllRead');
-          persistReadIds(next);
+          cacheReadIdsLocally(next);
+          persistReadIdsToDb(newlyRead);
         },
 
         toggleSource: (id: number, enabled: boolean) => {

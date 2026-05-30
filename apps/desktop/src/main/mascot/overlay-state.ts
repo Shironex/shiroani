@@ -2,6 +2,26 @@ import { app, screen } from 'electron';
 import { existsSync } from 'fs';
 import * as path from 'path';
 import { store } from '../store';
+import { logger } from '../logging/logger';
+
+/**
+ * Image extensions the native overlay can decode. Mirrors the picker dialog
+ * filter and the sprite IPC validation so a sprite that slips through with a
+ * non-image extension never reaches the renderer/native layer where it would
+ * fail silently.
+ */
+const ALLOWED_SPRITE_EXTENSIONS = new Set(['.png', '.jpg', '.jpeg', '.gif', '.webp']);
+
+/**
+ * Validate that a sprite file is usable: it exists on disk AND carries a
+ * recognized image extension. Corrupt/renamed files would otherwise render
+ * as nothing in the overlay.
+ */
+function isValidSpriteFile(filePath: string): boolean {
+  const ext = path.extname(filePath).toLowerCase();
+  if (!ALLOWED_SPRITE_EXTENSIONS.has(ext)) return false;
+  return existsSync(filePath);
+}
 
 type MascotVisibilityMode = 'always' | 'tray-only';
 
@@ -164,9 +184,15 @@ export function getActiveSpritePath(): string {
   const fileName = getCustomSpriteFileName();
   if (fileName) {
     const candidate = path.join(getMascotSpritesDir(), fileName);
-    if (existsSync(candidate)) {
+    if (isValidSpriteFile(candidate)) {
       return candidate;
     }
+    // The persisted sprite is missing or has an unrecognized format — render
+    // the bundled default instead of nothing, and warn so the cause is
+    // traceable in logs.
+    logger.warn(
+      `Custom mascot sprite "${fileName}" is missing or has an invalid format — falling back to the default sprite`
+    );
   }
   return getDefaultSpritePath();
 }

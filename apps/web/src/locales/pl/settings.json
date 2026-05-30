@@ -147,7 +147,18 @@
       "invalidFile": "Nieprawidłowy format pliku",
       "limitReached": "Osiągnięto limit motywów ({{limit}})",
       "imported": "Motyw został zaimportowany",
-      "importFailed": "Błąd podczas importu motywu"
+      "importFailed": "Błąd podczas importu motywu",
+      "invalidField": {
+        "format": "Nieobsługiwany format lub wersja pliku motywu",
+        "theme": "Plik nie zawiera danych motywu",
+        "name": "Motyw nie ma prawidłowej nazwy",
+        "baseTheme": "Nieznany motyw bazowy",
+        "isDark": "Nieprawidłowe ustawienie trybu ciemnego",
+        "color": "Nieprawidłowy kolor motywu",
+        "variables": "Nieprawidłowe zmienne motywu",
+        "unknownVariable": "Nieznana zmienna motywu: {{variable}}",
+        "variableValue": "Nieprawidłowa wartość zmiennej: {{variable}}"
+      }
     },
     "editor": {
       "newTitle": "Nowy motyw",
@@ -176,6 +187,10 @@
         "saved": "Motyw zapisany",
         "changesSaved": "Zapisano zmiany"
       }
+    },
+    "system": {
+      "title": "System",
+      "subtitle": "Dopasuj jasny lub ciemny motyw do ustawień systemu"
     }
   },
   "background": {

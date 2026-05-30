@@ -205,6 +205,23 @@ const MIGRATIONS: Migration[] = [
         ON anime_library(status, updated_at);
     `,
   },
+  {
+    version: 12,
+    description: 'Add is_read flag to feed_items + feed_meta kv so feed read-state is durable',
+    // Read-state was previously only in renderer localStorage, so it didn't
+    // survive a reinstall. Storing is_read as a column on the row makes it
+    // intrinsic to the item (persists for the life of the row, correctly lost
+    // only on a full DB wipe). `feed_meta` is a tiny key/value table for
+    // scalar feed state — currently the newtab greeting's last-visited stamp.
+    up: `
+      ALTER TABLE feed_items ADD COLUMN is_read INTEGER NOT NULL DEFAULT 0;
+      CREATE INDEX IF NOT EXISTS idx_feed_items_is_read ON feed_items(is_read);
+      CREATE TABLE IF NOT EXISTS feed_meta (
+        key TEXT PRIMARY KEY,
+        value TEXT NOT NULL
+      );
+    `,
+  },
 ];
 
 /**

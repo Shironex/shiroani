@@ -70,7 +70,8 @@
     "footerPinned": "Pinned",
     "footerCount": "{{count}} / {{max}} characters",
     "placeholder": "Start writing…",
-    "defaultTitle": "Untitled"
+    "defaultTitle": "Untitled",
+    "limitReached": "Character limit reached"
   },
   "toolbar": {
     "undo": "Undo",
@@ -153,6 +154,15 @@
     "topTags": "Popular tags",
     "topTagsHint": "Add tags to entries to track topics.",
     "genres": "Genres",
-    "studios": "Studios"
+    "studios": "Studios",
+    "breakdownRetry_one": "Metadata for {{count}} anime failed to load — retry",
+    "breakdownRetry_other": "Metadata for {{count}} anime failed to load — retry",
+    "celebration": {
+      "title_one": "{{count}}-day streak! 🔥",
+      "title_other": "{{count}}-day streak! 🔥",
+      "description": "Nice work — keep writing to hold your streak.",
+      "badge_one": "{{count}} day",
+      "badge_other": "{{count}} days"
+    }
   }
 }

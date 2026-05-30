@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import {
   Copy,
   Download,
+  Monitor,
   Moon,
   Palette,
   Pencil,
@@ -14,7 +15,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import { useSettingsStore } from '@/stores/useSettingsStore';
+import { useSettingsStore, SYSTEM_THEME } from '@/stores/useSettingsStore';
 import { useCustomThemeStore } from '@/stores/useCustomThemeStore';
 import { darkThemes, lightThemes, getAllThemeOptions } from '@/lib/theme';
 import { removeCustomThemeCSS } from '@/lib/custom-theme-css';
@@ -154,6 +155,36 @@ export function ThemesSection() {
           </Button>
         }
       >
+        <button
+          type="button"
+          onClick={() => setTheme(SYSTEM_THEME)}
+          aria-pressed={theme === SYSTEM_THEME}
+          className={cn(
+            'flex w-full items-center gap-3 rounded-[10px] border px-3 py-2.5 text-left transition-colors',
+            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+            theme === SYSTEM_THEME
+              ? 'border-primary/35 bg-primary/12'
+              : 'border-border-glass bg-background/30 hover:bg-accent/40'
+          )}
+        >
+          <span
+            className={cn(
+              'grid size-8 shrink-0 place-items-center rounded-lg',
+              theme === SYSTEM_THEME ? 'bg-primary/20 text-primary' : 'bg-foreground/[0.06] text-muted-foreground'
+            )}
+          >
+            <Monitor className="h-4 w-4" />
+          </span>
+          <span className="min-w-0">
+            <span className="block text-[13px] font-medium text-foreground">
+              {t('themes.system.title')}
+            </span>
+            <span className="block text-[11.5px] text-muted-foreground">
+              {t('themes.system.subtitle')}
+            </span>
+          </span>
+        </button>
+
         {customThemeOptions.length > 0 && (
           <div className="space-y-2.5">
             <div className="flex items-center gap-2.5 text-muted-foreground">
