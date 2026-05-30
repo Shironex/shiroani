@@ -177,6 +177,9 @@ async function resolveCoverUrl(url: string | undefined): Promise<string | undefi
       res = await fetch(url, { method: 'GET', signal: controller.signal });
     }
     ok = res.ok;
+    // Release the socket — an unconsumed GET body keeps the connection open
+    // until GC (undici), which would leak connections over a long session.
+    await res.body?.cancel();
   } catch {
     // Unreachable/timeout — `ok` stays false and the cover is stripped.
   } finally {
