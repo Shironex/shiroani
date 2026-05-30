@@ -66,6 +66,7 @@ export class BrowserWindow extends EventEmitter {
   webContents = {
     send: jest.fn(),
     on: jest.fn(),
+    setWindowOpenHandler: jest.fn(),
     getURL: jest.fn(() => 'file:///test/index.html'),
     isDevToolsOpened: jest.fn(() => false),
     openDevTools: jest.fn(),
@@ -118,6 +119,15 @@ export const session = {
     setPermissionRequestHandler: jest.fn(),
     setPermissionCheckHandler: jest.fn(),
   },
+  fromPartition: jest.fn((_partition: string, _options?: { cache?: boolean }) => ({
+    clearStorageData: jest.fn(() => Promise.resolve()),
+  })),
+};
+
+export const safeStorage = {
+  isEncryptionAvailable: jest.fn(() => true),
+  encryptString: jest.fn((plain: string) => Buffer.from(`enc:${plain}`)),
+  decryptString: jest.fn((buf: Buffer) => buf.toString('utf8').replace(/^enc:/, '')),
 };
 
 export const Notification = jest.fn().mockImplementation(() => ({

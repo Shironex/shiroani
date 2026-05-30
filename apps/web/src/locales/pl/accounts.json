@@ -1,0 +1,19 @@
+{
+  "title": "Konta",
+  "subtitle": "Połącz konta zewnętrzne",
+  "anilist": {
+    "title": "AniList",
+    "description": "Połącz swoje konto AniList, aby synchronizować listę anime.",
+    "connect": "Połącz AniList",
+    "disconnect": "Rozłącz",
+    "connecting": "Łączenie…",
+    "connected": "Połączono",
+    "disconnected": "Nie połączono",
+    "connectedAs": "Połączono jako {{name}}",
+    "expiresAt": "Token wygasa {{date}}",
+    "notConfigured": "AniList nie jest skonfigurowany w tej wersji.",
+    "connectError": "Nie udało się połączyć z AniList. Spróbuj ponownie.",
+    "disconnectError": "Nie udało się rozłączyć. Spróbuj ponownie.",
+    "desktopOnly": "Połączenie z AniList jest dostępne tylko w aplikacji desktopowej."
+  }
+}
