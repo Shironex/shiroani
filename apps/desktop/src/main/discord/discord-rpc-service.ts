@@ -150,7 +150,7 @@ async function resolveCoverUrl(url: string | undefined): Promise<string | undefi
     const res = await fetch(url, { method: 'HEAD', signal: controller.signal });
     ok = res.ok;
   } catch {
-    ok = false;
+    // Unreachable/timeout — `ok` stays false and the cover is stripped.
   } finally {
     clearTimeout(timer);
   }
