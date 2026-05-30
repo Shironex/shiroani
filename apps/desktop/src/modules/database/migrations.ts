@@ -215,6 +215,7 @@ const MIGRATIONS: Migration[] = [
     // scalar feed state — currently the newtab greeting's last-visited stamp.
     up: `
       ALTER TABLE feed_items ADD COLUMN is_read INTEGER NOT NULL DEFAULT 0;
+      CREATE INDEX IF NOT EXISTS idx_feed_items_is_read ON feed_items(is_read);
       CREATE TABLE IF NOT EXISTS feed_meta (
         key TEXT PRIMARY KEY,
         value TEXT NOT NULL
