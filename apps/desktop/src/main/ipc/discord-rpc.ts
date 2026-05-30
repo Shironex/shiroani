@@ -5,6 +5,7 @@ import {
   updateDiscordRpcSettings,
   updateDiscordPresence,
   clearDiscordPresence,
+  getDiscordRpcStatus,
 } from '../discord/discord-rpc-service';
 import { handle, handleWithFallback } from './with-ipc-handler';
 import {
@@ -12,6 +13,7 @@ import {
   discordRpcUpdateSettingsSchema,
   discordRpcUpdatePresenceSchema,
   discordRpcClearPresenceSchema,
+  discordRpcGetStatusSchema,
 } from './schemas';
 
 /**
@@ -24,6 +26,14 @@ export function registerDiscordRpcHandlers(): void {
       return getDiscordRpcSettings();
     },
     { schema: discordRpcGetSettingsSchema }
+  );
+
+  handle(
+    'discord-rpc:get-status',
+    () => {
+      return getDiscordRpcStatus();
+    },
+    { schema: discordRpcGetStatusSchema }
   );
 
   handle(
@@ -61,6 +71,7 @@ export function registerDiscordRpcHandlers(): void {
  */
 export function cleanupDiscordRpcHandlers(): void {
   ipcMain.removeHandler('discord-rpc:get-settings');
+  ipcMain.removeHandler('discord-rpc:get-status');
   ipcMain.removeHandler('discord-rpc:update-settings');
   ipcMain.removeHandler('discord-rpc:update-presence');
   ipcMain.removeHandler('discord-rpc:clear-presence');

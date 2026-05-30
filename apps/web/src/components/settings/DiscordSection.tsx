@@ -10,6 +10,7 @@ import {
 } from '@/components/settings/SettingsCard';
 import { DiscordPreview } from '@/components/settings/DiscordPreview';
 import { DiscordTemplateEditor } from '@/components/settings/DiscordTemplateEditor';
+import { PillTag } from '@/components/ui/pill-tag';
 import { substitutePreview } from '@/lib/discord-utils';
 import { tDynamic } from '@/lib/i18n';
 import { useMountedRef } from '@/hooks/useMountedRef';
@@ -18,6 +19,7 @@ import type {
   DiscordActivityType,
   DiscordPresenceTemplate,
   DiscordPresenceTemplates,
+  DiscordRpcStatus,
 } from '@shiroani/shared';
 import {
   DEFAULT_DISCORD_TEMPLATES,
@@ -58,12 +60,32 @@ function resolveTemplates(
   return resolved;
 }
 
+/** Map each RPC connection status to a PillTag colour. */
+const STATUS_VARIANT: Record<DiscordRpcStatus, 'green' | 'gold' | 'muted' | 'orange'> = {
+  connected: 'green',
+  connecting: 'gold',
+  disconnected: 'muted',
+  error: 'orange',
+};
+
 export function DiscordSection() {
   const { t, i18n } = useTranslation('settings');
   const [settings, setSettings] = useState<DiscordRpcSettings | null>(null);
   const [saved, setSaved] = useState(false);
   const [selectedActivity, setSelectedActivity] = useState<DiscordActivityType>('watching');
+  const [status, setStatus] = useState<DiscordRpcStatus>('disconnected');
   const isMounted = useMountedRef();
+
+  // Reflect the live RPC connection status so users can tell why presence is
+  // (or isn't) showing. Seed from the current status, then subscribe to changes.
+  useEffect(() => {
+    window.electronAPI?.discordRpc?.getStatus().then(s => {
+      if (isMounted() && s) setStatus(s);
+    });
+    return window.electronAPI?.discordRpc?.onStatusChanged(s => {
+      if (isMounted()) setStatus(s);
+    });
+  }, [isMounted]);
 
   useEffect(() => {
     // Resolve sentinel-prefixed default fields the moment we hydrate so the
@@ -155,11 +177,18 @@ export function DiscordSection() {
       title={t('discord.main.title')}
       subtitle={t('discord.main.subtitle')}
       headerAccessory={
-        <Switch
-          aria-label={t('discord.main.enableAria')}
-          checked={settings.enabled}
-          onCheckedChange={v => updateField('enabled', v)}
-        />
+        <div className="flex items-center gap-2">
+          {settings.enabled && (
+            <PillTag variant={STATUS_VARIANT[status]} aria-label={t('discord.status.aria')}>
+              {t(`discord.status.${status}`)}
+            </PillTag>
+          )}
+          <Switch
+            aria-label={t('discord.main.enableAria')}
+            checked={settings.enabled}
+            onCheckedChange={v => updateField('enabled', v)}
+          />
+        </div>
       }
     >
       {!settings.useCustomTemplates && (

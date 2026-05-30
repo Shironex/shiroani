@@ -1,4 +1,5 @@
 import { IS_ELECTRON } from '@/lib/platform';
+import { trackDetectedProgress } from '@/lib/progress-tracker';
 import { hostFromUrl } from '@/lib/url-utils';
 import { findLeafById } from '@/stores/browser/browserTree';
 import { useBrowserStore } from '@/stores/useBrowserStore';
@@ -8,7 +9,23 @@ import type { BrowserNode, DiscordPresenceActivity } from '@shiroani/shared';
 
 export interface AnimeDetection {
   animeTitle: string;
+  /** Human-readable episode label for presence display (e.g. "Odcinek 5"). */
   episodeInfo?: string;
+  /**
+   * The TRUE episode ordinal, when the URL/title exposes a genuine episode
+   * number. Drives automatic library progress tracking. Left undefined when a
+   * site only exposes an internal episode-record ID (e.g. hianime `?ep=12345`)
+   * — feeding such an ID into progress would corrupt the library, so we never
+   * fabricate it.
+   */
+  episode?: number;
+  /** AniList media id, only when the URL reliably exposes one (anilist.co). */
+  anilistId?: number;
+}
+
+/** Build the Polish presence label for a detected episode number. */
+function episodeLabel(episode: number): string {
+  return `Odcinek ${episode}`;
 }
 
 // ── Pure utilities ────────────────────────────────────────────────
@@ -45,6 +62,26 @@ export function detectAnimeFromUrl(url: string, pageTitle: string): AnimeDetecti
     return detectShinden(parsed);
   }
 
+  // ── crunchyroll.com ───────────────────────────────────────────
+  if (hostname === 'crunchyroll.com') {
+    return detectCrunchyroll(parsed, pageTitle);
+  }
+
+  // ── hianime / aniwatch / zoro (and common mirrors) ────────────
+  if (HIANIME_HOSTS.has(hostname)) {
+    return detectHianime(parsed, pageTitle);
+  }
+
+  // ── hidive.com ────────────────────────────────────────────────
+  if (hostname === 'hidive.com') {
+    return detectHidive(parsed, pageTitle);
+  }
+
+  // ── anilist.co (info pages — the one reliable anilistId source) ─
+  if (hostname === 'anilist.co') {
+    return detectAniList(parsed, pageTitle);
+  }
+
   // ── youtube.com / youtu.be ────────────────────────────────────
   if (hostname === 'youtube.com' || hostname === 'm.youtube.com' || hostname === 'youtu.be') {
     return detectYoutube(parsed, pageTitle);
@@ -52,6 +89,22 @@ export function detectAnimeFromUrl(url: string, pageTitle: string): AnimeDetecti
 
   return null;
 }
+
+/**
+ * hianime / aniwatch / zoro and the mirrors people actually use. They all share
+ * the `/watch/{series-slug}-{id}?ep={episodeRecordId}` shape. NOTE: `ep` is an
+ * internal episode-record ID, not the episode ordinal — we deliberately never
+ * map it to `episode`.
+ */
+const HIANIME_HOSTS: ReadonlySet<string> = new Set([
+  'hianime.to',
+  'hianime.nz',
+  'hianime.sx',
+  'aniwatch.to',
+  'aniwatchtv.to',
+  'zoro.to',
+  'zorotv.com.in',
+]);
 
 // ── Site-specific detectors ───────────────────────────────────────
 
@@ -67,9 +120,11 @@ function detectOgladajAnime(parsed: URL, pageTitle: string): AnimeDetection | nu
   // /anime/{slug}/{number} → watching episode N
   const episodeMatch = path.match(/^\/anime\/([^/]+)\/(\d+)/);
   if (episodeMatch) {
+    const episode = Number(episodeMatch[2]);
     return {
       animeTitle: slugToTitle(episodeMatch[1]),
-      episodeInfo: `Odcinek ${episodeMatch[2]}`,
+      episodeInfo: episodeLabel(episode),
+      episode,
     };
   }
 
@@ -105,6 +160,54 @@ function detectYoutube(parsed: URL, pageTitle: string): AnimeDetection | null {
 
   const title = pageTitle.replace(/\s*-\s*YouTube\s*$/, '').trim();
   return { animeTitle: title || 'YouTube' };
+}
+
+/** Strip a site-name suffix like " - Crunchyroll" from a page title. */
+function stripTitleSuffix(pageTitle: string, suffix: RegExp): string {
+  return pageTitle.replace(suffix, '').trim();
+}
+
+function detectCrunchyroll(parsed: URL, pageTitle: string): AnimeDetection | null {
+  // /watch/{GUID}/{episode-title-slug} → watching. The path token is a media
+  // GUID and the slug is the episode TITLE, not an ordinal — series title is
+  // not reliably in the URL, so we read it from the page title and leave the
+  // episode undefined (don't fabricate).
+  if (!/^\/(?:[a-z]{2}\/)?watch\/[A-Za-z0-9]+/.test(parsed.pathname)) return null;
+
+  const title = stripTitleSuffix(pageTitle, /\s*[-|]\s*Crunchyroll\s*$/i);
+  return { animeTitle: title || 'Crunchyroll' };
+}
+
+function detectHianime(parsed: URL, pageTitle: string): AnimeDetection | null {
+  // /watch/{series-slug}-{id}?ep={episodeRecordId}
+  const match = parsed.pathname.match(/^\/watch\/(.+?)-\d+$/);
+  if (!match) return null;
+
+  // Prefer the page title when present (cleaner casing); fall back to the slug.
+  // `ep` is an internal record ID — intentionally NOT mapped to `episode`.
+  const fromTitle = stripTitleSuffix(pageTitle, /\s*[-|]\s*(?:HiAnime|AniWatch|Zoro).*$/i);
+  return { animeTitle: fromTitle || slugToTitle(match[1]) };
+}
+
+function detectHidive(parsed: URL, pageTitle: string): AnimeDetection | null {
+  // /video/{id}/{slug} or /season/{id}/{slug} → watching
+  if (!/^\/(?:video|season)\/\d+\//.test(parsed.pathname)) return null;
+
+  const title = stripTitleSuffix(pageTitle, /\s*[-|]\s*HIDIVE\s*$/i);
+  return { animeTitle: title || 'HIDIVE' };
+}
+
+function detectAniList(parsed: URL, pageTitle: string): AnimeDetection | null {
+  // /anime/{id}/{slug} → info page. Not a watch page, but the one reliable
+  // numeric anilistId source, which lets progress tracking match by id.
+  const match = parsed.pathname.match(/^\/anime\/(\d+)/);
+  if (!match) return null;
+
+  const title = stripTitleSuffix(pageTitle, /\s*[-·|]\s*AniList\s*$/i);
+  return {
+    animeTitle: title || 'AniList',
+    anilistId: Number(match[1]),
+  };
 }
 
 // ── Integration ───────────────────────────────────────────────────
@@ -152,6 +255,12 @@ export function updateAnimePresence(
     : { view: 'browser', siteName };
 
   window.electronAPI?.discordRpc?.updatePresence(activity);
+
+  // Feed the same detection into automatic library progress tracking. The
+  // tracker debounces internally (dwell timer) and is gated behind its own
+  // setting, so calling it on every nav/title event is safe and avoids a
+  // second URL parse.
+  trackDetectedProgress(detection);
 
   // Drive the local "anime watch" counter so animeWatchSeconds increments
   // only while the active tab is on a recognized anime site.

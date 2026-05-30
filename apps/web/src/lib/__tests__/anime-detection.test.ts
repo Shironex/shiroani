@@ -53,6 +53,7 @@ describe('detectAnimeFromUrl', () => {
       expect(result).toEqual({
         animeTitle: 'Attack On Titan',
         episodeInfo: 'Odcinek 5',
+        episode: 5,
       });
     });
 
@@ -179,6 +180,107 @@ describe('detectAnimeFromUrl', () => {
 
     it('returns null for youtube /watch without v param', () => {
       expect(detectAnimeFromUrl('https://youtube.com/watch', 'YouTube')).toBeNull();
+    });
+  });
+
+  // ── crunchyroll.com ─────────────────────────────────────────────
+
+  describe('crunchyroll.com', () => {
+    it('detects from /watch/{guid}/{slug} using the page title (no episode)', () => {
+      const result = detectAnimeFromUrl(
+        'https://www.crunchyroll.com/watch/GRMG8ZQZR/the-strongest',
+        'Frieren - Crunchyroll'
+      );
+      expect(result).toEqual({ animeTitle: 'Frieren' });
+    });
+
+    it('detects with a locale prefix in the path', () => {
+      const result = detectAnimeFromUrl(
+        'https://www.crunchyroll.com/pl/watch/ABC123/title',
+        'One Piece | Crunchyroll'
+      );
+      expect(result).toEqual({ animeTitle: 'One Piece' });
+    });
+
+    it('never fabricates an episode number from the GUID', () => {
+      const result = detectAnimeFromUrl(
+        'https://www.crunchyroll.com/watch/GRMG8ZQZR/ep',
+        'Bleach - Crunchyroll'
+      );
+      expect(result?.episode).toBeUndefined();
+    });
+
+    it('returns null for the crunchyroll homepage', () => {
+      expect(detectAnimeFromUrl('https://www.crunchyroll.com/', 'Crunchyroll')).toBeNull();
+    });
+  });
+
+  // ── hianime / aniwatch / zoro ───────────────────────────────────
+
+  describe('hianime / aniwatch / zoro', () => {
+    it('detects from /watch/{slug}-{id} using the page title', () => {
+      const result = detectAnimeFromUrl(
+        'https://hianime.to/watch/frieren-18542?ep=99999',
+        'Watch Frieren English Sub/Dub online - HiAnime'
+      );
+      expect(result).toEqual({ animeTitle: 'Watch Frieren English Sub/Dub online' });
+    });
+
+    it('falls back to the slug when no page title is available', () => {
+      const result = detectAnimeFromUrl('https://aniwatch.to/watch/one-piece-100?ep=2142', '');
+      expect(result).toEqual({ animeTitle: 'One Piece' });
+    });
+
+    it('never maps the ep query id to an episode number', () => {
+      const result = detectAnimeFromUrl('https://zoro.to/watch/naruto-677?ep=12345', '');
+      expect(result?.episode).toBeUndefined();
+    });
+
+    it('returns null for a non-watch page', () => {
+      expect(detectAnimeFromUrl('https://hianime.to/home', 'HiAnime')).toBeNull();
+    });
+  });
+
+  // ── hidive.com ──────────────────────────────────────────────────
+
+  describe('hidive.com', () => {
+    it('detects from /video/{id}/{slug}', () => {
+      const result = detectAnimeFromUrl(
+        'https://www.hidive.com/video/12345/episode-1',
+        'My Hero Academia - HIDIVE'
+      );
+      expect(result).toEqual({ animeTitle: 'My Hero Academia' });
+    });
+
+    it('detects from /season/{id}/{slug}', () => {
+      const result = detectAnimeFromUrl('https://www.hidive.com/season/678/the-show', '');
+      expect(result).toEqual({ animeTitle: 'HIDIVE' });
+    });
+
+    it('returns null for non-video pages', () => {
+      expect(detectAnimeFromUrl('https://www.hidive.com/dashboard', 'HIDIVE')).toBeNull();
+    });
+  });
+
+  // ── anilist.co ──────────────────────────────────────────────────
+
+  describe('anilist.co', () => {
+    it('detects the anilistId and title from /anime/{id}/{slug}', () => {
+      const result = detectAnimeFromUrl(
+        'https://anilist.co/anime/154587/Frieren/',
+        'Frieren · AniList'
+      );
+      expect(result).toEqual({ animeTitle: 'Frieren', anilistId: 154587 });
+    });
+
+    it('leaves the episode undefined (info page, not a watch page)', () => {
+      const result = detectAnimeFromUrl('https://anilist.co/anime/21/One-Piece', 'One Piece - AniList');
+      expect(result?.episode).toBeUndefined();
+      expect(result?.anilistId).toBe(21);
+    });
+
+    it('returns null for non-anime anilist pages', () => {
+      expect(detectAnimeFromUrl('https://anilist.co/user/someone', 'AniList')).toBeNull();
     });
   });
 });

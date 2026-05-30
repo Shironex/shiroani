@@ -19,6 +19,7 @@ import type {
   NotificationSubscription,
   DiscordRpcSettings,
   DiscordPresenceActivity,
+  DiscordRpcStatus,
 } from './anime';
 import type { AppStatsSnapshot } from './stats';
 
@@ -182,6 +183,10 @@ export interface ElectronAPI {
     updateSettings: (updates: Partial<DiscordRpcSettings>) => Promise<DiscordRpcSettings>;
     updatePresence: (activity: DiscordPresenceActivity) => Promise<void>;
     clearPresence: () => Promise<void>;
+    /** Current RPC connection status (connected / connecting / disconnected / error). */
+    getStatus: () => Promise<DiscordRpcStatus>;
+    /** Subscribe to RPC connection-status transitions. Returns an unsubscribe fn. */
+    onStatusChanged: (callback: (status: DiscordRpcStatus) => void) => () => void;
   };
   appStats: {
     /** Current snapshot of local time-spent counters. */
