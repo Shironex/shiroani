@@ -9,6 +9,7 @@ import type {
 import { store } from '../store';
 import { buildPresence } from './discord-presence-builder';
 import { createMainLogger } from '../logging/logger';
+import { LruTtlCache } from '../../modules/kernel/lru-ttl-cache';
 
 const logger = createMainLogger('DiscordRpcService');
 
@@ -119,7 +120,9 @@ function scheduleReconnect(): void {
 const COVER_PROBE_TIMEOUT_MS = 4_000;
 // Per-URL reachability cache so we don't re-probe the network on every (15s-
 // throttled) presence update. `true` = reachable, `false` = 404/timeout/invalid.
-const coverProbeCache = new Map<string, boolean>();
+// Bounded LRU so unique cover URLs can't grow the map unboundedly over long
+// sessions; entries also expire so transient failures get re-probed.
+const coverProbeCache = new LruTtlCache<string, boolean>(200, 30 * 60 * 1000);
 
 /** Only http(s) URLs can be a Discord large-image asset. */
 function isValidCoverUrl(url: string): boolean {
