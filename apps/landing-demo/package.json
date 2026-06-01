@@ -12,11 +12,11 @@
   "dependencies": {
     "react": "19.2.6",
     "react-dom": "19.2.6",
-    "remotion": "4.0.468",
-    "@remotion/cli": "4.0.468",
-    "@remotion/bundler": "4.0.468",
-    "@remotion/renderer": "4.0.468",
-    "@remotion/google-fonts": "4.0.468"
+    "remotion": "4.0.470",
+    "@remotion/cli": "4.0.470",
+    "@remotion/bundler": "4.0.470",
+    "@remotion/renderer": "4.0.470",
+    "@remotion/google-fonts": "4.0.470"
   },
   "devDependencies": {
     "@types/react": "^19.2.0",
