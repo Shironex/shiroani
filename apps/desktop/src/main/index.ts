@@ -24,6 +24,8 @@ import {
 import { ElectronNotificationHost } from './notifications/notification-host.adapter';
 import { ElectronNotificationStore } from './notifications/notification-store.adapter';
 import { NotificationHostPort, NotificationStorePort } from '../modules/notifications';
+import { AniListTokenPort } from '../modules/anime';
+import { ElectronAniListTokenAdapter } from './auth/anilist-token.adapter';
 import { APP_ID as WINDOWS_APP_ID } from './notifications/win-scheduled-notifications';
 import {
   initializeDiscordRpc,
@@ -181,6 +183,13 @@ async function bootstrapNestApp(): Promise<void> {
         notificationStoreProvider: {
           provide: NotificationStorePort,
           useClass: ElectronNotificationStore,
+        },
+        // safeStorage-backed AniList token provider — reads the persisted
+        // access token from the main-process token store so AniListClient can
+        // authenticate. The token never crosses IPC.
+        anilistTokenProvider: {
+          provide: AniListTokenPort,
+          useClass: ElectronAniListTokenAdapter,
         },
       }),
       {

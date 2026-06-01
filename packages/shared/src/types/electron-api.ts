@@ -22,6 +22,7 @@ import type {
   DiscordRpcStatus,
 } from './anime';
 import type { AppStatsSnapshot } from './stats';
+import type { AniListAuthStatus } from './anilist-auth';
 
 /**
  * Structured log entry forwarded from the renderer → main via `app:log-write`.
@@ -237,6 +238,19 @@ export interface ElectronAPI {
     /** Read the persisted scale mode for the active sprite. */
     getSpriteScale: () => Promise<MascotSpriteScaleMode>;
     onNavigate: (callback: (view: string) => void) => () => void;
+  };
+  /**
+   * AniList OAuth (implicit grant). The access token is held main-side
+   * (safeStorage-backed) and NEVER crosses IPC — the renderer only ever
+   * receives an {@link AniListAuthStatus}.
+   */
+  anilistAuth: {
+    /** Launch the OAuth flow, capture the token main-side, resolve with status. */
+    connect: () => Promise<AniListAuthStatus>;
+    /** Clear the stored token and any cached viewer. */
+    disconnect: () => Promise<void>;
+    /** Current connection status (connected + viewer + expiry, or disconnected). */
+    getStatus: () => Promise<AniListAuthStatus>;
   };
   ipc: {
     invokeWithTimeout: <T>(channel: string, timeout: number, ...args: unknown[]) => Promise<T>;

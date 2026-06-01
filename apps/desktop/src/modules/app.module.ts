@@ -1,7 +1,7 @@
 import { Module, type DynamicModule, type Provider } from '@nestjs/common';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { DatabaseModule } from './database';
-import { AnimeModule } from './anime';
+import { AnimeModule, AniListAuthModule } from './anime';
 import { LibraryModule } from './library';
 import { ScheduleModule } from './schedule';
 import { DiaryModule } from './diary';
@@ -15,6 +15,12 @@ export class AppModule {
     dbPath: string;
     notificationHostProvider: Provider;
     notificationStoreProvider: Provider;
+    /**
+     * AniList OAuth token provider (safeStorage-backed `useClass` for
+     * `AniListTokenPort`). Optional: when omitted, AnimeModule falls back to a
+     * no-op token port. The desktop OAuth slice supplies the real provider.
+     */
+    anilistTokenProvider?: Provider;
   }): DynamicModule {
     return {
       module: AppModule,
@@ -32,6 +38,7 @@ export class AppModule {
           },
         ]),
         DatabaseModule.forRoot({ dbPath: options.dbPath }),
+        AniListAuthModule.forRoot({ tokenProvider: options.anilistTokenProvider }),
         AnimeModule,
         LibraryModule,
         ScheduleModule,

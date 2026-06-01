@@ -40,6 +40,7 @@ const logger = createLogger('i18n');
 import commonEn from '@/locales/en/common.json';
 import statusEn from '@/locales/en/status.json';
 import anilistEn from '@/locales/en/anilist.json';
+import accountsEn from '@/locales/en/accounts.json';
 import settingsEn from '@/locales/en/settings.json';
 import navEn from '@/locales/en/nav.json';
 import libraryEn from '@/locales/en/library.json';
@@ -57,6 +58,7 @@ import errorBoundaryEn from '@/locales/en/errorBoundary.json';
 import commonPl from '@/locales/pl/common.json';
 import statusPl from '@/locales/pl/status.json';
 import anilistPl from '@/locales/pl/anilist.json';
+import accountsPl from '@/locales/pl/accounts.json';
 import settingsPl from '@/locales/pl/settings.json';
 import navPl from '@/locales/pl/nav.json';
 import libraryPl from '@/locales/pl/library.json';
@@ -75,6 +77,7 @@ const namespaces = [
   'common',
   'status',
   'anilist',
+  'accounts',
   'settings',
   'nav',
   'library',
@@ -148,6 +151,7 @@ i18n.use(initReactI18next).init({
       common: commonEn,
       status: statusEn,
       anilist: anilistEn,
+      accounts: accountsEn,
       settings: settingsEn,
       nav: navEn,
       library: libraryEn,
@@ -166,6 +170,7 @@ i18n.use(initReactI18next).init({
       common: commonPl,
       status: statusPl,
       anilist: anilistPl,
+      accounts: accountsPl,
       settings: settingsPl,
       nav: navPl,
       library: libraryPl,

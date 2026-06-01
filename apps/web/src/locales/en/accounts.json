@@ -1,0 +1,19 @@
+{
+  "title": "Accounts",
+  "subtitle": "Connect external accounts",
+  "anilist": {
+    "title": "AniList",
+    "description": "Connect your AniList account to sync your anime list.",
+    "connect": "Connect AniList",
+    "disconnect": "Disconnect",
+    "connecting": "Connecting…",
+    "connected": "Connected",
+    "disconnected": "Not connected",
+    "connectedAs": "Connected as {{name}}",
+    "expiresAt": "Token expires {{date}}",
+    "notConfigured": "AniList is not configured in this build.",
+    "connectError": "Could not connect to AniList. Please try again.",
+    "disconnectError": "Could not disconnect. Please try again.",
+    "desktopOnly": "AniList connection is only available in the desktop app."
+  }
+}

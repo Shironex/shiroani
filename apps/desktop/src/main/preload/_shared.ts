@@ -65,6 +65,10 @@ export const ALLOWED_IPC_CHANNELS: ReadonlySet<string> = new Set([
   'notifications:remove-subscription',
   'notifications:toggle-subscription',
   'notifications:is-subscribed',
+  // anilist auth (OAuth implicit grant; token never crosses IPC)
+  'anilist-auth:connect',
+  'anilist-auth:disconnect',
+  'anilist-auth:status',
   // discord rpc
   'discord-rpc:get-settings',
   'discord-rpc:get-status',

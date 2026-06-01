@@ -17,6 +17,7 @@ import {
   MessageCircle,
   Settings,
   Terminal,
+  UserCircle,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -40,6 +41,7 @@ import { DiscordSection } from '@/components/settings/DiscordSection';
 import { GeneralSection } from '@/components/settings/GeneralSection';
 import { SuiteSection } from '@/components/settings/SuiteSection';
 import { DeveloperSection } from '@/components/settings/DeveloperSection';
+import { AccountsSection } from '@/components/settings/AccountsSection';
 
 type SettingsSection =
   | 'general'
@@ -51,6 +53,7 @@ type SettingsSection =
   | 'newtab'
   | 'notifications'
   | 'discord'
+  | 'accounts'
   | 'mascot'
   | 'data'
   | 'updates'
@@ -136,6 +139,13 @@ const ALL_SECTIONS: SectionDef[] = [
     Icon: MessageCircle,
   },
   {
+    id: 'accounts',
+    labelKey: 'accounts',
+    subtitleKey: 'accountsSubtitle',
+    group: 'integrations',
+    Icon: UserCircle,
+  },
+  {
     id: 'mascot',
     labelKey: 'mascot',
     subtitleKey: 'mascotSubtitle',
@@ -211,6 +221,7 @@ const SECTION_PANEL: Record<SettingsSection, ComponentType> = {
   newtab: NewTabSection,
   notifications: NotificationsSection,
   discord: DiscordSection,
+  accounts: AccountsSection,
   mascot: MascotSection,
   data: DataSection,
   updates: UpdatesSection,

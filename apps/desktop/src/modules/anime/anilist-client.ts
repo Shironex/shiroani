@@ -1,10 +1,14 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Optional } from '@nestjs/common';
+import type { AniListViewer } from '@shiroani/shared';
 import { createLogger, extractErrorMessage } from '@shiroani/shared';
 import { LruTtlCache } from '../kernel/lru-ttl-cache';
+import { AniListTokenPort } from './anilist-token.port';
 
 const logger = createLogger('AniListClient');
 
 const DEFAULT_CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+
+const VIEWER_QUERY = `query { Viewer { id name avatar { large } bannerImage } }`;
 
 interface GraphQLError {
   message: string;
@@ -14,6 +18,15 @@ interface GraphQLError {
 interface GraphQLResponse<T> {
   data: T;
   errors?: GraphQLError[];
+}
+
+interface ViewerResponse {
+  Viewer: {
+    id: number;
+    name: string;
+    avatar?: { large?: string };
+    bannerImage?: string;
+  };
 }
 
 /**
@@ -34,8 +47,41 @@ export class AniListClient {
   private readonly requestTimeoutMs = 15_000;
   private readonly cache = new LruTtlCache<string, unknown>(200, DEFAULT_CACHE_TTL_MS);
 
-  constructor() {
+  constructor(@Optional() private readonly tokenPort?: AniListTokenPort) {
     logger.info('AniListClient initialized');
+  }
+
+  /**
+   * Build request headers, attaching `Authorization: Bearer <token>` ONLY when
+   * a token is available. Unauthenticated requests keep working unchanged when
+   * no token port is wired or the user is not connected.
+   */
+  private async authHeaders(): Promise<Record<string, string>> {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+    };
+    const token = (await this.tokenPort?.getAccessToken()) ?? null;
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+    return headers;
+  }
+
+  /**
+   * Fetch the authenticated AniList viewer (the connected account). Requires a
+   * token via the injected {@link AniListTokenPort}; AniList returns an error
+   * when unauthenticated, which surfaces as a thrown GraphQL error.
+   */
+  async getViewer(): Promise<AniListViewer> {
+    const data = await this.query<ViewerResponse>(VIEWER_QUERY);
+    const viewer = data.Viewer;
+    return {
+      id: viewer.id,
+      name: viewer.name,
+      avatar: viewer.avatar?.large,
+      bannerImage: viewer.bannerImage,
+    };
   }
 
   /**
@@ -88,14 +134,13 @@ export class AniListClient {
   async query<T>(query: string, variables?: Record<string, unknown>): Promise<T> {
     let lastError: Error | undefined;
 
+    const headers = await this.authHeaders();
+
     for (let attempt = 0; attempt <= this.maxRetries; attempt++) {
       try {
         const response = await fetch(this.endpoint, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Accept: 'application/json',
-          },
+          headers,
           body: JSON.stringify({ query, variables }),
           signal: AbortSignal.timeout(this.requestTimeoutMs),
         });
