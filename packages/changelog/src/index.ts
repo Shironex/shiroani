@@ -133,10 +133,173 @@ export function localizeReleases(locale: Locale): ResolvedRelease[] {
 
 export const RELEASES: readonly Release[] = [
   {
+    version: '0.12.0',
+    shortDate: '01.06.2026',
+    type: 'minor',
+    latest: true,
+    pl: {
+      date: '1 czerwca 2026',
+      title: 'Nowości w przeglądarce, odkrywaniu i bibliotece + automatyczne śledzenie postępów',
+      description:
+        'Duża aktualizacja pełna nowych funkcji. Wbudowana przeglądarka dostała inteligentny pasek adresu, historię i wyszukiwanie na stronie. Odkrywanie pozwala teraz filtrować i sortować tytuły po swojemu, a biblioteka — zaznaczać wiele pozycji naraz i podglądać powiązane anime. Aplikacja potrafi też sama rozpoznać, co oglądasz na większej liczbie stron, i zaktualizować Twój postęp. Do tego sporo dopracowań, czytnik pełnych artykułów i porządne wzmocnienie bezpieczeństwa.',
+      categories: [
+        {
+          kind: 'feature',
+          label: 'Przeglądarka',
+          entries: [
+            'Pasek adresu podpowiada strony podczas pisania (na podstawie historii)',
+            'Nowy widok historii przeglądania z możliwością wyczyszczenia',
+            'Wyszukiwanie na stronie (Ctrl+F) z podświetleniem trafień',
+            'Układ podzielonego okna jest teraz zapamiętywany',
+          ],
+        },
+        {
+          kind: 'feature',
+          label: 'Odkrywanie',
+          entries: [
+            'Zaawansowane filtry: gatunki, tagi, ocena, format, rok i więcej',
+            'Własne sortowanie wyników we wszystkich zakładkach i w wyszukiwarce',
+            'Przełącznik ukrywający tytuły, które już masz w bibliotece',
+          ],
+        },
+        {
+          kind: 'feature',
+          label: 'Biblioteka',
+          entries: [
+            'Tryb zaznaczania wielu pozycji i pasek akcji zbiorczych — zmiana statusu, oceny i usuwanie naraz',
+            'W szczegółach tytułu widać powiązane anime: sequele, prequele i historie poboczne',
+          ],
+        },
+        {
+          kind: 'feature',
+          label: 'Automatyczne śledzenie postępów',
+          entries: [
+            'Aplikacja rozpoznaje, co oglądasz, na większej liczbie stron (Crunchyroll, HiAnime, HiDive, AniList) i aktualizuje postęp w bibliotece',
+            'Funkcję można włączyć lub wyłączyć przełącznikiem',
+            'Status w Discordzie (Rich Presence) pokazuje, co aktualnie oglądasz',
+          ],
+        },
+        {
+          kind: 'feed',
+          label: 'Aktualności',
+          entries: [
+            'Pełne artykuły z kanałów można teraz czytać w całości bezpośrednio w aplikacji',
+          ],
+        },
+        {
+          kind: 'polish',
+          label: 'Dziennik i dopracowania',
+          entries: [
+            'Świętowanie kamieni milowych serii wpisów (toast i odznaka)',
+            'Ostrzeżenie o limicie znaków w edytorze dziennika',
+            'Ponowienie próby, gdy nie uda się wygenerować szczegółów wpisu',
+            'Motyw może podążać za jasnym/ciemnym trybem systemu',
+            'Czytelniejsze błędy przy imporcie własnego motywu',
+            'Nowa sekcja wsparcia aplikacji i opcja GitHub Sponsors',
+          ],
+        },
+        {
+          kind: 'app',
+          label: 'Pełne czyszczenie danych',
+          entries: [
+            'Nowa opcja „Usuń wszystkie dane" (reset fabryczny) z potwierdzeniem przez wpisanie tekstu — czyści bazę, sesję przeglądarki i pliki, po czym restartuje aplikację',
+          ],
+        },
+        {
+          kind: 'security',
+          label: 'Bezpieczeństwo i stabilność',
+          entries: [
+            'Zamknięto luki w zależnościach aplikacji i dołożono zabezpieczenia przed niebezpiecznymi adresami',
+            'Stan przeczytanych aktualności przetrwa teraz ponowną instalację',
+            'Aktualizacja silnika interfejsu i duże porządki w kodzie — lepsza stabilność i mniej okazji do błędów',
+          ],
+        },
+      ],
+    },
+    en: {
+      date: 'June 1, 2026',
+      title: 'Browser, discovery & library upgrades + automatic progress tracking',
+      description:
+        "A big feature-packed update. The built-in browser gains a smart address bar, history and find-in-page. Discovery now lets you filter and sort titles your way, and the library lets you select many entries at once and see related anime. The app can also automatically detect what you're watching on more sites and update your progress. Plus plenty of polish, a full-article reader, and a solid security pass.",
+      categories: [
+        {
+          kind: 'feature',
+          label: 'Browser',
+          entries: [
+            'The address bar suggests sites as you type (based on your history)',
+            'A new browsing-history view you can clear',
+            'Find-in-page (Ctrl+F) with match highlighting',
+            'Split-pane layout is now remembered',
+          ],
+        },
+        {
+          kind: 'feature',
+          label: 'Discovery',
+          entries: [
+            'Advanced filters: genres, tags, score, format, year and more',
+            'Your own sort order across every browse tab and in search',
+            'A toggle that hides titles already in your library',
+          ],
+        },
+        {
+          kind: 'feature',
+          label: 'Library',
+          entries: [
+            'Multi-select mode and a batch action bar — change status, score and delete in one go',
+            'A title’s details now show related anime: sequels, prequels and side stories',
+          ],
+        },
+        {
+          kind: 'feature',
+          label: 'Automatic progress tracking',
+          entries: [
+            'The app detects what you’re watching on more sites (Crunchyroll, HiAnime, HiDive, AniList) and updates your library progress',
+            'You can turn it on or off with a toggle',
+            'Discord Rich Presence shows what you’re currently watching',
+          ],
+        },
+        {
+          kind: 'feed',
+          label: 'News',
+          entries: [
+            'Full articles from your feeds can now be read in their entirety right inside the app',
+          ],
+        },
+        {
+          kind: 'polish',
+          label: 'Diary & polish',
+          entries: [
+            'Diary streak milestones are celebrated with a toast and a badge',
+            'A character-limit warning in the diary editor',
+            'A retry option when entry details fail to generate',
+            'The theme can follow your system’s light/dark mode',
+            'Clearer errors when importing a custom theme',
+            'A new app-support section and a GitHub Sponsors option',
+          ],
+        },
+        {
+          kind: 'app',
+          label: 'Full data wipe',
+          entries: [
+            'A new “Delete all data” (factory reset) option with type-to-confirm — clears the database, browser session and files, then relaunches the app',
+          ],
+        },
+        {
+          kind: 'security',
+          label: 'Security & stability',
+          entries: [
+            'Vulnerabilities in the app’s dependencies were closed and safeguards against unsafe URLs were added',
+            'Read-state for news now survives a reinstall',
+            'A UI-engine update and a large code cleanup — better stability and fewer chances for bugs',
+          ],
+        },
+      ],
+    },
+  },
+  {
     version: '0.11.0',
     shortDate: '22.05.2026',
     type: 'minor',
-    latest: true,
     pl: {
       date: '22 maja 2026',
       title: 'Personalizacja nowej karty i własna kolejność widoków',
