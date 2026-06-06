@@ -18,7 +18,7 @@
   "step": {
     "language": {
       "headline": "Let's start with the <1>easy bit</1>.",
-      "description": "Hi, I'm <1>Shiro</1>. I'll walk you through seven short steps — about a minute. You can change anything later in settings.",
+      "description": "Hi, I'm <1>Shiro</1>. I'll walk you through a few short steps — about a minute. You can change anything later in settings.",
       "marker": "Step <1>01 · Start</1> · pick a language",
       "title": "Interface language",
       "hint": "Pick a language for the app. You can change it later in settings.",

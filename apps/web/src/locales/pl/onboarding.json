@@ -18,7 +18,7 @@
   "step": {
     "language": {
       "headline": "Zacznijmy od <1>najprostszego</1>.",
-      "description": "Cześć, jestem <1>Shiro</1>. Przeprowadzę cię przez siedem krótkich kroków, zajmie ci to minutę. Wszystko zmienisz później w ustawieniach.",
+      "description": "Cześć, jestem <1>Shiro</1>. Przeprowadzę cię przez kilka krótkich kroków, zajmie ci to minutę. Wszystko zmienisz później w ustawieniach.",
       "marker": "Krok <1>01 · Start</1> · wybierz język",
       "title": "Język interfejsu",
       "hint": "Wybierz język aplikacji. Zmienisz go potem w ustawieniach.",
