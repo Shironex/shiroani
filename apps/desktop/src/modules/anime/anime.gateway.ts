@@ -2,6 +2,7 @@ import { WebSocketGateway, SubscribeMessage, MessageBody } from '@nestjs/websock
 import { UseGuards } from '@nestjs/common';
 import {
   AnimeEvents,
+  MalEvents,
   createLogger,
   animeSearchPayloadSchema,
   animeGetDetailsPayloadSchema,
@@ -11,6 +12,11 @@ import {
   animeGetSeasonalPayloadSchema,
   animeGetRandomPayloadSchema,
   animeGetUserProfilePayloadSchema,
+  animeSaveMediaListEntryPayloadSchema,
+  animeGetRecommendationsPayloadSchema,
+  animeSaveRecommendationPayloadSchema,
+  animeGetFollowPayloadSchema,
+  animeToggleFollowPayloadSchema,
 } from '@shiroani/shared';
 import { CORS_CONFIG } from '../kernel/cors.config';
 import { WsThrottlerGuard } from '../kernel/ws-throttler.guard';
@@ -173,6 +179,175 @@ export class AnimeGateway {
       handler: async parsed => {
         const profile = await this.animeService.getUserProfile(parsed.username);
         return { profile };
+      },
+    });
+  }
+
+  @SubscribeMessage(AnimeEvents.GET_VIEWER_PROFILE)
+  async handleGetViewerProfile() {
+    return handleGatewayRequest({
+      logger,
+      action: AnimeEvents.GET_VIEWER_PROFILE,
+      defaultResult: { profile: null },
+      handler: async () => {
+        const profile = await this.animeService.getViewerProfile();
+        return { profile };
+      },
+    });
+  }
+
+  @SubscribeMessage(MalEvents.GET_VIEWER_PROFILE)
+  async handleGetMalViewerProfile() {
+    return handleGatewayRequest({
+      logger,
+      action: MalEvents.GET_VIEWER_PROFILE,
+      defaultResult: { profile: null },
+      handler: async () => {
+        const profile = await this.animeService.getMalViewerProfile();
+        return { profile };
+      },
+    });
+  }
+
+  @SubscribeMessage(AnimeEvents.GET_VIEWER_ACTIVITY)
+  async handleGetViewerActivity() {
+    return handleGatewayRequest({
+      logger,
+      action: AnimeEvents.GET_VIEWER_ACTIVITY,
+      defaultResult: { activities: [] },
+      handler: async () => {
+        const activities = await this.animeService.getViewerActivity();
+        return { activities };
+      },
+    });
+  }
+
+  @SubscribeMessage(AnimeEvents.SAVE_MEDIA_LIST_ENTRY)
+  async handleSaveMediaListEntry(@MessageBody() payload: unknown) {
+    return handleGatewayRequest({
+      logger,
+      action: AnimeEvents.SAVE_MEDIA_LIST_ENTRY,
+      defaultResult: { updatedAt: null },
+      schema: animeSaveMediaListEntryPayloadSchema,
+      payload,
+      handler: async parsed => {
+        const updatedAt = await this.animeService.saveMediaListEntry(parsed);
+        return { updatedAt };
+      },
+    });
+  }
+
+  @SubscribeMessage(AnimeEvents.GET_RECOMMENDATIONS)
+  async handleGetRecommendations(@MessageBody() payload: unknown) {
+    return handleGatewayRequest({
+      logger,
+      action: AnimeEvents.GET_RECOMMENDATIONS,
+      defaultResult: { recommendations: [] },
+      schema: animeGetRecommendationsPayloadSchema,
+      payload,
+      handler: async parsed => {
+        const recommendations = await this.animeService.getRecommendations(parsed?.mediaId);
+        return { recommendations };
+      },
+    });
+  }
+
+  @SubscribeMessage(AnimeEvents.SAVE_RECOMMENDATION)
+  async handleSaveRecommendation(@MessageBody() payload: unknown) {
+    return handleGatewayRequest({
+      logger,
+      action: AnimeEvents.SAVE_RECOMMENDATION,
+      defaultResult: { userRating: null },
+      schema: animeSaveRecommendationPayloadSchema,
+      payload,
+      handler: async parsed => {
+        const userRating = await this.animeService.saveRecommendation(parsed);
+        return { userRating };
+      },
+    });
+  }
+
+  @SubscribeMessage(AnimeEvents.GET_FOLLOWING)
+  async handleGetFollowing(@MessageBody() payload: unknown) {
+    return handleGatewayRequest({
+      logger,
+      action: AnimeEvents.GET_FOLLOWING,
+      defaultResult: { users: [] },
+      schema: animeGetFollowPayloadSchema,
+      payload,
+      handler: async parsed => {
+        const users = await this.animeService.getFollowing(parsed?.userId);
+        return { users };
+      },
+    });
+  }
+
+  @SubscribeMessage(AnimeEvents.GET_FOLLOWERS)
+  async handleGetFollowers(@MessageBody() payload: unknown) {
+    return handleGatewayRequest({
+      logger,
+      action: AnimeEvents.GET_FOLLOWERS,
+      defaultResult: { users: [] },
+      schema: animeGetFollowPayloadSchema,
+      payload,
+      handler: async parsed => {
+        const users = await this.animeService.getFollowers(parsed?.userId);
+        return { users };
+      },
+    });
+  }
+
+  @SubscribeMessage(AnimeEvents.TOGGLE_FOLLOW)
+  async handleToggleFollow(@MessageBody() payload: unknown) {
+    return handleGatewayRequest({
+      logger,
+      action: AnimeEvents.TOGGLE_FOLLOW,
+      // null (not false) matches the boolean | null contract — false would read
+      // as "now unfollowed" to a client that can't distinguish it from a no-op.
+      defaultResult: { isFollowing: null },
+      schema: animeToggleFollowPayloadSchema,
+      payload,
+      handler: async parsed => {
+        const isFollowing = await this.animeService.toggleFollow(parsed.userId);
+        return { isFollowing };
+      },
+    });
+  }
+
+  @SubscribeMessage(AnimeEvents.GET_SOCIAL_FEED)
+  async handleGetSocialFeed() {
+    return handleGatewayRequest({
+      logger,
+      action: AnimeEvents.GET_SOCIAL_FEED,
+      defaultResult: { activities: [] },
+      handler: async () => {
+        const activities = await this.animeService.getSocialFeed();
+        return { activities };
+      },
+    });
+  }
+
+  @SubscribeMessage(AnimeEvents.GET_NOTIFICATIONS)
+  async handleGetNotifications() {
+    return handleGatewayRequest({
+      logger,
+      action: AnimeEvents.GET_NOTIFICATIONS,
+      defaultResult: { notifications: [], unreadCount: 0 },
+      handler: async () => {
+        return this.animeService.getNotifications();
+      },
+    });
+  }
+
+  @SubscribeMessage(AnimeEvents.MARK_NOTIFICATIONS_READ)
+  async handleMarkNotificationsRead() {
+    return handleGatewayRequest({
+      logger,
+      action: AnimeEvents.MARK_NOTIFICATIONS_READ,
+      defaultResult: { unreadCount: 0 },
+      handler: async () => {
+        const unreadCount = await this.animeService.markNotificationsRead();
+        return { unreadCount };
       },
     });
   }

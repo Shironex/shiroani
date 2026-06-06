@@ -31,5 +31,36 @@
       "summarySkipped": "{{count}} skipped — no AniList match.",
       "summaryErrors": "{{count}} failed."
     }
+  },
+  "mal": {
+    "title": "MyAnimeList",
+    "description": "Connect your MyAnimeList account to sync your anime list.",
+    "connect": "Connect MyAnimeList",
+    "disconnect": "Disconnect",
+    "connecting": "Connecting…",
+    "connected": "Connected",
+    "disconnected": "Not connected",
+    "connectedAs": "Connected as {{name}}",
+    "expiresAt": "Token expires {{date}}",
+    "notConfigured": "MyAnimeList is not configured in this build.",
+    "connectError": "Could not connect to MyAnimeList. Please try again.",
+    "disconnectError": "Could not disconnect. Please try again.",
+    "desktopOnly": "MyAnimeList connection is only available in the desktop app.",
+    "sync": {
+      "title": "List synchronization",
+      "description": "Two-way sync with MyAnimeList: imports your MAL list and pushes local changes back. On the first sync your MAL list takes precedence; afterwards, the most recently changed side wins.",
+      "button": "Sync now",
+      "syncing": "Syncing…",
+      "progressLabel": "{{current}} / {{total}} — {{title}}",
+      "lastSynced": "Last synced {{date}}",
+      "error": "Sync failed. Please try again.",
+      "confirmTitle": "Sync with MyAnimeList?",
+      "confirmDescription": "This imports your MyAnimeList list into ShiroAni and pushes local changes (progress, status, score, notes) back to your MyAnimeList account — it may add or modify entries there. On the first sync your MAL list takes precedence for conflicts; afterwards, the most recently changed side wins. Episode progress always keeps the higher number.",
+      "confirmButton": "Synchronize",
+      "summary": "Imported {{imported}} · created on MAL {{pushedNew}} · updated locally {{updatedLocal}} · updated on MAL {{updatedRemote}}.",
+      "summaryConflicts": "{{count}} conflict(s) resolved — newest change kept.",
+      "summarySkipped": "{{count}} skipped — no MAL match.",
+      "summaryErrors": "{{count}} failed."
+    }
   }
 }

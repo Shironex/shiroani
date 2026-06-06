@@ -3,10 +3,11 @@ import type { AniListViewer } from '@shiroani/shared';
 import { createLogger, extractErrorMessage } from '@shiroani/shared';
 import { LruTtlCache } from '../kernel/lru-ttl-cache';
 import { AniListTokenPort } from './anilist-token.port';
-import { MEDIA_LIST_COLLECTION_QUERY } from './queries';
+import { MEDIA_LIST_COLLECTION_QUERY, MEDIA_LIST_ENTRY_QUERY } from './queries';
 import type {
   AniListMediaListEntry,
   MediaListCollectionResponse,
+  MediaListEntryResponse,
   SaveMediaListEntryInput,
   SaveMediaListEntryResponse,
 } from './types';
@@ -76,6 +77,15 @@ export class AniListClient {
   }
 
   /**
+   * Whether a usable AniList access token is currently available. Lets authed
+   * callers (viewer profile / activity) short-circuit BEFORE issuing a query, so
+   * "not connected" stays distinct from a real query error (rate-limit/network).
+   */
+  async hasToken(): Promise<boolean> {
+    return !!(await this.tokenPort?.getAccessToken());
+  }
+
+  /**
    * Fetch the authenticated AniList viewer (the connected account). Requires a
    * token via the injected {@link AniListTokenPort}; AniList returns an error
    * when unauthenticated, which surfaces as a thrown GraphQL error.
@@ -129,11 +139,58 @@ export class AniListClient {
           titleRomaji: media.title?.romaji ?? undefined,
           titleNative: media.title?.native ?? undefined,
           coverImage: media.coverImage?.large ?? media.coverImage?.medium ?? undefined,
+          idMal: media.idMal ?? undefined,
         });
       }
     }
 
     return entries;
+  }
+
+  /**
+   * Fetch a SINGLE MediaList entry for a user + media (single-entry sync, read
+   * side). Returns the normalized entry, or `null` when the user has no list
+   * entry for that media (AniList answers a missing MediaList with a 404 GraphQL
+   * error, surfaced as a thrown "Not Found." error — mapped to null here). Other
+   * errors (rate-limit/network/auth) propagate. Never cached — must read live
+   * remote state. `mediaId` is set from the input (the query doesn't reselect it).
+   *
+   * @param mediaId - the AniList media id
+   * @param userId - the AniList viewer id (from {@link getViewer})
+   */
+  async getMediaListEntry(mediaId: number, userId: number): Promise<AniListMediaListEntry | null> {
+    let data: MediaListEntryResponse;
+    try {
+      data = await this.query<MediaListEntryResponse>(MEDIA_LIST_ENTRY_QUERY, { mediaId, userId });
+    } catch (error) {
+      // A missing list entry comes back as a 404 GraphQL error ("Not Found.").
+      // That's an expected "no remote entry" signal, not a failure — map to null.
+      // Anything else (rate-limit, network, auth) is a real error: re-throw.
+      const message = extractErrorMessage(error).toLowerCase();
+      if (message.includes('not found')) {
+        return null;
+      }
+      throw error;
+    }
+
+    const entry = data?.MediaList;
+    if (!entry) return null;
+
+    const media = entry.media;
+    return {
+      mediaId,
+      status: entry.status,
+      progress: entry.progress,
+      score: entry.score,
+      notes: entry.notes,
+      updatedAt: entry.updatedAt ?? 0,
+      episodes: media?.episodes ?? undefined,
+      title: media?.title?.romaji ?? media?.title?.english ?? media?.title?.native ?? 'Unknown',
+      titleRomaji: media?.title?.romaji ?? undefined,
+      titleNative: media?.title?.native ?? undefined,
+      coverImage: media?.coverImage?.large ?? media?.coverImage?.medium ?? undefined,
+      idMal: media?.idMal ?? undefined,
+    };
   }
 
   /**

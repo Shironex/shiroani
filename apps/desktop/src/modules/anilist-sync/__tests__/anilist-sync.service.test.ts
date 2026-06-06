@@ -2,6 +2,7 @@ import {
   AniListSyncService,
   SYNC_IN_PROGRESS_ERROR,
   SYNC_NOT_CONNECTED_ERROR,
+  SYNC_ENTRY_NOT_FOUND_ERROR,
 } from '../anilist-sync.service';
 import type { AniListMediaListEntry } from '../../anime/types';
 import type { AniListSyncRow } from '../../library/library.types';
@@ -10,14 +11,17 @@ import type { AniListSyncProgress } from '@shiroani/shared';
 type ClientMock = {
   getViewer: jest.Mock;
   getMediaListCollection: jest.Mock;
+  getMediaListEntry: jest.Mock;
   saveMediaListEntry: jest.Mock;
 };
 type LibraryMock = {
   getEntriesForSync: jest.Mock;
+  getSyncRowById: jest.Mock;
   getEntryById: jest.Mock;
   addEntry: jest.Mock;
   updateEntry: jest.Mock;
   markAniListSync: jest.Mock;
+  setMalId: jest.Mock;
 };
 type TokenMock = { getAccessToken: jest.Mock };
 
@@ -25,16 +29,21 @@ const EPOCH = Math.floor(Date.parse('2024-01-01T00:00:00Z') / 1000);
 
 function makeService(opts: {
   remote?: AniListMediaListEntry[];
+  /** Single-entry remote lookup (getMediaListEntry). undefined → not stubbed. */
+  remoteEntry?: AniListMediaListEntry | null;
   local?: AniListSyncRow[];
   token?: string | null;
 }) {
   const client: ClientMock = {
     getViewer: jest.fn().mockResolvedValue({ id: 7, name: 'Anya' }),
     getMediaListCollection: jest.fn().mockResolvedValue(opts.remote ?? []),
+    getMediaListEntry: jest.fn().mockResolvedValue(opts.remoteEntry ?? null),
     saveMediaListEntry: jest.fn().mockResolvedValue(EPOCH + 100),
   };
   const library: LibraryMock = {
     getEntriesForSync: jest.fn().mockReturnValue(opts.local ?? []),
+    // Single-row snapshot used by syncEntry — returns the full AniListSyncRow.
+    getSyncRowById: jest.fn((id: number) => (opts.local ?? []).find(r => r.id === id)),
     // Default: the optimistic re-read returns the row unchanged (same updatedAt as
     // the snapshot) so the guard passes through. A test overrides this to return a
     // changed updatedAt (concurrent edit) or undefined (deleted mid-sync).
@@ -45,6 +54,7 @@ function makeService(opts: {
     addEntry: jest.fn().mockReturnValue({ id: 999 }),
     updateEntry: jest.fn(),
     markAniListSync: jest.fn(),
+    setMalId: jest.fn(),
   };
   const tokenPort: TokenMock = {
     getAccessToken: jest.fn().mockResolvedValue(opts.token === undefined ? 'tok' : opts.token),
@@ -173,6 +183,36 @@ describe('AniListSyncService.sync', () => {
     expect(result.unchanged).toBe(1);
   });
 
+  it('backfills mal_id from idMal on an unchanged match (links a pre-existing library)', async () => {
+    // An already-reconciled row (nothing to sync) still has its MAL cross-ref
+    // linked from AniList's idMal — this is what makes a stable library MAL-ready
+    // after a single AniList sync, with no MAL title search.
+    const { service, library } = makeService({
+      remote: [remote({ mediaId: 100, progress: 5, status: 'CURRENT', idMal: 52034 })],
+      local: [local({ id: 1, anilistId: 100, malId: null, currentEpisode: 5, status: 'watching' })],
+    });
+    await service.sync(noop);
+    expect(library.setMalId).toHaveBeenCalledWith(1, 52034);
+  });
+
+  it('does not relink mal_id when the row is already linked', async () => {
+    const { service, library } = makeService({
+      remote: [remote({ mediaId: 100, progress: 5, status: 'CURRENT', idMal: 52034 })],
+      local: [local({ id: 1, anilistId: 100, malId: 999, currentEpisode: 5, status: 'watching' })],
+    });
+    await service.sync(noop);
+    expect(library.setMalId).not.toHaveBeenCalled();
+  });
+
+  it('skips mal_id link when AniList reports no MAL mapping (idMal absent)', async () => {
+    const { service, library } = makeService({
+      remote: [remote({ mediaId: 100, progress: 5, status: 'CURRENT' })], // no idMal
+      local: [local({ id: 1, anilistId: 100, malId: null, currentEpisode: 5, status: 'watching' })],
+    });
+    await service.sync(noop);
+    expect(library.setMalId).not.toHaveBeenCalled();
+  });
+
   it('isolates a per-entry failure: one bad entry does not abort the run', async () => {
     const { service, client, library } = makeService({
       remote: [remote({ mediaId: 100, progress: 9, status: 'CURRENT' })],
@@ -257,5 +297,242 @@ describe('AniListSyncService.sync', () => {
     expect(events).toHaveLength(2);
     expect(events[0]).toMatchObject({ current: 1, total: 2, action: 'imported' });
     expect(events[1]).toMatchObject({ current: 2, total: 2 });
+  });
+});
+
+describe('AniListSyncService.syncEntry', () => {
+  it('throws when no AniList account is connected', async () => {
+    const { service, client } = makeService({
+      token: null,
+      local: [local({ id: 1, anilistId: 100 })],
+    });
+    await expect(service.syncEntry(1, 'auto')).rejects.toThrow(SYNC_NOT_CONNECTED_ERROR);
+    expect(client.getMediaListEntry).not.toHaveBeenCalled();
+  });
+
+  it('throws when the local row does not exist', async () => {
+    const { service } = makeService({ local: [] });
+    await expect(service.syncEntry(42, 'auto')).rejects.toThrow(SYNC_ENTRY_NOT_FOUND_ERROR);
+  });
+
+  it('rejects while a full sync is running (shared single-flight guard)', async () => {
+    // A never-resolving collection fetch keeps the full sync in-flight (running=true).
+    let release!: () => void;
+    const { service, client } = makeService({ local: [], remote: [] });
+    client.getMediaListCollection.mockReturnValue(
+      new Promise(resolve => {
+        release = () => resolve([]);
+      })
+    );
+
+    const full = service.sync(noop);
+    // running was set synchronously before the first await, so the per-entry op sees it.
+    await expect(service.syncEntry(1, 'auto')).rejects.toThrow(SYNC_IN_PROGRESS_ERROR);
+
+    release();
+    await full;
+    // Slot released — the SAME service now accepts a per-entry op. Row 1 doesn't
+    // exist in this service, so it reaches the NOT_FOUND path, which is only
+    // reachable PAST the single-flight guard — proving `service` freed its slot.
+    await expect(service.syncEntry(1, 'pull')).rejects.toThrow(SYNC_ENTRY_NOT_FOUND_ERROR);
+  });
+
+  it('skips a local-only entry with no AniList id', async () => {
+    const { service, client, library } = makeService({
+      local: [local({ id: 1, anilistId: null })],
+    });
+    const res = await service.syncEntry(1, 'push');
+    expect(res).toEqual({ action: 'skipped' });
+    expect(client.saveMediaListEntry).not.toHaveBeenCalled();
+    expect(library.markAniListSync).not.toHaveBeenCalled();
+  });
+
+  describe('push (force local -> remote)', () => {
+    it('pushes the local row to AniList and re-baselines from the response, no remote read', async () => {
+      const { service, client, library } = makeService({
+        local: [local({ id: 5, anilistId: 200, status: 'completed', currentEpisode: 12 })],
+      });
+      const res = await service.syncEntry(5, 'push');
+      expect(res).toEqual({ action: 'pushed' });
+      expect(client.getMediaListEntry).not.toHaveBeenCalled();
+      expect(client.saveMediaListEntry).toHaveBeenCalledWith(
+        expect.objectContaining({ mediaId: 200, status: 'COMPLETED', progress: 12 })
+      );
+      expect(library.markAniListSync).toHaveBeenCalledWith(5, EPOCH + 100);
+    });
+  });
+
+  describe('pull (force remote -> local)', () => {
+    it('overwrites the local row from the remote entry and re-baselines from remote updatedAt', async () => {
+      const { service, client, library } = makeService({
+        local: [local({ id: 1, anilistId: 100, status: 'watching', currentEpisode: 2, score: 5 })],
+        remoteEntry: remote({
+          mediaId: 100,
+          status: 'COMPLETED',
+          progress: 12,
+          score: 90,
+          updatedAt: EPOCH + 500,
+        }),
+      });
+      const res = await service.syncEntry(1, 'pull');
+      expect(res).toEqual({ action: 'updated' });
+      // Forced pull overwrites status/progress/score unconditionally (not monotonic).
+      expect(library.updateEntry).toHaveBeenCalledWith(
+        1,
+        expect.objectContaining({ status: 'completed', currentEpisode: 12, score: 9 })
+      );
+      expect(library.markAniListSync).toHaveBeenCalledWith(1, EPOCH + 500);
+      expect(client.saveMediaListEntry).not.toHaveBeenCalled();
+    });
+
+    it('skips when there is no remote entry to pull from', async () => {
+      const { service, library } = makeService({
+        local: [local({ id: 1, anilistId: 100 })],
+        remoteEntry: null,
+      });
+      const res = await service.syncEntry(1, 'pull');
+      expect(res).toEqual({ action: 'skipped' });
+      expect(library.updateEntry).not.toHaveBeenCalled();
+      expect(library.markAniListSync).not.toHaveBeenCalled();
+    });
+
+    it('drives progress DOWN to a present lower remote value but never clears a local score the remote lacks', async () => {
+      // Force-pull semantics: the remote wins for any field it HAS (progress 3 < local 8),
+      // but it never clobbers a populated local field (score 7) to absent just because the
+      // remote is unrated. status is always remote-present so it's adopted too.
+      const { service, library } = makeService({
+        local: [local({ id: 1, anilistId: 100, status: 'completed', currentEpisode: 8, score: 7 })],
+        remoteEntry: remote({
+          mediaId: 100,
+          status: 'CURRENT',
+          progress: 3,
+          score: null, // unrated remotely
+          notes: null,
+          updatedAt: EPOCH + 20,
+        }),
+      });
+      const res = await service.syncEntry(1, 'pull');
+      expect(res).toEqual({ action: 'updated' });
+      const update = library.updateEntry.mock.calls[0][1];
+      expect(update).toEqual({ status: 'watching', currentEpisode: 3 });
+      // The unrated remote must NOT wipe the local score/notes.
+      expect(update).not.toHaveProperty('score');
+      expect(update).not.toHaveProperty('notes');
+      expect(library.markAniListSync).toHaveBeenCalledWith(1, EPOCH + 20);
+    });
+
+    it('reports unchanged (only re-baselines) when local already matches remote', async () => {
+      const { service, library } = makeService({
+        local: [local({ id: 1, anilistId: 100, status: 'watching', currentEpisode: 3 })],
+        remoteEntry: remote({
+          mediaId: 100,
+          status: 'CURRENT',
+          progress: 3,
+          updatedAt: EPOCH + 9,
+        }),
+      });
+      const res = await service.syncEntry(1, 'pull');
+      expect(res).toEqual({ action: 'unchanged' });
+      expect(library.updateEntry).not.toHaveBeenCalled();
+      expect(library.markAniListSync).toHaveBeenCalledWith(1, EPOCH + 9);
+    });
+  });
+
+  describe('auto (merge decision, mirrors full sync match branch)', () => {
+    it('pushes the higher local progress and re-baselines from the push response', async () => {
+      const { service, client, library } = makeService({
+        local: [
+          local({
+            id: 1,
+            anilistId: 100,
+            currentEpisode: 8,
+            updatedAt: '2024-06-01 00:00:00',
+            anilistSyncedAt: '2024-01-01 00:00:00',
+            anilistRemoteUpdatedAt: EPOCH,
+          }),
+        ],
+        remoteEntry: remote({ mediaId: 100, progress: 3, updatedAt: EPOCH }),
+      });
+      const res = await service.syncEntry(1, 'auto');
+      expect(res).toEqual({ action: 'updated' });
+      expect(client.saveMediaListEntry).toHaveBeenCalledWith(
+        expect.objectContaining({ mediaId: 100, progress: 8 })
+      );
+      expect(library.markAniListSync).toHaveBeenCalledWith(1, EPOCH + 100);
+    });
+
+    it('reports unchanged and only re-baselines when both sides agree', async () => {
+      const { service, client, library } = makeService({
+        local: [local({ id: 1, anilistId: 100, currentEpisode: 5, status: 'watching' })],
+        remoteEntry: remote({ mediaId: 100, progress: 5, status: 'CURRENT', updatedAt: EPOCH }),
+      });
+      const res = await service.syncEntry(1, 'auto');
+      expect(res).toEqual({ action: 'unchanged' });
+      expect(client.saveMediaListEntry).not.toHaveBeenCalled();
+      expect(library.updateEntry).not.toHaveBeenCalled();
+      expect(library.markAniListSync).toHaveBeenCalledWith(1, EPOCH);
+    });
+
+    it('pushes a local-only entry when there is no remote match (mirrors full-sync push branch)', async () => {
+      const { service, client, library } = makeService({
+        local: [local({ id: 3, anilistId: 300, status: 'completed', currentEpisode: 24 })],
+        remoteEntry: null,
+      });
+      const res = await service.syncEntry(3, 'auto');
+      expect(res).toEqual({ action: 'pushed' });
+      expect(client.saveMediaListEntry).toHaveBeenCalledWith(
+        expect.objectContaining({ mediaId: 300, status: 'COMPLETED', progress: 24 })
+      );
+      expect(library.markAniListSync).toHaveBeenCalledWith(3, EPOCH + 100);
+    });
+  });
+
+  describe('optimistic-concurrency re-read guard', () => {
+    it('skips a pull when the row was edited locally mid-sync (re-read returns a newer updatedAt)', async () => {
+      const { service, client, library } = makeService({
+        local: [local({ id: 1, anilistId: 100, currentEpisode: 2 })],
+        remoteEntry: remote({ mediaId: 100, status: 'COMPLETED', progress: 12 }),
+      });
+      library.getEntryById.mockReturnValue({ id: 1, updatedAt: '2099-01-01 00:00:00' });
+
+      const res = await service.syncEntry(1, 'pull');
+      expect(res).toEqual({ action: 'unchanged' });
+      expect(library.updateEntry).not.toHaveBeenCalled();
+      expect(library.markAniListSync).not.toHaveBeenCalled();
+      expect(client.saveMediaListEntry).not.toHaveBeenCalled();
+    });
+
+    it('skips an auto merge when the row was deleted locally mid-sync (re-read returns undefined)', async () => {
+      const { service, client, library } = makeService({
+        local: [
+          local({
+            id: 1,
+            anilistId: 100,
+            currentEpisode: 8,
+            updatedAt: '2024-06-01 00:00:00',
+            anilistSyncedAt: '2024-01-01 00:00:00',
+            anilistRemoteUpdatedAt: EPOCH,
+          }),
+        ],
+        remoteEntry: remote({ mediaId: 100, progress: 3, updatedAt: EPOCH }),
+      });
+      library.getEntryById.mockReturnValue(undefined);
+
+      const res = await service.syncEntry(1, 'auto');
+      expect(res).toEqual({ action: 'unchanged' });
+      expect(library.updateEntry).not.toHaveBeenCalled();
+      expect(library.markAniListSync).not.toHaveBeenCalled();
+      expect(client.saveMediaListEntry).not.toHaveBeenCalled();
+    });
+  });
+
+  it('releases the single-flight slot after a per-entry op (success path)', async () => {
+    const { service } = makeService({
+      local: [local({ id: 1, anilistId: 100 })],
+      remoteEntry: remote({ mediaId: 100 }),
+    });
+    await service.syncEntry(1, 'auto');
+    // A subsequent op is allowed — the slot was released in `finally`.
+    await expect(service.syncEntry(1, 'auto')).resolves.toBeDefined();
   });
 });

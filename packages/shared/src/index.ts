@@ -4,8 +4,14 @@ export * from './types/anime';
 // AniList auth types (OAuth implicit grant contract)
 export * from './types/anilist-auth';
 
+// MAL auth types (OAuth authorization-code + PKCE contract)
+export * from './types/mal-auth';
+
 // AniList two-way sync contract (progress + result summaries)
 export * from './types/anilist-sync';
+
+// TrackerProvider abstraction (north-star seam for AniList + MAL; no consumers yet)
+export * from './types/tracker-provider';
 
 // Settings types (BUILT_IN_THEMES is an internal lookup set used by
 // isBuiltInTheme — kept off the public surface; consumers use isBuiltInTheme /

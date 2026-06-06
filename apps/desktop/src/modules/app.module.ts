@@ -1,8 +1,9 @@
 import { Module, type DynamicModule, type Provider } from '@nestjs/common';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { DatabaseModule } from './database';
-import { AnimeModule, AniListAuthModule } from './anime';
+import { AnimeModule, AniListAuthModule, MalAuthModule } from './anime';
 import { AniListSyncModule } from './anilist-sync';
+import { MalSyncModule } from './mal-sync';
 import { LibraryModule } from './library';
 import { ScheduleModule } from './schedule';
 import { DiaryModule } from './diary';
@@ -22,6 +23,13 @@ export class AppModule {
      * no-op token port. The desktop OAuth slice supplies the real provider.
      */
     anilistTokenProvider?: Provider;
+    /**
+     * MAL OAuth token provider (safeStorage-backed `useClass` for
+     * `MalTokenPort`). Optional: when omitted, the global MalAuthModule falls
+     * back to a no-op token port. The desktop OAuth slice supplies the real
+     * provider.
+     */
+    malTokenProvider?: Provider;
   }): DynamicModule {
     return {
       module: AppModule,
@@ -40,8 +48,10 @@ export class AppModule {
         ]),
         DatabaseModule.forRoot({ dbPath: options.dbPath }),
         AniListAuthModule.forRoot({ tokenProvider: options.anilistTokenProvider }),
+        MalAuthModule.forRoot({ tokenProvider: options.malTokenProvider }),
         AnimeModule,
         AniListSyncModule,
+        MalSyncModule,
         LibraryModule,
         ScheduleModule,
         DiaryModule,

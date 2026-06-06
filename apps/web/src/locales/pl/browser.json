@@ -99,6 +99,16 @@
         "feedUnread_other": "<1>{{count}} nowości</1> w subskrypcjach"
       }
     },
+    "quickStats": {
+      "title": "Twoje liczby",
+      "episodes": "Odcinki",
+      "library": "W bibliotece",
+      "streak": "Passa",
+      "streakValue_one": "{{count}} dzień",
+      "streakValue_few": "{{count}} dni",
+      "streakValue_many": "{{count}} dni",
+      "streakValue_other": "{{count}} dni"
+    },
     "quickAccess": {
       "title": "Szybki dostęp",
       "tabsCount_one": "{{count}} zakładka",

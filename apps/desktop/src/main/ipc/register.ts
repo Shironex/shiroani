@@ -28,6 +28,8 @@ import {
   cleanupAppStatsHandlers,
   registerAniListAuthHandlers,
   cleanupAniListAuthHandlers,
+  registerMalAuthHandlers,
+  cleanupMalAuthHandlers,
 } from './';
 import { BrowserManager } from '../browser/browser-manager';
 
@@ -52,6 +54,7 @@ export function registerIpcHandlers(
   registerDiscordRpcHandlers();
   registerAppStatsHandlers();
   registerAniListAuthHandlers();
+  registerMalAuthHandlers();
 }
 
 /**
@@ -72,4 +75,5 @@ export function cleanupIpcHandlers(): void {
   cleanupDiscordRpcHandlers();
   cleanupAppStatsHandlers();
   cleanupAniListAuthHandlers();
+  cleanupMalAuthHandlers();
 }

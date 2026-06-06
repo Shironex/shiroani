@@ -23,6 +23,7 @@ import type {
 } from './anime';
 import type { AppStatsSnapshot } from './stats';
 import type { AniListAuthStatus } from './anilist-auth';
+import type { MalAuthStatus } from './mal-auth';
 
 /**
  * Structured log entry forwarded from the renderer → main via `app:log-write`.
@@ -251,6 +252,19 @@ export interface ElectronAPI {
     disconnect: () => Promise<void>;
     /** Current connection status (connected + viewer + expiry, or disconnected). */
     getStatus: () => Promise<AniListAuthStatus>;
+  };
+  /**
+   * MAL OAuth (authorization code + PKCE). The access AND refresh tokens are
+   * held main-side (safeStorage-backed) and NEVER cross IPC — the renderer only
+   * ever receives a {@link MalAuthStatus}.
+   */
+  malAuth: {
+    /** Launch the OAuth flow, capture the tokens main-side, resolve with status. */
+    connect: () => Promise<MalAuthStatus>;
+    /** Clear the stored tokens and any cached viewer. */
+    disconnect: () => Promise<void>;
+    /** Current connection status (connected + viewer + expiry, or disconnected). */
+    getStatus: () => Promise<MalAuthStatus>;
   };
   ipc: {
     invokeWithTimeout: <T>(channel: string, timeout: number, ...args: unknown[]) => Promise<T>;

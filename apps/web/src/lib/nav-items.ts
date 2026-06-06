@@ -22,6 +22,7 @@ export const ALL_NAV_ITEMS: NavItem[] = [
   { id: 'diary', label: 'Diary' },
   { id: 'schedule', label: 'Schedule' },
   { id: 'feed', label: 'News' },
+  { id: 'social', label: 'Community' },
   { id: 'profile', label: 'Profile' },
   { id: 'changelog', label: 'History' },
   { id: 'settings', label: 'Settings' },

@@ -38,6 +38,50 @@ export interface AniListSyncProgress {
   action: AniListSyncAction;
 }
 
+/**
+ * Forced direction for a single-entry sync.
+ *
+ * - `push` — overwrite the AniList entry from the local row (local wins)
+ * - `pull` — overwrite the local row from the AniList entry (remote wins)
+ * - `auto` — run the same merge decision a full sync would (latest-wins,
+ *   present-wins, monotonic progress)
+ */
+export type AniListSyncEntryDirection = 'push' | 'pull' | 'auto';
+
+/** Request payload for {@link AniListSyncEvents.SYNC_ENTRY}. */
+export interface AniListSyncEntryRequest {
+  /** Local library row id to reconcile. */
+  localId: number;
+  /** Which way to reconcile. */
+  direction: AniListSyncEntryDirection;
+}
+
+/** Ack returned for a single-entry sync — the outcome for that one entry. */
+export interface AniListSyncEntryResult {
+  action: AniListSyncAction;
+}
+
+// ============================================
+// Provider-neutral aliases (MAL sync reuses these shapes verbatim)
+// ============================================
+//
+// The two-way sync contract is provider-agnostic: the MAL sync emits the SAME
+// progress/result/action shapes as AniList (the desktop ProviderSyncEngine is
+// parameterized over a provider adapter, not over a wire format). Rather than
+// duplicate the interfaces, the MAL surface (events, gateway, store) references
+// these aliases so a future neutral rename is a one-line change here.
+
+/** Per-entry outcome for a sync pass — provider-neutral alias of {@link AniListSyncAction}. */
+export type SyncAction = AniListSyncAction;
+/** Incremental sync progress — provider-neutral alias of {@link AniListSyncProgress}. */
+export type SyncProgress = AniListSyncProgress;
+/** Forced single-entry sync direction — provider-neutral alias of {@link AniListSyncEntryDirection}. */
+export type SyncEntryDirection = AniListSyncEntryDirection;
+/** Single-entry sync request — provider-neutral alias of {@link AniListSyncEntryRequest}. */
+export type SyncEntryRequest = AniListSyncEntryRequest;
+/** Single-entry sync ack — provider-neutral alias of {@link AniListSyncEntryResult}. */
+export type SyncEntryResult = AniListSyncEntryResult;
+
 /** Final tally returned as the `SYNC` ack once a run completes. */
 export interface AniListSyncResult {
   /** Remote entries created in the local library. */
@@ -57,3 +101,6 @@ export interface AniListSyncResult {
   /** Entries that failed to sync. */
   errors: number;
 }
+
+/** Final sync tally — provider-neutral alias of {@link AniListSyncResult}. */
+export type SyncResult = AniListSyncResult;

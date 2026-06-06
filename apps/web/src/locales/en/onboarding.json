@@ -18,7 +18,7 @@
   "step": {
     "language": {
       "headline": "Let's start with the <1>easy bit</1>.",
-      "description": "Hi, I'm <1>Shiro</1>. I'll walk you through six short steps — about a minute. You can change anything later in settings.",
+      "description": "Hi, I'm <1>Shiro</1>. I'll walk you through a few short steps — about a minute. You can change anything later in settings.",
       "marker": "Step <1>01 · Start</1> · pick a language",
       "title": "Interface language",
       "hint": "Pick a language for the app. You can change it later in settings.",
@@ -101,10 +101,44 @@
       "saved": "Saved",
       "footnote": "✦ You can customise status templates later in settings"
     },
+    "anilist": {
+      "headline": "Bring your <1>library</1> with you.",
+      "description": "Connect AniList and ShiroAni keeps your list and profile in sync — <1>two-way</1>, so changes flow both ways. Totally optional: skip it and connect later in settings.",
+      "marker": "Step <1>07 · Account</1> · AniList",
+      "title": "AniList",
+      "desktopOnly": "Desktop-only feature",
+      "connect": "Connect AniList",
+      "connecting": "Connecting…",
+      "connectedAs": "Connected as {{name}}",
+      "connectedHint": "Your list and profile will sync.",
+      "benefit": {
+        "library": "Import your AniList list",
+        "profile": "Show your AniList profile in-app",
+        "twoWay": "Two-way sync keeps both sides current"
+      },
+      "footnote": "✦ Manage the connection and sync later in settings"
+    },
+    "mal": {
+      "headline": "And your <1>MyAnimeList</1>, too.",
+      "description": "Connect MyAnimeList and ShiroAni keeps that list in sync as well — <1>two-way</1>, auto-matched to your AniList entries. Optional: skip it and connect later in settings.",
+      "marker": "Step <1>08 · Account</1> · MyAnimeList",
+      "title": "MyAnimeList",
+      "desktopOnly": "Desktop-only feature",
+      "connect": "Connect MyAnimeList",
+      "connecting": "Connecting…",
+      "connectedAs": "Connected as {{name}}",
+      "connectedHint": "Your MyAnimeList list will sync.",
+      "benefit": {
+        "library": "Import your MyAnimeList list",
+        "profile": "Show your MyAnimeList profile in-app",
+        "twoWay": "Two-way sync, auto-matched to AniList"
+      },
+      "footnote": "✦ Manage the connection and sync later in settings"
+    },
     "adblock": {
       "headline": "Last bit: a <1>clean</1> episode without ads.",
       "description": "The built-in browser blocks ads and trackers on streaming sites (<1>EasyList + EasyPrivacy</1>). Set per-domain exceptions later.",
-      "marker": "Step <1>07 · Finish</1> · ad blocking",
+      "marker": "Step <1>09 · Finish</1> · ad blocking",
       "title": "Ad blocking",
       "desktopOnly": "Desktop-only feature",
       "toggle": {
@@ -123,7 +157,7 @@
     },
     "summary": {
       "headline": "All <1>set</1>. Time to watch.",
-      "description": "Seven settings down, all stored locally on your machine. <1>Shiro-chan</1> will be at the bottom of the screen if you need her.",
+      "description": "Eight settings down, all stored locally on your machine. <1>Shiro-chan</1> will be at the bottom of the screen if you need her.",
       "marker": "Summary · <1>your setup</1>",
       "title": "All ready!",
       "intro": "Here are your choices. Change any of them later in settings.",
@@ -133,6 +167,8 @@
         "background": "Background",
         "dock": "Dock",
         "discord": "Discord RPC",
+        "anilist": "AniList",
+        "mal": "MyAnimeList",
         "adblock": "Adblock"
       },
       "languages": {
@@ -154,7 +190,8 @@
       },
       "value": {
         "on": "ON",
-        "off": "OFF"
+        "off": "OFF",
+        "notConnected": "Not connected"
       }
     }
   }

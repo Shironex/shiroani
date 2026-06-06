@@ -18,7 +18,7 @@
   "step": {
     "language": {
       "headline": "Zacznijmy od <1>najprostszego</1>.",
-      "description": "Cześć, jestem <1>Shiro</1>. Przeprowadzę cię przez sześć krótkich kroków, zajmie ci to minutę. Wszystko zmienisz później w ustawieniach.",
+      "description": "Cześć, jestem <1>Shiro</1>. Przeprowadzę cię przez kilka krótkich kroków, zajmie ci to minutę. Wszystko zmienisz później w ustawieniach.",
       "marker": "Krok <1>01 · Start</1> · wybierz język",
       "title": "Język interfejsu",
       "hint": "Wybierz język aplikacji. Zmienisz go potem w ustawieniach.",
@@ -101,10 +101,44 @@
       "saved": "Zapisano",
       "footnote": "✦ Szablony statusu dostosujesz potem w ustawieniach"
     },
+    "anilist": {
+      "headline": "Zabierz swoją <1>bibliotekę</1> ze sobą.",
+      "description": "Podłącz AniList, a ShiroAni będzie synchronizować twoją listę i profil — <1>dwukierunkowo</1>, więc zmiany płyną w obie strony. Całkowicie opcjonalne: pomiń teraz i podłącz później w ustawieniach.",
+      "marker": "Krok <1>07 · Konto</1> · AniList",
+      "title": "AniList",
+      "desktopOnly": "Dostępne tylko w wersji desktopowej",
+      "connect": "Połącz z AniList",
+      "connecting": "Łączenie…",
+      "connectedAs": "Połączono jako {{name}}",
+      "connectedHint": "Twoja lista i profil będą synchronizowane.",
+      "benefit": {
+        "library": "Import twojej listy z AniList",
+        "profile": "Pokaż profil AniList w aplikacji",
+        "twoWay": "Synchronizacja dwukierunkowa utrzymuje obie strony aktualne"
+      },
+      "footnote": "✦ Połączeniem i synchronizacją zarządzisz później w ustawieniach"
+    },
+    "mal": {
+      "headline": "I twój <1>MyAnimeList</1> też.",
+      "description": "Podłącz MyAnimeList, a ShiroAni będzie synchronizować również tę listę — <1>dwukierunkowo</1>, automatycznie dopasowaną do twoich wpisów z AniList. Opcjonalne: pomiń teraz i podłącz później w ustawieniach.",
+      "marker": "Krok <1>08 · Konto</1> · MyAnimeList",
+      "title": "MyAnimeList",
+      "desktopOnly": "Dostępne tylko w wersji desktopowej",
+      "connect": "Połącz z MyAnimeList",
+      "connecting": "Łączenie…",
+      "connectedAs": "Połączono jako {{name}}",
+      "connectedHint": "Twoja lista MyAnimeList będzie synchronizowana.",
+      "benefit": {
+        "library": "Import twojej listy z MyAnimeList",
+        "profile": "Pokaż profil MyAnimeList w aplikacji",
+        "twoWay": "Synchronizacja dwukierunkowa, auto-dopasowana do AniList"
+      },
+      "footnote": "✦ Połączeniem i synchronizacją zarządzisz później w ustawieniach"
+    },
     "adblock": {
       "headline": "Na koniec: <1>czysty</1> odcinek bez reklam.",
       "description": "Wbudowana przeglądarka blokuje reklamy i trackery na stronach streamingowych (<1>EasyList + EasyPrivacy</1>). Wyjątki ustawisz dla konkretnych domen.",
-      "marker": "Krok <1>07 · Finisz</1> · blokowanie reklam",
+      "marker": "Krok <1>09 · Finisz</1> · blokowanie reklam",
       "title": "Blokowanie reklam",
       "desktopOnly": "Dostępne tylko w wersji desktopowej",
       "toggle": {
@@ -123,7 +157,7 @@
     },
     "summary": {
       "headline": "Wszystko <1>zapięte</1>. Czas oglądać.",
-      "description": "Siedem ustawień za nami, wszystko zapisane u ciebie na komputerze. <1>Shiro-chan</1> będzie na dole ekranu, gdyby była ci potrzebna.",
+      "description": "Osiem ustawień za nami, wszystko zapisane u ciebie na komputerze. <1>Shiro-chan</1> będzie na dole ekranu, gdyby była ci potrzebna.",
       "marker": "Podsumowanie · <1>twoja konfiguracja</1>",
       "title": "Wszystko gotowe!",
       "intro": "Oto twoje wybory. Wszystko zmienisz później w ustawieniach.",
@@ -133,6 +167,8 @@
         "background": "Tło",
         "dock": "Dock",
         "discord": "Discord RPC",
+        "anilist": "AniList",
+        "mal": "MyAnimeList",
         "adblock": "Adblock"
       },
       "languages": {
@@ -154,7 +190,8 @@
       },
       "value": {
         "on": "ON",
-        "off": "OFF"
+        "off": "OFF",
+        "notConnected": "Niepołączono"
       }
     }
   }

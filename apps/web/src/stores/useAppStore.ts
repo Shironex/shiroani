@@ -12,6 +12,7 @@ export type ActiveView =
   | 'diary'
   | 'schedule'
   | 'feed'
+  | 'social'
   | 'profile'
   | 'changelog'
   | 'settings';

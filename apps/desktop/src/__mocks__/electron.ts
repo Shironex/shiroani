@@ -79,7 +79,13 @@ export class BrowserWindow extends EventEmitter {
   unmaximize = jest.fn();
   close = jest.fn();
   setFullScreen = jest.fn();
+  // Delegates to a shared, per-test-overridable hook so tests can control the
+  // loadURL outcome for instances the code-under-test constructs internally
+  // (a per-instance class-field mock can't be reached before construction).
+  // Set `BrowserWindow.__loadURLImpl` in a test to override; default resolves.
+  loadURL = jest.fn((url: string) => BrowserWindow.__loadURLImpl(url));
   static getAllWindows = jest.fn(() => [] as BrowserWindow[]);
+  static __loadURLImpl: (url: string) => Promise<void> = () => Promise.resolve();
 }
 
 export const dialog = {

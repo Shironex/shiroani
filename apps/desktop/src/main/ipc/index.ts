@@ -51,6 +51,9 @@ export { registerAppStatsHandlers, cleanupAppStatsHandlers } from './app-stats';
 // AniList OAuth handlers
 export { registerAniListAuthHandlers, cleanupAniListAuthHandlers } from './anilist-auth';
 
+// MAL OAuth handlers
+export { registerMalAuthHandlers, cleanupMalAuthHandlers } from './mal-auth';
+
 // IPC infrastructure
 export { handle, handleWithFallback, on } from './with-ipc-handler';
 export {

@@ -74,6 +74,12 @@ export interface DiscoverFilters {
   scoreMin?: number;
   /** averageScore upper bound, 0–100. */
   scoreMax?: number;
+  /**
+   * When true, exclude media already on the connected viewer's AniList list
+   * (passed to AniList's `media(onList: false)` arg). Only meaningful when the
+   * viewer is connected — unauthed it's a no-op (nothing is on the list).
+   */
+  excludeOnList?: boolean;
 }
 
 /** True when the filter object carries at least one active constraint. */
@@ -81,14 +87,15 @@ export function hasActiveDiscoverFilters(f: DiscoverFilters | undefined): boolea
   if (!f) return false;
   return Boolean(
     f.includedGenres?.length ||
-      f.excludedGenres?.length ||
-      f.tags?.length ||
-      f.format ||
-      f.status ||
-      f.year ||
-      f.season ||
-      (f.scoreMin != null && f.scoreMin > DISCOVER_SCORE_MIN) ||
-      (f.scoreMax != null && f.scoreMax < DISCOVER_SCORE_MAX)
+    f.excludedGenres?.length ||
+    f.tags?.length ||
+    f.format ||
+    f.status ||
+    f.year ||
+    f.season ||
+    f.excludeOnList ||
+    (f.scoreMin != null && f.scoreMin > DISCOVER_SCORE_MIN) ||
+    (f.scoreMax != null && f.scoreMax < DISCOVER_SCORE_MAX)
   );
 }
 
@@ -112,5 +119,6 @@ export function discoverFilterSignature(
   if (f?.season) parts.push(`se=${f.season}`);
   if (f?.scoreMin != null) parts.push(`smin=${f.scoreMin}`);
   if (f?.scoreMax != null) parts.push(`smax=${f.scoreMax}`);
+  if (f?.excludeOnList) parts.push('xol=1');
   return parts.join('|');
 }

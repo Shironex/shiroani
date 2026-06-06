@@ -93,6 +93,14 @@
         "feedUnread_other": "<1>{{count}} updates</1> in your feeds"
       }
     },
+    "quickStats": {
+      "title": "Your numbers",
+      "episodes": "Episodes",
+      "library": "In library",
+      "streak": "Streak",
+      "streakValue_one": "{{count}} day",
+      "streakValue_other": "{{count}} days"
+    },
     "quickAccess": {
       "title": "Quick access",
       "tabsCount_one": "{{count}} bookmark",

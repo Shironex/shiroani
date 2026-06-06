@@ -35,6 +35,21 @@
     "upcoming": "Nadchodzące",
     "watched": "Obejrzane"
   },
+  "filter": {
+    "libraryOnly": "Pokaż tylko z mojej listy",
+    "libraryOnlyActive": "Pokazuję tylko z mojej listy"
+  },
+  "sort": {
+    "trackedFirst": "Sortuj: śledzone na górze",
+    "trackedFirstActive": "Sortowanie: śledzone na górze"
+  },
+  "trackedToday": {
+    "tooltip": "Śledzone tytuły emitowane dziś",
+    "count_one": "{{count}} śledzony dziś",
+    "count_few": "{{count}} śledzone dziś",
+    "count_many": "{{count}} śledzonych dziś",
+    "count_other": "{{count}} śledzonych dziś"
+  },
   "daily": {
     "emptyTitle": "Nic tego dnia nie leci",
     "emptySubtitle": "Sprawdź inny dzień albo widok tygodniowy",
@@ -69,10 +84,16 @@
     "characters": "Postacie",
     "staff": "Twórcy",
     "related": "Powiązane",
+    "recommendations": "Więcej takich",
+    "recommendationInLibrary": "\"{{title}}\" jest już w Twojej bibliotece",
+    "recommendationAdd": "Dodaj \"{{title}}\" do biblioteki",
     "trailer": "Zwiastun",
     "trailerTitle": "Zwiastun",
     "streaming": "Gdzie oglądać",
+    "streamingEpisodes": "Oglądaj odcinki",
+    "streamingEpisodeAria": "Oglądaj \"{{title}}\" na {{site}}",
     "openOnAniList": "Otwórz w AniList",
+    "openOnMal": "Otwórz w MyAnimeList",
     "expand": "Rozwiń",
     "collapse": "Zwiń",
     "startDate": "Start",

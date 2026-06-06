@@ -32,6 +32,9 @@ const SAMPLE_ROW: AnimeLibraryRow = {
   updated_at: '2024-01-01 00:00:00',
   anilist_synced_at: null,
   anilist_remote_updated_at: null,
+  mal_id: null,
+  mal_synced_at: null,
+  mal_remote_updated_at: null,
 };
 
 function makeService() {

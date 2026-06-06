@@ -31,5 +31,36 @@
       "summarySkipped": "Pominięto: {{count}} — brak dopasowania w AniList.",
       "summaryErrors": "Błędy: {{count}}."
     }
+  },
+  "mal": {
+    "title": "MyAnimeList",
+    "description": "Połącz swoje konto MyAnimeList, aby synchronizować listę anime.",
+    "connect": "Połącz MyAnimeList",
+    "disconnect": "Rozłącz",
+    "connecting": "Łączenie…",
+    "connected": "Połączono",
+    "disconnected": "Nie połączono",
+    "connectedAs": "Połączono jako {{name}}",
+    "expiresAt": "Token wygasa {{date}}",
+    "notConfigured": "MyAnimeList nie jest skonfigurowany w tej wersji.",
+    "connectError": "Nie udało się połączyć z MyAnimeList. Spróbuj ponownie.",
+    "disconnectError": "Nie udało się rozłączyć. Spróbuj ponownie.",
+    "desktopOnly": "Połączenie z MyAnimeList jest dostępne tylko w aplikacji desktopowej.",
+    "sync": {
+      "title": "Synchronizacja listy",
+      "description": "Dwukierunkowa synchronizacja z MyAnimeList: importuje Twoją listę z MAL i wysyła lokalne zmiany z powrotem. Przy pierwszej synchronizacji pierwszeństwo ma Twoja lista MAL; później wygrywa ostatnio zmieniona strona.",
+      "button": "Synchronizuj teraz",
+      "syncing": "Synchronizowanie…",
+      "progressLabel": "{{current}} / {{total}} — {{title}}",
+      "lastSynced": "Ostatnia synchronizacja {{date}}",
+      "error": "Synchronizacja nie powiodła się. Spróbuj ponownie.",
+      "confirmTitle": "Zsynchronizować z MyAnimeList?",
+      "confirmDescription": "Ta operacja zaimportuje Twoją listę z MyAnimeList do ShiroAni i wyśle lokalne zmiany (postęp, status, ocenę, notatki) z powrotem na Twoje konto MyAnimeList — może dodać lub zmienić tam wpisy. Przy pierwszej synchronizacji w razie konfliktu pierwszeństwo ma Twoja lista MAL; później wygrywa ostatnio zmieniona strona. Postęp odcinków zawsze zachowuje wyższą liczbę.",
+      "confirmButton": "Synchronizuj",
+      "summary": "Zaimportowano {{imported}} · utworzono w MAL {{pushedNew}} · zaktualizowano lokalnie {{updatedLocal}} · zaktualizowano w MAL {{updatedRemote}}.",
+      "summaryConflicts": "Rozwiązano konflikty: {{count}} — zachowano najnowszą zmianę.",
+      "summarySkipped": "Pominięto: {{count}} — brak dopasowania w MAL.",
+      "summaryErrors": "Błędy: {{count}}."
+    }
   }
 }

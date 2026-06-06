@@ -132,6 +132,64 @@ describe('AniListClient', () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
+  describe('getMediaListEntry', () => {
+    it('returns null when AniList answers "Not Found." (no remote list entry)', async () => {
+      fetchMock.mockResolvedValueOnce(
+        mkResponse(200, {
+          data: { MediaList: null },
+          errors: [{ message: 'Not Found.', status: 404 }],
+        })
+      );
+      await expect(client.getMediaListEntry(123, 7)).resolves.toBeNull();
+    });
+
+    it('returns null when the query resolves with a null MediaList', async () => {
+      fetchMock.mockResolvedValueOnce(mkResponse(200, { data: { MediaList: null } }));
+      await expect(client.getMediaListEntry(123, 7)).resolves.toBeNull();
+    });
+
+    it('normalizes a populated entry, setting mediaId from the input and POINT_100 score', async () => {
+      fetchMock.mockResolvedValueOnce(
+        mkResponse(200, {
+          data: {
+            MediaList: {
+              status: 'COMPLETED',
+              progress: 12,
+              score: 85,
+              notes: 'great',
+              updatedAt: 1700,
+              media: {
+                episodes: 12,
+                title: { romaji: 'Romaji', english: 'English', native: 'ネイティブ' },
+                coverImage: { large: 'big.png', medium: 'med.png' },
+              },
+            },
+          },
+        })
+      );
+      await expect(client.getMediaListEntry(555, 7)).resolves.toEqual({
+        mediaId: 555,
+        status: 'COMPLETED',
+        progress: 12,
+        score: 85,
+        notes: 'great',
+        updatedAt: 1700,
+        episodes: 12,
+        title: 'Romaji',
+        titleRomaji: 'Romaji',
+        titleNative: 'ネイティブ',
+        coverImage: 'big.png',
+      });
+    });
+
+    it('re-throws a non-not-found error (e.g. rate limit) rather than swallowing it', async () => {
+      fetchMock.mockResolvedValueOnce(
+        mkResponse(200, { errors: [{ message: 'Too Many Requests', status: 429 }] })
+      );
+      await expect(client.getMediaListEntry(123, 7)).rejects.toThrow(/GraphQL error/i);
+    });
+  });
+
   it('cachedQuery caches results for the same key', async () => {
     fetchMock.mockImplementation(async () => mkResponse(200, { data: { cached: true } }));
     await client.cachedQuery('key1', 'query{}', {}, 60_000);

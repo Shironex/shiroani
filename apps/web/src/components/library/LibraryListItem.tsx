@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils';
 import { PillTag } from '@/components/ui/pill-tag';
 import { ProgressBar } from '@/components/shared/ProgressBar';
 import { CountdownBadge } from '@/components/library/CountdownBadge';
+import { SyncBadge } from '@/components/library/SyncBadge';
 import { formatEpisodeProgress } from '@/lib/anime-utils';
 import { STATUS_LABEL_KEY } from '@/lib/constants';
 import { tDynamic } from '@/lib/i18n';
@@ -117,6 +118,10 @@ const LibraryListItem = memo(function LibraryListItem({
       {/* Status pill */}
       <div className="shrink-0 flex items-center gap-2">
         <PillTag variant={STATUS_PILL_VARIANT[entry.status]}>{statusLabel}</PillTag>
+        {/* Per-provider sync indicators — each renders nothing when its provider
+            is disconnected or the entry lacks that provider's id. */}
+        <SyncBadge entry={entry} provider="anilist" />
+        <SyncBadge entry={entry} provider="mal" />
         {nextAiring && (
           <CountdownBadge airingAt={nextAiring.airingAt} episode={nextAiring.episode} />
         )}

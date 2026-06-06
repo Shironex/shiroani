@@ -1,6 +1,6 @@
 import { memo, useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Check, Film, Plus, Star } from 'lucide-react';
+import { Check, Film, ListChecks, Plus, Star } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { PillTag } from '@/components/ui/pill-tag';
 import { formatRawScore } from '@/lib/anime-utils';
@@ -106,6 +106,25 @@ const DiscoverCard = memo(function DiscoverCard({
             <PillTag variant="muted" className="shadow-[0_1px_4px_oklch(0_0_0/0.5)]">
               {formatLabel}
             </PillTag>
+          </div>
+        )}
+
+        {/* AniList "on your list" badge (item C4) — only when the backend
+            explicitly resolved membership for a connected viewer. Sits below the
+            format pill so it never overlaps it. */}
+        {media.onList === true && (
+          <div className={cn('absolute left-2 z-[2]', formatLabel ? 'top-9' : 'top-2')}>
+            <span
+              title={t('card.onListTooltip')}
+              className={cn(
+                'inline-flex items-center gap-1 px-[6px] py-[3px] rounded-[3px]',
+                'bg-primary/85 text-primary-foreground text-[9.5px] font-mono font-bold uppercase',
+                'tracking-[0.08em] leading-none shadow-[0_1px_4px_oklch(0_0_0/0.5)]'
+              )}
+            >
+              <ListChecks className="w-3 h-3" strokeWidth={2.5} />
+              {t('card.onList')}
+            </span>
           </div>
         )}
 

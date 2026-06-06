@@ -254,10 +254,57 @@ export function decideMerge(local: AniListSyncRow, remote: AniListMediaListEntry
   };
 }
 
+/**
+ * Build a FORCED-PULL local update from a remote entry (remote wins, no merge).
+ *
+ * Unlike {@link decideMerge}, this bypasses latest-wins / monotonic-progress
+ * arbitration — the remote's values are adopted regardless of timestamps. But it
+ * keeps ONE invariant consistent across every field: a forced pull never CLEARS a
+ * populated local value to absent just because the remote lacks it (status is
+ * always present remotely; progress/score/notes are written only when the remote
+ * actually reports them). So a force-pull can drive local progress DOWN to a real
+ * lower remote value (8 → 3), but it will not knock it to 0 when the remote has
+ * no progress, nor wipe a local score/notes the remote is missing. Score/notes
+ * reuse {@link buildAddPayloadFromRemote}'s transforms so that mapping lives in
+ * one place. Returns null when nothing would actually change (caller reports
+ * 'unchanged').
+ */
+export function buildPullUpdateFromRemote(
+  local: AniListSyncRow,
+  remote: AniListMediaListEntry
+): LocalUpdate | null {
+  const mapped = buildAddPayloadFromRemote(remote);
+  const update: LocalUpdate = {};
+
+  // status is always present on the remote → always adoptable.
+  if (mapped.status != null && mapped.status !== local.status) update.status = mapped.status;
+
+  // progress: read the raw remote value (NOT the add payload's `?? 0`, which
+  // would clobber a real local progress to absent). Adopt only a present remote
+  // progress, even if lower — never clear to absent.
+  if (remote.progress != null && remote.progress !== local.currentEpisode) {
+    update.currentEpisode = remote.progress;
+  }
+
+  // score/notes are undefined in the add payload when remote is unrated/blank;
+  // a forced pull only writes a real remote value (never clears local to absent).
+  if (mapped.score != null && mapped.score !== (local.score ?? undefined)) {
+    update.score = mapped.score;
+  }
+  if (mapped.notes != null && mapped.notes !== (local.notes ?? undefined)) {
+    update.notes = mapped.notes;
+  }
+  return Object.keys(update).length > 0 ? update : null;
+}
+
 /** Build a local insert payload from a remote-only entry (import direction). */
 export function buildAddPayloadFromRemote(remote: AniListMediaListEntry): LibraryAddPayload {
   return {
     anilistId: remote.mediaId,
+    // AniList's MAL cross-ref (`idMal`) links the new row to MyAnimeList for free,
+    // so a later MAL sync matches by exact id with no title search. Undefined when
+    // AniList has no MAL mapping → row stays MAL-unlinked (correct: no equivalent).
+    malId: remote.idMal,
     title: remote.title,
     titleRomaji: remote.titleRomaji,
     titleNative: remote.titleNative,

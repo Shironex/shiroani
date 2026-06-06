@@ -19,6 +19,30 @@ export interface AnimeEntry {
   resumeUrl?: string;
   addedAt: string;
   updatedAt: string;
+  /**
+   * Epoch ms of the last successful AniList reconcile for this entry, or null if
+   * it has never been synced. Derived from the main-side `anilist_synced_at`
+   * baseline (a SQLite datetime string) — the raw baseline columns the
+   * reconciler uses stay main-side; only this renderer-friendly timestamp
+   * crosses the socket.
+   */
+  anilistSyncedAt?: number | null;
+  /** Convenience flag: whether this entry has ever been synced with AniList. */
+  synced?: boolean;
+  /**
+   * The MyAnimeList anime id this entry is linked to, or null if unlinked.
+   * Backfilled from AniList `Media.idMal` (nullable, non-unique) or resolved via
+   * MAL title search. Mirrors {@link anilistId} for the MAL provider.
+   */
+  malId?: number | null;
+  /**
+   * Epoch ms of the last successful MAL reconcile for this entry, or null if it
+   * has never been synced with MAL. Derived from the main-side `mal_synced_at`
+   * baseline (a SQLite datetime string) — mirrors {@link anilistSyncedAt}.
+   */
+  malSyncedAt?: number | null;
+  /** Convenience flag: whether this entry has ever been synced with MAL. */
+  malSynced?: boolean;
 }
 
 export interface AiringAnime {
@@ -209,6 +233,8 @@ export type BrowserTab = Omit<BrowserLeafNode, 'kind'>;
 
 export interface LibraryAddPayload {
   anilistId?: number;
+  /** Optional MyAnimeList id set at insert time — e.g. when importing from MAL. */
+  malId?: number | null;
   title: string;
   titleRomaji?: string;
   titleNative?: string;
@@ -345,6 +371,26 @@ export interface BrowserHistoryEntry {
 // User Profile Types
 // ============================================
 
+/** A favourited media (anime/manga) entry surfaced in a profile. */
+export interface UserProfileFavouriteMedia {
+  id: number;
+  title: { romaji?: string; english?: string; native?: string };
+  coverImage?: string;
+}
+
+/** A favourited person (character/staff) entry surfaced in a profile. */
+export interface UserProfileFavouritePerson {
+  id: number;
+  name: string;
+  image?: string;
+}
+
+/** A favourited studio entry. Studios have no image on AniList. */
+export interface UserProfileFavouriteStudio {
+  id: number;
+  name: string;
+}
+
 export interface UserProfile {
   id: number;
   name: string;
@@ -366,12 +412,240 @@ export interface UserProfile {
     releaseYears: Array<{ year: number; count: number; meanScore: number }>;
     studios: Array<{ name: string; count: number; meanScore: number; minutesWatched: number }>;
     tags: Array<{ name: string; count: number; meanScore: number }>;
+    /**
+     * Richer statistics arrays — all OPTIONAL and additive. The public
+     * username path and the authed viewer path both populate them where AniList
+     * returns data; consumers must tolerate `undefined`.
+     */
+    voiceActors?: Array<{ name: string; count: number; meanScore: number; minutesWatched: number }>;
+    staff?: Array<{ name: string; count: number; meanScore: number; minutesWatched: number }>;
+    startYears?: Array<{ value: number; count: number; meanScore: number; minutesWatched: number }>;
+    lengths?: Array<{ value: string; count: number; meanScore: number; minutesWatched: number }>;
+    countries?: Array<{ value: string; count: number; meanScore: number; minutesWatched: number }>;
   };
-  favourites: Array<{
-    id: number;
-    title: { romaji?: string; english?: string; native?: string };
-    coverImage?: string;
-  }>;
+  /** Favourite anime. Kept as-is for backward compatibility. */
+  favourites: UserProfileFavouriteMedia[];
+  /**
+   * All-type favourites — OPTIONAL and additive. Populated from the public
+   * profile and viewer queries where available.
+   */
+  favouritesManga?: UserProfileFavouriteMedia[];
+  favouritesCharacters?: UserProfileFavouritePerson[];
+  favouritesStaff?: UserProfileFavouritePerson[];
+  favouritesStudios?: UserProfileFavouriteStudio[];
+}
+
+// ============================================
+// AniList Activity Feed Types
+// ============================================
+
+/**
+ * A single AniList activity-feed entry for the authenticated viewer.
+ *
+ * Discriminated on `type`:
+ *  - `'list'`  — a list update (e.g. "watched episode 12 of …"). `status` and
+ *    `progress` are AniList's textual strings (progress can be a range like
+ *    "12 - 13"), `media` is the associated anime/manga.
+ *  - `'text'`  — a free-text status post.
+ *
+ * AniList's ActivityUnion also includes MessageActivity, which is filtered out
+ * by the mapper — only list/text entries ever reach the renderer.
+ */
+export type AniListActivity =
+  | {
+      type: 'list';
+      id: number;
+      status?: string;
+      progress?: string;
+      media: {
+        id: number;
+        title: { romaji?: string; english?: string; native?: string };
+        coverImage?: string;
+      };
+      createdAt: number;
+      /**
+       * The activity's author. Populated only by the SOCIAL feed
+       * ({@link AnimeEvents.GET_SOCIAL_FEED}), where activities come from people
+       * the viewer follows; left `undefined` by the OWN-activity feed
+       * ({@link AnimeEvents.GET_VIEWER_ACTIVITY}), which doesn't select it.
+       */
+      user?: AniListActivityUser;
+    }
+  | {
+      type: 'text';
+      id: number;
+      text: string;
+      createdAt: number;
+      /** The activity's author — see the `list` variant's `user`. */
+      user?: AniListActivityUser;
+    };
+
+/**
+ * The author of a social-feed activity. A minimal subset of {@link AniListUser}
+ * (no `isFollowing`/`siteUrl`) — just enough to render "who posted this".
+ */
+export interface AniListActivityUser {
+  id: number;
+  name: string;
+  avatar?: string;
+}
+
+// ============================================
+// AniList Social Graph (following / followers)
+// ============================================
+
+/**
+ * A single AniList user surfaced in the viewer's following/followers lists.
+ * `isFollowing` is whether the CONNECTED viewer follows this user (so the UI can
+ * render a follow/unfollow toggle); `siteUrl` links out to the AniList profile.
+ */
+export interface AniListUser {
+  id: number;
+  name: string;
+  avatar?: string;
+  /** Whether the connected viewer currently follows this user. */
+  isFollowing?: boolean;
+  siteUrl?: string;
+}
+
+/**
+ * Request for {@link AnimeEvents.GET_FOLLOWING}. Fetch the people a user follows.
+ * `userId` defaults to the connected viewer's own id when omitted.
+ */
+export interface GetFollowingRequest {
+  userId?: number;
+}
+
+/** Ack for {@link AnimeEvents.GET_FOLLOWING}. */
+export interface GetFollowingResult {
+  users: AniListUser[];
+}
+
+/**
+ * Request for {@link AnimeEvents.GET_FOLLOWERS}. Fetch the people who follow a
+ * user. `userId` defaults to the connected viewer's own id when omitted.
+ */
+export interface GetFollowersRequest {
+  userId?: number;
+}
+
+/** Ack for {@link AnimeEvents.GET_FOLLOWERS}. */
+export interface GetFollowersResult {
+  users: AniListUser[];
+}
+
+/**
+ * Request for {@link AnimeEvents.TOGGLE_FOLLOW}. Toggle the connected viewer's
+ * follow state for `userId` (AniList's `ToggleFollow` flips the current state).
+ */
+export interface ToggleFollowRequest {
+  userId: number;
+}
+
+/**
+ * Ack for {@link AnimeEvents.TOGGLE_FOLLOW}. `isFollowing` is the NEW follow
+ * state after the toggle, or `null` when not connected (caller can no-op).
+ */
+export interface ToggleFollowResult {
+  isFollowing: boolean | null;
+}
+
+/** Ack for {@link AnimeEvents.GET_SOCIAL_FEED}. */
+export interface GetSocialFeedResult {
+  activities: AniListActivity[];
+}
+
+// ============================================
+// AniList Notifications
+// ============================================
+
+/**
+ * A minimal media reference attached to a notification (airing / related-media).
+ * Subset of the discover/detail media shape — just enough to render a cover +
+ * title in the notification row.
+ */
+export interface AniListNotificationMedia {
+  id: number;
+  title: { romaji?: string; english?: string; native?: string };
+  coverImage?: string;
+}
+
+/**
+ * The other party in a social notification (the follower, or the user who
+ * liked/replied/mentioned). Mirrors {@link AniListActivityUser}.
+ */
+export interface AniListNotificationUser {
+  id: number;
+  name: string;
+  avatar?: string;
+}
+
+/**
+ * A single AniList notification for the connected viewer.
+ *
+ * Discriminated on `type`:
+ *  - `'airing'`        — a subscribed anime aired a new episode (`media`,
+ *    `episode`).
+ *  - `'following'`     — a user started following the viewer (`user`).
+ *  - `'activity'`      — a user liked / replied to / mentioned the viewer in an
+ *    activity. The differing flavour is carried by `context` (AniList's own
+ *    phrasing, e.g. "liked your activity"); `activityId` links to the activity.
+ *  - `'related-media'` — a new media related to one on the viewer's list was
+ *    added (`media`).
+ *
+ * Every variant carries `id`, `createdAt` (epoch seconds) and a short `context`
+ * string AniList supplies for display. AniList's `NotificationUnion` has more
+ * members (thread/message/etc.); the mapper drops the ones we don't surface.
+ */
+export type AniListNotification =
+  | {
+      type: 'airing';
+      id: number;
+      context: string;
+      createdAt: number;
+      episode: number;
+      media: AniListNotificationMedia;
+    }
+  | {
+      type: 'following';
+      id: number;
+      context: string;
+      createdAt: number;
+      user: AniListNotificationUser;
+    }
+  | {
+      type: 'activity';
+      id: number;
+      context: string;
+      createdAt: number;
+      /** The activity the notification points at (like/reply/mention target). */
+      activityId: number;
+      user: AniListNotificationUser;
+    }
+  | {
+      type: 'related-media';
+      id: number;
+      context: string;
+      createdAt: number;
+      media: AniListNotificationMedia;
+    };
+
+/**
+ * Ack for {@link AnimeEvents.GET_NOTIFICATIONS}. `unreadCount` is the viewer's
+ * unread notification count (0 when not connected). `notifications` is newest
+ * first; entries whose required `media`/`user` was deleted are dropped.
+ */
+export interface GetNotificationsResult {
+  notifications: AniListNotification[];
+  unreadCount: number;
+}
+
+/**
+ * Ack for {@link AnimeEvents.MARK_NOTIFICATIONS_READ}. Always `{ unreadCount: 0 }`
+ * — the call resets the count server-side (or no-ops when not connected).
+ */
+export interface MarkNotificationsReadResult {
+  unreadCount: number;
 }
 
 // ============================================
@@ -399,6 +673,121 @@ export interface DiscoverMedia {
   seasonYear?: number;
   nextAiringEpisode?: { airingAt: number; episode: number };
   description?: string;
+  /**
+   * Whether this media is on the connected viewer's AniList list. Derived
+   * main-side from the authed `mediaListEntry` selection (`!= null`). `undefined`
+   * when unauthed or the field couldn't be resolved — so the renderer only badges
+   * "on your list" when this is explicitly `true`.
+   */
+  onList?: boolean;
+}
+
+// ============================================
+// AniList list write-through (Discover -> AniList)
+// ============================================
+
+/**
+ * AniList list-entry status enum (the write vocabulary for the SaveMediaListEntry
+ * mutation). Mirrors AniList's `MediaListStatus`. Re-declared here (not imported
+ * from the desktop types) so the shared contract stays self-contained.
+ */
+export type AniListListStatus =
+  | 'CURRENT'
+  | 'PLANNING'
+  | 'COMPLETED'
+  | 'DROPPED'
+  | 'PAUSED'
+  | 'REPEATING';
+
+/**
+ * Request for {@link AnimeEvents.SAVE_MEDIA_LIST_ENTRY}. Create or update the
+ * viewer's AniList list entry for a media. Absent optional fields are NOT written
+ * (AniList leaves the existing remote value untouched). `status` is the AniList
+ * vocabulary (default PLANNING when omitted); `score` is the LOCAL 0–10 scale and
+ * is converted to AniList's POINT_100 raw score main-side.
+ */
+export interface SaveMediaListEntryRequest {
+  mediaId: number;
+  status?: AniListListStatus;
+  /** Episodes watched. */
+  progress?: number;
+  /** Local 0–10 score. Omit to leave the remote score unchanged. */
+  score?: number;
+  notes?: string;
+}
+
+/**
+ * Ack for {@link AnimeEvents.SAVE_MEDIA_LIST_ENTRY}. `updatedAt` is the AniList
+ * epoch-seconds timestamp the server stamped, or `null` when the viewer is not
+ * connected (so the caller can no-op rather than treat it as an error).
+ */
+export interface SaveMediaListEntryResult {
+  updatedAt: number | null;
+}
+
+// ============================================
+// Community recommendations (AniList Page.recommendations)
+// ============================================
+
+/** The connected viewer's vote on a recommendation (AniList RecommendationRating). */
+export type RecommendationRating = 'RATE_UP' | 'RATE_DOWN' | 'NO_RATING';
+
+/**
+ * A single community recommendation pairing: `media` (the source anime) was the
+ * basis for recommending `mediaRecommendation`. `rating` is the net community
+ * vote score; `userRating` is the connected viewer's own vote (NO_RATING when the
+ * viewer hasn't voted or isn't connected).
+ */
+export interface AniListCommunityRecommendation {
+  id: number;
+  rating: number;
+  userRating: RecommendationRating;
+  media: {
+    id: number;
+    title: { romaji?: string; english?: string; native?: string };
+    coverImage?: string;
+    format?: string;
+    averageScore?: number;
+  };
+  mediaRecommendation: {
+    id: number;
+    title: { romaji?: string; english?: string; native?: string };
+    coverImage?: string;
+    format?: string;
+    averageScore?: number;
+  };
+}
+
+/**
+ * Request for {@link AnimeEvents.GET_RECOMMENDATIONS}. Browse community
+ * recommendations sorted by rating. Optionally seed by a source `mediaId` to get
+ * recommendations stemming from a specific anime.
+ */
+export interface GetRecommendationsRequest {
+  mediaId?: number;
+}
+
+/** Ack for {@link AnimeEvents.GET_RECOMMENDATIONS}. */
+export interface GetRecommendationsResult {
+  recommendations: AniListCommunityRecommendation[];
+}
+
+/**
+ * Request for {@link AnimeEvents.SAVE_RECOMMENDATION}. Vote on a recommendation
+ * pairing. `RATE_UP`/`RATE_DOWN` cast a vote; `NO_RATING` clears it. Authed.
+ */
+export interface SaveRecommendationRequest {
+  mediaId: number;
+  mediaRecommendationId: number;
+  rating: RecommendationRating;
+}
+
+/**
+ * Ack for {@link AnimeEvents.SAVE_RECOMMENDATION}. `userRating` is the viewer's
+ * resulting vote, or `null` when not connected.
+ */
+export interface SaveRecommendationResult {
+  userRating: RecommendationRating | null;
 }
 
 // ============================================

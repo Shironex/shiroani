@@ -7,6 +7,8 @@ import {
   LayoutGrid,
   MessageCircle,
   Shield,
+  Library,
+  BookMarked,
   PartyPopper,
 } from 'lucide-react';
 import { StepLayout } from '../StepLayout';
@@ -17,6 +19,8 @@ import { useBackgroundStore } from '@/stores/useBackgroundStore';
 import { useDockStore } from '@/stores/useDockStore';
 import { useBrowserStore } from '@/stores/useBrowserStore';
 import { useCustomThemeStore } from '@/stores/useCustomThemeStore';
+import { useAniListAuthStore } from '@/stores/useAniListAuthStore';
+import { useMalAuthStore } from '@/stores/useMalAuthStore';
 
 /**
  * Step 07 · Summary.
@@ -37,6 +41,19 @@ export function SummaryStep() {
   const edge = useDockStore(s => s.edge);
   const autoHide = useDockStore(s => s.autoHide);
   const adblockEnabled = useBrowserStore(s => s.adblockEnabled);
+
+  // Account connection state (mirrors AniListStep / MalStep). Fetched on mount so
+  // the summary is correct even when the user jumps straight here (Esc → summary)
+  // without visiting the account steps. Both fetches are idempotent + safe in web
+  // preview (they resolve to "not connected").
+  const anilistStatus = useAniListAuthStore(s => s.status);
+  const fetchAniListStatus = useAniListAuthStore(s => s.fetchStatus);
+  const malStatus = useMalAuthStore(s => s.status);
+  const fetchMalStatus = useMalAuthStore(s => s.fetchStatus);
+  useEffect(() => {
+    void fetchAniListStatus();
+    void fetchMalStatus();
+  }, [fetchAniListStatus, fetchMalStatus]);
 
   // Discord RPC state lives in main-process electron-store; mirror DiscordStep's
   // load pattern. Stays `null` until the IPC settles or when the API is missing
@@ -84,6 +101,16 @@ export function SummaryStep() {
       : discordEnabled
         ? t('step.summary.value.on')
         : t('step.summary.value.off');
+
+  // Connected → show the account name; otherwise a neutral "not connected".
+  const anilistValue =
+    anilistStatus.connected && anilistStatus.viewer
+      ? anilistStatus.viewer.name
+      : t('step.summary.value.notConnected');
+  const malValue =
+    malStatus.connected && malStatus.viewer
+      ? malStatus.viewer.name
+      : t('step.summary.value.notConnected');
 
   const emPrimary = <em className="not-italic text-primary italic" />;
   const bStrong = <b className="font-semibold text-foreground" />;
@@ -141,6 +168,18 @@ export function SummaryStep() {
           label={t('step.summary.row.discord')}
           value={discordValue}
           highlight={discordEnabled === true}
+        />
+        <SummaryRow
+          icon={<Library className="h-4 w-4" />}
+          label={t('step.summary.row.anilist')}
+          value={anilistValue}
+          highlight={anilistStatus.connected}
+        />
+        <SummaryRow
+          icon={<BookMarked className="h-4 w-4" />}
+          label={t('step.summary.row.mal')}
+          value={malValue}
+          highlight={malStatus.connected}
         />
         <SummaryRow
           icon={<Shield className="h-4 w-4" />}

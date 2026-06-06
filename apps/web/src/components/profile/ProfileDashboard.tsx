@@ -7,13 +7,17 @@ import { ProgressRing } from './ProgressRing';
 import { GenreBreakdown } from './GenreBreakdown';
 import { StudioBreakdown } from './StudioBreakdown';
 import { ActivityFeed } from './ActivityFeed';
+import { ProfileFollow } from './ProfileFollow';
+import { ProfileExtraStats } from './ProfileExtraStats';
+import { ProfileFavourites } from './ProfileFavourites';
 import { useStatusLabels, formatDays, formatDaysLabel } from './profile-constants';
-import { FavouriteCard } from './ProfileCharts';
 import { type UserProfile } from '@shiroani/shared';
 
 interface ProfileDashboardProps {
   profile: UserProfile;
   onShare: () => void;
+  onRefresh: () => void;
+  onDisconnect: () => void;
 }
 
 /**
@@ -23,12 +27,15 @@ interface ProfileDashboardProps {
  * status rings, genre/studio breakdowns, the activity feed and — when
  * present — favourite anime.
  */
-export function ProfileDashboard({ profile, onShare }: ProfileDashboardProps) {
+export function ProfileDashboard({
+  profile,
+  onShare,
+  onRefresh,
+  onDisconnect,
+}: ProfileDashboardProps) {
   const { t, i18n } = useTranslation('profile');
   const STATUS_LABELS = useStatusLabels();
   const { statistics: stats } = profile;
-  const clearProfile = useProfileStore(s => s.clearProfile);
-  const fetchProfile = useProfileStore(s => s.fetchProfile);
   const isLoading = useProfileStore(s => s.isLoading);
 
   const totalStatusCount = useMemo(
@@ -57,9 +64,9 @@ export function ProfileDashboard({ profile, onShare }: ProfileDashboardProps) {
       <ProfileSidebar
         profile={profile}
         isLoading={isLoading}
-        onRefresh={fetchProfile}
+        onRefresh={onRefresh}
         onShare={onShare}
-        onDisconnect={clearProfile}
+        onDisconnect={onDisconnect}
       />
 
       {/* ── Main scroll column ──────────────────────────── */}
@@ -136,25 +143,26 @@ export function ProfileDashboard({ profile, onShare }: ProfileDashboardProps) {
           </section>
         </div>
 
-        {/* Recent activity (placeholder — no backend data yet) */}
+        {/* Richer statistics — voice actors / staff / start years / lengths.
+            Each block renders only when AniList exposes the data (private stats
+            via the viewer path, or public stats where available). */}
+        <ProfileExtraStats stats={stats} renderHead={head => <SectionHead>{head}</SectionHead>} />
+
+        {/* Recent activity (viewer-scoped — real entries when connected) */}
         <section>
           <SectionHead>{t('dashboard.sections.recentActivity')}</SectionHead>
           <ActivityFeed />
         </section>
 
-        {/* Favourites (kept from the pre-redesign dashboard — the mock
-            replaces this slot with the "share card" surface that now
-            lives behind the sidebar's "Eksportuj kartę PNG" button). */}
-        {profile.favourites.length > 0 && (
-          <section>
-            <SectionHead>{t('dashboard.sections.favorites')}</SectionHead>
-            <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide -mx-1 px-1">
-              {profile.favourites.map(fav => (
-                <FavouriteCard key={fav.id} fav={fav} />
-              ))}
-            </div>
-          </section>
-        )}
+        {/* Following / followers (viewer-scoped — renders only when connected) */}
+        <ProfileFollow renderHead={head => <SectionHead>{head}</SectionHead>} />
+
+        {/* Favourites (anime + manga + characters + staff + studios). The
+            "share card" surface lives behind the sidebar's PNG export button. */}
+        <ProfileFavourites
+          profile={profile}
+          renderHead={head => <SectionHead>{head}</SectionHead>}
+        />
       </div>
     </div>
   );

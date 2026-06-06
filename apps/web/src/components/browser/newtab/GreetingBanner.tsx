@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 import { toLocalDate } from '@shiroani/shared';
 // Note: removed `pluralize` import — greeting subtitle now uses i18next CLDR plurals
@@ -8,6 +8,7 @@ import { useProfileStore } from '@/stores/useProfileStore';
 import { useScheduleStore } from '@/stores/useScheduleStore';
 import { useSettingsStore } from '@/stores/useSettingsStore';
 import { useFeedStore } from '@/stores/useFeedStore';
+import { useAniListAuthStore } from '@/stores/useAniListAuthStore';
 import { useEpisodesWaitingCount } from '@/hooks/useEpisodesWaiting';
 import { cn } from '@/lib/utils';
 
@@ -15,16 +16,18 @@ import { cn } from '@/lib/utils';
  * Time-aware greeting banner shown at the top of the newtab page.
  *
  * Anatomy (matches the "Dobry wieczór, Aleks" mock):
- *   - Left:  chibi mascot avatar inside a soft primary-tinted circle.
+ *   - Left:  the connected AniList viewer's avatar when linked, otherwise the
+ *            chibi mascot, inside a soft primary-tinted circle.
  *   - Right: Shippori Mincho greeting ("Dzień dobry" / "Dobry wieczór") plus
  *            the viewer's display name, with a muted subtitle that
  *            summarises what the user can act on right now.
  *
  * Name fallback chain:
  *   1. User's display name from settings (set during onboarding / Settings → Profil)
- *   2. Connected AniList profile's display name (`profile.name`)
- *   3. The username the user typed when syncing AniList
- *   4. (none) — greeting renders solo, no trailing comma
+ *   2. Connected AniList viewer's handle (`status.viewer.name`)
+ *   3. Connected AniList profile's display name (`profile.name`)
+ *   4. The username the user typed when syncing AniList
+ *   5. (none) — greeting renders solo, no trailing comma
  *
  * Subtitle priority (first match wins):
  *   1. Episodes waiting across watching-status library titles (B1)
@@ -38,8 +41,20 @@ export function GreetingBanner({ showName }: { showName: boolean }) {
   const storedUsername = useProfileStore(s => s.username);
   const settingsDisplayName = useSettingsStore(s => s.displayName);
 
-  // The user's own name wins — then whatever AniList surfaces as a fallback.
-  const displayName = (settingsDisplayName || profile?.name || storedUsername || '').trim();
+  // Connected AniList account — its handle/avatar personalize the banner.
+  const anilistConnected = useAniListAuthStore(s => s.status.connected);
+  const anilistViewer = useAniListAuthStore(s => s.status.viewer);
+  const connectedViewer = anilistConnected ? anilistViewer : undefined;
+
+  // The user's own name wins — then the connected AniList handle, then whatever
+  // else AniList surfaces as a fallback.
+  const displayName = (
+    settingsDisplayName ||
+    connectedViewer?.name ||
+    profile?.name ||
+    storedUsername ||
+    ''
+  ).trim();
 
   const todayKey = useMemo(() => toLocalDate(new Date()), []);
   const todayEntries = useScheduleStore(s => s.schedule[todayKey]);
@@ -63,17 +78,40 @@ export function GreetingBanner({ showName }: { showName: boolean }) {
     return t('newTab.greeting.evening');
   }, [t]);
 
+  // A broken AniList avatar URL falls back to the mascot rather than a gap.
+  // The avatar tracks the same `showName` preference as the greeting handle, so
+  // de-personalizing the greeting reverts the mascot too.
+  const [avatarError, setAvatarError] = useState(false);
+  const avatarUrl = showName && !avatarError ? connectedViewer?.avatar : undefined;
+
+  // Reset the error when the source URL changes (e.g. account switch) so a stale
+  // failure doesn't block a freshly-valid avatar. Keyed on the raw avatar — NOT
+  // `avatarUrl`, which depends on `avatarError` and would feed back on itself.
+  useEffect(() => {
+    setAvatarError(false);
+  }, [connectedViewer?.avatar]);
+
   return (
     <header className="flex items-center gap-4">
       <div
         aria-hidden="true"
         className={cn(
-          'relative grid size-[60px] shrink-0 place-items-center rounded-full',
+          'relative grid size-[60px] shrink-0 place-items-center overflow-hidden rounded-full',
           'border border-primary/25 bg-primary/10',
           'shadow-[0_6px_20px_-8px_oklch(from_var(--primary)_l_c_h/0.5)]'
         )}
       >
-        <img src={APP_LOGO_URL} alt="" draggable={false} className="size-10 object-contain" />
+        {avatarUrl ? (
+          <img
+            src={avatarUrl}
+            alt=""
+            draggable={false}
+            className="size-full object-cover"
+            onError={() => setAvatarError(true)}
+          />
+        ) : (
+          <img src={APP_LOGO_URL} alt="" draggable={false} className="size-10 object-contain" />
+        )}
       </div>
 
       <div className="min-w-0 flex-1">
