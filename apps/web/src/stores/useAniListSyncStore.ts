@@ -83,8 +83,11 @@ export const useAniListSyncStore = create<AniListSyncStore>()(
           );
         } catch (error) {
           logger.error('AniList sync failed:', error);
+          // `result` is already cleared at start, but reset it here too so the
+          // error branch is self-evidently correct and survives future refactors —
+          // a stale success summary must never render alongside an error.
           set(
-            { error: SYNC_ERROR_KEY, syncing: false, progress: null },
+            { error: SYNC_ERROR_KEY, syncing: false, progress: null, result: null },
             undefined,
             'anilistSync/error'
           );
