@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 import { toLocalDate } from '@shiroani/shared';
 // Note: removed `pluralize` import — greeting subtitle now uses i18next CLDR plurals
@@ -83,6 +83,13 @@ export function GreetingBanner({ showName }: { showName: boolean }) {
   // de-personalizing the greeting reverts the mascot too.
   const [avatarError, setAvatarError] = useState(false);
   const avatarUrl = showName && !avatarError ? connectedViewer?.avatar : undefined;
+
+  // Reset the error when the source URL changes (e.g. account switch) so a stale
+  // failure doesn't block a freshly-valid avatar. Keyed on the raw avatar — NOT
+  // `avatarUrl`, which depends on `avatarError` and would feed back on itself.
+  useEffect(() => {
+    setAvatarError(false);
+  }, [connectedViewer?.avatar]);
 
   return (
     <header className="flex items-center gap-4">
