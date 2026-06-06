@@ -34,6 +34,14 @@ await build({
   outdir: 'dist/main',
   sourcemap: true,
   external,
+  // The AniList OAuth client ID is PUBLIC (no secret in implicit grant) and is
+  // read via `process.env.ANILIST_CLIENT_ID` at runtime. A packaged app has no
+  // such env var on the user's machine, so bake the build-time value into the
+  // bundle here. In CI it comes from the ANILIST_CLIENT_ID build env; locally it
+  // comes from the shell that runs `pnpm dev` (esbuild and electron share it).
+  define: {
+    'process.env.ANILIST_CLIENT_ID': JSON.stringify(process.env.ANILIST_CLIENT_ID ?? ''),
+  },
   plugins: [
     esbuildDecorators({
       tsconfig: './tsconfig.build.json',
