@@ -60,7 +60,10 @@ import { appStatsTracker } from './stats/app-stats-tracker';
 // `pnpm dev`. Packaged builds never ship a .env. Resolved via app.getAppPath()
 // (= apps/desktop in dev) so it doesn't depend on the invoking cwd. A missing or
 // unreadable file is non-fatal: the vars may instead come from the shell.
-if (!app.isPackaged) {
+// `process.loadEnvFile` is Node ≥20.12; guard on its presence so a future
+// Electron on an older bundled Node degrades gracefully instead of relying on
+// the catch below to swallow a `TypeError`.
+if (!app.isPackaged && typeof process.loadEnvFile === 'function') {
   try {
     process.loadEnvFile(join(app.getAppPath(), '.env'));
   } catch {
