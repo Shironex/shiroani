@@ -34,7 +34,14 @@ interface PersistedSession {
 
 function readSession(): PersistedSession | null {
   const raw = store.get(SESSION_KEY) as PersistedSession | undefined;
-  if (!raw || typeof raw.token !== 'string' || typeof raw.expiresAt !== 'number') {
+  if (
+    !raw ||
+    typeof raw.token !== 'string' ||
+    typeof raw.expiresAt !== 'number' ||
+    !Number.isFinite(raw.expiresAt) ||
+    !raw.viewer ||
+    typeof raw.viewer !== 'object'
+  ) {
     return null;
   }
   return raw;
