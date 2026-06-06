@@ -68,7 +68,13 @@ export const useAniListNotificationsStore = create<AniListNotificationsStore>()(
       // Actions
       refreshUnreadCount: async () => {
         if (!isConnected()) {
-          set({ unreadCount: 0 }, undefined, 'anilistNotif/notConnected');
+          // Disconnected: clear the whole store, not just the badge, so a prior
+          // session's notifications can't linger after logout.
+          set(
+            { notifications: [], unreadCount: 0, error: null },
+            undefined,
+            'anilistNotif/notConnected'
+          );
           return;
         }
         try {
@@ -76,6 +82,8 @@ export const useAniListNotificationsStore = create<AniListNotificationsStore>()(
             AnimeEvents.GET_NOTIFICATIONS,
             {}
           );
+          // Auth may have dropped mid-flight — don't apply a stale count.
+          if (!isConnected()) return;
           set({ unreadCount: data.unreadCount ?? 0 }, undefined, 'anilistNotif/unreadCount');
         } catch (err) {
           // Polling failures are silent — the badge just keeps its last value
@@ -99,6 +107,15 @@ export const useAniListNotificationsStore = create<AniListNotificationsStore>()(
             AnimeEvents.GET_NOTIFICATIONS,
             {}
           );
+          // Disconnected mid-flight — discard the prior session's payload.
+          if (!isConnected()) {
+            set(
+              { notifications: [], unreadCount: 0, isLoading: false, error: null },
+              undefined,
+              'anilistNotif/fetchStale'
+            );
+            return;
+          }
           set(
             {
               notifications: data.notifications ?? [],
@@ -111,13 +128,21 @@ export const useAniListNotificationsStore = create<AniListNotificationsStore>()(
         } catch (err) {
           const message = (err as Error).message;
           logger.error('Failed to load notifications:', message);
+          if (!isConnected()) {
+            set(
+              { notifications: [], unreadCount: 0, isLoading: false, error: null },
+              undefined,
+              'anilistNotif/fetchStale'
+            );
+            return;
+          }
           set({ isLoading: false, error: message }, undefined, 'anilistNotif/fetchError');
         }
       },
 
       markAllRead: async () => {
         if (!isConnected()) {
-          set({ unreadCount: 0 }, undefined, 'anilistNotif/markNotConnected');
+          set({ notifications: [], unreadCount: 0 }, undefined, 'anilistNotif/markNotConnected');
           return;
         }
         // Optimistically clear the badge — the server call only confirms it.
@@ -127,6 +152,7 @@ export const useAniListNotificationsStore = create<AniListNotificationsStore>()(
             Record<string, never>,
             MarkNotificationsReadResult
           >(AnimeEvents.MARK_NOTIFICATIONS_READ, {});
+          if (!isConnected()) return;
           set({ unreadCount: data.unreadCount ?? 0 }, undefined, 'anilistNotif/marked');
         } catch (err) {
           // Non-fatal — the next poll will reconcile the real count.
