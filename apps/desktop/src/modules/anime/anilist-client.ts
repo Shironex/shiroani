@@ -110,7 +110,9 @@ export class AniListClient {
     const entries: AniListMediaListEntry[] = [];
 
     for (const list of lists) {
-      for (const entry of list?.entries ?? []) {
+      if (!list) continue;
+      for (const entry of list.entries ?? []) {
+        if (!entry) continue;
         const media = entry.media;
         // An entry whose media was deleted on AniList can't be matched or
         // displayed — skip it rather than carry a mediaId with no title.
