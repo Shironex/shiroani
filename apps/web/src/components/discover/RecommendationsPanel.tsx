@@ -37,6 +37,7 @@ export const RecommendationsPanel = memo(function RecommendationsPanel({
   // Recommendation-scoped error so an unrelated browse/search failure can't
   // replace this tab's cached results with someone else's error state.
   const error = useDiscoverStore(s => s.recommendationsError);
+  const votingIds = useDiscoverStore(s => s.votingIds);
 
   const handleAddToLibrary = useAddDiscoverMediaToLibrary();
 
@@ -91,6 +92,7 @@ export const RecommendationsPanel = memo(function RecommendationsPanel({
           pair={pair}
           inLibrary={libraryIds.has(pair.mediaRecommendation.id)}
           connected={connected}
+          isVoting={votingIds.has(pair.id)}
           onClick={onCardClick}
           onAddToLibrary={handleAddToLibrary}
           onVote={handleVote}

@@ -66,6 +66,10 @@ interface DiscoverState {
   // caches its results, so an unrelated browse/search failure must not make the
   // (still-valid) recommendations render as failed.
   recommendationsError: string | null;
+  // Pair ids with an in-flight vote write — serializes votes per pair so an
+  // out-of-order ack can't overwrite a newer local vote, and lets the card
+  // disable its buttons until the write settles.
+  votingIds: Set<number>;
   // Search
   searchQuery: string;
   searchResults: DiscoverMedia[];
@@ -155,6 +159,7 @@ export const useDiscoverStore = create<DiscoverStore>()(
         recommendations: [],
         isRecommendationsLoading: false,
         recommendationsError: null,
+        votingIds: new Set(),
         searchQuery: '',
         searchResults: [],
         searchPage: { ...initialPage },
@@ -457,6 +462,11 @@ export const useDiscoverStore = create<DiscoverStore>()(
         },
 
         voteRecommendation: async (pair, rating) => {
+          // Serialize per pair: ignore a new vote while this pair's previous
+          // write is still in flight, so out-of-order acks can't overwrite a
+          // newer local vote (or leave AniList reflecting the older request).
+          if (get().votingIds.has(pair.id)) return;
+
           // Toggle off when re-voting the same direction (AniList clears it).
           const next: RecommendationRating = pair.userRating === rating ? 'NO_RATING' : rating;
           const previous = pair.userRating;
@@ -472,7 +482,20 @@ export const useDiscoverStore = create<DiscoverStore>()(
               undefined,
               'discover/voteOptimistic'
             );
+          const setVoting = (voting: boolean) =>
+            set(
+              s => {
+                const ids = new Set(s.votingIds);
+                if (voting) ids.add(pair.id);
+                else ids.delete(pair.id);
+                return { votingIds: ids };
+              },
+              undefined,
+              voting ? 'discover/voteStart' : 'discover/voteEnd'
+            );
+
           applyRating(next);
+          setVoting(true);
 
           try {
             const res = await emitWithErrorHandling<
@@ -489,6 +512,8 @@ export const useDiscoverStore = create<DiscoverStore>()(
             logger.error('Recommendation vote failed:', (err as Error).message);
             applyRating(previous);
             throw err;
+          } finally {
+            setVoting(false);
           }
         },
 

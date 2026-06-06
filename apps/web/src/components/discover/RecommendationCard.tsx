@@ -12,6 +12,8 @@ interface RecommendationCardProps {
   inLibrary?: boolean;
   /** Whether AniList is connected — gates the thumb up/down vote buttons. */
   connected: boolean;
+  /** True while this pair's vote write is in flight — disables the buttons. */
+  isVoting?: boolean;
   onClick?: (media: DiscoverMedia) => void;
   onAddToLibrary?: (media: DiscoverMedia) => void;
   onVote?: (pair: AniListCommunityRecommendation, rating: RecommendationRating) => void;
@@ -30,6 +32,7 @@ export const RecommendationCard = memo(function RecommendationCard({
   pair,
   inLibrary,
   connected,
+  isVoting = false,
   onClick,
   onAddToLibrary,
   onVote,
@@ -75,7 +78,7 @@ export const RecommendationCard = memo(function RecommendationCard({
       <div className="flex items-center justify-between gap-1.5 px-0.5">
         <VoteButton
           active={userRating === 'RATE_UP'}
-          disabled={!connected}
+          disabled={!connected || isVoting}
           direction="up"
           label={t('recommendations.voteUp')}
           onClick={() => handleVote('RATE_UP')}
@@ -88,7 +91,7 @@ export const RecommendationCard = memo(function RecommendationCard({
         </span>
         <VoteButton
           active={userRating === 'RATE_DOWN'}
-          disabled={!connected}
+          disabled={!connected || isVoting}
           direction="down"
           label={t('recommendations.voteDown')}
           onClick={() => handleVote('RATE_DOWN')}
