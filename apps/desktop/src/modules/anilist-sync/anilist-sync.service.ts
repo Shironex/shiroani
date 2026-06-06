@@ -1,17 +1,17 @@
 import { Injectable } from '@nestjs/common';
 import {
   createLogger,
-  extractErrorMessage,
   type AniListSyncProgress,
   type AniListSyncResult,
   type AniListSyncAction,
+  type AniListSyncEntryDirection,
 } from '@shiroani/shared';
 import { AniListClient } from '../anime/anilist-client';
 import { AniListTokenPort } from '../anime/anilist-token.port';
 import { LibraryService } from '../library';
 import type { AniListMediaListEntry } from '../anime/types';
-import type { AniListSyncRow } from '../library/library.types';
-import { buildAddPayloadFromRemote, buildPushInputFromLocal, decideMerge } from './reconcile';
+import { ProviderSyncEngine } from '../sync/provider-sync-engine';
+import { AniListSyncProviderAdapter } from './anilist-sync.adapter';
 
 const logger = createLogger('AniListSyncService');
 
@@ -19,30 +19,32 @@ const logger = createLogger('AniListSyncService');
 export const SYNC_IN_PROGRESS_ERROR = 'AniList sync is already running';
 /** Thrown when sync is requested without a connected AniList account. */
 export const SYNC_NOT_CONNECTED_ERROR = 'AniList account is not connected';
-
-function emptyResult(): AniListSyncResult {
-  return {
-    imported: 0,
-    pushedNew: 0,
-    updatedLocal: 0,
-    updatedRemote: 0,
-    unchanged: 0,
-    conflicts: 0,
-    skippedNoId: 0,
-    errors: 0,
-  };
-}
+/** Thrown when a single-entry sync targets a local row that does not exist. */
+export const SYNC_ENTRY_NOT_FOUND_ERROR = 'Library entry not found';
 
 @Injectable()
 export class AniListSyncService {
   /** Single-flight guard: only one sync may run at a time per process. */
   private running = false;
 
+  /**
+   * The provider-agnostic orchestration engine, wired to the AniList adapter. The
+   * adapter owns the merge + AniList I/O; the engine owns dedup / snapshot /
+   * optimistic re-read / loop / tally. Constructed with plain `new` (not Nest DI)
+   * so this service keeps its `(client, library, tokenPort)` constructor — the one
+   * the unit tests construct directly.
+   */
+  private readonly engine: ProviderSyncEngine<AniListMediaListEntry>;
+
   constructor(
     private readonly anilistClient: AniListClient,
     private readonly libraryService: LibraryService,
     private readonly tokenPort: AniListTokenPort
   ) {
+    this.engine = new ProviderSyncEngine(
+      new AniListSyncProviderAdapter(this.anilistClient, this.libraryService),
+      this.libraryService
+    );
     logger.info('AniListSyncService initialized');
   }
 
@@ -61,150 +63,64 @@ export class AniListSyncService {
     }
     this.running = true;
 
-    const result = emptyResult();
-
     try {
-      const token = await this.tokenPort.getAccessToken();
-      if (!token) {
-        throw new Error(SYNC_NOT_CONNECTED_ERROR);
-      }
-
-      const viewer = await this.anilistClient.getViewer();
-      const remoteEntries = await this.anilistClient.getMediaListCollection(viewer.id);
-      const localEntries = this.libraryService.getEntriesForSync();
-
-      // AniList returns the same media once per list it belongs to (its status
-      // list PLUS any custom lists), so `remoteEntries` can contain duplicate
-      // mediaIds. Dedup by mediaId — keeping the most recently updated occurrence —
-      // so each media is reconciled exactly once and a remote-only entry is never
-      // double-inserted against the UNIQUE `anilist_id` constraint.
-      const remoteById = new Map<number, AniListMediaListEntry>();
-      for (const entry of remoteEntries) {
-        const existing = remoteById.get(entry.mediaId);
-        if (!existing || entry.updatedAt > existing.updatedAt) {
-          remoteById.set(entry.mediaId, entry);
-        }
-      }
-      const remoteUnique = [...remoteById.values()];
-
-      const localById = new Map<number, AniListSyncRow>();
-      for (const row of localEntries) {
-        if (row.anilistId != null) localById.set(row.anilistId, row);
-      }
-
-      // Work items: every unique remote entry, every local-only entry (with or
-      // without an AniList id).
-      const localOnly = localEntries.filter(
-        row => row.anilistId == null || !remoteById.has(row.anilistId)
-      );
-      const total = remoteUnique.length + localOnly.length;
-      let current = 0;
-
-      const report = (title: string, action: AniListSyncAction): void => {
-        current += 1;
-        onProgress({ current, total, title, action });
-      };
-
-      // 1. Remote entries: import new, or reconcile existing matches.
-      for (const remote of remoteUnique) {
-        try {
-          const local = localById.get(remote.mediaId);
-          if (!local) {
-            const created = this.libraryService.addEntry(buildAddPayloadFromRemote(remote));
-            this.libraryService.markAniListSync(created.id, remote.updatedAt);
-            result.imported += 1;
-            report(remote.title, 'imported');
-            continue;
-          }
-
-          // Optimistic concurrency guard: the snapshot was taken at the start of
-          // the run, but the user can edit OR delete a library entry while the
-          // (potentially multi-minute) sync is in flight. Re-read the row right
-          // before writing; skip it this run if it changed since the snapshot
-          // (don't clobber the fresh edit) or vanished (don't write a deleted row
-          // / push a just-deleted entry to AniList). It reconciles on the next sync.
-          const current = this.libraryService.getEntryById(local.id);
-          if (!current || current.updatedAt !== local.updatedAt) {
-            report(local.title, 'unchanged');
-            continue;
-          }
-
-          const decision = decideMerge(local, remote);
-          let finalRemoteUpdatedAt = remote.updatedAt;
-
-          if (decision.localUpdate) {
-            this.libraryService.updateEntry(local.id, decision.localUpdate);
-          }
-          if (decision.remotePush) {
-            finalRemoteUpdatedAt = await this.anilistClient.saveMediaListEntry({
-              mediaId: remote.mediaId,
-              ...decision.remotePush,
-            });
-          }
-
-          // Always refresh baselines — even for an unchanged entry — so the next
-          // run sees this row as reconciled (no false "changed" on either side).
-          this.libraryService.markAniListSync(local.id, finalRemoteUpdatedAt);
-
-          // Tally only after all writes for this entry succeed, so an entry is
-          // counted once — never in both a success counter AND `errors` if a write
-          // throws partway through.
-          if (decision.localUpdate) result.updatedLocal += 1;
-          if (decision.remotePush) result.updatedRemote += 1;
-          if (decision.conflict) result.conflicts += 1;
-
-          if (decision.localUpdate || decision.remotePush) {
-            report(local.title, 'updated');
-          } else {
-            result.unchanged += 1;
-            report(local.title, 'unchanged');
-          }
-        } catch (error) {
-          result.errors += 1;
-          logger.error(
-            `Failed to sync remote entry ${remote.mediaId}: ${extractErrorMessage(error)}`
-          );
-          report(remote.title, 'error');
-        }
-      }
-
-      // 2. Local-only entries: create on AniList (full mirror) when they have a
-      //    resolvable AniList id; otherwise skip (no mediaId to write).
-      for (const local of localOnly) {
-        try {
-          if (local.anilistId == null) {
-            result.skippedNoId += 1;
-            report(local.title, 'skipped');
-            continue;
-          }
-          // Guard against a remote entry that appeared after the snapshot — only
-          // truly remote-absent locals reach here, but re-checking is cheap.
-          if (remoteById.has(local.anilistId)) {
-            continue;
-          }
-          const updatedAt = await this.anilistClient.saveMediaListEntry(
-            buildPushInputFromLocal(local)
-          );
-          this.libraryService.markAniListSync(local.id, updatedAt);
-          result.pushedNew += 1;
-          report(local.title, 'pushed');
-        } catch (error) {
-          result.errors += 1;
-          logger.error(`Failed to push local entry ${local.id}: ${extractErrorMessage(error)}`);
-          report(local.title, 'error');
-        }
-      }
-
-      logger.info(
-        `AniList sync complete: imported=${result.imported} pushedNew=${result.pushedNew} ` +
-          `updatedLocal=${result.updatedLocal} updatedRemote=${result.updatedRemote} ` +
-          `unchanged=${result.unchanged} conflicts=${result.conflicts} ` +
-          `skippedNoId=${result.skippedNoId} errors=${result.errors}`
-      );
-
-      return result;
+      await this.assertConnected();
+      return await this.engine.runFullSync(onProgress);
     } finally {
       this.running = false;
+    }
+  }
+
+  /**
+   * Sync a SINGLE library entry, with a forced direction or auto-merge.
+   *
+   * - `push` — overwrite the AniList entry from the local row (local wins). No
+   *   remote read needed.
+   * - `pull` — overwrite the local row from the AniList entry (remote wins). If
+   *   there is no remote entry, nothing to pull → `skipped`.
+   * - `auto` — run the same merge a full sync would; if no remote entry exists,
+   *   push the local-only entry (mirrors the full sync).
+   *
+   * Shares the full sync's single-flight guard and applies the same optimistic
+   * re-read guard before any local write.
+   *
+   * @throws SYNC_IN_PROGRESS_ERROR if a sync is already running
+   * @throws SYNC_NOT_CONNECTED_ERROR if no AniList account is connected
+   * @throws SYNC_ENTRY_NOT_FOUND_ERROR if the local row does not exist
+   */
+  async syncEntry(
+    localId: number,
+    direction: AniListSyncEntryDirection
+  ): Promise<{ action: AniListSyncAction }> {
+    // Claim the single-flight slot SYNCHRONOUSLY (before any await), exactly like
+    // `sync()` — so a per-entry op and a full sync can never overlap.
+    if (this.running) {
+      throw new Error(SYNC_IN_PROGRESS_ERROR);
+    }
+    this.running = true;
+
+    try {
+      await this.assertConnected();
+
+      // The engine treats a missing row as a soft skip; the AniList contract throws
+      // SYNC_ENTRY_NOT_FOUND_ERROR — so resolve the row presence here first to keep
+      // that behaviour (the gateway/tests rely on the throw).
+      if (!this.libraryService.getSyncRowById(localId)) {
+        throw new Error(SYNC_ENTRY_NOT_FOUND_ERROR);
+      }
+
+      const { action } = await this.engine.runEntrySync(localId, direction);
+      return { action };
+    } finally {
+      this.running = false;
+    }
+  }
+
+  /** Resolve the access token and throw the not-connected error when absent. */
+  private async assertConnected(): Promise<void> {
+    const token = await this.tokenPort.getAccessToken();
+    if (!token) {
+      throw new Error(SYNC_NOT_CONNECTED_ERROR);
     }
   }
 }

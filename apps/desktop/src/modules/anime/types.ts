@@ -178,6 +178,19 @@ export interface AniListMedia {
   streamingEpisodes?: AniListStreamingEpisode[];
   rankings?: AniListRanking[];
   stats?: AniListMediaStats;
+  /**
+   * The connected viewer's list entry for this media (browse/discover only).
+   * `null` when the media is not on the viewer's list OR the viewer is unauthed.
+   * Used to derive the `onList` flag surfaced to the renderer.
+   */
+  mediaListEntry?: { status: AniListMediaListStatus | null } | null;
+  /**
+   * Flat "on the viewer's AniList list" flag, derived main-side from
+   * `mediaListEntry != null` when authed. Left `undefined` when unauthed so the
+   * renderer only badges "on your list" when this is explicitly `true`. Mirrors
+   * the shared `DiscoverMedia.onList` so browse results map straight to the wire.
+   */
+  onList?: boolean;
 }
 
 // ============================================
@@ -248,6 +261,13 @@ export interface AniListStatDistribution {
   minutesWatched?: number;
 }
 
+/** A person (Staff) node returned inside voiceActors/staff statistics + favourites. */
+export interface AniListPersonNode {
+  id: number;
+  name?: { full?: string; userPreferred?: string };
+  image?: { large?: string; medium?: string };
+}
+
 export interface AniListUserStatistics {
   count: number;
   meanScore: number;
@@ -261,6 +281,33 @@ export interface AniListUserStatistics {
   releaseYears: Array<{ releaseYear: number; count: number; meanScore: number }>;
   studios: Array<AniListStatDistribution & { studio: { name: string } }>;
   tags: Array<{ tag: { name: string }; count: number; meanScore: number }>;
+  /** Richer statistics arrays (also public on AniList). */
+  voiceActors?: Array<AniListStatDistribution & { voiceActor?: AniListPersonNode }>;
+  staff?: Array<AniListStatDistribution & { staff?: AniListPersonNode }>;
+  startYears?: Array<AniListStatDistribution & { startYear: number }>;
+  lengths?: Array<AniListStatDistribution & { length: string | null }>;
+  countries?: Array<AniListStatDistribution & { country: string | null }>;
+}
+
+/** A favourited media node (anime/manga MediaConnection). */
+export interface AniListFavouriteMediaNode {
+  id: number;
+  title: AniListMediaTitle;
+  coverImage: AniListCoverImage;
+}
+
+/** A favourited studio node. Studios have no image. */
+export interface AniListFavouriteStudioNode {
+  id: number;
+  name: string;
+}
+
+export interface AniListUserFavourites {
+  anime?: { nodes?: Array<AniListFavouriteMediaNode> };
+  manga?: { nodes?: Array<AniListFavouriteMediaNode> };
+  characters?: { nodes?: Array<AniListPersonNode> };
+  staff?: { nodes?: Array<AniListPersonNode> };
+  studios?: { nodes?: Array<AniListFavouriteStudioNode> };
 }
 
 export interface AniListUserProfile {
@@ -274,19 +321,154 @@ export interface AniListUserProfile {
   statistics?: {
     anime?: AniListUserStatistics;
   };
-  favourites?: {
-    anime?: {
-      nodes?: Array<{
-        id: number;
-        title: AniListMediaTitle;
-        coverImage: AniListCoverImage;
-      }>;
-    };
-  };
+  favourites?: AniListUserFavourites;
 }
 
 export interface UserProfileResponse {
   User: AniListUserProfile;
+}
+
+/** Raw `Viewer` GraphQL response — same shape as a `User`. */
+export interface ViewerProfileResponse {
+  Viewer: AniListUserProfile;
+}
+
+// ============================================
+// Activity Feed (viewer)
+// ============================================
+
+/**
+ * A single entry from `Page.activities`. The `__typename` discriminator selects
+ * which inline-fragment fields are present; MessageActivity entries carry only
+ * `__typename` and are filtered out by the mapper.
+ */
+export interface AniListActivityNode {
+  __typename?: string;
+  id: number;
+  // ListActivity fields
+  status?: string | null;
+  progress?: string | null;
+  media?: {
+    id: number;
+    title: AniListMediaTitle;
+    coverImage: AniListCoverImage;
+  } | null;
+  // TextActivity fields
+  text?: string | null;
+  createdAt: number;
+  /**
+   * The activity's author. Selected only by the SOCIAL feed query
+   * (`activities(isFollowing: true)`); absent on the own-viewer feed.
+   */
+  user?: AniListActivityUserNode | null;
+}
+
+/** Raw author node selected by the social feed (`user { id name avatar }`). */
+export interface AniListActivityUserNode {
+  id: number;
+  name: string;
+  avatar?: { large?: string; medium?: string } | null;
+}
+
+/** Raw `Page { activities }` GraphQL response shape for the viewer feed. */
+export interface ViewerActivityResponse {
+  Page: {
+    activities: Array<AniListActivityNode | null> | null;
+  } | null;
+}
+
+/** Raw `Page { activities }` response for the social (following) feed. */
+export type SocialFeedResponse = ViewerActivityResponse;
+
+// ============================================
+// Social Graph (following / followers)
+// ============================================
+
+/** Raw user node selected by the following/followers queries. */
+export interface AniListFollowUserNode {
+  id: number;
+  name: string;
+  avatar?: { large?: string; medium?: string } | null;
+  isFollowing?: boolean | null;
+  siteUrl?: string | null;
+}
+
+/** Raw `Page { following }` GraphQL response shape. */
+export interface FollowingResponse {
+  Page: {
+    following: Array<AniListFollowUserNode | null> | null;
+  } | null;
+}
+
+/** Raw `Page { followers }` GraphQL response shape. */
+export interface FollowersResponse {
+  Page: {
+    followers: Array<AniListFollowUserNode | null> | null;
+  } | null;
+}
+
+/** Raw `ToggleFollow` mutation response shape. */
+export interface ToggleFollowResponse {
+  ToggleFollow: {
+    id: number;
+    isFollowing: boolean | null;
+  } | null;
+}
+
+// ============================================
+// Notifications
+// ============================================
+
+/** Raw media node selected inside airing/related-media notifications. */
+export interface AniListNotificationMediaNode {
+  id: number;
+  title: AniListMediaTitle;
+  coverImage: AniListCoverImage;
+}
+
+/** Raw user node selected inside following/activity notifications. */
+export interface AniListNotificationUserNode {
+  id: number;
+  name: string;
+  avatar?: { large?: string; medium?: string } | null;
+}
+
+/**
+ * A single raw entry from `Page.notifications` (a `NotificationUnion`). The
+ * `__typename` discriminator selects which inline-fragment fields are present;
+ * unhandled union members carry only `__typename` and are dropped by the mapper.
+ *
+ * `contexts` is the AiringNotification's `[String]`; `context` is the singular
+ * string on every other handled variant.
+ */
+export interface AniListNotificationNode {
+  __typename?: string;
+  id: number;
+  type?: string | null;
+  createdAt?: number | null;
+  /** AiringNotification only — a `[String]` joined into a display context. */
+  contexts?: Array<string | null> | null;
+  /** Singular context on the non-airing variants. */
+  context?: string | null;
+  /** AiringNotification only. */
+  episode?: number | null;
+  /** Activity like/reply/mention notifications only. */
+  activityId?: number | null;
+  /** Airing + related-media notifications. */
+  media?: AniListNotificationMediaNode | null;
+  /** Following + activity notifications. */
+  user?: AniListNotificationUserNode | null;
+}
+
+/**
+ * Raw response for the notifications query — `Viewer.unreadNotificationCount` for
+ * the badge plus `Page.notifications` for the list.
+ */
+export interface NotificationsResponse {
+  Viewer: { unreadNotificationCount?: number | null } | null;
+  Page: {
+    notifications: Array<AniListNotificationNode | null> | null;
+  } | null;
 }
 
 // ============================================
@@ -321,6 +503,12 @@ export interface AniListMediaListEntry {
   titleRomaji?: string;
   titleNative?: string;
   coverImage?: string;
+  /**
+   * The anime's MyAnimeList id (AniList `Media.idMal`), or undefined when AniList
+   * has no MAL cross-ref. Carried through the sync so the AniList adapter can
+   * populate the local `mal_id` column — the MAL sync then matches by exact id.
+   */
+  idMal?: number;
 }
 
 /** Raw `MediaListCollection` GraphQL response shape. */
@@ -336,12 +524,34 @@ export interface MediaListCollectionResponse {
         updatedAt: number | null;
         media: {
           id: number;
+          idMal: number | null;
           episodes: number | null;
           title: AniListMediaTitle;
           coverImage: AniListCoverImage;
         } | null;
       }> | null;
     }> | null;
+  } | null;
+}
+
+/**
+ * Raw `MediaList` GraphQL response shape for a single user+media entry. `null`
+ * when the user has no list entry for that media (AniList returns a 404 GraphQL
+ * error, which the client maps to a null result).
+ */
+export interface MediaListEntryResponse {
+  MediaList: {
+    status: AniListMediaListStatus | null;
+    progress: number | null;
+    score: number | null;
+    notes: string | null;
+    updatedAt: number | null;
+    media: {
+      idMal: number | null;
+      episodes: number | null;
+      title: AniListMediaTitle;
+      coverImage: AniListCoverImage;
+    } | null;
   } | null;
 }
 
@@ -365,4 +575,45 @@ export interface SaveMediaListEntryResponse {
     notes: string | null;
     updatedAt: number | null;
   };
+}
+
+// ============================================
+// Community Recommendations
+// ============================================
+
+/** AniList recommendation vote enum. */
+export type AniListRecommendationRating = 'RATE_UP' | 'RATE_DOWN' | 'NO_RATING';
+
+/** A media node as selected by the recommendations query (source + recommended). */
+export interface AniListRecommendationMedia {
+  id: number;
+  title: AniListMediaTitle;
+  coverImage: AniListCoverImage;
+  format?: string;
+  averageScore?: number;
+}
+
+/** A single raw `Page.recommendations` node. */
+export interface AniListRecommendationEntry {
+  id: number;
+  rating: number | null;
+  userRating: AniListRecommendationRating | null;
+  media: AniListRecommendationMedia | null;
+  mediaRecommendation: AniListRecommendationMedia | null;
+}
+
+/** Raw `Page { recommendations }` GraphQL response shape. */
+export interface RecommendationsResponse {
+  Page: {
+    recommendations: Array<AniListRecommendationEntry | null> | null;
+  } | null;
+}
+
+/** Raw `SaveRecommendation` mutation response shape. */
+export interface SaveRecommendationResponse {
+  SaveRecommendation: {
+    id: number;
+    rating: number | null;
+    userRating: AniListRecommendationRating | null;
+  } | null;
 }

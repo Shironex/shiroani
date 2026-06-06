@@ -25,6 +25,11 @@ describe('rowToEntry', () => {
       resume_url: 'https://example.com/watch',
       added_at: '2024-01-01T00:00:00Z',
       updated_at: '2024-06-15T12:00:00Z',
+      anilist_synced_at: null,
+      anilist_remote_updated_at: null,
+      mal_id: null,
+      mal_synced_at: null,
+      mal_remote_updated_at: null,
     };
 
     const entry = rowToEntry(row);
@@ -61,6 +66,11 @@ describe('rowToEntry', () => {
       resume_url: null,
       added_at: '2024-01-01T00:00:00Z',
       updated_at: '2024-01-01T00:00:00Z',
+      anilist_synced_at: null,
+      anilist_remote_updated_at: null,
+      mal_id: null,
+      mal_synced_at: null,
+      mal_remote_updated_at: null,
     };
 
     const entry = rowToEntry(row);
@@ -91,6 +101,11 @@ describe('rowToEntry', () => {
       resume_url: null,
       added_at: '2024-03-15T08:00:00Z',
       updated_at: '2024-03-15T10:00:00Z',
+      anilist_synced_at: null,
+      anilist_remote_updated_at: null,
+      mal_id: null,
+      mal_synced_at: null,
+      mal_remote_updated_at: null,
     };
 
     const entry = rowToEntry(row);

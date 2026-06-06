@@ -3,13 +3,13 @@ import { createLogger } from '@shiroani/shared';
 
 const logger = createLogger('Migrations');
 
-interface Migration {
+export interface Migration {
   version: number;
   description: string;
   up: string;
 }
 
-const MIGRATIONS: Migration[] = [
+export const MIGRATIONS: Migration[] = [
   {
     version: 1,
     description: 'Create anime_library table',
@@ -241,6 +241,38 @@ const MIGRATIONS: Migration[] = [
       ALTER TABLE anime_library ADD COLUMN anilist_remote_updated_at INTEGER;
     `,
   },
+  {
+    version: 14,
+    description: 'Add MyAnimeList id + sync baselines to anime_library',
+    // The MAL bridge mirrors the AniList id + baseline shape so a future MAL
+    // adapter (P5) reuses the same reconcile arithmetic.
+    //
+    //   mal_id                  — the MyAnimeList anime id, backfilled for free
+    //                             from AniList `Media.idMal` on AniList-linked
+    //                             rows, or resolved via MAL title search for
+    //                             MAL-only rows. NULL until linked.
+    //   mal_synced_at           — local clock (datetime('now'), same format as
+    //                             updated_at) stamped after a successful MAL
+    //                             reconcile; NULL means "never synced with MAL".
+    //   mal_remote_updated_at   — the MAL entry `updated_at` normalized to epoch
+    //                             seconds (MAL returns ISO 8601) observed at the
+    //                             last reconcile, or NULL.
+    //
+    // SQLite forbids an inline UNIQUE/PRIMARY KEY on `ALTER TABLE ADD COLUMN`
+    // (it would throw inside the transaction and roll the whole migration back),
+    // so uniqueness is enforced by a SEPARATE unique index — mirroring the
+    // anilist_id pattern. SQLite treats NULLs as distinct in a UNIQUE index, so
+    // every existing row (NULL mal_id) coexists; only two real, equal mal_ids
+    // collide. Callers backfilling mal_id from the NULLABLE, non-unique
+    // `Media.idMal` MUST skip+log a row whose idMal already exists (see the
+    // TrackerProvider doc comment) rather than abort the run.
+    up: `
+      ALTER TABLE anime_library ADD COLUMN mal_id INTEGER;
+      CREATE UNIQUE INDEX IF NOT EXISTS idx_anime_library_mal_id ON anime_library(mal_id);
+      ALTER TABLE anime_library ADD COLUMN mal_synced_at TEXT;
+      ALTER TABLE anime_library ADD COLUMN mal_remote_updated_at INTEGER;
+    `,
+  },
 ];
 
 /**
@@ -249,8 +281,15 @@ const MIGRATIONS: Migration[] = [
  * Creates a `_migrations` table to track which versions have been applied.
  * Each pending migration runs inside a transaction so partial failures
  * roll back cleanly.
+ *
+ * @param db - the database handle
+ * @param migrations - the migration set to apply; defaults to the full
+ *   {@link MIGRATIONS} array. Overridable only so tests can apply a prefix of
+ *   the array (e.g. reach the pre-v14 schema, seed rows, then apply v14 onto
+ *   them) through the real runner instead of a hand-copied schema. Production
+ *   callers always use the default.
  */
-export function runMigrations(db: Database.Database): void {
+export function runMigrations(db: Database.Database, migrations: Migration[] = MIGRATIONS): void {
   // Ensure the migrations tracking table exists
   db.exec(`
     CREATE TABLE IF NOT EXISTS _migrations (
@@ -266,7 +305,7 @@ export function runMigrations(db: Database.Database): void {
     | undefined;
   const currentVersion = row?.current_version ?? 0;
 
-  const pending = MIGRATIONS.filter(m => m.version > currentVersion);
+  const pending = migrations.filter(m => m.version > currentVersion);
 
   if (pending.length === 0) {
     logger.debug(`Database is up to date (version ${currentVersion})`);

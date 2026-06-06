@@ -79,11 +79,12 @@ export class LibraryService {
     const result = db
       .prepare(
         `INSERT INTO anime_library
-          (anilist_id, title, title_romaji, title_native, cover_image, total_episodes, status, current_episode, score, notes, resume_url)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+          (anilist_id, mal_id, title, title_romaji, title_native, cover_image, total_episodes, status, current_episode, score, notes, resume_url)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
       )
       .run(
         payload.anilistId ?? null,
+        payload.malId ?? null,
         payload.title,
         payload.titleRomaji ?? null,
         payload.titleNative ?? null,
@@ -168,6 +169,18 @@ export class LibraryService {
   }
 
   /**
+   * Project a single library entry for AniList reconciliation, carrying the sync
+   * baselines. Main-side only — the {@link AniListSyncRow} is never sent to the
+   * renderer. Used by single-entry sync to feed `decideMerge`.
+   */
+  getSyncRowById(id: number): AniListSyncRow | undefined {
+    const row = this.databaseService.db
+      .prepare('SELECT * FROM anime_library WHERE id = ?')
+      .get(id) as AnimeLibraryRow | undefined;
+    return row ? rowToSyncRow(row) : undefined;
+  }
+
+  /**
    * Stamp the AniList sync baselines for an entry WITHOUT touching `updated_at`.
    *
    * This is intentionally NOT routed through {@link updateEntry} / `buildUpdate`,
@@ -188,5 +201,48 @@ export class LibraryService {
          WHERE id = ?`
       )
       .run(remoteUpdatedAt, id);
+  }
+
+  /**
+   * Stamp the MyAnimeList sync baselines for an entry WITHOUT touching `updated_at`.
+   *
+   * The MAL twin of {@link markAniListSync}: same anti-ping-pong rationale (a bare
+   * `updated_at` bump would make the next sync misread a just-reconciled row as a
+   * fresh local edit) and the same `datetime('now')` clock/format so the
+   * reconciler can compare `mal_synced_at` against `updated_at` directly.
+   *
+   * @param id - library row id
+   * @param remoteUpdatedAt - the MAL entry `updated_at` (epoch seconds) just observed
+   */
+  markMalSync(id: number, remoteUpdatedAt: number): void {
+    this.databaseService.db
+      .prepare(
+        `UPDATE anime_library
+           SET mal_synced_at = datetime('now'), mal_remote_updated_at = ?
+         WHERE id = ?`
+      )
+      .run(remoteUpdatedAt, id);
+  }
+
+  /**
+   * Backfill a row's `mal_id` (the link the MAL sync needs to write/read a
+   * remote entry) WITHOUT touching `updated_at` — a bare timestamp bump would
+   * make the next sync misread the just-linked row as a fresh local edit, the
+   * same anti-ping-pong rationale as {@link markMalSync}.
+   *
+   * The `mal_id` column has a UNIQUE index (migration v14): backfill resolves
+   * ids from a NULLABLE, non-unique source (`searchAnime` or AniList `idMal`),
+   * so two local rows CAN resolve to the same MAL id. This rethrows the SQLite
+   * UNIQUE violation so the caller can skip+log that one row and CONTINUE the
+   * run (never abort) — mirroring the AniList dedup-by-id defensive shape.
+   *
+   * @param id - library row id
+   * @param malId - the resolved MyAnimeList anime id
+   * @throws the SQLite UNIQUE-constraint error when `malId` already links another row
+   */
+  setMalId(id: number, malId: number): void {
+    this.databaseService.db
+      .prepare(`UPDATE anime_library SET mal_id = ? WHERE id = ?`)
+      .run(malId, id);
   }
 }

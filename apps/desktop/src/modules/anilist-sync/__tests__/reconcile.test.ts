@@ -1,6 +1,7 @@
 import {
   decideMerge,
   buildAddPayloadFromRemote,
+  buildPullUpdateFromRemote,
   buildPushInputFromLocal,
   statusFromAniList,
   statusToAniList,
@@ -277,6 +278,42 @@ describe('buildAddPayloadFromRemote', () => {
     expect(payload.score).toBe(7.3);
     expect(payload.notes).toBe('loved it');
     expect(payload.currentEpisode).toBe(0);
+  });
+});
+
+describe('buildPullUpdateFromRemote (forced pull, remote wins)', () => {
+  it('adopts every present remote value, including a LOWER progress', () => {
+    const local = localRow({ status: 'completed', currentEpisode: 12, score: 9, notes: 'mine' });
+    const remote = remoteEntry({
+      status: 'CURRENT',
+      progress: 3,
+      score: 70,
+      notes: 'theirs',
+    });
+    expect(buildPullUpdateFromRemote(local, remote)).toEqual({
+      status: 'watching',
+      currentEpisode: 3,
+      score: 7,
+      notes: 'theirs',
+    });
+  });
+
+  it('never clears a populated local field when the remote lacks it', () => {
+    const local = localRow({ status: 'watching', currentEpisode: 5, score: 8, notes: 'keep' });
+    const remote = remoteEntry({
+      status: 'CURRENT',
+      progress: null, // absent remotely → must not clobber local 5 to absent
+      score: 0, // unrated → absent
+      notes: '', // blank → absent
+    });
+    // Only status matches already; nothing else changes → null (no write).
+    expect(buildPullUpdateFromRemote(local, remote)).toBeNull();
+  });
+
+  it('returns null when local already matches the remote', () => {
+    const local = localRow({ status: 'watching', currentEpisode: 3, score: 8, notes: 'ok' });
+    const remote = remoteEntry({ status: 'CURRENT', progress: 3, score: 80, notes: 'ok' });
+    expect(buildPullUpdateFromRemote(local, remote)).toBeNull();
   });
 });
 

@@ -1,4 +1,9 @@
-import { WebSocketGateway, SubscribeMessage, WebSocketServer } from '@nestjs/websockets';
+import {
+  WebSocketGateway,
+  SubscribeMessage,
+  MessageBody,
+  WebSocketServer,
+} from '@nestjs/websockets';
 import { UseGuards } from '@nestjs/common';
 import { Server } from 'socket.io';
 import {
@@ -6,7 +11,9 @@ import {
   AniListSyncEvents,
   LibraryEvents,
   CrudActions,
+  anilistSyncEntryPayloadSchema,
   type AniListSyncResult,
+  type AniListSyncEntryResult,
 } from '@shiroani/shared';
 import { CORS_CONFIG } from '../kernel/cors.config';
 import { WsThrottlerGuard } from '../kernel/ws-throttler.guard';
@@ -56,6 +63,41 @@ export class AniListSyncGateway {
         );
 
         if (result.imported > 0 || result.updatedLocal > 0) {
+          this.server.emit(LibraryEvents.UPDATED, { action: CrudActions.IMPORTED });
+        }
+
+        return result;
+      },
+    });
+  }
+
+  /**
+   * Sync a SINGLE library entry by local id, with a forced direction
+   * ('push'/'pull') or 'auto'. Resolves the ack with `{ action }`. Shares the
+   * full sync's single-flight guard (rejects via the ack `error` field if a full
+   * sync is running). When the local row may have changed (an import/pull/update
+   * that wrote locally), broadcasts {@link LibraryEvents.UPDATED} so the library
+   * store re-fetches — mirroring the full-sync handler.
+   */
+  @SubscribeMessage(AniListSyncEvents.SYNC_ENTRY)
+  handleSyncEntry(@MessageBody() payload: unknown) {
+    return handleGatewayRequest({
+      logger,
+      action: AniListSyncEvents.SYNC_ENTRY,
+      defaultResult: { action: 'error' } as AniListSyncEntryResult,
+      schema: anilistSyncEntryPayloadSchema,
+      payload,
+      handler: async parsed => {
+        const result = await this.syncService.syncEntry(parsed.localId, parsed.direction);
+
+        // Every non-skip outcome stamps the entry's AniList baselines via
+        // `markAniListSync` — which flips the renderer-facing `synced` flag and
+        // updates `anilistSyncedAt` on the row. The library store refetches off
+        // this broadcast (no per-op ack wiring), so broadcast whenever the row's
+        // sync state changed: 'pushed' / 'updated' / 'unchanged'. Only 'skipped'
+        // (no mediaId / no remote) and 'error' (never reaches here — thrown and
+        // caught upstream) leave the row untouched.
+        if (result.action !== 'skipped' && result.action !== 'error') {
           this.server.emit(LibraryEvents.UPDATED, { action: CrudActions.IMPORTED });
         }
 
