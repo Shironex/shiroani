@@ -56,6 +56,16 @@ export function useSocialGraph(): SocialGraphState {
   const [error, setError] = useState<string | null>(null);
   const [pendingIds, setPendingIds] = useState<Set<number>>(() => new Set());
 
+  // Auth-session epoch: bumped on every connection change so an in-flight
+  // response from a PRIOR session (a logout or account switch that began before
+  // the request returned) is discarded. `isMounted` alone can't catch this — the
+  // component stays mounted across the switch, so the stale response would
+  // otherwise write the previous viewer's social graph back into state.
+  const sessionRef = useRef(0);
+  useEffect(() => {
+    sessionRef.current += 1;
+  }, [connected]);
+
   // Mirror the lists into a ref so `toggleFollow` can read the current state in
   // its event handler WITHOUT depending on `following`/`followers` — keeping its
   // identity stable so the memoized `UserRow` actually skips re-renders. (A
@@ -67,11 +77,13 @@ export function useSocialGraph(): SocialGraphState {
     if (!connected) {
       setFollowing([]);
       setFollowers([]);
+      setPendingIds(new Set());
       setError(null);
       setIsLoading(false);
       return;
     }
 
+    const requestSession = sessionRef.current;
     setIsLoading(true);
     setError(null);
 
@@ -81,13 +93,13 @@ export function useSocialGraph(): SocialGraphState {
       emitWithErrorHandling<GetFollowersRequest, GetFollowersResult>(AnimeEvents.GET_FOLLOWERS, {}),
     ])
       .then(([followingRes, followersRes]) => {
-        if (!isMounted()) return;
+        if (!isMounted() || sessionRef.current !== requestSession) return;
         setFollowing(followingRes.users ?? []);
         setFollowers(followersRes.users ?? []);
         setIsLoading(false);
       })
       .catch((err: Error) => {
-        if (!isMounted()) return;
+        if (!isMounted() || sessionRef.current !== requestSession) return;
         logger.error('Failed to load social graph:', err.message);
         setError(err.message);
         setIsLoading(false);
@@ -111,6 +123,7 @@ export function useSocialGraph(): SocialGraphState {
     (userId: number) => {
       // Resolve the current state from whichever list holds the user (read via
       // the ref so this callback stays stable across list mutations).
+      const requestSession = sessionRef.current;
       const { following: curFollowing, followers: curFollowers } = listsRef.current;
       const current =
         curFollowing.find(u => u.id === userId)?.isFollowing ??
@@ -139,7 +152,9 @@ export function useSocialGraph(): SocialGraphState {
         userId,
       })
         .then(data => {
-          if (!isMounted()) return;
+          // Drop the ack if auth changed mid-flight — committing the result
+          // would re-expose the prior session's follow state after a switch.
+          if (!isMounted() || sessionRef.current !== requestSession) return;
           if (typeof data.isFollowing === 'boolean') {
             // Server is the source of truth — commit to the returned state.
             patchUser(userId, { isFollowing: data.isFollowing });
@@ -150,7 +165,7 @@ export function useSocialGraph(): SocialGraphState {
           clearPending();
         })
         .catch((err: Error) => {
-          if (!isMounted()) return;
+          if (!isMounted() || sessionRef.current !== requestSession) return;
           logger.error('Toggle follow failed:', err.message);
           patchUser(userId, { isFollowing: current });
           clearPending();
