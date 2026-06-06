@@ -216,6 +216,10 @@ export interface LibraryAddPayload {
   episodes?: number;
   status?: AnimeStatus;
   currentEpisode?: number;
+  /** Optional rating (0–10) set at insert time — e.g. when importing from AniList. */
+  score?: number;
+  /** Optional free-text notes set at insert time — e.g. when importing from AniList. */
+  notes?: string;
   resumeUrl?: string;
 }
 

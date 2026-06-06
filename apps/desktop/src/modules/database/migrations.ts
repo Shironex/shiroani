@@ -222,6 +222,25 @@ const MIGRATIONS: Migration[] = [
       );
     `,
   },
+  {
+    version: 13,
+    description: 'Add AniList sync baselines to anime_library (anti-ping-pong)',
+    // Two-way AniList sync needs to know what each entry looked like at the last
+    // reconcile so a pull (which bumps `updated_at` via the generic UPDATE
+    // builder) is not mistaken for a fresh local edit on the next run. Both
+    // columns are nullable: a null baseline means "never synced", which the
+    // reconciler treats as "changed on both sides" (present-wins still protects
+    // populated remote fields from empty local ones).
+    //
+    //   anilist_synced_at        — local clock (datetime('now'), same format as
+    //                              updated_at) stamped after a successful reconcile
+    //   anilist_remote_updated_at — the AniList entry `updatedAt` (epoch seconds)
+    //                              observed/returned at the last reconcile
+    up: `
+      ALTER TABLE anime_library ADD COLUMN anilist_synced_at TEXT;
+      ALTER TABLE anime_library ADD COLUMN anilist_remote_updated_at INTEGER;
+    `,
+  },
 ];
 
 /**

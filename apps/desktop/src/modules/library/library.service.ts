@@ -15,7 +15,12 @@ import {
   buildUpdate,
   type FieldMap,
 } from '../database';
-import { rowToEntry, type AnimeLibraryRow } from './library.types';
+import {
+  rowToEntry,
+  rowToSyncRow,
+  type AnimeLibraryRow,
+  type AniListSyncRow,
+} from './library.types';
 
 const logger = createLogger('LibraryService');
 
@@ -74,8 +79,8 @@ export class LibraryService {
     const result = db
       .prepare(
         `INSERT INTO anime_library
-          (anilist_id, title, title_romaji, title_native, cover_image, total_episodes, status, current_episode, resume_url)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+          (anilist_id, title, title_romaji, title_native, cover_image, total_episodes, status, current_episode, score, notes, resume_url)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
       )
       .run(
         payload.anilistId ?? null,
@@ -86,6 +91,8 @@ export class LibraryService {
         payload.episodes ?? null,
         payload.status ?? 'plan_to_watch',
         payload.currentEpisode ?? 0,
+        payload.score ?? null,
+        payload.notes ?? null,
         payload.resumeUrl ?? null
       );
 
@@ -147,5 +154,39 @@ export class LibraryService {
     }
 
     return stats;
+  }
+
+  /**
+   * Project every library entry for AniList reconciliation, carrying the sync
+   * baselines. Main-side only — these rows are never sent to the renderer.
+   */
+  getEntriesForSync(): AniListSyncRow[] {
+    const rows = this.databaseService.db
+      .prepare('SELECT * FROM anime_library')
+      .all() as AnimeLibraryRow[];
+    return rows.map(rowToSyncRow);
+  }
+
+  /**
+   * Stamp the AniList sync baselines for an entry WITHOUT touching `updated_at`.
+   *
+   * This is intentionally NOT routed through {@link updateEntry} / `buildUpdate`,
+   * which always bumps `updated_at = datetime('now')` — that bump is exactly what
+   * would make the next sync misread a just-reconciled row as a fresh local edit
+   * (the ping-pong the baselines exist to prevent). `anilist_synced_at` uses the
+   * same `datetime('now')` clock/format as `updated_at` so the reconciler can
+   * compare them directly.
+   *
+   * @param id - library row id
+   * @param remoteUpdatedAt - the AniList entry `updatedAt` (epoch seconds) just observed
+   */
+  markAniListSync(id: number, remoteUpdatedAt: number): void {
+    this.databaseService.db
+      .prepare(
+        `UPDATE anime_library
+           SET anilist_synced_at = datetime('now'), anilist_remote_updated_at = ?
+         WHERE id = ?`
+      )
+      .run(remoteUpdatedAt, id);
   }
 }

@@ -288,3 +288,81 @@ export interface AniListUserProfile {
 export interface UserProfileResponse {
   User: AniListUserProfile;
 }
+
+// ============================================
+// MediaList (two-way sync)
+// ============================================
+
+/** AniList list-entry status enum (superset of the local AnimeStatus). */
+export type AniListMediaListStatus =
+  | 'CURRENT'
+  | 'PLANNING'
+  | 'COMPLETED'
+  | 'DROPPED'
+  | 'PAUSED'
+  | 'REPEATING';
+
+/**
+ * A single MediaList entry, normalized from the raw GraphQL response into the
+ * flat shape the reconciler consumes. `score` is always on the POINT_100 scale
+ * (requested via `score(format: POINT_100)`) regardless of the user's display
+ * format; `updatedAt` is epoch seconds.
+ */
+export interface AniListMediaListEntry {
+  mediaId: number;
+  status: AniListMediaListStatus | null;
+  progress: number | null;
+  /** 0–100. AniList uses 0 to mean "unrated". */
+  score: number | null;
+  notes: string | null;
+  updatedAt: number;
+  episodes?: number;
+  title: string;
+  titleRomaji?: string;
+  titleNative?: string;
+  coverImage?: string;
+}
+
+/** Raw `MediaListCollection` GraphQL response shape. */
+export interface MediaListCollectionResponse {
+  MediaListCollection: {
+    lists: Array<{
+      entries: Array<{
+        mediaId: number;
+        status: AniListMediaListStatus | null;
+        progress: number | null;
+        score: number | null;
+        notes: string | null;
+        updatedAt: number | null;
+        media: {
+          id: number;
+          episodes: number | null;
+          title: AniListMediaTitle;
+          coverImage: AniListCoverImage;
+        } | null;
+      }> | null;
+    }> | null;
+  } | null;
+}
+
+/** Input for the `SaveMediaListEntry` mutation. Absent fields are NOT written. */
+export interface SaveMediaListEntryInput {
+  mediaId: number;
+  status?: AniListMediaListStatus;
+  progress?: number;
+  /** 0–100 (POINT_100 scale). Omit (not 0) to leave the remote score unchanged. */
+  scoreRaw?: number;
+  notes?: string;
+}
+
+/** Raw `SaveMediaListEntry` mutation response shape. */
+export interface SaveMediaListEntryResponse {
+  SaveMediaListEntry: {
+    mediaId: number;
+    status: AniListMediaListStatus | null;
+    progress: number | null;
+    score: number | null;
+    notes: string | null;
+    updatedAt: number | null;
+  };
+}

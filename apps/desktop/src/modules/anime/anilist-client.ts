@@ -3,6 +3,13 @@ import type { AniListViewer } from '@shiroani/shared';
 import { createLogger, extractErrorMessage } from '@shiroani/shared';
 import { LruTtlCache } from '../kernel/lru-ttl-cache';
 import { AniListTokenPort } from './anilist-token.port';
+import { MEDIA_LIST_COLLECTION_QUERY } from './queries';
+import type {
+  AniListMediaListEntry,
+  MediaListCollectionResponse,
+  SaveMediaListEntryInput,
+  SaveMediaListEntryResponse,
+} from './types';
 
 const logger = createLogger('AniListClient');
 
@@ -85,6 +92,102 @@ export class AniListClient {
       avatar: viewer.avatar?.large,
       bannerImage: viewer.bannerImage,
     };
+  }
+
+  /**
+   * Fetch the authenticated user's full anime MediaList (every list, one call).
+   * Flattens the per-list grouping into a single array of normalized entries.
+   * Never cached — sync must read the live remote state.
+   *
+   * @param userId - the AniList viewer id (from {@link getViewer})
+   */
+  async getMediaListCollection(userId: number): Promise<AniListMediaListEntry[]> {
+    const data = await this.query<MediaListCollectionResponse>(MEDIA_LIST_COLLECTION_QUERY, {
+      userId,
+    });
+
+    const lists = data?.MediaListCollection?.lists ?? [];
+    const entries: AniListMediaListEntry[] = [];
+
+    for (const list of lists) {
+      if (!list) continue;
+      for (const entry of list.entries ?? []) {
+        if (!entry) continue;
+        const media = entry.media;
+        // An entry whose media was deleted on AniList can't be matched or
+        // displayed — skip it rather than carry a mediaId with no title.
+        if (!media) continue;
+        entries.push({
+          mediaId: entry.mediaId,
+          status: entry.status,
+          progress: entry.progress,
+          score: entry.score,
+          notes: entry.notes,
+          updatedAt: entry.updatedAt ?? 0,
+          episodes: media.episodes ?? undefined,
+          title: media.title?.romaji ?? media.title?.english ?? media.title?.native ?? 'Unknown',
+          titleRomaji: media.title?.romaji ?? undefined,
+          titleNative: media.title?.native ?? undefined,
+          coverImage: media.coverImage?.large ?? media.coverImage?.medium ?? undefined,
+        });
+      }
+    }
+
+    return entries;
+  }
+
+  /**
+   * Create or update a MediaList entry on AniList (two-way sync, write side).
+   *
+   * The mutation is built dynamically so that ONLY the provided fields appear in
+   * the GraphQL request — an omitted field is never sent, so AniList leaves the
+   * existing remote value untouched. This is what lets the reconciler avoid
+   * clobbering a populated remote score/notes with an empty local one (it simply
+   * doesn't pass `scoreRaw`/`notes` when the local value is absent). Passing
+   * `scoreRaw: 0` would set a real 0, so callers must omit instead.
+   *
+   * Returns the AniList `updatedAt` (epoch seconds) the server stamped, which the
+   * caller records as the new remote baseline (skew-proof anti-ping-pong).
+   */
+  async saveMediaListEntry(input: SaveMediaListEntryInput): Promise<number> {
+    const varDefs = ['$mediaId: Int!'];
+    const args = ['mediaId: $mediaId'];
+    const variables: Record<string, unknown> = { mediaId: input.mediaId };
+
+    if (input.status !== undefined) {
+      varDefs.push('$status: MediaListStatus');
+      args.push('status: $status');
+      variables.status = input.status;
+    }
+    if (input.progress !== undefined) {
+      varDefs.push('$progress: Int');
+      args.push('progress: $progress');
+      variables.progress = input.progress;
+    }
+    if (input.scoreRaw !== undefined) {
+      varDefs.push('$scoreRaw: Int');
+      args.push('scoreRaw: $scoreRaw');
+      variables.scoreRaw = input.scoreRaw;
+    }
+    if (input.notes !== undefined) {
+      varDefs.push('$notes: String');
+      args.push('notes: $notes');
+      variables.notes = input.notes;
+    }
+
+    const mutation = `mutation AniListSaveEntry(${varDefs.join(', ')}) {
+  SaveMediaListEntry(${args.join(', ')}) {
+    mediaId
+    status
+    progress
+    score(format: POINT_100)
+    notes
+    updatedAt
+  }
+}`;
+
+    const data = await this.query<SaveMediaListEntryResponse>(mutation, variables);
+    return data.SaveMediaListEntry?.updatedAt ?? 0;
   }
 
   /**

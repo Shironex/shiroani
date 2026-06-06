@@ -196,6 +196,37 @@ query BrowseMedia(
 }
 `;
 
+/**
+ * Full anime MediaList for a user (two-way sync, read side).
+ *
+ * `MediaListCollection` returns every list (Watching/Completed/Planning/…) in a
+ * single response — no pagination needed. `score(format: POINT_100)` normalizes
+ * the score to the 0–100 scale regardless of the user's display format, so the
+ * reconciler never has to know the user's `scoreFormat`.
+ */
+export const MEDIA_LIST_COLLECTION_QUERY = `
+query AniListMediaList($userId: Int!) {
+  MediaListCollection(userId: $userId, type: ANIME) {
+    lists {
+      entries {
+        mediaId
+        status
+        progress
+        score(format: POINT_100)
+        notes
+        updatedAt
+        media {
+          id
+          episodes
+          title { romaji english native }
+          coverImage { large medium }
+        }
+      }
+    }
+  }
+}
+`;
+
 export const USER_PROFILE_QUERY = `
 query UserProfile($name: String!) {
   User(name: $name) {

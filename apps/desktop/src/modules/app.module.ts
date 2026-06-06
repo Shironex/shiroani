@@ -2,6 +2,7 @@ import { Module, type DynamicModule, type Provider } from '@nestjs/common';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { DatabaseModule } from './database';
 import { AnimeModule, AniListAuthModule } from './anime';
+import { AniListSyncModule } from './anilist-sync';
 import { LibraryModule } from './library';
 import { ScheduleModule } from './schedule';
 import { DiaryModule } from './diary';
@@ -40,6 +41,7 @@ export class AppModule {
         DatabaseModule.forRoot({ dbPath: options.dbPath }),
         AniListAuthModule.forRoot({ tokenProvider: options.anilistTokenProvider }),
         AnimeModule,
+        AniListSyncModule,
         LibraryModule,
         ScheduleModule,
         DiaryModule,
