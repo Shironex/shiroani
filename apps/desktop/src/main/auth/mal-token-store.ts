@@ -71,7 +71,8 @@ function readPersisted(): PersistedSession | null {
     typeof raw.accessToken !== 'string' ||
     typeof raw.refreshToken !== 'string' ||
     typeof raw.expiresAt !== 'number' ||
-    !Number.isFinite(raw.expiresAt)
+    !Number.isFinite(raw.expiresAt) ||
+    typeof raw.encrypted !== 'boolean'
   ) {
     return null;
   }
