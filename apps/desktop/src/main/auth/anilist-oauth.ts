@@ -35,15 +35,14 @@ export interface ParsedTokenFragment {
 }
 
 /**
- * Parse the AniList implicit-grant redirect URL fragment.
+ * Extract the URL fragment as `URLSearchParams`.
  *
- * Expects `<redirect>#access_token=...&token_type=Bearer&expires_in=...`.
- * Returns `null` when the fragment is absent, the access token is missing, or
- * the value cannot be parsed. PURE — no Electron, no logging of the secret.
- *
- * Security: this function NEVER logs its input (the URL fragment IS the token).
+ * Returns `null` when the input is not a string or carries no (non-empty)
+ * fragment. Single source of truth for fragment parsing — both the token path
+ * and the OAuth-error path read from this. PURE — never logs its input (the
+ * fragment may contain the access token).
  */
-export function parseTokenFragment(url: string): ParsedTokenFragment | null {
+function parseFragmentParams(url: string): URLSearchParams | null {
   if (typeof url !== 'string') {
     return null;
   }
@@ -58,7 +57,24 @@ export function parseTokenFragment(url: string): ParsedTokenFragment | null {
     return null;
   }
 
-  const params = new URLSearchParams(fragment);
+  return new URLSearchParams(fragment);
+}
+
+/**
+ * Parse the AniList implicit-grant redirect URL fragment.
+ *
+ * Expects `<redirect>#access_token=...&token_type=Bearer&expires_in=...`.
+ * Returns `null` when the fragment is absent, the access token is missing, or
+ * the value cannot be parsed. PURE — no Electron, no logging of the secret.
+ *
+ * Security: this function NEVER logs its input (the URL fragment IS the token).
+ */
+export function parseTokenFragment(url: string): ParsedTokenFragment | null {
+  const params = parseFragmentParams(url);
+  if (!params) {
+    return null;
+  }
+
   const accessToken = params.get('access_token');
   if (!accessToken) {
     return null;
@@ -185,7 +201,18 @@ export async function startAniListOAuth(
         if (parsed) {
           finish(parsed);
         } else {
-          fail('AniList redirect did not contain an access token');
+          // A denied/failed authorization redirects with the error in the
+          // fragment (e.g. `#error=access_denied&error_description=...`).
+          // Forward it so the user sees an actionable reason rather than a
+          // generic "no token" message.
+          const errorParams = parseFragmentParams(navUrl);
+          const error = errorParams?.get('error');
+          const errorDesc = errorParams?.get('error_description');
+          if (error) {
+            fail(`AniList authorization failed: ${errorDesc || error}`);
+          } else {
+            fail('AniList redirect did not contain an access token');
+          }
         }
         return;
       }
