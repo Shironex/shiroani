@@ -34,7 +34,9 @@ export const RecommendationsPanel = memo(function RecommendationsPanel({
   const { t } = useTranslation('discover');
   const recommendations = useDiscoverStore(s => s.recommendations);
   const isLoading = useDiscoverStore(s => s.isRecommendationsLoading);
-  const error = useDiscoverStore(s => s.error);
+  // Recommendation-scoped error so an unrelated browse/search failure can't
+  // replace this tab's cached results with someone else's error state.
+  const error = useDiscoverStore(s => s.recommendationsError);
 
   const handleAddToLibrary = useAddDiscoverMediaToLibrary();
 
