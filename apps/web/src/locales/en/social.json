@@ -1,0 +1,29 @@
+{
+  "view": {
+    "title": "Community",
+    "subtitle": "AniList · activity from people you follow",
+    "actions": {
+      "refresh": "Refresh",
+      "refreshAria": "Refresh community feed"
+    }
+  },
+  "feed": {
+    "loadingAria": "Loading community feed",
+    "empty": "No activity yet — updates from people you follow will show up here.",
+    "notConnected": "Connect an AniList account to see activity from people you follow.",
+    "error": "Couldn't load the community feed.",
+    "retry": "Try again"
+  },
+  "notifications": {
+    "open": "Notifications",
+    "openWithCount": "Notifications, {{count}} unread",
+    "title": "Notifications",
+    "close": "Close",
+    "loadingAria": "Loading notifications",
+    "empty": "You're all caught up — no notifications yet.",
+    "notConnected": "Connect an AniList account to see notifications.",
+    "error": "Couldn't load notifications.",
+    "retry": "Try again"
+  },
+  "avatarAlt": "Avatar of {{name}}"
+}

@@ -11,6 +11,7 @@ import {
   Rss,
   Settings,
   User,
+  Users,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAppStore, type ActiveView } from '@/stores/useAppStore';
@@ -123,6 +124,16 @@ function DockIcon({ id, isActive }: { id: ActiveView; isActive: boolean }) {
     case 'feed':
       return (
         <Rss
+          className={cn(
+            base,
+            'group-hover:scale-110 group-hover:-translate-y-0.5',
+            isActive && 'animate-[dock-pulse_2s_ease-in-out_infinite] motion-reduce:animate-none'
+          )}
+        />
+      );
+    case 'social':
+      return (
+        <Users
           className={cn(
             base,
             'group-hover:scale-110 group-hover:-translate-y-0.5',

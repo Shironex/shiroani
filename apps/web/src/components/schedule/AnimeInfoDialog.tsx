@@ -12,6 +12,7 @@ import { AnimeInfoHeader } from './anime-info/AnimeInfoHeader';
 import { AnimeInfoStats } from './anime-info/AnimeInfoStats';
 import { AnimeInfoMeta } from './anime-info/AnimeInfoMeta';
 import { AnimeInfoPeople } from './anime-info/AnimeInfoPeople';
+import { AnimeInfoRecommendations } from './anime-info/AnimeInfoRecommendations';
 import { AnimeInfoLinks } from './anime-info/AnimeInfoLinks';
 
 interface AnimeInfoDialogProps {
@@ -155,6 +156,8 @@ export function AnimeInfoDialog({ anime, open, onOpenChange }: AnimeInfoDialogPr
           />
 
           <AnimeInfoPeople details={details} />
+
+          <AnimeInfoRecommendations details={details} />
 
           <AnimeInfoLinks
             details={details}

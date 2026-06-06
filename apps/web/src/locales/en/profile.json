@@ -3,10 +3,12 @@
     "title": "My profile",
     "watermarkAria": "Profile",
     "subtitleApp": "Local · time spent in ShiroAni",
+    "subtitleMal": "MyAnimeList · your stats",
     "subtitleAniListConnected": "AniList · @{{handle}}",
     "subtitleAniListConnect": "Connect an AniList account to see your stats",
     "tabs": {
       "anilist": "From AniList",
+      "mal": "From MAL",
       "app": "In app",
       "ariaLabel": "Profile statistics source"
     },
@@ -20,6 +22,10 @@
     "private": {
       "title": "This user has private statistics",
       "changeUser": "Change user"
+    },
+    "empty": {
+      "title": "Your AniList list is empty — add some anime to see stats here",
+      "disconnect": "Disconnect AniList"
     }
   },
   "setup": {
@@ -90,10 +96,51 @@
   "studios": {
     "empty": "No studio data yet."
   },
-  "activityFeed": {
-    "title": "Recent activity",
-    "description": "Scrobble history, status changes and ratings from AniList will appear here once we extend profile sync.",
-    "tag": "SOON"
+  "activity": {
+    "empty": "No activity yet — your AniList updates will show up here.",
+    "notConnected": "Connect an AniList account to see your activity here.",
+    "error": "Couldn't load your activity feed.",
+    "retry": "Try again"
+  },
+  "social": {
+    "heading": "Following & followers",
+    "following": "Following",
+    "followers": "Followers",
+    "count_one": "{{count}} person",
+    "count_other": "{{count}} people",
+    "followingEmpty": "You're not following anyone yet.",
+    "followersEmpty": "No followers yet.",
+    "error": "Couldn't load your social lists.",
+    "retry": "Try again",
+    "countCapped": "{{count}}+ people"
+  },
+  "follow": {
+    "follow": "Follow",
+    "following": "Following",
+    "followAria": "Follow {{name}}",
+    "unfollowAria": "Unfollow {{name}}"
+  },
+  "favourites": {
+    "anime": "Favorite anime",
+    "manga": "Favorite manga",
+    "characters": "Favorite characters",
+    "staff": "Favorite staff",
+    "studios": "Favorite studios"
+  },
+  "extraStats": {
+    "voiceActors": "Top voice actors",
+    "staff": "Top staff",
+    "startYears": "By start year",
+    "lengths": "By episode count",
+    "lengthLabel": "{{value}} ep"
+  },
+  "sync": {
+    "heading": "AniList sync",
+    "running": "Syncing…",
+    "progress": "Syncing {{current}} / {{total}}",
+    "lastSynced": "Last synced at {{time}}",
+    "idle": "No sync this session yet",
+    "error": "Last sync failed"
   },
   "appPanel": {
     "heroTag": "Your time with ShiroAni",
@@ -165,6 +212,31 @@
         "confirm": "Clear"
       }
     }
+  },
+  "malPanel": {
+    "heroTag": "Your MyAnimeList stats",
+    "heroSubtitle": "{{items}} anime · {{episodes}} episodes",
+    "openProfile": "Open on MAL",
+    "counters": {
+      "items": "Anime",
+      "episodes": "Episodes",
+      "daysWatched": "Days watched",
+      "daysWatchedSub": "as counted by MAL",
+      "meanScore": "Avg. score",
+      "meanScoreSub": "across rated titles"
+    },
+    "breakdown": {
+      "title": "By status",
+      "rewatched": "Rewatched"
+    },
+    "status": {
+      "watching": "Watching",
+      "completed": "Completed",
+      "onHold": "On hold",
+      "dropped": "Dropped",
+      "planToWatch": "Plan to watch"
+    },
+    "lighterNote": "MyAnimeList exposes a lighter stat set — there are no genre or voice-actor breakdowns here like on the AniList tab."
   },
   "errors": {
     "userNotFound": "AniList user not found",

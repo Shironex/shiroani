@@ -35,6 +35,21 @@
     "upcoming": "Upcoming",
     "watched": "Watched"
   },
+  "filter": {
+    "libraryOnly": "Show only shows I track",
+    "libraryOnlyActive": "Showing only shows I track"
+  },
+  "sort": {
+    "trackedFirst": "Sort: tracked first",
+    "trackedFirstActive": "Sorting: tracked first"
+  },
+  "trackedToday": {
+    "tooltip": "Shows you track airing today",
+    "count_one": "{{count}} tracked today",
+    "count_few": "{{count}} tracked today",
+    "count_many": "{{count}} tracked today",
+    "count_other": "{{count}} tracked today"
+  },
   "daily": {
     "emptyTitle": "Nothing airs that day",
     "emptySubtitle": "Try another day or the weekly view",
@@ -69,10 +84,16 @@
     "characters": "Characters",
     "staff": "Staff",
     "related": "Related",
+    "recommendations": "More like this",
+    "recommendationInLibrary": "\"{{title}}\" is already in your library",
+    "recommendationAdd": "Add \"{{title}}\" to library",
     "trailer": "Trailer",
     "trailerTitle": "Trailer",
     "streaming": "Where to watch",
+    "streamingEpisodes": "Watch episodes",
+    "streamingEpisodeAria": "Watch \"{{title}}\" on {{site}}",
     "openOnAniList": "Open on AniList",
+    "openOnMal": "Open on MyAnimeList",
     "expand": "Expand",
     "collapse": "Collapse",
     "startDate": "Start",

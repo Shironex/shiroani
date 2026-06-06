@@ -14,8 +14,44 @@ import {
   createLogger,
 } from '@shiroani/shared';
 import { emitWithErrorHandling } from '@/lib/socket';
+import { createLocalStorageAccessor } from '@/lib/persisted-storage';
 
 const logger = createLogger('ScheduleStore');
+
+/**
+ * Sort order for schedule entries within a day.
+ * - `time`: chronological by airing time (default).
+ * - `tracked`: library + subscribed entries bubble to the top, then by time.
+ */
+export type ScheduleSort = 'time' | 'tracked';
+
+/** Subset of schedule state that survives reloads. */
+interface SchedulePrefs {
+  onlyInLibrary: boolean;
+  sort: ScheduleSort;
+}
+
+const PREFS_STORAGE_KEY = 'shiroani:schedulePrefs';
+
+const DEFAULT_PREFS: SchedulePrefs = { onlyInLibrary: false, sort: 'time' };
+
+// Persisted via localStorage (synchronous, web + electron) so the whole
+// preference lives inside this store — no electron-store allowlist entry or
+// app-init wiring needed. In-memory state stays authoritative; reads silently
+// fall back to defaults.
+const prefsStorage = createLocalStorageAccessor<SchedulePrefs>(PREFS_STORAGE_KEY, {
+  parse: raw => {
+    const parsed: unknown = JSON.parse(raw);
+    if (!parsed || typeof parsed !== 'object') return DEFAULT_PREFS;
+    const obj = parsed as Record<string, unknown>;
+    return {
+      onlyInLibrary: typeof obj.onlyInLibrary === 'boolean' ? obj.onlyInLibrary : false,
+      sort: obj.sort === 'tracked' ? 'tracked' : 'time',
+    };
+  },
+  serialize: prefs => JSON.stringify(prefs),
+  fallback: DEFAULT_PREFS,
+});
 
 /**
  * Schedule store state
@@ -27,8 +63,10 @@ interface ScheduleState extends SocketStoreSlice {
   selectedDay: string;
   /** View mode: daily, weekly list, or timetable grid */
   viewMode: 'daily' | 'weekly' | 'timetable';
-  /** Filter to show only anime in user's library */
+  /** Filter to show only anime the user tracks (library or subscribed) */
   onlyInLibrary: boolean;
+  /** Sort order for entries within a day */
+  sort: ScheduleSort;
 }
 
 /**
@@ -38,6 +76,7 @@ interface ScheduleActions {
   selectDay: (day: string) => void;
   setViewMode: (mode: 'daily' | 'weekly' | 'timetable') => void;
   toggleLibraryFilter: () => void;
+  setSort: (sort: ScheduleSort) => void;
   fetchDaily: (date: string) => void;
   fetchWeekly: (startDate: string) => void;
   getEntriesForDay: (day: string) => AiringAnime[];
@@ -111,13 +150,18 @@ export const useScheduleStore = create<ScheduleStore>()(
         }
       );
 
+      // Seed persisted prefs synchronously at store creation so the toggle /
+      // sort reflect the user's last choice on first paint.
+      const initialPrefs = prefsStorage.get();
+
       return {
         // State
         ...initialSocketState,
         schedule: {},
         selectedDay: toLocalDate(new Date()),
         viewMode: 'daily',
-        onlyInLibrary: false,
+        onlyInLibrary: initialPrefs.onlyInLibrary,
+        sort: initialPrefs.sort,
 
         // Socket actions
         ...socketActions,
@@ -144,7 +188,14 @@ export const useScheduleStore = create<ScheduleStore>()(
         },
 
         toggleLibraryFilter: () => {
-          set({ onlyInLibrary: !get().onlyInLibrary }, undefined, 'schedule/toggleLibraryFilter');
+          const onlyInLibrary = !get().onlyInLibrary;
+          set({ onlyInLibrary }, undefined, 'schedule/toggleLibraryFilter');
+          prefsStorage.set({ onlyInLibrary, sort: get().sort });
+        },
+
+        setSort: (sort: ScheduleSort) => {
+          set({ sort }, undefined, 'schedule/setSort');
+          prefsStorage.set({ onlyInLibrary: get().onlyInLibrary, sort });
         },
 
         fetchDaily: (date: string) => {

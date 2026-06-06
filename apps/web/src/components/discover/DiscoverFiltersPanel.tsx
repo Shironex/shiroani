@@ -2,6 +2,7 @@ import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import * as SliderPrimitive from '@radix-ui/react-slider';
 import { SlidersHorizontal, X } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
 import {
   DISCOVER_FORMATS,
   DISCOVER_STATUSES,
@@ -33,6 +34,11 @@ import {
 interface DiscoverFiltersPanelProps {
   filters: DiscoverFilters;
   disabled: boolean;
+  /**
+   * Whether the AniList account is connected. Gates the "haven't seen" toggle
+   * (item C4) — `excludeOnList` is meaningless without a list to exclude.
+   */
+  connected: boolean;
   onChange: (filters: DiscoverFilters) => void;
 }
 
@@ -56,6 +62,7 @@ function countActive(f: DiscoverFilters): number {
   if (f.season) n += 1;
   if (f.scoreMin != null && f.scoreMin > DISCOVER_SCORE_MIN) n += 1;
   if (f.scoreMax != null && f.scoreMax < DISCOVER_SCORE_MAX) n += 1;
+  if (f.excludeOnList) n += 1;
   return n;
 }
 
@@ -67,6 +74,7 @@ function countActive(f: DiscoverFilters): number {
 export const DiscoverFiltersPanel = memo(function DiscoverFiltersPanel({
   filters,
   disabled,
+  connected,
   onChange,
 }: DiscoverFiltersPanelProps) {
   const { t } = useTranslation('discover');
@@ -99,10 +107,7 @@ export const DiscoverFiltersPanel = memo(function DiscoverFiltersPanel({
   ]);
 
   useEffect(() => {
-    setLocalScore([
-      filters.scoreMin ?? DISCOVER_SCORE_MIN,
-      filters.scoreMax ?? DISCOVER_SCORE_MAX,
-    ]);
+    setLocalScore([filters.scoreMin ?? DISCOVER_SCORE_MIN, filters.scoreMax ?? DISCOVER_SCORE_MAX]);
   }, [filters.scoreMin, filters.scoreMax]);
 
   const handleScoreChange = useCallback((val: number[]) => {
@@ -307,6 +312,28 @@ export const DiscoverFiltersPanel = memo(function DiscoverFiltersPanel({
               </div>
             )}
           </div>
+
+          {/* "Haven't seen" — exclude media already on the AniList list (item
+              C4). Gated on connected: an unconnected viewer has no list, so the
+              backend onList arg is a no-op and the toggle would mislead. */}
+          {connected && (
+            <label className="flex items-center justify-between gap-3 pt-1 cursor-pointer">
+              <span className="flex flex-col gap-0.5">
+                <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+                  {t('controls.excludeOnList')}
+                </span>
+                <span className="text-2xs text-muted-foreground/70">
+                  {t('controls.excludeOnListHint')}
+                </span>
+              </span>
+              <Switch
+                checked={Boolean(filters.excludeOnList)}
+                onCheckedChange={checked => patch({ excludeOnList: checked || undefined })}
+                disabled={disabled}
+                aria-label={t('controls.excludeOnList')}
+              />
+            </label>
+          )}
         </div>
       )}
     </div>
@@ -324,7 +351,15 @@ interface FacetSelectProps {
 }
 
 /** A single labelled facet dropdown with an "Any" reset option. */
-function FacetSelect({ label, any, value, options, labelOf, disabled, onChange }: FacetSelectProps) {
+function FacetSelect({
+  label,
+  any,
+  value,
+  options,
+  labelOf,
+  disabled,
+  onChange,
+}: FacetSelectProps) {
   return (
     <label className="flex flex-col gap-1">
       <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">

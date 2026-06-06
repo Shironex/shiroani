@@ -4,6 +4,7 @@ import { Play, Pencil, Trash2, Film, Star, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { PillTag } from '@/components/ui/pill-tag';
 import { CountdownBadge } from '@/components/library/CountdownBadge';
+import { SyncBadge } from '@/components/library/SyncBadge';
 import type { AnimeEntry } from '@shiroani/shared';
 import { STATUS_LABEL_KEY } from '@/lib/constants';
 import { tDynamic } from '@/lib/i18n';
@@ -171,6 +172,30 @@ const AnimeCard = memo(function AnimeCard({
           </div>
         )}
 
+        {/* Per-provider sync indicators — top-right, below the score chip,
+            stacked. Each badge self-gates: renders nothing (no chip) when its
+            provider is disconnected or the entry lacks that provider's id, so an
+            empty column stays invisible. */}
+        <div
+          className={cn(
+            'absolute right-2 z-[2] flex flex-col items-end gap-1',
+            entry.score != null && entry.score > 0 ? 'top-9' : 'top-2'
+          )}
+        >
+          <SyncBadge
+            entry={entry}
+            provider="anilist"
+            iconClassName="w-3 h-3"
+            className="h-5 w-5 rounded-[4px] bg-black/65 shadow-[0_1px_4px_oklch(0_0_0/0.5)]"
+          />
+          <SyncBadge
+            entry={entry}
+            provider="mal"
+            iconClassName="w-3 h-3"
+            className="h-5 w-5 rounded-[4px] bg-black/65 shadow-[0_1px_4px_oklch(0_0_0/0.5)]"
+          />
+        </div>
+
         {/* Bottom title block — sits above the progress line */}
         <div
           className={cn(
@@ -203,67 +228,67 @@ const AnimeCard = memo(function AnimeCard({
 
         {/* Hover overlay with action buttons — suppressed in selection mode */}
         {!selectionMode && (
-        <div
-          className={cn(
-            'absolute inset-0 z-[3]',
-            'bg-gradient-to-t from-background/60 via-background/25 to-background/5',
-            'flex items-center justify-center gap-2.5',
-            'transition-opacity duration-250',
-            'opacity-0 pointer-events-none',
-            'group-hover:opacity-100 group-hover:pointer-events-auto',
-            'group-focus-within:opacity-100 group-focus-within:pointer-events-auto'
-          )}
-        >
-          {onContinue && entry.resumeUrl && (
-            <button
-              onClick={e => {
-                e.stopPropagation();
-                onContinue(entry);
-              }}
-              aria-label={t('library:card.continue')}
-              className={cn(
-                'w-8 h-8 rounded-full bg-primary text-primary-foreground shadow-md',
-                'flex items-center justify-center',
-                'hover:bg-primary/90 active:scale-95',
-                'transition-colors duration-150'
-              )}
-            >
-              <Play className="w-3.5 h-3.5" />
-            </button>
-          )}
-          <button
-            onClick={e => {
-              e.stopPropagation();
-              onSelect(entry);
-            }}
-            aria-label={t('library:card.edit')}
+          <div
             className={cn(
-              'w-8 h-8 rounded-full bg-accent text-accent-foreground shadow-md',
-              'flex items-center justify-center',
-              'hover:bg-accent/90 active:scale-95',
-              'transition-colors duration-150'
+              'absolute inset-0 z-[3]',
+              'bg-gradient-to-t from-background/60 via-background/25 to-background/5',
+              'flex items-center justify-center gap-2.5',
+              'transition-opacity duration-250',
+              'opacity-0 pointer-events-none',
+              'group-hover:opacity-100 group-hover:pointer-events-auto',
+              'group-focus-within:opacity-100 group-focus-within:pointer-events-auto'
             )}
           >
-            <Pencil className="w-3 h-3" />
-          </button>
-          {onRemove && (
+            {onContinue && entry.resumeUrl && (
+              <button
+                onClick={e => {
+                  e.stopPropagation();
+                  onContinue(entry);
+                }}
+                aria-label={t('library:card.continue')}
+                className={cn(
+                  'w-8 h-8 rounded-full bg-primary text-primary-foreground shadow-md',
+                  'flex items-center justify-center',
+                  'hover:bg-primary/90 active:scale-95',
+                  'transition-colors duration-150'
+                )}
+              >
+                <Play className="w-3.5 h-3.5" />
+              </button>
+            )}
             <button
               onClick={e => {
                 e.stopPropagation();
-                onRemove(entry);
+                onSelect(entry);
               }}
-              aria-label={t('library:card.remove')}
+              aria-label={t('library:card.edit')}
               className={cn(
-                'w-8 h-8 rounded-full bg-destructive text-destructive-foreground shadow-md',
+                'w-8 h-8 rounded-full bg-accent text-accent-foreground shadow-md',
                 'flex items-center justify-center',
-                'hover:bg-destructive/90 active:scale-95',
+                'hover:bg-accent/90 active:scale-95',
                 'transition-colors duration-150'
               )}
             >
-              <Trash2 className="w-3 h-3" />
+              <Pencil className="w-3 h-3" />
             </button>
-          )}
-        </div>
+            {onRemove && (
+              <button
+                onClick={e => {
+                  e.stopPropagation();
+                  onRemove(entry);
+                }}
+                aria-label={t('library:card.remove')}
+                className={cn(
+                  'w-8 h-8 rounded-full bg-destructive text-destructive-foreground shadow-md',
+                  'flex items-center justify-center',
+                  'hover:bg-destructive/90 active:scale-95',
+                  'transition-colors duration-150'
+                )}
+              >
+                <Trash2 className="w-3 h-3" />
+              </button>
+            )}
+          </div>
         )}
       </div>
     </div>

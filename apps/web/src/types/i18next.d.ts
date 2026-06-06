@@ -22,6 +22,7 @@ import type onboarding from '@/locales/pl/onboarding.json';
 import type profile from '@/locales/pl/profile.json';
 import type schedule from '@/locales/pl/schedule.json';
 import type settings from '@/locales/pl/settings.json';
+import type social from '@/locales/pl/social.json';
 import type splash from '@/locales/pl/splash.json';
 import type status from '@/locales/pl/status.json';
 
@@ -49,6 +50,7 @@ declare module 'i18next' {
       profile: typeof profile;
       schedule: typeof schedule;
       settings: typeof settings;
+      social: typeof social;
       splash: typeof splash;
       status: typeof status;
     };

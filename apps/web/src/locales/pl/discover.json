@@ -6,7 +6,8 @@
     "trending": "Na czasie",
     "popular": "Popularne",
     "seasonal": "Sezonowe",
-    "random": "Losowe"
+    "random": "Losowe",
+    "recommendations": "Polecane"
   },
   "search": {
     "resultsLabel": "Wyniki wyszukiwania",
@@ -24,7 +25,18 @@
     "addToLibrary": "Dodaj do biblioteki",
     "inLibraryAria": "W bibliotece",
     "inLibrary": "W bibliotece",
-    "add": "Dodaj"
+    "add": "Dodaj",
+    "onList": "Na liście",
+    "onListTooltip": "Już na Twojej liście AniList"
+  },
+  "recommendations": {
+    "emptyTitle": "Brak polecanych",
+    "emptySubtitle": "Nie udało się pobrać polecanych przez społeczność.",
+    "fromSource": "Polecane na podstawie {{title}}",
+    "voteUp": "Polecam",
+    "voteDown": "Nie polecam",
+    "netScore": "Łączna liczba głosów społeczności",
+    "voteFailed": "Nie udało się zapisać Twojego głosu"
   },
   "genres": {
     "title": "Gatunki",
@@ -63,6 +75,8 @@
     "sortTitle": "Tytuł (A→Z)",
     "excludeLibrary": "Ukryj z biblioteki",
     "excludeLibraryHint": "Ukryj anime oznaczone jako obejrzane, porzucone lub zaplanowane",
+    "excludeOnList": "Nieobejrzane",
+    "excludeOnListHint": "Ukryj anime, które są już na Twojej liście AniList",
     "filtersTitle": "Filtry",
     "filtersExpand": "Rozwiń",
     "filtersCollapse": "Zwiń",
@@ -83,6 +97,8 @@
   "toast": {
     "alreadyInLibrary": "To anime jest już w bibliotece",
     "addedToLibrary": "Dodano do biblioteki",
+    "addedToLibraryAndAniList": "Dodano do biblioteki i AniList",
+    "addedLocalOnly": "Dodano lokalnie — nie udało się zsynchronizować z AniList",
     "addFailed": "Nie udało się dodać do biblioteki",
     "rateLimited": "Zbyt wiele zapytań — odczekaj chwilę i spróbuj ponownie"
   }

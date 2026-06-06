@@ -11,14 +11,16 @@ import { DiscoverSkeleton } from '@/components/discover/DiscoverSkeleton';
 import { DiscoverSortSelect } from '@/components/discover/DiscoverSortSelect';
 import { DiscoverFiltersPanel } from '@/components/discover/DiscoverFiltersPanel';
 import { RandomDiscoveryPanel } from '@/components/discover/RandomDiscoveryPanel';
+import { RecommendationsPanel } from '@/components/discover/RecommendationsPanel';
 import { useAddDiscoverMediaToLibrary } from '@/components/discover/useAddDiscoverMediaToLibrary';
 import { AnimeInfoDialog } from '@/components/schedule/AnimeInfoDialog';
 import { Switch } from '@/components/ui/switch';
 import { useDiscoverStore, type DiscoverMedia } from '@/stores/useDiscoverStore';
 import { useLibraryStore } from '@/stores/useLibraryStore';
+import { useAniListAuthStore } from '@/stores/useAniListAuthStore';
 import type { AiringAnime, AnimeStatus } from '@shiroani/shared';
 
-type Tab = 'trending' | 'popular' | 'seasonal' | 'random';
+type Tab = 'trending' | 'popular' | 'seasonal' | 'random' | 'recommendations';
 
 /**
  * Library statuses that count as "already handled" for the exclude toggle
@@ -64,6 +66,7 @@ export function DiscoverView() {
       { value: 'popular', label: t('tabs.popular') },
       { value: 'seasonal', label: t('tabs.seasonal') },
       { value: 'random', label: t('tabs.random') },
+      { value: 'recommendations', label: t('tabs.recommendations') },
     ],
     [t]
   );
@@ -86,6 +89,8 @@ export function DiscoverView() {
   const sort = useDiscoverStore(s => s.sort);
   const filters = useDiscoverStore(s => s.filters);
   const excludeLibrary = useDiscoverStore(s => s.excludeLibrary);
+
+  const connected = useAniListAuthStore(s => s.status.connected);
 
   const libraryIds = useLibraryAnilistIds();
   const excludedIds = useExcludedLibraryIds(excludeLibrary);
@@ -129,14 +134,18 @@ export function DiscoverView() {
     if (trending.length === 0) fetchTrending();
   }, []);
 
-  // Handle tab change — fetch if data is empty
+  // Hydrate AniList connection status on mount — the auth store `status` is not
+  // persisted, so a fresh Discover mount sees a stale `connected=false`, which
+  // would silently disable write-through add (C3), the "haven't seen" toggle
+  // (C4) and the recommendation vote buttons (C5) for a connected viewer.
+  useEffect(() => {
+    void useAniListAuthStore.getState().fetchStatus();
+  }, []);
+
+  // Handle tab change. `setTab` already performs the fetch-if-empty for every
+  // tab (single source of truth) — duplicating it here double-fetched the API.
   const handleTabChange = useCallback((tab: Tab) => {
-    const store = useDiscoverStore.getState();
-    store.setTab(tab);
-    if (tab === 'trending' && store.trending.length === 0) store.fetchTrending();
-    else if (tab === 'popular' && store.popular.length === 0) store.fetchPopular();
-    else if (tab === 'seasonal' && store.seasonal.length === 0) store.fetchSeasonal();
-    else if (tab === 'random' && store.randomPool.length === 0) store.fetchRandomPool();
+    useDiscoverStore.getState().setTab(tab);
   }, []);
 
   // Debounced search
@@ -188,6 +197,9 @@ export function DiscoverView() {
         case 'random':
           store.fetchRandomPool();
           break;
+        case 'recommendations':
+          store.fetchRecommendations();
+          break;
       }
     }
   }, []);
@@ -215,6 +227,10 @@ export function DiscoverView() {
   // Determine which data to display
   const isSearchMode = searchQuery.trim().length > 0;
   const isRandomMode = !isSearchMode && activeTab === 'random';
+  const isRecommendationsMode = !isSearchMode && activeTab === 'recommendations';
+  // Tabs that own their full render (loading/empty/error) and have no grid,
+  // pagination or sort/filter controls.
+  const isSpecialMode = isRandomMode || isRecommendationsMode;
 
   const rawItems = isSearchMode
     ? searchResults
@@ -243,8 +259,8 @@ export function DiscoverView() {
           : { current: 1, hasNext: false };
 
   const showLoading = isSearchMode ? isSearching : isLoading;
-  const showEmpty = !isRandomMode && !showLoading && items.length === 0;
-  const showGrid = !isRandomMode && items.length > 0;
+  const showEmpty = !isSpecialMode && !showLoading && items.length === 0;
+  const showGrid = !isSpecialMode && items.length > 0;
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden animate-fade-in relative">
@@ -292,40 +308,44 @@ export function DiscoverView() {
           <div className="relative z-[1] px-7 pt-5 pb-24">
             {/* Browse/search controls: sort (item 2), advanced filters (item 6)
                 and the library-exclude toggle (item 14). The Random tab keeps
-                its own genre picker but still honours the exclude toggle. */}
-            <div className="flex flex-col gap-3 mb-5">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                {!isRandomMode ? (
-                  <DiscoverSortSelect
-                    value={sort}
-                    onChange={handleSortChange}
+                its own genre picker but still honours the exclude toggle; the
+                Recommendations tab owns its full surface, so it skips controls. */}
+            {!isRecommendationsMode && (
+              <div className="flex flex-col gap-3 mb-5">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  {!isRandomMode ? (
+                    <DiscoverSortSelect
+                      value={sort}
+                      onChange={handleSortChange}
+                      disabled={showLoading}
+                    />
+                  ) : (
+                    <span />
+                  )}
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <Switch
+                      checked={excludeLibrary}
+                      onCheckedChange={handleExcludeToggle}
+                      aria-label={t('controls.excludeLibrary')}
+                    />
+                    <span
+                      className="text-xs text-muted-foreground"
+                      title={t('controls.excludeLibraryHint')}
+                    >
+                      {t('controls.excludeLibrary')}
+                    </span>
+                  </label>
+                </div>
+                {!isRandomMode && (
+                  <DiscoverFiltersPanel
+                    filters={filters}
                     disabled={showLoading}
+                    connected={connected}
+                    onChange={handleFiltersChange}
                   />
-                ) : (
-                  <span />
                 )}
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <Switch
-                    checked={excludeLibrary}
-                    onCheckedChange={handleExcludeToggle}
-                    aria-label={t('controls.excludeLibrary')}
-                  />
-                  <span
-                    className="text-xs text-muted-foreground"
-                    title={t('controls.excludeLibraryHint')}
-                  >
-                    {t('controls.excludeLibrary')}
-                  </span>
-                </label>
               </div>
-              {!isRandomMode && (
-                <DiscoverFiltersPanel
-                  filters={filters}
-                  disabled={showLoading}
-                  onChange={handleFiltersChange}
-                />
-              )}
-            </div>
+            )}
 
             {/* Random discovery — owns its own loading/error/empty */}
             {isRandomMode && (
@@ -337,13 +357,22 @@ export function DiscoverView() {
               />
             )}
 
+            {/* Community recommendations — owns its own loading/error/empty */}
+            {isRecommendationsMode && (
+              <RecommendationsPanel
+                libraryIds={libraryIds}
+                connected={connected}
+                onCardClick={handleCardClick}
+              />
+            )}
+
             {/* Error state */}
-            {!isRandomMode && error && !showLoading && (
+            {!isSpecialMode && error && !showLoading && (
               <AniListErrorState error={error} onRetry={handleRetry} />
             )}
 
             {/* Loading state — only show skeleton on initial load (no items yet) */}
-            {!isRandomMode && showLoading && items.length === 0 && <DiscoverSkeleton />}
+            {!isSpecialMode && showLoading && items.length === 0 && <DiscoverSkeleton />}
 
             {/* Empty state */}
             {showEmpty && !error && (
@@ -379,7 +408,7 @@ export function DiscoverView() {
             )}
 
             {/* Infinite scroll sentinel */}
-            {!isRandomMode && page.hasNext && (
+            {!isSpecialMode && page.hasNext && (
               <div ref={sentinelRef} className="flex justify-center py-8">
                 {isLoading && <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />}
               </div>

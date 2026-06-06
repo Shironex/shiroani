@@ -18,6 +18,7 @@ import {
 } from '@/components/ui/dialog';
 import { GreetingBanner } from './newtab/GreetingBanner';
 import { AiringTodaySection } from './newtab/AiringTodaySection';
+import { QuickStatsCard } from './newtab/QuickStatsCard';
 import { QuickAccessPanel } from './newtab/QuickAccessPanel';
 import { RecentsPanel } from './newtab/RecentsPanel';
 import { ResumeWatchingSection } from './newtab/ResumeSection';
@@ -173,6 +174,11 @@ export function NewTabPage({ onNavigate }: NewTabPageProps) {
       <div className="absolute inset-0 overflow-y-auto overflow-x-hidden">
         <div className="relative z-[1] mx-auto w-full max-w-5xl px-7 pt-8 pb-20">
           {renderedPanels}
+          {/* Quick stats — rendered as a fixed block (not yet a reorderable
+              panel; see followup to promote it into useNewTabStore). */}
+          <div className="mb-6">
+            <QuickStatsCard />
+          </div>
         </div>
       </div>
 

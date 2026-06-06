@@ -1,7 +1,18 @@
 import { useState, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
-import { ExternalLink, Save, Trash2, Link2, X, Film } from 'lucide-react';
+import {
+  ExternalLink,
+  Save,
+  Trash2,
+  Link2,
+  X,
+  Film,
+  RefreshCw,
+  Upload,
+  Download,
+  Loader2,
+} from 'lucide-react';
 import { Dialog, DialogPortal, DialogOverlay } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -17,15 +28,20 @@ import {
 import { cn } from '@/lib/utils';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import { useLibraryStore } from '@/stores/useLibraryStore';
+import { useAniListAuthStore } from '@/stores/useAniListAuthStore';
+import { useAniListSyncStore } from '@/stores/useAniListSyncStore';
+import { useMalAuthStore } from '@/stores/useMalAuthStore';
+import { useMalSyncStore } from '@/stores/useMalSyncStore';
 import { getActivePane } from '@/stores/useBrowserStore';
 import { toast } from 'sonner';
-import type { AnimeEntry, AnimeStatus } from '@shiroani/shared';
+import type { AnimeEntry, AnimeStatus, SyncEntryDirection } from '@shiroani/shared';
 import { STATUS_LABEL_KEY, getStatusOptions, MAX_EPISODES } from '@/lib/constants';
 import { tDynamic } from '@/lib/i18n';
 import { useAnimeDetailForm } from '@/hooks/useAnimeDetailForm';
 import { useNavigateToBrowser } from '@/hooks/useNavigateToBrowser';
 import { SliderInputField } from './SliderInputField';
 import { RelationsSection } from './RelationsSection';
+import { AnimeDetailExtras } from './AnimeDetailExtras';
 
 const { updateEntry, removeFromLibrary } = useLibraryStore.getState();
 
@@ -265,6 +281,7 @@ export function AnimeDetailModal({ entry, open, onOpenChange }: AnimeDetailModal
                   </PillTag>
                 )}
                 {entry.anilistId && <PillTag variant="blue">{t('library:detail.anilist')}</PillTag>}
+                {entry.malId && <PillTag variant="blue">{t('library:detail.mal')}</PillTag>}
               </div>
 
               <h2 className="font-sans text-[22px] font-extrabold leading-[1.15] tracking-[-0.025em] text-foreground pr-10">
@@ -389,8 +406,19 @@ export function AnimeDetailModal({ entry, open, onOpenChange }: AnimeDetailModal
                 />
               </div>
 
+              {/* Manual single-entry sync (push / pull / auto), per provider. Each
+                  needs that provider's id to resolve a remote media, so gate on it.
+                  Self-gates on a connected account too. AniList + MAL are kept
+                  distinct and separately labelled; their single-flight guards are
+                  independent main-side, so neither disables the other. */}
+              {entry.anilistId ? <EntrySyncSection entryId={entry.id} provider="anilist" /> : null}
+              {entry.malId ? <EntrySyncSection entryId={entry.id} provider="mal" /> : null}
+
               {/* Related entries (AniList relations) */}
               {entry.anilistId ? <RelationsSection anilistId={entry.anilistId} /> : null}
+
+              {/* Recommendations + streaming episodes + MyAnimeList deep-link */}
+              {entry.anilistId ? <AnimeDetailExtras anilistId={entry.anilistId} /> : null}
             </div>
 
             {/* Bottom action bar */}
@@ -428,6 +456,126 @@ export function AnimeDetailModal({ entry, open, onOpenChange }: AnimeDetailModal
         }}
       />
     </Dialog>
+  );
+}
+
+/** Which external provider an {@link EntrySyncSection} reconciles against. */
+type EntrySyncProvider = 'anilist' | 'mal';
+
+/**
+ * Manual single-entry sync controls for ONE provider (AniList or MyAnimeList).
+ * Rendered only for entries that carry that provider's id (the parent gates on
+ * `entry.anilistId` / `entry.malId`), and self-gates on a connected account so
+ * it shows nothing when that provider is disconnected.
+ *
+ * Three directions:
+ *  - push  — overwrite the remote entry from the local row (local wins)
+ *  - pull  — overwrite the local row from the remote entry (remote wins)
+ *  - auto  — run the same latest-wins merge a full sync would
+ *
+ * The three buttons are disabled while a full sync OR another per-entry sync of
+ * the SAME provider is running (each provider has its own single-flight guard
+ * main-side). The two providers are independent — an AniList sync never disables
+ * the MAL controls and vice versa. Both stores are subscribed unconditionally
+ * (rules of hooks) and the active one is selected by `provider`. On success the
+ * gateway broadcasts `LibraryEvents.UPDATED`, so the library store re-fetches and
+ * the card/row sync badge refreshes automatically — no manual refetch here.
+ */
+function EntrySyncSection({ entryId, provider }: { entryId: number; provider: EntrySyncProvider }) {
+  const { t } = useTranslation('library');
+  const isMal = provider === 'mal';
+
+  const anilistConnected = useAniListAuthStore(s => s.status.connected);
+  const malConnected = useMalAuthStore(s => s.status.connected);
+
+  const anilistFullSyncing = useAniListSyncStore(s => s.syncing);
+  const anilistEntrySyncingId = useAniListSyncStore(s => s.entrySyncingId);
+  const anilistSyncEntry = useAniListSyncStore(s => s.syncEntry);
+
+  const malFullSyncing = useMalSyncStore(s => s.syncing);
+  const malEntrySyncingId = useMalSyncStore(s => s.entrySyncingId);
+  const malSyncEntry = useMalSyncStore(s => s.syncEntry);
+
+  const connected = isMal ? malConnected : anilistConnected;
+  const fullSyncing = isMal ? malFullSyncing : anilistFullSyncing;
+  const entrySyncingId = isMal ? malEntrySyncingId : anilistEntrySyncingId;
+  const syncEntry = isMal ? malSyncEntry : anilistSyncEntry;
+
+  const busy = entrySyncingId === entryId;
+  // Disabled while ANY sync of THIS provider is in flight: a full run, this
+  // entry, or another entry. The other provider's state is intentionally ignored.
+  const disabled = fullSyncing || entrySyncingId !== null;
+
+  const handleSync = useCallback(
+    async (direction: SyncEntryDirection) => {
+      const action = await syncEntry(entryId, direction);
+      // Treat both a thrown rejection and a resolved `action: 'error'` (and a
+      // pre-flight 'error' returned when a sync is already running) as failure —
+      // the thunk maps every failure mode to 'error'.
+      if (action === 'error') {
+        toast.error(t(`sync.${provider}.entry.error`));
+        return;
+      }
+      if (action === 'skipped') {
+        toast.warning(t(`sync.${provider}.entry.skipped`));
+        return;
+      }
+      toast.success(t(`sync.${provider}.entry.result.${action}`));
+    },
+    [syncEntry, entryId, t, provider]
+  );
+
+  if (!connected) return null;
+
+  return (
+    <div className="space-y-2">
+      <FieldLabel>{t(`sync.${provider}.entry.title`)}</FieldLabel>
+      <p className="text-2xs text-muted-foreground/70">{t(`sync.${provider}.entry.hint`)}</p>
+      <div className="flex flex-wrap items-center gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          className="h-8 text-xs gap-1.5"
+          disabled={disabled}
+          onClick={() => void handleSync('auto')}
+        >
+          {busy ? (
+            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+          ) : (
+            <RefreshCw className="w-3.5 h-3.5" />
+          )}
+          {t(`sync.${provider}.entry.auto`)}
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-8 text-xs gap-1.5"
+          disabled={disabled}
+          onClick={() => void handleSync('push')}
+        >
+          <Upload className="w-3.5 h-3.5" />
+          {t(`sync.${provider}.entry.push`)}
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-8 text-xs gap-1.5"
+          disabled={disabled}
+          onClick={() => void handleSync('pull')}
+        >
+          <Download className="w-3.5 h-3.5" />
+          {t(`sync.${provider}.entry.pull`)}
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+function FieldLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="block font-mono text-[10px] uppercase tracking-[0.15em] text-muted-foreground font-medium">
+      {children}
+    </span>
   );
 }
 

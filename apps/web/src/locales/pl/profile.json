@@ -3,10 +3,12 @@
     "title": "Mój profil",
     "watermarkAria": "Profil",
     "subtitleApp": "Lokalnie · czas spędzony w ShiroAni",
+    "subtitleMal": "MyAnimeList · Twoje statystyki",
     "subtitleAniListConnected": "AniList · @{{handle}}",
     "subtitleAniListConnect": "Podłącz konto AniList, żeby zobaczyć statystyki",
     "tabs": {
       "anilist": "Z AniList",
+      "mal": "Z MAL",
       "app": "W aplikacji",
       "ariaLabel": "Źródło statystyk profilu"
     },
@@ -20,6 +22,10 @@
     "private": {
       "title": "Ten użytkownik ma prywatne statystyki",
       "changeUser": "Zmień użytkownika"
+    },
+    "empty": {
+      "title": "Twoja lista AniList jest pusta — dodaj anime, żeby zobaczyć tu statystyki",
+      "disconnect": "Odłącz konto AniList"
     }
   },
   "setup": {
@@ -92,10 +98,53 @@
   "studios": {
     "empty": "Brak danych o studiach."
   },
-  "activityFeed": {
-    "title": "Ostatnia aktywność",
-    "description": "Historia scrobbli, zmian statusów i ocen z AniList pojawi się tu, gdy rozszerzymy synchronizację profilu.",
-    "tag": "WKRÓTCE"
+  "activity": {
+    "empty": "Brak aktywności — Twoje aktualizacje z AniList pojawią się tutaj.",
+    "notConnected": "Połącz konto AniList, aby zobaczyć tu swoją aktywność.",
+    "error": "Nie udało się wczytać kanału aktywności.",
+    "retry": "Spróbuj ponownie"
+  },
+  "social": {
+    "heading": "Obserwowani i obserwujący",
+    "following": "Obserwowani",
+    "followers": "Obserwujący",
+    "count_one": "{{count}} osoba",
+    "count_few": "{{count}} osoby",
+    "count_many": "{{count}} osób",
+    "count_other": "{{count}} osób",
+    "followingEmpty": "Nikogo jeszcze nie obserwujesz.",
+    "followersEmpty": "Nikt Cię jeszcze nie obserwuje.",
+    "error": "Nie udało się wczytać list społecznościowych.",
+    "retry": "Spróbuj ponownie",
+    "countCapped": "{{count}}+ osób"
+  },
+  "follow": {
+    "follow": "Obserwuj",
+    "following": "Obserwujesz",
+    "followAria": "Obserwuj {{name}}",
+    "unfollowAria": "Przestań obserwować {{name}}"
+  },
+  "favourites": {
+    "anime": "Ulubione anime",
+    "manga": "Ulubiona manga",
+    "characters": "Ulubione postacie",
+    "staff": "Ulubiona ekipa",
+    "studios": "Ulubione studia"
+  },
+  "extraStats": {
+    "voiceActors": "Najczęstsi aktorzy głosowi",
+    "staff": "Najczęstsza ekipa",
+    "startYears": "Wg roku rozpoczęcia",
+    "lengths": "Wg liczby odcinków",
+    "lengthLabel": "{{value}} odc"
+  },
+  "sync": {
+    "heading": "Synchronizacja AniList",
+    "running": "Synchronizowanie…",
+    "progress": "Synchronizacja {{current}} / {{total}}",
+    "lastSynced": "Ostatnio o {{time}}",
+    "idle": "Brak synchronizacji w tej sesji",
+    "error": "Ostatnia synchronizacja nie powiodła się"
   },
   "appPanel": {
     "heroTag": "Twój czas z ShiroAni",
@@ -183,6 +232,31 @@
         "confirm": "Wyczyść"
       }
     }
+  },
+  "malPanel": {
+    "heroTag": "Twoje statystyki z MyAnimeList",
+    "heroSubtitle": "{{items}} anime · {{episodes}} odcinków",
+    "openProfile": "Otwórz na MAL",
+    "counters": {
+      "items": "Anime",
+      "episodes": "Odcinki",
+      "daysWatched": "Dni oglądania",
+      "daysWatchedSub": "wg wyliczeń MAL",
+      "meanScore": "Śr. ocena",
+      "meanScoreSub": "ze wszystkich ocenionych"
+    },
+    "breakdown": {
+      "title": "Wg statusu",
+      "rewatched": "Powtórzone"
+    },
+    "status": {
+      "watching": "Oglądam",
+      "completed": "Ukończone",
+      "onHold": "Wstrzymane",
+      "dropped": "Porzucone",
+      "planToWatch": "Planowane"
+    },
+    "lighterNote": "MyAnimeList udostępnia lżejszy zestaw statystyk — nie ma tu podziału na gatunki ani aktorów głosowych jak w zakładce AniList."
   },
   "errors": {
     "userNotFound": "Nie znaleziono użytkownika na AniList",

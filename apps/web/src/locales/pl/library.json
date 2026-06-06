@@ -56,6 +56,7 @@
     "close": "Zamknij",
     "episodesShort": "ODC",
     "anilist": "ANILIST",
+    "mal": "MAL",
     "score": "Score",
     "progress": "Postęp",
     "status": "Status",
@@ -76,6 +77,7 @@
     "anilistIdPlaceholder": "np. 21",
     "save": "Zapisz",
     "openInBrowser": "Otwórz",
+    "openOnMal": "MyAnimeList",
     "delete": "Usuń"
   },
   "toast": {
@@ -106,6 +108,59 @@
     "confirmDeleteDescription_few": "Czy na pewno chcesz usunąć {{count}} pozycje z biblioteki?",
     "confirmDeleteDescription_many": "Czy na pewno chcesz usunąć {{count}} pozycji z biblioteki?",
     "confirmDeleteDescription_other": "Czy na pewno chcesz usunąć {{count}} pozycji z biblioteki?"
+  },
+  "sync": {
+    "anilist": {
+      "badge": {
+        "synced": "Zsynchronizowano z AniList · {{date}}",
+        "notSynced": "Jeszcze nie zsynchronizowano z AniList"
+      },
+      "entry": {
+        "title": "Synchronizacja AniList",
+        "hint": "Zsynchronizuj tylko tę pozycję. Auto wybiera ostatnio zmienioną stronę.",
+        "auto": "Synchronizuj",
+        "push": "Wyślij",
+        "pull": "Pobierz",
+        "skipped": "Pominięto — pozycja nie ma dopasowania w AniList",
+        "error": "Synchronizacja nie powiodła się",
+        "result": {
+          "imported": "Zaimportowano z AniList",
+          "pushed": "Wysłano do AniList",
+          "updated": "Zsynchronizowano z AniList",
+          "unchanged": "Już zsynchronizowane"
+        }
+      }
+    },
+    "mal": {
+      "badge": {
+        "synced": "Zsynchronizowano z MyAnimeList · {{date}}",
+        "notSynced": "Jeszcze nie zsynchronizowano z MyAnimeList"
+      },
+      "entry": {
+        "title": "Synchronizacja MyAnimeList",
+        "hint": "Zsynchronizuj tylko tę pozycję. Auto wybiera ostatnio zmienioną stronę.",
+        "auto": "Synchronizuj",
+        "push": "Wyślij",
+        "pull": "Pobierz",
+        "skipped": "Pominięto — pozycja nie ma dopasowania w MyAnimeList",
+        "error": "Synchronizacja nie powiodła się",
+        "result": {
+          "imported": "Zaimportowano z MyAnimeList",
+          "pushed": "Wysłano do MyAnimeList",
+          "updated": "Zsynchronizowano z MyAnimeList",
+          "unchanged": "Już zsynchronizowane"
+        }
+      }
+    }
+  },
+  "recommendations": {
+    "title": "Więcej takich",
+    "openInLibrary": "Otwórz \"{{title}}\" w bibliotece",
+    "addToLibrary": "Dodaj \"{{title}}\" do biblioteki"
+  },
+  "streamingEpisodes": {
+    "title": "Oglądaj odcinki",
+    "watchAria": "Oglądaj \"{{title}}\" na {{site}}"
   },
   "relations": {
     "title": "Powiązane",

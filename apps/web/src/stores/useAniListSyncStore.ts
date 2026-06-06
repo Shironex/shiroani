@@ -6,6 +6,10 @@ import {
   createLogger,
   type AniListSyncProgress,
   type AniListSyncResult,
+  type AniListSyncAction,
+  type AniListSyncEntryDirection,
+  type AniListSyncEntryRequest,
+  type AniListSyncEntryResult,
 } from '@shiroani/shared';
 
 const logger = createLogger('AniListSyncStore');
@@ -33,10 +37,26 @@ interface AniListSyncState {
   lastSyncedAt: number | null;
   /** Full `namespace:key` i18n reference for the last error, or null. */
   error: string | null;
+  /**
+   * Local id of the single entry currently being reconciled via {@link syncEntry},
+   * or null when no per-entry sync is in flight. Kept separate from the global
+   * `syncing` flag so a manual push/pull from the library detail modal does NOT
+   * make the Accounts full-sync card render misleading progress.
+   */
+  entrySyncingId: number | null;
 }
 
 interface AniListSyncActions {
   sync: () => Promise<void>;
+  /**
+   * Reconcile a SINGLE library entry against AniList in a forced direction
+   * (`push`/`pull`) or `auto`. Resolves with the outcome action (or `'error'`
+   * on failure) so the caller can surface a result toast — this thunk stays
+   * i18n-agnostic, mirroring {@link sync}. The desktop gateway broadcasts
+   * `LibraryEvents.UPDATED` on success, so the library store re-fetches and the
+   * per-entry sync badge refreshes automatically (no manual refetch here).
+   */
+  syncEntry: (localId: number, direction: AniListSyncEntryDirection) => Promise<AniListSyncAction>;
 }
 
 type AniListSyncStore = AniListSyncState & AniListSyncActions;
@@ -49,9 +69,12 @@ export const useAniListSyncStore = create<AniListSyncStore>()(
       result: null,
       lastSyncedAt: null,
       error: null,
+      entrySyncingId: null,
 
       sync: async () => {
-        if (get().syncing) return;
+        // Single-flight across BOTH paths: refuse a full sync while a per-entry
+        // sync is in flight (the main process shares one `running` guard).
+        if (get().syncing || get().entrySyncingId !== null) return;
 
         set(
           { syncing: true, error: null, result: null, progress: null },
@@ -93,6 +116,28 @@ export const useAniListSyncStore = create<AniListSyncStore>()(
           );
         } finally {
           detach?.();
+        }
+      },
+
+      syncEntry: async (localId, direction) => {
+        const state = get();
+        // Don't start a per-entry sync while a full sync (or another per-entry
+        // sync) is in flight — the desktop service shares a single-flight guard,
+        // so this just avoids a guaranteed-to-reject round trip.
+        if (state.syncing || state.entrySyncingId !== null) return 'error';
+
+        set({ entrySyncingId: localId }, undefined, 'anilistSync/entryStart');
+        try {
+          const result = await emitWithErrorHandling<
+            AniListSyncEntryRequest,
+            AniListSyncEntryResult
+          >(AniListSyncEvents.SYNC_ENTRY, { localId, direction });
+          return result.action;
+        } catch (error) {
+          logger.error('AniList entry sync failed:', error);
+          return 'error';
+        } finally {
+          set({ entrySyncingId: null }, undefined, 'anilistSync/entryDone');
         }
       },
     }),

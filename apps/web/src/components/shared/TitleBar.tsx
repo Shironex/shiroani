@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Minus, Square, Copy, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { IS_ELECTRON, IS_MAC } from '@/lib/platform';
+import { NotificationBell } from '@/components/social/NotificationBell';
 
 /**
  * Custom title bar ("chrome") for the frameless Electron window.
@@ -68,6 +69,14 @@ export function TitleBar() {
         )}
       >
         {title}
+
+        <div className="flex-1" />
+
+        {/* Notifications bell — right side is empty drag region on macOS (the
+            wordmark is absolutely centered, traffic lights ride the leading edge). */}
+        <div className="no-drag flex items-center pr-2">
+          <NotificationBell />
+        </div>
       </div>
     );
   }
@@ -82,6 +91,11 @@ export function TitleBar() {
       {title}
 
       <div className="flex-1" />
+
+      {/* Notifications bell — sits just left of the window controls. */}
+      <div className="no-drag flex items-center px-1.5">
+        <NotificationBell />
+      </div>
 
       <div className="no-drag flex items-stretch h-full">
         <button

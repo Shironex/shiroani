@@ -48,6 +48,7 @@ import diaryEn from '@/locales/en/diary.json';
 import discoverEn from '@/locales/en/discover.json';
 import scheduleEn from '@/locales/en/schedule.json';
 import feedEn from '@/locales/en/feed.json';
+import socialEn from '@/locales/en/social.json';
 import profileEn from '@/locales/en/profile.json';
 import browserEn from '@/locales/en/browser.json';
 import changelogEn from '@/locales/en/changelog.json';
@@ -66,6 +67,7 @@ import diaryPl from '@/locales/pl/diary.json';
 import discoverPl from '@/locales/pl/discover.json';
 import schedulePl from '@/locales/pl/schedule.json';
 import feedPl from '@/locales/pl/feed.json';
+import socialPl from '@/locales/pl/social.json';
 import profilePl from '@/locales/pl/profile.json';
 import browserPl from '@/locales/pl/browser.json';
 import changelogPl from '@/locales/pl/changelog.json';
@@ -85,6 +87,7 @@ const namespaces = [
   'discover',
   'schedule',
   'feed',
+  'social',
   'profile',
   'browser',
   'changelog',
@@ -159,6 +162,7 @@ i18n.use(initReactI18next).init({
       discover: discoverEn,
       schedule: scheduleEn,
       feed: feedEn,
+      social: socialEn,
       profile: profileEn,
       browser: browserEn,
       changelog: changelogEn,
@@ -178,6 +182,7 @@ i18n.use(initReactI18next).init({
       discover: discoverPl,
       schedule: schedulePl,
       feed: feedPl,
+      social: socialPl,
       profile: profilePl,
       browser: browserPl,
       changelog: changelogPl,

@@ -6,7 +6,8 @@
     "trending": "Trending",
     "popular": "Popular",
     "seasonal": "Seasonal",
-    "random": "Random"
+    "random": "Random",
+    "recommendations": "Recommendations"
   },
   "search": {
     "resultsLabel": "Search results",
@@ -24,7 +25,18 @@
     "addToLibrary": "Add to library",
     "inLibraryAria": "In library",
     "inLibrary": "In library",
-    "add": "Add"
+    "add": "Add",
+    "onList": "On list",
+    "onListTooltip": "Already on your AniList list"
+  },
+  "recommendations": {
+    "emptyTitle": "No recommendations",
+    "emptySubtitle": "Could not load community recommendations.",
+    "fromSource": "Recommended from {{title}}",
+    "voteUp": "Recommend",
+    "voteDown": "Don't recommend",
+    "netScore": "Net community votes",
+    "voteFailed": "Could not save your vote"
   },
   "genres": {
     "title": "Genres",
@@ -63,6 +75,8 @@
     "sortTitle": "Title (A→Z)",
     "excludeLibrary": "Hide from library",
     "excludeLibraryHint": "Hide anime marked as watched, dropped or planned",
+    "excludeOnList": "Haven't seen",
+    "excludeOnListHint": "Hide anime already on your AniList list",
     "filtersTitle": "Filters",
     "filtersExpand": "Expand",
     "filtersCollapse": "Collapse",
@@ -83,6 +97,8 @@
   "toast": {
     "alreadyInLibrary": "This anime is already in your library",
     "addedToLibrary": "Added to library",
+    "addedToLibraryAndAniList": "Added to library and AniList",
+    "addedLocalOnly": "Added locally — could not sync to AniList",
     "addFailed": "Could not add to library",
     "rateLimited": "Too many requests — wait a moment and try again"
   }

@@ -11,6 +11,7 @@ import { ScheduleView } from '@/components/schedule/ScheduleView';
 import { SettingsView } from '@/components/settings/SettingsView';
 import { DiaryView } from '@/components/diary/DiaryView';
 import { FeedView } from '@/components/feed/FeedView';
+import { SocialView } from '@/components/social/SocialView';
 import { DiscoverView } from '@/components/discover/DiscoverView';
 import { ProfileView } from '@/components/profile/ProfileView';
 import { ChangelogView } from '@/components/changelog/ChangelogView';
@@ -25,6 +26,7 @@ import { useDockStore } from '@/stores/useDockStore';
 import { useOnboardingStore } from '@/stores/useOnboardingStore';
 import { useSupportBannerStore } from '@/stores/useSupportBannerStore';
 import { useSettingsStore } from '@/stores/useSettingsStore';
+import { useAniListAuthStore } from '@/stores/useAniListAuthStore';
 import { AppBackground } from '@/components/shared/AppBackground';
 import { BackgroundOverlay } from '@/components/shared/BackgroundOverlay';
 import { ConnectionBanner } from '@/components/shared/ConnectionBanner';
@@ -62,6 +64,7 @@ function App() {
   const handleOnboardingComplete = useCallback(() => setOnboardingDone(true), []);
 
   const initDock = useDockStore(s => s.initDock);
+  const fetchAniListStatus = useAniListAuthStore(s => s.fetchStatus);
 
   // Restore persisted visual settings and dock settings on startup
   useEffect(() => {
@@ -70,8 +73,14 @@ function App() {
       void initDock();
       void initOnboarding();
       void initSupportBanner();
+      // Resolve AniList auth status app-wide once at boot. It's fetched lazily
+      // elsewhere (no boot call), but the global notifications bell and the
+      // Społeczność view both gate on `connected` — without this prime, a
+      // connected user who never opens Profile would see the bell hidden and
+      // the social feed showing the "connect" prompt.
+      void fetchAniListStatus();
     }
-  }, [ready, initSettings, initDock, initOnboarding, initSupportBanner]);
+  }, [ready, initSettings, initDock, initOnboarding, initSupportBanner, fetchAniListStatus]);
 
   // Listen for navigation events from the main process (e.g. mascot overlay context menu)
   useEffect(() => {
@@ -85,6 +94,7 @@ function App() {
         view === 'browser' ||
         view === 'diary' ||
         view === 'feed' ||
+        view === 'social' ||
         view === 'changelog'
       ) {
         navigateTo(view);
@@ -119,7 +129,10 @@ function App() {
           {/* Custom background overlay — covers entire window including sidebar */}
           {hasBg && !isFullScreen && <BackgroundOverlay />}
 
-          {/* Custom title bar for frameless window — hidden in fullscreen */}
+          {/* Custom title bar for frameless window — hidden in fullscreen.
+              Hosts the global AniList notifications bell (TitleBar is the app's
+              only persistent top chrome, and the bell — gated on a connected
+              AniList account — can only ever appear in Electron anyway). */}
           {IS_ELECTRON && !isFullScreen && <TitleBar />}
 
           {/* Connection status banner */}
@@ -151,6 +164,7 @@ function App() {
               {activeView === 'diary' && <DiaryView />}
               {activeView === 'schedule' && <ScheduleView />}
               {activeView === 'feed' && <FeedView />}
+              {activeView === 'social' && <SocialView />}
               {activeView === 'profile' && <ProfileView />}
               {activeView === 'changelog' && <ChangelogView />}
               {activeView === 'settings' && <SettingsView />}
