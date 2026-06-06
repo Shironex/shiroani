@@ -10,9 +10,10 @@ const logger = createLogger('AniListOAuth');
 /**
  * Isolated, NON-persistent session partition for the OAuth popup.
  *
- * No `persist:` prefix → cookies / storage are discarded when the window
- * closes, so the AniList login session never lingers on disk and never mixes
- * with the app's browsing sessions. `cache: false` further avoids caching the
+ * No `persist:` prefix → cookies / storage never touch disk and never mix with
+ * the app's browsing sessions. Because the in-memory session does persist for
+ * the process lifetime, it is also explicitly cleared at the start of each auth
+ * attempt (see `startAniListOAuth`). `cache: false` further avoids caching the
  * authorize page.
  */
 const OAUTH_PARTITION = 'anilist-oauth';
@@ -90,12 +91,20 @@ export function parseTokenFragment(url: string): ParsedTokenFragment | null {
  * - Rejects on the user closing the window without a token, and on timeout.
  * - The token / URL is NEVER logged.
  */
-export function startAniListOAuth(
+export async function startAniListOAuth(
   clientId: string
 ): Promise<{ accessToken: string; expiresIn: number }> {
-  return new Promise((resolve, reject) => {
-    const oauthSession = session.fromPartition(OAUTH_PARTITION, { cache: false });
+  const oauthSession = session.fromPartition(OAUTH_PARTITION, { cache: false });
 
+  // A non-persistent partition is in-memory but the SAME Session instance is
+  // returned for the life of the process, and closing the popup does not destroy
+  // it — so AniList login cookies from a cancelled/failed attempt would linger
+  // and skip the account picker on a retry/account switch. Clear before each
+  // attempt, and AWAIT it so the wipe completes before the OAuth navigation
+  // begins (a fire-and-forget clear would race loadURL).
+  await oauthSession.clearStorageData();
+
+  return new Promise((resolve, reject) => {
     const popup = new BrowserWindow({
       width: 500,
       height: 720,
