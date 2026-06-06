@@ -14,6 +14,22 @@
     "notConfigured": "AniList is not configured in this build.",
     "connectError": "Could not connect to AniList. Please try again.",
     "disconnectError": "Could not disconnect. Please try again.",
-    "desktopOnly": "AniList connection is only available in the desktop app."
+    "desktopOnly": "AniList connection is only available in the desktop app.",
+    "sync": {
+      "title": "List synchronization",
+      "description": "Two-way sync with AniList: imports your AniList list and pushes local changes back. On the first sync your AniList list takes precedence; afterwards, the most recently changed side wins.",
+      "button": "Sync now",
+      "syncing": "Syncing…",
+      "progressLabel": "{{current}} / {{total}} — {{title}}",
+      "lastSynced": "Last synced {{date}}",
+      "error": "Sync failed. Please try again.",
+      "confirmTitle": "Sync with AniList?",
+      "confirmDescription": "This imports your AniList list into ShiroAni and pushes local changes (progress, status, score, notes) back to your AniList account — it may add or modify entries there. On the first sync your AniList list takes precedence for conflicts; afterwards, the most recently changed side wins. Episode progress always keeps the higher number.",
+      "confirmButton": "Synchronize",
+      "summary": "Imported {{imported}} · created on AniList {{pushedNew}} · updated locally {{updatedLocal}} · updated on AniList {{updatedRemote}}.",
+      "summaryConflicts": "{{count}} conflict(s) resolved — newest change kept.",
+      "summarySkipped": "{{count}} skipped — no AniList match.",
+      "summaryErrors": "{{count}} failed."
+    }
   }
 }

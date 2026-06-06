@@ -14,6 +14,22 @@
     "notConfigured": "AniList nie jest skonfigurowany w tej wersji.",
     "connectError": "Nie udało się połączyć z AniList. Spróbuj ponownie.",
     "disconnectError": "Nie udało się rozłączyć. Spróbuj ponownie.",
-    "desktopOnly": "Połączenie z AniList jest dostępne tylko w aplikacji desktopowej."
+    "desktopOnly": "Połączenie z AniList jest dostępne tylko w aplikacji desktopowej.",
+    "sync": {
+      "title": "Synchronizacja listy",
+      "description": "Dwukierunkowa synchronizacja z AniList: importuje Twoją listę z AniList i wysyła lokalne zmiany z powrotem. Przy pierwszej synchronizacji pierwszeństwo ma Twoja lista AniList; później wygrywa ostatnio zmieniona strona.",
+      "button": "Synchronizuj teraz",
+      "syncing": "Synchronizowanie…",
+      "progressLabel": "{{current}} / {{total}} — {{title}}",
+      "lastSynced": "Ostatnia synchronizacja {{date}}",
+      "error": "Synchronizacja nie powiodła się. Spróbuj ponownie.",
+      "confirmTitle": "Zsynchronizować z AniList?",
+      "confirmDescription": "Ta operacja zaimportuje Twoją listę z AniList do ShiroAni i wyśle lokalne zmiany (postęp, status, ocenę, notatki) z powrotem na Twoje konto AniList — może dodać lub zmienić tam wpisy. Przy pierwszej synchronizacji w razie konfliktu pierwszeństwo ma Twoja lista AniList; później wygrywa ostatnio zmieniona strona. Postęp odcinków zawsze zachowuje wyższą liczbę.",
+      "confirmButton": "Synchronizuj",
+      "summary": "Zaimportowano {{imported}} · utworzono w AniList {{pushedNew}} · zaktualizowano lokalnie {{updatedLocal}} · zaktualizowano w AniList {{updatedRemote}}.",
+      "summaryConflicts": "Rozwiązano konflikty: {{count}} — zachowano najnowszą zmianę.",
+      "summarySkipped": "Pominięto: {{count}} — brak dopasowania w AniList.",
+      "summaryErrors": "Błędy: {{count}}."
+    }
   }
 }
