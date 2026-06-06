@@ -19,7 +19,14 @@ export async function fetchMalViewer(accessToken: string): Promise<MalViewer> {
     throw new Error(`MAL viewer request failed with status ${response.status}`);
   }
 
-  const body = (await response.json()) as { id?: unknown; name?: unknown; picture?: unknown };
+  const body = (await response.json()) as {
+    id?: unknown;
+    name?: unknown;
+    picture?: unknown;
+  } | null;
+  if (!body || typeof body !== 'object') {
+    throw new Error('MAL API returned invalid viewer data');
+  }
   const id = typeof body.id === 'number' ? body.id : Number(body.id);
   const name = typeof body.name === 'string' ? body.name : '';
   if (!Number.isFinite(id) || !name) {
