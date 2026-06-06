@@ -817,16 +817,16 @@ export class AnimeService {
 
     const mapMediaFav = (f: {
       id: number;
-      title: { romaji?: string; english?: string; native?: string };
-      coverImage: { large?: string; medium?: string };
+      title?: { romaji?: string; english?: string; native?: string } | null;
+      coverImage?: { large?: string; medium?: string } | null;
     }) => ({
       id: f.id,
       title: {
-        romaji: f.title.romaji ?? undefined,
-        english: f.title.english ?? undefined,
-        native: f.title.native ?? undefined,
+        romaji: f.title?.romaji ?? undefined,
+        english: f.title?.english ?? undefined,
+        native: f.title?.native ?? undefined,
       },
-      coverImage: f.coverImage.large ?? f.coverImage.medium,
+      coverImage: f.coverImage?.large ?? f.coverImage?.medium,
     });
 
     const mapPersonFav = (p: {
