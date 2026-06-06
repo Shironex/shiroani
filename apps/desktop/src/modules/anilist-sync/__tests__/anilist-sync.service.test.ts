@@ -35,9 +35,13 @@ function makeService(opts: {
   };
   const library: LibraryMock = {
     getEntriesForSync: jest.fn().mockReturnValue(opts.local ?? []),
-    // Default: the optimistic re-read returns nothing (treated as "proceed"); a
-    // test overrides this to simulate a concurrent edit.
-    getEntryById: jest.fn().mockReturnValue(undefined),
+    // Default: the optimistic re-read returns the row unchanged (same updatedAt as
+    // the snapshot) so the guard passes through. A test overrides this to return a
+    // changed updatedAt (concurrent edit) or undefined (deleted mid-sync).
+    getEntryById: jest.fn((id: number) => {
+      const row = (opts.local ?? []).find(r => r.id === id);
+      return row ? { id, updatedAt: row.updatedAt } : undefined;
+    }),
     addEntry: jest.fn().mockReturnValue({ id: 999 }),
     updateEntry: jest.fn(),
     markAniListSync: jest.fn(),
@@ -222,6 +226,20 @@ describe('AniListSyncService.sync', () => {
     });
     // The row changed since the snapshot — re-read reports a newer updatedAt.
     library.getEntryById.mockReturnValue({ id: 1, updatedAt: '2099-01-01 00:00:00' });
+
+    await service.sync(noop);
+    expect(library.updateEntry).not.toHaveBeenCalled();
+    expect(client.saveMediaListEntry).not.toHaveBeenCalled();
+    expect(library.markAniListSync).not.toHaveBeenCalled();
+  });
+
+  it('skips an entry that was deleted locally mid-sync (re-read returns undefined)', async () => {
+    const { service, client, library } = makeService({
+      remote: [remote({ mediaId: 100, progress: 9 })],
+      local: [local({ id: 1, anilistId: 100, currentEpisode: 5 })],
+    });
+    // The row was deleted since the snapshot — re-read finds nothing.
+    library.getEntryById.mockReturnValue(undefined);
 
     await service.sync(noop);
     expect(library.updateEntry).not.toHaveBeenCalled();

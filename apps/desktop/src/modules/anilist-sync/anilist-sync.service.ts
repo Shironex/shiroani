@@ -118,12 +118,13 @@ export class AniListSyncService {
           }
 
           // Optimistic concurrency guard: the snapshot was taken at the start of
-          // the run, but the user can edit a library entry while the (potentially
-          // multi-minute) sync is in flight. Re-read the row right before writing;
-          // if it changed since the snapshot, skip it this run rather than clobber
-          // the fresh edit with a stale decision — it reconciles on the next sync.
+          // the run, but the user can edit OR delete a library entry while the
+          // (potentially multi-minute) sync is in flight. Re-read the row right
+          // before writing; skip it this run if it changed since the snapshot
+          // (don't clobber the fresh edit) or vanished (don't write a deleted row
+          // / push a just-deleted entry to AniList). It reconciles on the next sync.
           const current = this.libraryService.getEntryById(local.id);
-          if (current && current.updatedAt !== local.updatedAt) {
+          if (!current || current.updatedAt !== local.updatedAt) {
             report(local.title, 'unchanged');
             continue;
           }
