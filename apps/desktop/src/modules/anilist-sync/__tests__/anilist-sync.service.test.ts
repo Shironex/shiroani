@@ -331,9 +331,10 @@ describe('AniListSyncService.syncEntry', () => {
 
     release();
     await full;
-    // Slot released — a per-entry op afterwards is allowed (here it 404s → no-op path).
-    const { service: s2 } = makeService({ local: [local({ id: 1, anilistId: 100 })] });
-    await expect(s2.syncEntry(1, 'pull')).resolves.toEqual({ action: 'skipped' });
+    // Slot released — the SAME service now accepts a per-entry op. Row 1 doesn't
+    // exist in this service, so it reaches the NOT_FOUND path, which is only
+    // reachable PAST the single-flight guard — proving `service` freed its slot.
+    await expect(service.syncEntry(1, 'pull')).rejects.toThrow(SYNC_ENTRY_NOT_FOUND_ERROR);
   });
 
   it('skips a local-only entry with no AniList id', async () => {
