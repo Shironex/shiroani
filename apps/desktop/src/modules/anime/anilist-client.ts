@@ -75,7 +75,10 @@ export class AniListClient {
    */
   async getViewer(): Promise<AniListViewer> {
     const data = await this.query<ViewerResponse>(VIEWER_QUERY);
-    const viewer = data.Viewer;
+    const viewer = data?.Viewer;
+    if (!viewer) {
+      throw new Error('AniList API returned no viewer data');
+    }
     return {
       id: viewer.id,
       name: viewer.name,

@@ -49,6 +49,13 @@ describe('AniListClient', () => {
     expect(authHeaderOf()).toBe('Bearer secret-tok');
   });
 
+  it('getViewer throws when the response has a null Viewer', async () => {
+    const tokenPort = { getAccessToken: jest.fn().mockResolvedValue('secret-tok') };
+    const authed = new AniListClient(tokenPort);
+    fetchMock.mockResolvedValueOnce(mkResponse(200, { data: { Viewer: null } }));
+    await expect(authed.getViewer()).rejects.toThrow(/no viewer data/i);
+  });
+
   it('getViewer sends no auth header when the token port returns null', async () => {
     const tokenPort = { getAccessToken: jest.fn().mockResolvedValue(null) };
     const authed = new AniListClient(tokenPort);
