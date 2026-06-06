@@ -24,8 +24,9 @@ import {
 import { ElectronNotificationHost } from './notifications/notification-host.adapter';
 import { ElectronNotificationStore } from './notifications/notification-store.adapter';
 import { NotificationHostPort, NotificationStorePort } from '../modules/notifications';
-import { AniListTokenPort } from '../modules/anime';
+import { AniListTokenPort, MalTokenPort } from '../modules/anime';
 import { ElectronAniListTokenAdapter } from './auth/anilist-token.adapter';
+import { ElectronMalTokenAdapter } from './auth/mal-token.adapter';
 import { APP_ID as WINDOWS_APP_ID } from './notifications/win-scheduled-notifications';
 import {
   initializeDiscordRpc,
@@ -52,6 +53,20 @@ import { isMascotEnabled } from './mascot/overlay-state';
 import { createTray, destroyTray } from './tray';
 import { safeCleanup, isHardCrashReason } from './cleanup-utils';
 import { appStatsTracker } from './stats/app-stats-tracker';
+
+// Dev only: load apps/desktop/.env so runtime-read secrets — notably
+// MAL_CLIENT_SECRET, which is deliberately NOT baked into the bundle (the public
+// client IDs ARE baked at build time via esbuild `define`) — are available during
+// `pnpm dev`. Packaged builds never ship a .env. Resolved via app.getAppPath()
+// (= apps/desktop in dev) so it doesn't depend on the invoking cwd. A missing or
+// unreadable file is non-fatal: the vars may instead come from the shell.
+if (!app.isPackaged) {
+  try {
+    process.loadEnvFile(join(app.getAppPath(), '.env'));
+  } catch {
+    // No local .env — fine.
+  }
+}
 
 // Override Electron's default User-Agent so "Electron/<version>" and the app
 // name never leak in request headers — some subframe/worker requests bypass
@@ -190,6 +205,13 @@ async function bootstrapNestApp(): Promise<void> {
         anilistTokenProvider: {
           provide: AniListTokenPort,
           useClass: ElectronAniListTokenAdapter,
+        },
+        // safeStorage-backed MAL token provider — reads the persisted access
+        // token (lazily refreshing + rotating both tokens when near expiry) from
+        // the main-process token store. Neither token crosses IPC.
+        malTokenProvider: {
+          provide: MalTokenPort,
+          useClass: ElectronMalTokenAdapter,
         },
       }),
       {
