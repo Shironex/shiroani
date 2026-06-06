@@ -29,16 +29,25 @@ export const discoverFiltersSchema = z.object({
   tags: z.array(z.string().min(1).max(50)).max(20).optional(),
   format: z.enum(DISCOVER_FORMATS).optional(),
   status: z.enum(DISCOVER_STATUSES).optional(),
-  year: z
-    .number()
-    .int()
-    .min(DISCOVER_MIN_YEAR)
-    .max(2100)
-    .optional(),
+  year: z.number().int().min(DISCOVER_MIN_YEAR).max(2100).optional(),
   season: z.enum(DISCOVER_SEASONS).optional(),
   scoreMin: z.number().int().min(DISCOVER_SCORE_MIN).max(DISCOVER_SCORE_MAX).optional(),
   scoreMax: z.number().int().min(DISCOVER_SCORE_MIN).max(DISCOVER_SCORE_MAX).optional(),
+  excludeOnList: z.boolean().optional(),
 });
+
+/** AniList list-entry status (write vocabulary for SaveMediaListEntry). */
+export const aniListListStatusSchema = z.enum([
+  'CURRENT',
+  'PLANNING',
+  'COMPLETED',
+  'DROPPED',
+  'PAUSED',
+  'REPEATING',
+]);
+
+/** Recommendation vote (AniList RecommendationRating). */
+export const recommendationRatingSchema = z.enum(['RATE_UP', 'RATE_DOWN', 'NO_RATING']);
 
 export const animeStatusSchema = z.enum([
   'watching',
@@ -99,6 +108,45 @@ export const animeGetUserProfilePayloadSchema = z.object({
   username: z.string().trim().min(1).max(50),
 });
 
+/** Request payload for AnimeEvents.SAVE_MEDIA_LIST_ENTRY (write-through add). */
+export const animeSaveMediaListEntryPayloadSchema = z.object({
+  mediaId: z.number().int().positive(),
+  status: aniListListStatusSchema.optional(),
+  progress: z.number().int().nonnegative().max(10_000).optional(),
+  /** Local 0–10 score. */
+  score: z.number().min(0).max(10).optional(),
+  notes: z.string().max(5_000).optional(),
+});
+
+/** Request payload for AnimeEvents.GET_RECOMMENDATIONS (community browse). */
+export const animeGetRecommendationsPayloadSchema = z
+  .object({
+    mediaId: z.number().int().positive().optional(),
+  })
+  .optional();
+
+/** Request payload for AnimeEvents.SAVE_RECOMMENDATION (voting). */
+export const animeSaveRecommendationPayloadSchema = z.object({
+  mediaId: z.number().int().positive(),
+  mediaRecommendationId: z.number().int().positive(),
+  rating: recommendationRatingSchema,
+});
+
+/**
+ * Request payload for AnimeEvents.GET_FOLLOWING / GET_FOLLOWERS. `userId` is
+ * optional — when omitted the service resolves the connected viewer's own id.
+ */
+export const animeGetFollowPayloadSchema = z
+  .object({
+    userId: z.number().int().positive().optional(),
+  })
+  .optional();
+
+/** Request payload for AnimeEvents.TOGGLE_FOLLOW (follow/unfollow a user). */
+export const animeToggleFollowPayloadSchema = z.object({
+  userId: z.number().int().positive(),
+});
+
 // ============================================
 // Library gateway payloads
 // ============================================
@@ -111,6 +159,9 @@ export const libraryGetAllPayloadSchema = z
 
 export const libraryAddPayloadSchema = z.object({
   anilistId: z.number().int().positive().optional(),
+  // MyAnimeList id (migration v14) — kept in the validated contract so a MAL
+  // import can set it through addEntry rather than having zod strip it.
+  malId: z.number().int().positive().nullable().optional(),
   title: z.string().trim().min(1).max(500),
   titleRomaji: z.string().max(500).optional(),
   titleNative: z.string().max(500).optional(),
@@ -133,4 +184,27 @@ export const libraryUpdatePayloadSchema = z.object({
 
 export const libraryRemovePayloadSchema = z.object({
   id: z.number().int().positive(),
+});
+
+// ============================================
+// AniList sync gateway payloads
+// ============================================
+
+/** Request payload for a single-entry AniList sync (AniListSyncEvents.SYNC_ENTRY). */
+export const anilistSyncEntryPayloadSchema = z.object({
+  localId: z.number().int().positive(),
+  direction: z.enum(['push', 'pull', 'auto']),
+});
+
+/**
+ * Request payload for a single-entry MAL sync (MalSyncEvents.SYNC_ENTRY).
+ *
+ * Identical shape to {@link anilistSyncEntryPayloadSchema} (the
+ * provider-neutral {@link AniListSyncEntryRequest}) — declared separately so the
+ * MAL gateway validates against its own named schema rather than borrowing the
+ * AniList one, keeping the two sync surfaces decoupled.
+ */
+export const malSyncEntryPayloadSchema = z.object({
+  localId: z.number().int().positive(),
+  direction: z.enum(['push', 'pull', 'auto']),
 });

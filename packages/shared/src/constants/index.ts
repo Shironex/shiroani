@@ -24,6 +24,7 @@ export {
   LOG_REDACT_PLACEHOLDER,
 } from './app';
 export * from './anilist';
+export * from './mal';
 export * from './discord';
 export * from './events';
 export * from './genres';
