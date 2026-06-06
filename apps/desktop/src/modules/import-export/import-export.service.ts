@@ -124,7 +124,9 @@ export class ImportExportService {
         return { ...baseResult, status: 'success' };
       }
 
-      // No duplicate — add new entry
+      // No duplicate — add new entry. `score`/`notes` are now carried on insert
+      // (addEntry persists them) so a fresh import keeps the rating/notes instead
+      // of silently dropping them, matching the overwrite branch above.
       this.libraryService.addEntry({
         anilistId: entry.anilistId,
         title: entry.title,
@@ -134,6 +136,8 @@ export class ImportExportService {
         episodes: entry.episodes,
         status: entry.status,
         currentEpisode: entry.currentEpisode,
+        score: entry.score,
+        notes: entry.notes,
         resumeUrl: entry.resumeUrl,
       });
       return { ...baseResult, status: 'success' };
