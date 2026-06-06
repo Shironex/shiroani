@@ -14,6 +14,8 @@ import { ThemeStep } from './steps/ThemeStep';
 import { BackgroundStep } from './steps/BackgroundStep';
 import { DockStep } from './steps/DockStep';
 import { DiscordStep } from './steps/DiscordStep';
+import { AniListStep } from './steps/AniListStep';
+import { MalStep } from './steps/MalStep';
 import { AdblockStep } from './steps/AdblockStep';
 import { SummaryStep } from './steps/SummaryStep';
 
@@ -38,6 +40,8 @@ const STEPS: StepDef[] = [
   { id: 'background', chipKind: 'step', Component: BackgroundStep, numbered: true },
   { id: 'dock', chipKind: 'step', Component: DockStep, numbered: true },
   { id: 'discord', chipKind: 'step', Component: DiscordStep, numbered: true },
+  { id: 'anilist', chipKind: 'step', Component: AniListStep, numbered: true },
+  { id: 'mal', chipKind: 'step', Component: MalStep, numbered: true },
   { id: 'adblock', chipKind: 'step', Component: AdblockStep, numbered: true },
   { id: 'summary', chipKind: 'summary', Component: SummaryStep, numbered: false },
 ];
