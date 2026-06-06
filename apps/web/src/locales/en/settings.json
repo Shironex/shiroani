@@ -674,6 +674,8 @@
     "viewsSubtitle": "Section visibility in the dock",
     "discord": "Discord",
     "discordSubtitle": "Rich Presence: show friends what you're watching",
+    "accounts": "Accounts",
+    "accountsSubtitle": "Connect external accounts like AniList",
     "mascot": "Mascot",
     "mascotSubtitle": "Animated chibi mascot on the desktop",
     "data": "Data",

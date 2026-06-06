@@ -22,6 +22,48 @@ describe('AniListClient', () => {
     jest.restoreAllMocks();
   });
 
+  const authHeaderOf = (callIndex = 0): string | undefined => {
+    const opts = fetchMock.mock.calls[callIndex][1] as RequestInit;
+    return (opts.headers as Record<string, string>).Authorization;
+  };
+
+  it('unauthenticated query sends no Authorization header (behavior unchanged)', async () => {
+    fetchMock.mockResolvedValueOnce(mkResponse(200, { data: { Media: { id: 1 } } }));
+    await client.query('query{}', {});
+    expect(authHeaderOf()).toBeUndefined();
+  });
+
+  it('getViewer maps avatar.large and attaches the bearer token when present', async () => {
+    const tokenPort = { getAccessToken: jest.fn().mockResolvedValue('secret-tok') };
+    const authed = new AniListClient(tokenPort);
+    fetchMock.mockResolvedValueOnce(
+      mkResponse(200, {
+        data: {
+          Viewer: { id: 42, name: 'Anya', avatar: { large: 'big.png' }, bannerImage: 'b.png' },
+        },
+      })
+    );
+
+    const viewer = await authed.getViewer();
+    expect(viewer).toEqual({ id: 42, name: 'Anya', avatar: 'big.png', bannerImage: 'b.png' });
+    expect(authHeaderOf()).toBe('Bearer secret-tok');
+  });
+
+  it('getViewer throws when the response has a null Viewer', async () => {
+    const tokenPort = { getAccessToken: jest.fn().mockResolvedValue('secret-tok') };
+    const authed = new AniListClient(tokenPort);
+    fetchMock.mockResolvedValueOnce(mkResponse(200, { data: { Viewer: null } }));
+    await expect(authed.getViewer()).rejects.toThrow(/no viewer data/i);
+  });
+
+  it('getViewer sends no auth header when the token port returns null', async () => {
+    const tokenPort = { getAccessToken: jest.fn().mockResolvedValue(null) };
+    const authed = new AniListClient(tokenPort);
+    fetchMock.mockResolvedValueOnce(mkResponse(200, { data: { Viewer: { id: 1, name: 'x' } } }));
+    await authed.getViewer();
+    expect(authHeaderOf()).toBeUndefined();
+  });
+
   it('happy path returns GraphQL data', async () => {
     fetchMock.mockResolvedValueOnce(mkResponse(200, { data: { Media: { id: 1 } } }));
     await expect(client.query('query{}', {})).resolves.toEqual({ Media: { id: 1 } });

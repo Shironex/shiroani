@@ -48,6 +48,9 @@ export { registerDiscordRpcHandlers, cleanupDiscordRpcHandlers } from './discord
 // App stats handlers
 export { registerAppStatsHandlers, cleanupAppStatsHandlers } from './app-stats';
 
+// AniList OAuth handlers
+export { registerAniListAuthHandlers, cleanupAniListAuthHandlers } from './anilist-auth';
+
 // IPC infrastructure
 export { handle, handleWithFallback, on } from './with-ipc-handler';
 export {

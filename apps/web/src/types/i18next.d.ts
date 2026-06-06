@@ -7,6 +7,7 @@
 
 import 'i18next';
 
+import type accounts from '@/locales/pl/accounts.json';
 import type anilist from '@/locales/pl/anilist.json';
 import type browser from '@/locales/pl/browser.json';
 import type changelog from '@/locales/pl/changelog.json';
@@ -33,6 +34,7 @@ declare module 'i18next' {
     returnEmptyString: false;
     allowObjectInHTMLChildren: false;
     resources: {
+      accounts: typeof accounts;
       anilist: typeof anilist;
       browser: typeof browser;
       changelog: typeof changelog;
