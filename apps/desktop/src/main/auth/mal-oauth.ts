@@ -40,7 +40,7 @@ export interface ParsedAuthCode {
  * (`A-Za-z0-9-_`) PKCE requires, with no padding.
  */
 function base64url(bytes: Buffer): string {
-  return bytes.toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  return bytes.toString('base64url');
 }
 
 /**
