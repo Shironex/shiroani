@@ -4,6 +4,9 @@ export * from './types/anime';
 // AniList auth types (OAuth implicit grant contract)
 export * from './types/anilist-auth';
 
+// AniList two-way sync contract (progress + result summaries)
+export * from './types/anilist-sync';
+
 // Settings types (BUILT_IN_THEMES is an internal lookup set used by
 // isBuiltInTheme — kept off the public surface; consumers use isBuiltInTheme /
 // BUILT_IN_THEME_METADATA instead)

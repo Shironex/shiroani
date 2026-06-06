@@ -80,6 +80,23 @@ export const ImportExportEvents = {
 } as const;
 
 // ============================================
+// AniList Sync Events
+// ============================================
+/**
+ * Two-way AniList library sync. Triggered manually from the Accounts settings.
+ * The access token never crosses this boundary — the sync runs entirely in the
+ * desktop main process (authenticated via the safeStorage-backed token store).
+ */
+export const AniListSyncEvents = {
+  // Client -> Server (request): run a full two-way sync. Resolves with an
+  // AniListSyncResult ack once the run completes.
+  SYNC: 'anilist-sync:run',
+
+  // Server -> Client (broadcast): per-entry progress during a run.
+  PROGRESS: 'anilist-sync:progress',
+} as const;
+
+// ============================================
 // Feed Events
 // ============================================
 export const FeedEvents = {
