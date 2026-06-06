@@ -62,6 +62,10 @@ interface DiscoverState {
   // community vote. No pagination (30 fixed server-side); browse needs no auth.
   recommendations: AniListCommunityRecommendation[];
   isRecommendationsLoading: boolean;
+  // Recommendation-scoped error, kept OUT of the shared `error` slot: the tab
+  // caches its results, so an unrelated browse/search failure must not make the
+  // (still-valid) recommendations render as failed.
+  recommendationsError: string | null;
   // Search
   searchQuery: string;
   searchResults: DiscoverMedia[];
@@ -150,6 +154,7 @@ export const useDiscoverStore = create<DiscoverStore>()(
         isRandomLoading: false,
         recommendations: [],
         isRecommendationsLoading: false,
+        recommendationsError: null,
         searchQuery: '',
         searchResults: [],
         searchPage: { ...initialPage },
@@ -419,7 +424,11 @@ export const useDiscoverStore = create<DiscoverStore>()(
 
         fetchRecommendations: () => {
           logger.info('Fetching community recommendations');
-          set({ isRecommendationsLoading: true, error: null }, undefined, 'discover/fetchingRecs');
+          set(
+            { isRecommendationsLoading: true, recommendationsError: null },
+            undefined,
+            'discover/fetchingRecs'
+          );
 
           emitWithErrorHandling<GetRecommendationsRequest, GetRecommendationsResult>(
             AnimeEvents.GET_RECOMMENDATIONS,
@@ -431,7 +440,7 @@ export const useDiscoverStore = create<DiscoverStore>()(
                 {
                   recommendations: data.recommendations,
                   isRecommendationsLoading: false,
-                  error: null,
+                  recommendationsError: null,
                 },
                 undefined,
                 'discover/recsResult'
@@ -440,7 +449,7 @@ export const useDiscoverStore = create<DiscoverStore>()(
             .catch((err: Error) => {
               logger.error('Recommendations fetch failed:', err.message);
               set(
-                { isRecommendationsLoading: false, error: toUserError(err) },
+                { isRecommendationsLoading: false, recommendationsError: toUserError(err) },
                 undefined,
                 'discover/recsError'
               );
