@@ -146,8 +146,17 @@ export const useProfileStore = create<ProfileStore>()(
             } else {
               // A null viewer means "not connected" (no token), NOT "user not
               // found" — clear quietly rather than surfacing the public error.
+              // Also drop the mirrored viewer name + mode so a disconnect doesn't
+              // leave the prior account's handle and 'viewer' mode stuck in state.
               set(
-                { profile: null, isLoading: false, error: null, lastFetchedAt: null },
+                {
+                  username: '',
+                  profile: null,
+                  mode: null,
+                  isLoading: false,
+                  error: null,
+                  lastFetchedAt: null,
+                },
                 undefined,
                 'profile/viewerNotConnected'
               );
