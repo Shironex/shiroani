@@ -124,6 +124,25 @@ export const useLibraryStore = create<LibraryStore>()(
             selectedIds: nextSelected,
           };
         },
+        // Bulk broadcasts (from this client's batch ops or another client's):
+        // mirror the single-row handlers over the whole set so a bulk
+        // delete/update reconciles in one pass instead of N.
+        onUpdatedMany: (state, entries) => {
+          const byId = new Map(entries.map(e => [e.id, e]));
+          return { entries: state.entries.map(e => byId.get(e.id) ?? e) };
+        },
+        onRemovedMany: (state, ids) => {
+          const removed = new Set(ids);
+          const prunedSelected = [...state.selectedIds].filter(id => !removed.has(id));
+          return {
+            entries: state.entries.filter(e => !removed.has(e.id)),
+            // Only allocate a new Set when the selection actually shrank.
+            selectedIds:
+              prunedSelected.length === state.selectedIds.size
+                ? state.selectedIds
+                : new Set(prunedSelected),
+          };
+        },
       });
 
       const { initListeners, cleanupListeners } = createSocketListeners<LibraryStore>(
@@ -263,15 +282,15 @@ export const useLibraryStore = create<LibraryStore>()(
 
         batchUpdateStatus: (status: AnimeStatus) => {
           const ids = [...get().selectedIds];
-          for (const id of ids) {
-            crud.optimisticUpdate({
-              event: LibraryEvents.UPDATE,
-              payload: { id, status },
-              id,
-              applyUpdate: applyLibraryUpdate,
-              label: 'batchUpdateStatus',
-            });
-          }
+          // One batched emit for the whole selection — N individual UPDATE
+          // emits used to trip the WS throttler on a large selection.
+          crud.optimisticUpdateMany({
+            event: LibraryEvents.UPDATE_MANY,
+            payload: { ids, status },
+            ids,
+            apply: e => applyLibraryUpdate(e, { id: e.id, status }),
+            label: 'batchUpdateStatus',
+          });
         },
 
         batchUpdateScore: (score: number) => {
@@ -283,30 +302,28 @@ export const useLibraryStore = create<LibraryStore>()(
           // old score untouched in SQLite while the UI optimistically shows it
           // cleared (a silent desync). All score UI gates on `score > 0`, so a
           // stored 0 renders as "no score".
-          for (const id of ids) {
-            crud.optimisticUpdate({
-              event: LibraryEvents.UPDATE,
-              payload: { id, score },
-              id,
-              applyUpdate: applyLibraryUpdate,
-              label: 'batchUpdateScore',
-            });
-          }
+          crud.optimisticUpdateMany({
+            event: LibraryEvents.UPDATE_MANY,
+            payload: { ids, score },
+            ids,
+            apply: e => applyLibraryUpdate(e, { id: e.id, score }),
+            label: 'batchUpdateScore',
+          });
         },
 
         batchRemove: () => {
           const ids = [...get().selectedIds];
-          for (const id of ids) {
-            crud.optimisticRemove({
-              event: LibraryEvents.REMOVE,
-              id,
-              extra: state =>
-                state.selectedEntry?.id === id
-                  ? { isDetailOpen: false, selectedEntry: null }
-                  : {},
-              label: 'batchRemove',
-            });
-          }
+          const removed = new Set(ids);
+          // One batched emit (one DB transaction) instead of N REMOVE emits.
+          crud.optimisticRemoveMany({
+            event: LibraryEvents.REMOVE_MANY,
+            ids,
+            extra: state =>
+              state.selectedEntry && removed.has(state.selectedEntry.id)
+                ? { isDetailOpen: false, selectedEntry: null }
+                : {},
+            label: 'batchRemove',
+          });
           set(
             { selectedIds: new Set<number>(), selectionMode: false },
             undefined,

@@ -135,6 +135,21 @@ export const LibraryEvents = {
   ADD: 'library:add',
   UPDATE: 'library:update',
   REMOVE: 'library:remove',
+  /**
+   * Apply the SAME field update to many entries in ONE request. Replaces the N
+   * individual UPDATE emits the batch action bar used to fire — those tripped
+   * the {@link SystemEvents.THROTTLED} guard on a large selection. Payload:
+   * `LibraryUpdateManyPayload { ids; ...updates }`. Resolves with the updated
+   * `{ entries }`.
+   */
+  UPDATE_MANY: 'library:update-many',
+  /**
+   * Remove many entries in ONE request (one DB transaction). The bulk twin of
+   * {@link LibraryEvents.REMOVE}; same throttler-avoidance rationale as
+   * {@link LibraryEvents.UPDATE_MANY}. Payload: `LibraryRemoveManyPayload { ids }`.
+   * Resolves with `{ ids }` — the ids actually deleted (rows that existed).
+   */
+  REMOVE_MANY: 'library:remove-many',
 
   // Server -> Client (broadcasts)
   UPDATED: 'library:updated',
@@ -283,6 +298,17 @@ export const CrudActions = {
   CREATED: 'created',
   UPDATED: 'updated',
   REMOVED: 'removed',
+  /**
+   * Many entries were updated in one batch — broadcast carries `{ entries }`
+   * (the authoritative rows). Consumers with a batch listener patch them in
+   * place; consumers without one fall back to a full re-fetch.
+   */
+  UPDATED_MANY: 'updated-many',
+  /**
+   * Many entries were removed in one batch — broadcast carries `{ ids }` (the
+   * rows actually deleted). Same consumer contract as {@link UPDATED_MANY}.
+   */
+  REMOVED_MANY: 'removed-many',
   /** A bulk import landed — consumers re-fetch the whole collection. */
   IMPORTED: 'imported',
 } as const;
