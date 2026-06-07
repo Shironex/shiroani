@@ -174,14 +174,21 @@ export class LibraryService {
     if (!built) return [];
     // `buildUpdate` appends the id as the final bind value; swap it per row.
     const setValues = built.values.slice(0, -1);
-    const stmt = db.prepare(built.sql);
+    const updateStmt = db.prepare(built.sql);
+    // Prepare the read-back SELECT ONCE outside the loop too, rather than
+    // routing each row through `getEntryById` (which re-resolves the statement
+    // per call) — preparing inside the loop is the SQLite inefficiency to avoid.
+    const selectStmt = db.prepare(`SELECT * FROM ${TABLE} WHERE id = ?`);
 
     const run = db.transaction((rows: number[]): AnimeEntry[] => {
       const updated: AnimeEntry[] = [];
       for (const id of rows) {
-        stmt.run(...setValues, id);
-        const entry = this.getEntryById(id);
-        if (entry) updated.push(entry);
+        // Only read a row back when the UPDATE actually matched it (changes > 0)
+        // — skip the SELECT entirely for ids that don't exist.
+        if (updateStmt.run(...setValues, id).changes > 0) {
+          const row = selectStmt.get(id) as AnimeLibraryRow | undefined;
+          if (row) updated.push(rowToEntry(row));
+        }
       }
       return updated;
     });

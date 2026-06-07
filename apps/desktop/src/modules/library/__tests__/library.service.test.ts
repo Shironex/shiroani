@@ -157,33 +157,38 @@ function makeRow(id: number, overrides: Partial<AnimeLibraryRow> = {}): AnimeLib
 interface PreparedStmt {
   sql: string;
   runArgs: unknown[][];
+  getArgs: unknown[][];
 }
 
 /**
  * Build a LibraryService over a faithful better-sqlite3 fake: `prepare()`
- * records SQL + run args, DELETE reports `changes` based on which ids exist,
- * SELECT-by-id returns a row for existing ids, and `transaction(fn)` is the
- * synchronous passthrough better-sqlite3 uses on the happy path.
+ * records SQL + run/get args, both DELETE and UPDATE report `changes` based on
+ * which ids exist (DELETE additionally removes the row), SELECT-by-id returns a
+ * row for existing ids, and `transaction(fn)` is the synchronous passthrough
+ * better-sqlite3 uses on the happy path.
  */
 function makeBulkService(existingIds: number[]) {
   const existing = new Set(existingIds);
   const prepared: PreparedStmt[] = [];
   const db = {
     prepare: jest.fn((sql: string) => {
-      const record: PreparedStmt = { sql, runArgs: [] };
+      const record: PreparedStmt = { sql, runArgs: [], getArgs: [] };
       prepared.push(record);
+      const isDelete = sql.trimStart().startsWith('DELETE');
       return {
         run: jest.fn((...args: unknown[]) => {
           record.runArgs.push(args);
-          if (sql.trimStart().startsWith('DELETE')) {
-            const id = args[args.length - 1] as number;
-            const changes = existing.has(id) ? 1 : 0;
-            existing.delete(id);
-            return { changes };
-          }
-          return { changes: 1 };
+          // The id is the final bind value for both DELETE and UPDATE; `changes`
+          // is >0 only when the row exists (matching SQLite). DELETE removes it.
+          const id = args[args.length - 1] as number;
+          const changes = existing.has(id) ? 1 : 0;
+          if (isDelete) existing.delete(id);
+          return { changes };
         }),
-        get: jest.fn((id: number) => (existing.has(id) ? makeRow(id) : undefined)),
+        get: jest.fn((id: number) => {
+          record.getArgs.push([id]);
+          return existing.has(id) ? makeRow(id) : undefined;
+        }),
         all: jest.fn(() => []),
       };
     }),
@@ -236,6 +241,19 @@ describe('LibraryService.updateMany', () => {
       ['completed', 1],
       ['completed', 2],
     ]);
+  });
+
+  it('prepares the read-back SELECT once and only queries rows the UPDATE matched', () => {
+    const { service, prepared } = makeBulkService([1]);
+
+    const updated = service.updateMany([1, 99], { status: 'completed' });
+
+    expect(updated.map(e => e.id)).toEqual([1]); // 99 didn't exist
+    // The SELECT is prepared ONCE (outside the loop), not per id...
+    const selects = prepared.filter(p => p.sql.trimStart().startsWith('SELECT'));
+    expect(selects).toHaveLength(1);
+    // ...and is queried only for the id whose UPDATE reported changes > 0.
+    expect(selects[0].getArgs).toEqual([[1]]);
   });
 
   it('is a no-op returning [] when no updatable field is supplied', () => {
