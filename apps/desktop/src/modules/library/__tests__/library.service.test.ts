@@ -7,6 +7,7 @@
  */
 
 import { rowToEntry, type AnimeLibraryRow } from '../library.types';
+import { LibraryService } from '../library.service';
 
 describe('rowToEntry', () => {
   it('maps a full row with all fields populated', () => {
@@ -116,5 +117,132 @@ describe('rowToEntry', () => {
     expect(entry.currentEpisode).toBe(5);
     expect(entry.addedAt).toBe('2024-03-15T08:00:00Z');
     expect(entry.updatedAt).toBe('2024-03-15T10:00:00Z');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Bulk mutations — removeMany / updateMany
+//
+// These replace the N individual REMOVE/UPDATE emits the batch action bar used
+// to fire (which tripped the WS throttler). The invariants under test: each
+// runs inside ONE transaction, removeMany reports only the rows that existed,
+// and updateMany builds its UPDATE once and reuses it per id.
+// ---------------------------------------------------------------------------
+
+function makeRow(id: number, overrides: Partial<AnimeLibraryRow> = {}): AnimeLibraryRow {
+  return {
+    id,
+    anilist_id: null,
+    title: `Anime ${id}`,
+    title_romaji: null,
+    title_native: null,
+    cover_image: null,
+    total_episodes: null,
+    status: 'watching',
+    current_episode: 0,
+    score: null,
+    notes: null,
+    resume_url: null,
+    added_at: '2024-01-01T00:00:00Z',
+    updated_at: '2024-01-01T00:00:00Z',
+    anilist_synced_at: null,
+    anilist_remote_updated_at: null,
+    mal_id: null,
+    mal_synced_at: null,
+    mal_remote_updated_at: null,
+    ...overrides,
+  };
+}
+
+interface PreparedStmt {
+  sql: string;
+  runArgs: unknown[][];
+}
+
+/**
+ * Build a LibraryService over a faithful better-sqlite3 fake: `prepare()`
+ * records SQL + run args, DELETE reports `changes` based on which ids exist,
+ * SELECT-by-id returns a row for existing ids, and `transaction(fn)` is the
+ * synchronous passthrough better-sqlite3 uses on the happy path.
+ */
+function makeBulkService(existingIds: number[]) {
+  const existing = new Set(existingIds);
+  const prepared: PreparedStmt[] = [];
+  const db = {
+    prepare: jest.fn((sql: string) => {
+      const record: PreparedStmt = { sql, runArgs: [] };
+      prepared.push(record);
+      return {
+        run: jest.fn((...args: unknown[]) => {
+          record.runArgs.push(args);
+          if (sql.trimStart().startsWith('DELETE')) {
+            const id = args[args.length - 1] as number;
+            const changes = existing.has(id) ? 1 : 0;
+            existing.delete(id);
+            return { changes };
+          }
+          return { changes: 1 };
+        }),
+        get: jest.fn((id: number) => (existing.has(id) ? makeRow(id) : undefined)),
+        all: jest.fn(() => []),
+      };
+    }),
+    transaction: jest.fn(
+      <T>(fn: (arg: number[]) => T) =>
+        (arg: number[]) =>
+          fn(arg)
+    ),
+  };
+  const service = new LibraryService({ db } as never);
+  return { service, db, prepared };
+}
+
+describe('LibraryService.removeMany', () => {
+  it('deletes in one transaction and returns only the ids that existed', () => {
+    const { service, db, prepared } = makeBulkService([1, 2, 3]);
+
+    const deleted = service.removeMany([1, 2, 3, 99]);
+
+    expect(deleted).toEqual([1, 2, 3]); // 99 never existed
+    expect(db.transaction).toHaveBeenCalledTimes(1);
+
+    // The DELETE is prepared ONCE and reused for every id.
+    const deletes = prepared.filter(p => p.sql.trimStart().startsWith('DELETE'));
+    expect(deletes).toHaveLength(1);
+    expect(deletes[0].runArgs).toHaveLength(4);
+  });
+
+  it('returns an empty list when no row existed (so the gateway skips the broadcast)', () => {
+    const { service } = makeBulkService([]);
+    expect(service.removeMany([5, 6])).toEqual([]);
+  });
+});
+
+describe('LibraryService.updateMany', () => {
+  it('builds the UPDATE once, reuses it per id, and returns the updated entries', () => {
+    const { service, db, prepared } = makeBulkService([1, 2]);
+
+    const updated = service.updateMany([1, 2], { status: 'completed' });
+
+    expect(updated.map(e => e.id)).toEqual([1, 2]);
+    expect(db.transaction).toHaveBeenCalledTimes(1);
+
+    const updates = prepared.filter(p => p.sql.trimStart().startsWith('UPDATE'));
+    expect(updates).toHaveLength(1); // built once, not per id
+    expect(updates[0].sql).toContain('status = ?');
+    expect(updates[0].sql).toContain("updated_at = datetime('now')");
+    // One run per id, each binding the SET value then the id.
+    expect(updates[0].runArgs).toEqual([
+      ['completed', 1],
+      ['completed', 2],
+    ]);
+  });
+
+  it('is a no-op returning [] when no updatable field is supplied', () => {
+    const { service, prepared } = makeBulkService([1]);
+
+    expect(service.updateMany([1], {})).toEqual([]);
+    // buildUpdate returned null → nothing was prepared or run.
+    expect(prepared).toHaveLength(0);
   });
 });

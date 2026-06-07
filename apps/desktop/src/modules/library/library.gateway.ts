@@ -13,7 +13,9 @@ import {
   libraryGetAllPayloadSchema,
   libraryAddPayloadSchema,
   libraryUpdatePayloadSchema,
+  libraryUpdateManyPayloadSchema,
   libraryRemovePayloadSchema,
+  libraryRemoveManyPayloadSchema,
 } from '@shiroani/shared';
 import { CORS_CONFIG } from '../kernel/cors.config';
 import { WsThrottlerGuard } from '../kernel/ws-throttler.guard';
@@ -83,6 +85,27 @@ export class LibraryGateway {
     });
   }
 
+  @SubscribeMessage(LibraryEvents.UPDATE_MANY)
+  handleUpdateMany(@MessageBody() payload: unknown) {
+    return handleGatewayRequest({
+      logger,
+      action: LibraryEvents.UPDATE_MANY,
+      defaultResult: { entries: [] },
+      schema: libraryUpdateManyPayloadSchema,
+      payload,
+      handler: async parsed => {
+        const { ids, ...updates } = parsed;
+        const entries = this.libraryService.updateMany(ids, updates);
+        // Only broadcast when at least one row actually changed, so other
+        // clients never reconcile against an empty set.
+        if (entries.length > 0) {
+          this.server.emit(LibraryEvents.UPDATED, { entries, action: CrudActions.UPDATED_MANY });
+        }
+        return { entries };
+      },
+    });
+  }
+
   @SubscribeMessage(LibraryEvents.GET_STATS)
   handleGetStats() {
     return handleGatewayRequest({
@@ -111,6 +134,26 @@ export class LibraryGateway {
         }
         this.server.emit(LibraryEvents.UPDATED, { id: parsed.id, action: CrudActions.REMOVED });
         return { success: true };
+      },
+    });
+  }
+
+  @SubscribeMessage(LibraryEvents.REMOVE_MANY)
+  handleRemoveMany(@MessageBody() payload: unknown) {
+    return handleGatewayRequest({
+      logger,
+      action: LibraryEvents.REMOVE_MANY,
+      defaultResult: { ids: [] },
+      schema: libraryRemoveManyPayloadSchema,
+      payload,
+      handler: async parsed => {
+        const ids = this.libraryService.removeMany(parsed.ids);
+        // Broadcast the rows actually deleted (ids that existed) so other
+        // clients prune exactly the same set.
+        if (ids.length > 0) {
+          this.server.emit(LibraryEvents.UPDATED, { ids, action: CrudActions.REMOVED_MANY });
+        }
+        return { ids };
       },
     });
   }

@@ -130,6 +130,68 @@ export class LibraryService {
     return deleted;
   }
 
+  /**
+   * Remove many entries in ONE transaction. Returns the ids actually deleted
+   * (rows that existed) so the gateway can broadcast a precise removal set.
+   *
+   * A single call replaces the N individual {@link removeEntry} round-trips the
+   * batch action bar used to fire — those tripped the WS throttler on a large
+   * selection. Atomic: a failure mid-batch rolls the whole delete back, so the
+   * client's optimistic removal and the DB never disagree on a partial set.
+   */
+  removeMany(ids: number[]): number[] {
+    const db = this.databaseService.db;
+    const stmt = db.prepare(`DELETE FROM ${TABLE} WHERE id = ?`);
+    const run = db.transaction((rows: number[]): number[] => {
+      const deleted: number[] = [];
+      for (const id of rows) {
+        if (stmt.run(id).changes > 0) deleted.push(id);
+      }
+      return deleted;
+    });
+    const deleted = run(ids);
+    if (deleted.length > 0) {
+      logger.info(`Removed ${deleted.length} entries from library (bulk)`);
+    }
+    return deleted;
+  }
+
+  /**
+   * Apply the SAME field updates to many entries in ONE transaction. Returns the
+   * updated entries (only rows that still existed). The bulk twin of
+   * {@link updateEntry}: same `buildUpdate` SET clauses (incl. the `updated_at`
+   * bump that marks the rows as fresh local edits for the next sync), coalesced
+   * into a single statement re-run per id so a large selection is one socket
+   * emit instead of N. Atomic — a mid-batch failure rolls the whole update back.
+   */
+  updateMany(ids: number[], updates: LibraryUpdates): AnimeEntry[] {
+    const db = this.databaseService.db;
+
+    // Build the dynamic UPDATE once (the SET clauses are identical for every
+    // id); a null result means no updatable field was supplied — the gateway
+    // schema already rejects that, but guard so an empty update can't run.
+    const built = buildUpdate(TABLE, updates, UPDATE_FIELD_MAP, 0);
+    if (!built) return [];
+    // `buildUpdate` appends the id as the final bind value; swap it per row.
+    const setValues = built.values.slice(0, -1);
+    const stmt = db.prepare(built.sql);
+
+    const run = db.transaction((rows: number[]): AnimeEntry[] => {
+      const updated: AnimeEntry[] = [];
+      for (const id of rows) {
+        stmt.run(...setValues, id);
+        const entry = this.getEntryById(id);
+        if (entry) updated.push(entry);
+      }
+      return updated;
+    });
+    const updated = run(ids);
+    if (updated.length > 0) {
+      logger.debug(`Updated ${updated.length} entries (bulk)`);
+    }
+    return updated;
+  }
+
   /** Get counts of entries grouped by status. */
   getStats(): LibraryStatsResult {
     const db = this.databaseService.db;
