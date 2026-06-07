@@ -68,6 +68,37 @@ interface OptimisticRemoveConfig<TState> {
   label?: string;
 }
 
+interface OptimisticUpdateManyConfig<TItem, TPayload> {
+  /** Bulk socket mutation event, e.g. `LibraryEvents.UPDATE_MANY`. */
+  event: string;
+  /** Wire payload — carries the `ids` and the changed fields; emitted as-is. */
+  payload: TPayload;
+  /** Target entity ids to patch. */
+  ids: number[];
+  /**
+   * Patch applied to every matched row. Pre-bound to the change by the caller so
+   * the wire payload (which carries `ids`) never leaks into the entity.
+   */
+  apply: (existing: TItem) => TItem;
+  /** Devtools label suffix for the optimistic set (default `'optimisticUpdateMany'`). */
+  label?: string;
+}
+
+interface OptimisticRemoveManyConfig<TState> {
+  /** Bulk socket mutation event, e.g. `LibraryEvents.REMOVE_MANY`. */
+  event: string;
+  /** Target entity ids to remove. */
+  ids: number[];
+  /**
+   * Extra partial state merged into the optimistic removal set, computed once
+   * over the whole removal set (e.g. closing a detail panel if its entry is
+   * among the removed ids).
+   */
+  extra?: (state: TState) => Partial<TState>;
+  /** Devtools label suffix for the optimistic set (default `'optimisticRemoveMany'`). */
+  label?: string;
+}
+
 /**
  * Listener handlers for the broadcast `UPDATED` event. Each store wires only
  * the actions it cares about; `imported` defaults to a full re-fetch.
@@ -81,6 +112,17 @@ interface CrudUpdatedListenerConfig<TItem extends CrudEntity, TState> {
   onUpdated: (state: TState, entry: TItem) => Partial<TState>;
   /** Apply a removal by id (and any selection/panel sync). */
   onRemoved: (state: TState, id: number) => Partial<TState>;
+  /**
+   * Apply a bulk update (the broadcast's authoritative `entries`). Optional —
+   * when omitted, a `updated-many` broadcast falls back to a full re-fetch so a
+   * store that never emits batches stays correct without extra wiring.
+   */
+  onUpdatedMany?: (state: TState, entries: TItem[]) => Partial<TState>;
+  /**
+   * Apply a bulk removal (the broadcast's `ids`). Optional — when omitted, a
+   * `removed-many` broadcast falls back to a full re-fetch.
+   */
+  onRemovedMany?: (state: TState, ids: number[]) => Partial<TState>;
   /** Devtools label suffix for the add path (default `'entryAdded'`). */
   addedLabel?: string;
 }
@@ -112,6 +154,23 @@ export function createCrudResource<
   /** Mark that authoritative/optimistic state changed, invalidating an in-flight fetch's data write. */
   const bumpSeq = () => {
     mutationSeq += 1;
+  };
+
+  /**
+   * Build the rollback patch for a failed optimistic removal: restore `entries`
+   * plus every key the `extra` snapshot touched, back to their pre-mutation
+   * values. Shared by the single ({@link optimisticRemove}) and bulk
+   * ({@link optimisticRemoveMany}) remove paths.
+   */
+  const buildRemoveRollback = (
+    previousState: TState,
+    extraSnapshot: Partial<TState>
+  ): Partial<TState> => {
+    const rollback: Partial<TState> = { entries: previousState.entries } as Partial<TState>;
+    for (const key of Object.keys(extraSnapshot) as (keyof TState)[]) {
+      (rollback as Record<keyof TState, TState[keyof TState]>)[key] = previousState[key];
+    }
+    return rollback;
   };
 
   /**
@@ -207,11 +266,79 @@ export function createCrudResource<
       .then(() => true)
       .catch((err: Error) => {
         logger.error(`Failed to remove ${storeName} entry:`, err.message);
-        const rollback: Partial<TState> = { entries: previousState.entries } as Partial<TState>;
-        for (const key of Object.keys(extraSnapshot) as (keyof TState)[]) {
-          (rollback as Record<keyof TState, TState[keyof TState]>)[key] = previousState[key];
-        }
-        set(rollback, undefined, `${storeName}/removeError`);
+        set(
+          buildRemoveRollback(previousState, extraSnapshot),
+          undefined,
+          `${storeName}/removeError`
+        );
+        toast.error(i18n.t('common:errors.removeFailed'));
+        return false;
+      });
+  };
+
+  /**
+   * Optimistically patch MANY rows with a single mutation emit, re-fetching on
+   * failure to restore authoritative state. The bulk twin of
+   * {@link optimisticUpdate}: one socket round-trip for the whole selection
+   * (avoids the per-id throttler trip), same loading/seq semantics. The local
+   * patch is pre-bound via `apply` so the wire `payload` (which carries `ids`)
+   * never leaks onto an entity.
+   */
+  const optimisticUpdateMany = <TPayload>(
+    config: OptimisticUpdateManyConfig<TItem, TPayload>
+  ): Promise<boolean> => {
+    const { event, payload, ids, apply, label = 'optimisticUpdateMany' } = config;
+    if (ids.length === 0) return Promise.resolve(true);
+    const idSet = new Set(ids);
+    bumpSeq();
+    set(
+      state =>
+        ({
+          entries: state.entries.map(e => (idSet.has(e.id) ? apply(e) : e)),
+        }) as Partial<TState>,
+      undefined,
+      `${storeName}/${label}`
+    );
+    return emitWithErrorHandling(event, payload)
+      .then(() => true)
+      .catch((err: Error) => {
+        logger.error(`Failed to bulk-update ${storeName} entries:`, err.message);
+        toast.error(i18n.t('common:errors.saveFailed'));
+        fetchAll();
+        return false;
+      });
+  };
+
+  /**
+   * Optimistically remove MANY rows (plus any selection/panel sync via `extra`)
+   * with a single mutation emit, rolling back to the captured snapshot on
+   * failure. The bulk twin of {@link optimisticRemove}.
+   */
+  const optimisticRemoveMany = (config: OptimisticRemoveManyConfig<TState>): Promise<boolean> => {
+    const { event, ids, extra, label = 'optimisticRemoveMany' } = config;
+    if (ids.length === 0) return Promise.resolve(true);
+    const previousState = get();
+    const extraSnapshot = extra?.(previousState) ?? ({} as Partial<TState>);
+    const removed = new Set(ids);
+    bumpSeq();
+    set(
+      state =>
+        ({
+          entries: state.entries.filter(e => !removed.has(e.id)),
+          ...extra?.(state),
+        }) as Partial<TState>,
+      undefined,
+      `${storeName}/${label}`
+    );
+    return emitWithErrorHandling(event, { ids })
+      .then(() => true)
+      .catch((err: Error) => {
+        logger.error(`Failed to bulk-remove ${storeName} entries:`, err.message);
+        set(
+          buildRemoveRollback(previousState, extraSnapshot),
+          undefined,
+          `${storeName}/removeManyError`
+        );
         toast.error(i18n.t('common:errors.removeFailed'));
         return false;
       });
@@ -223,7 +350,8 @@ export function createCrudResource<
    * triggers a full re-fetch.
    */
   const createUpdatedListener = (config: CrudUpdatedListenerConfig<TItem, TState>) => {
-    const { addActions, onAdded, onUpdated, onRemoved, addedLabel = 'entryAdded' } = config;
+    const { addActions, onAdded, onUpdated, onRemoved, onUpdatedMany, onRemovedMany } = config;
+    const { addedLabel = 'entryAdded' } = config;
     return (data: unknown) => {
       const { action } = data as { action: CrudAction };
       if (addActions.includes(action)) {
@@ -238,11 +366,37 @@ export function createCrudResource<
         const { id } = data as { id: number };
         bumpSeq();
         set(state => onRemoved(state, id), undefined, `${storeName}/entryRemoved`);
+      } else if (action === CrudActions.UPDATED_MANY) {
+        // Bulk update: patch the authoritative rows in place, or re-fetch when
+        // this store didn't opt into batch handling (always correct, just less
+        // efficient — keeps batch-less consumers like diary correct).
+        if (onUpdatedMany) {
+          const { entries } = data as { entries: TItem[] };
+          bumpSeq();
+          set(state => onUpdatedMany(state, entries), undefined, `${storeName}/entriesUpdated`);
+        } else {
+          fetchAll();
+        }
+      } else if (action === CrudActions.REMOVED_MANY) {
+        if (onRemovedMany) {
+          const { ids } = data as { ids: number[] };
+          bumpSeq();
+          set(state => onRemovedMany(state, ids), undefined, `${storeName}/entriesRemoved`);
+        } else {
+          fetchAll();
+        }
       } else if (action === CrudActions.IMPORTED) {
         fetchAll();
       }
     };
   };
 
-  return { fetchAll, optimisticUpdate, optimisticRemove, createUpdatedListener };
+  return {
+    fetchAll,
+    optimisticUpdate,
+    optimisticRemove,
+    optimisticUpdateMany,
+    optimisticRemoveMany,
+    createUpdatedListener,
+  };
 }
