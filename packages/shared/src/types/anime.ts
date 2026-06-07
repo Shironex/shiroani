@@ -259,6 +259,26 @@ export interface LibraryUpdatePayload {
   resumeUrl?: string;
 }
 
+/**
+ * Bulk-update payload: apply the SAME field change to every id in `ids` in one
+ * request. Exposes only the fields meaningful (and safe) to set uniformly
+ * across many rows — `status`, `score`, `currentEpisode`. Per-entry identity /
+ * content fields (`anilistId`, `notes`, `resumeUrl`) stay on the single-row
+ * {@link LibraryUpdatePayload}. Sent by the library batch action bar so a large
+ * selection is one socket emit instead of N.
+ */
+export interface LibraryUpdateManyPayload {
+  ids: number[];
+  status?: AnimeStatus;
+  currentEpisode?: number;
+  score?: number;
+}
+
+/** Bulk-remove payload: delete every id in `ids` in one request/transaction. */
+export interface LibraryRemoveManyPayload {
+  ids: number[];
+}
+
 export interface LibraryStatsResult {
   watching: number;
   completed: number;

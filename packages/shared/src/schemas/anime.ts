@@ -186,6 +186,49 @@ export const libraryRemovePayloadSchema = z.object({
   id: z.number().int().positive(),
 });
 
+/**
+ * Upper bound on a single bulk operation. A "select all" batch on a large
+ * library is one socket emit; the cap keeps a single message from carrying an
+ * unbounded id list (and the DB transaction from running unbounded), while
+ * sitting far above any realistic library size.
+ */
+const LIBRARY_BATCH_MAX_IDS = 10_000;
+
+/**
+ * Positive library ids for a bulk operation. Not refined for uniqueness — the
+ * client always sends a deduped set and duplicates are idempotent server-side
+ * (a re-delete reports 0 changes; a re-update writes the same row twice).
+ */
+const libraryBatchIdsSchema = z
+  .array(z.number().int().positive())
+  .min(1)
+  .max(LIBRARY_BATCH_MAX_IDS);
+
+export const libraryRemoveManyPayloadSchema = z.object({
+  ids: libraryBatchIdsSchema,
+});
+
+/**
+ * Bulk update applies the SAME value to every id, so it deliberately exposes
+ * ONLY the fields that are meaningful (and safe) to set uniformly across many
+ * rows: `status`, `score`, `currentEpisode`. The single-row
+ * {@link libraryUpdatePayloadSchema} keeps `anilistId`/`notes`/`resumeUrl` —
+ * those are per-entry identity/content (and `anilistId` is UNIQUE, so a shared
+ * value would collide), which has no place in a "apply to N rows" operation.
+ */
+export const libraryUpdateManyPayloadSchema = z
+  .object({
+    ids: libraryBatchIdsSchema,
+    status: animeStatusSchema.optional(),
+    currentEpisode: z.number().int().nonnegative().max(10_000).optional(),
+    score: z.number().min(0).max(10).optional(),
+  })
+  // At least one updatable field must be present — an `ids`-only payload would
+  // be a no-op write (mirrors `buildUpdate` returning null for empty updates).
+  .refine(({ ids: _ids, ...updates }) => Object.values(updates).some(v => v !== undefined), {
+    message: 'At least one field to update must be provided',
+  });
+
 // ============================================
 // AniList sync gateway payloads
 // ============================================
