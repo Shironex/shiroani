@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
 import { maybeDevtools } from '@/stores/utils/maybeDevtools';
 import { getSocket, emitWithErrorHandling } from '@/lib/socket';
 import {
@@ -10,9 +11,28 @@ import {
   type SyncEntryDirection,
   type SyncEntryRequest,
   type SyncEntryResult,
+  type FullSyncDirection,
+  type FullSyncPushMode,
+  type FullSyncRequest,
 } from '@shiroani/shared';
 
 const logger = createLogger('MalSyncStore');
+
+/**
+ * Build the full-sync request for the persisted direction mode. Push-only mode
+ * mirrors the local library onto MAL on every run, so it OVERWRITES existing
+ * remote entries (local is the source of truth) — the one-shot push button uses
+ * {@link MalSyncActions.pushLibrary} to choose create-missing vs overwrite
+ * explicitly instead.
+ */
+function requestForMode(mode: FullSyncDirection): FullSyncRequest {
+  // `mode` is rehydrated from localStorage, so a stale/corrupted value could
+  // reach here — default anything unrecognised to two-way rather than emit an
+  // invalid `direction` the gateway schema would reject.
+  if (mode === 'push') return { direction: 'push', pushMode: 'overwrite' };
+  if (mode === 'pull') return { direction: 'pull' };
+  return { direction: 'two-way' };
+}
 
 /**
  * The MAL twin of {@link useAniListSyncStore}. Sync runs main-side and can take
@@ -48,10 +68,32 @@ interface MalSyncState {
    * make the Accounts full-sync card render misleading progress.
    */
   entrySyncingId: number | null;
+  /**
+   * Persisted direction the manual "Sync now" button (and any recurring run) uses:
+   * `two-way` (reconcile), `push` (local → MAL, overwrite) or `pull`
+   * (MAL → local). The ONLY persisted field on this store — transient run state
+   * (`syncing`/`progress`/`result`/…) is deliberately not persisted.
+   */
+  directionMode: FullSyncDirection;
 }
 
 interface MalSyncActions {
-  sync: () => Promise<void>;
+  /**
+   * Run a full-library MAL sync. With no argument it uses the persisted
+   * {@link MalSyncState.directionMode}; an explicit `override` (used by
+   * {@link pushLibrary}) wins. Single-flight across both the full and per-entry
+   * MAL paths — a no-op if a MAL sync is already running.
+   */
+  sync: (override?: FullSyncRequest) => Promise<void>;
+  /**
+   * One-shot push of the ENTIRE local library to MAL. `create-missing` only
+   * creates entries MAL doesn't have; `overwrite` also rewrites existing ones
+   * (local wins). Never pulls. Delegates to {@link sync} so it shares the same
+   * single-flight guard, progress, and result wiring.
+   */
+  pushLibrary: (pushMode: FullSyncPushMode) => Promise<void>;
+  /** Set (and persist) the direction mode the "Sync now" button uses. */
+  setDirectionMode: (mode: FullSyncDirection) => void;
   /**
    * Reconcile a SINGLE library entry against MAL in a forced direction
    * (`push`/`pull`) or `auto`. Resolves with the outcome action (or `'error'`
@@ -66,87 +108,110 @@ interface MalSyncActions {
 type MalSyncStore = MalSyncState & MalSyncActions;
 
 export const useMalSyncStore = create<MalSyncStore>()(
-  maybeDevtools(
-    (set, get) => ({
-      syncing: false,
-      progress: null,
-      result: null,
-      lastSyncedAt: null,
-      error: null,
-      entrySyncingId: null,
+  persist(
+    maybeDevtools(
+      (set, get) => ({
+        syncing: false,
+        progress: null,
+        result: null,
+        lastSyncedAt: null,
+        error: null,
+        entrySyncingId: null,
+        directionMode: 'two-way',
 
-      sync: async () => {
-        // Single-flight across BOTH MAL paths: refuse a full sync while a
-        // per-entry MAL sync is in flight (the main process shares one `running`
-        // guard FOR MAL). AniList sync state is intentionally ignored here.
-        if (get().syncing || get().entrySyncingId !== null) return;
+        sync: async override => {
+          // Single-flight across BOTH MAL paths: refuse a full sync while a
+          // per-entry MAL sync is in flight (the main process shares one `running`
+          // guard FOR MAL). AniList sync state is intentionally ignored here.
+          if (get().syncing || get().entrySyncingId !== null) return;
 
-        set(
-          { syncing: true, error: null, result: null, progress: null },
-          undefined,
-          'malSync/start'
-        );
+          // Explicit override (from pushLibrary) wins; otherwise derive from the
+          // persisted direction mode.
+          const payload = override ?? requestForMode(get().directionMode);
 
-        // `getSocket()` throws if the socket singleton isn't initialized; keep it
-        // (and the listener wiring) inside the try so any failure surfaces through
-        // the catch instead of escaping as an unhandled rejection.
-        let detach: (() => void) | null = null;
-        try {
-          const socket = getSocket();
-          const handleProgress = (progress: SyncProgress) => {
-            set({ progress }, undefined, 'malSync/progress');
-          };
-          socket.on(MalSyncEvents.PROGRESS, handleProgress);
-          detach = () => socket.off(MalSyncEvents.PROGRESS, handleProgress);
-
-          const result = await emitWithErrorHandling<undefined, SyncResult>(
-            MalSyncEvents.SYNC,
-            undefined,
-            { timeout: SYNC_TIMEOUT_MS }
-          );
           set(
-            { result, lastSyncedAt: Date.now(), syncing: false, progress: null },
+            { syncing: true, error: null, result: null, progress: null },
             undefined,
-            'malSync/done'
+            'malSync/start'
           );
-        } catch (error) {
-          logger.error('MAL sync failed:', error);
-          // `result` is already cleared at start, but reset it here too so the
-          // error branch is self-evidently correct and survives future refactors —
-          // a stale success summary must never render alongside an error.
-          set(
-            { error: SYNC_ERROR_KEY, syncing: false, progress: null, result: null },
-            undefined,
-            'malSync/error'
-          );
-        } finally {
-          detach?.();
-        }
-      },
 
-      syncEntry: async (localId, direction) => {
-        const state = get();
-        // Don't start a per-entry sync while a full MAL sync (or another per-entry
-        // MAL sync) is in flight — the desktop service shares a single-flight
-        // guard FOR MAL, so this just avoids a guaranteed-to-reject round trip.
-        // AniList sync state is intentionally ignored.
-        if (state.syncing || state.entrySyncingId !== null) return 'error';
+          // `getSocket()` throws if the socket singleton isn't initialized; keep it
+          // (and the listener wiring) inside the try so any failure surfaces through
+          // the catch instead of escaping as an unhandled rejection.
+          let detach: (() => void) | null = null;
+          try {
+            const socket = getSocket();
+            const handleProgress = (progress: SyncProgress) => {
+              set({ progress }, undefined, 'malSync/progress');
+            };
+            socket.on(MalSyncEvents.PROGRESS, handleProgress);
+            detach = () => socket.off(MalSyncEvents.PROGRESS, handleProgress);
 
-        set({ entrySyncingId: localId }, undefined, 'malSync/entryStart');
-        try {
-          const result = await emitWithErrorHandling<SyncEntryRequest, SyncEntryResult>(
-            MalSyncEvents.SYNC_ENTRY,
-            { localId, direction }
-          );
-          return result.action;
-        } catch (error) {
-          logger.error('MAL entry sync failed:', error);
-          return 'error';
-        } finally {
-          set({ entrySyncingId: null }, undefined, 'malSync/entryDone');
-        }
-      },
-    }),
-    { name: 'malSync' }
+            const result = await emitWithErrorHandling<FullSyncRequest, SyncResult>(
+              MalSyncEvents.SYNC,
+              payload,
+              { timeout: SYNC_TIMEOUT_MS }
+            );
+            set(
+              { result, lastSyncedAt: Date.now(), syncing: false, progress: null },
+              undefined,
+              'malSync/done'
+            );
+          } catch (error) {
+            logger.error('MAL sync failed:', error);
+            // `result` is already cleared at start, but reset it here too so the
+            // error branch is self-evidently correct and survives future refactors —
+            // a stale success summary must never render alongside an error.
+            set(
+              { error: SYNC_ERROR_KEY, syncing: false, progress: null, result: null },
+              undefined,
+              'malSync/error'
+            );
+          } finally {
+            detach?.();
+          }
+        },
+
+        pushLibrary: async pushMode => {
+          await get().sync({ direction: 'push', pushMode });
+        },
+
+        setDirectionMode: mode => {
+          set({ directionMode: mode }, undefined, 'malSync/setDirectionMode');
+        },
+
+        syncEntry: async (localId, direction) => {
+          const state = get();
+          // Don't start a per-entry sync while a full MAL sync (or another per-entry
+          // MAL sync) is in flight — the desktop service shares a single-flight
+          // guard FOR MAL, so this just avoids a guaranteed-to-reject round trip.
+          // AniList sync state is intentionally ignored.
+          if (state.syncing || state.entrySyncingId !== null) return 'error';
+
+          set({ entrySyncingId: localId }, undefined, 'malSync/entryStart');
+          try {
+            const result = await emitWithErrorHandling<SyncEntryRequest, SyncEntryResult>(
+              MalSyncEvents.SYNC_ENTRY,
+              { localId, direction }
+            );
+            return result.action;
+          } catch (error) {
+            logger.error('MAL entry sync failed:', error);
+            return 'error';
+          } finally {
+            set({ entrySyncingId: null }, undefined, 'malSync/entryDone');
+          }
+        },
+      }),
+      { name: 'malSync' }
+    ),
+    {
+      name: 'mal-sync-prefs',
+      storage: createJSONStorage(() => localStorage),
+      // Only the chosen direction mode survives reloads; transient run state
+      // (syncing/progress/result/error/lastSyncedAt/entrySyncingId) is NEVER
+      // persisted — a stale `syncing: true` would render the card stuck.
+      partialize: state => ({ directionMode: state.directionMode }),
+    }
   )
 );

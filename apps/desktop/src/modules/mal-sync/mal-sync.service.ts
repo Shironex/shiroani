@@ -6,6 +6,7 @@ import {
   type SyncResult,
   type SyncAction,
   type SyncEntryDirection,
+  type FullSyncRequest,
 } from '@shiroani/shared';
 import { MalClient } from '../anime/mal-client';
 import { AniListClient } from '../anime/anilist-client';
@@ -67,7 +68,10 @@ export class MalSyncService {
    *
    * @throws if a MAL sync is already running, or no MAL account is connected.
    */
-  async sync(onProgress: (progress: SyncProgress) => void): Promise<SyncResult> {
+  async sync(
+    onProgress: (progress: SyncProgress) => void,
+    options?: FullSyncRequest
+  ): Promise<SyncResult> {
     // Claim the single-flight slot SYNCHRONOUSLY — before any `await` — so a
     // second concurrent MAL sync can't slip past during an await gap (TOCTOU).
     if (this.running) {
@@ -77,13 +81,15 @@ export class MalSyncService {
 
     try {
       await this.assertConnected();
-      // Order-independence: link mal_id on AniList rows from AniList's idMal BEFORE
-      // the import loop, so a MAL-first sync matches them by id instead of importing
-      // duplicates. Then the title-search backfill handles the remaining local-only
-      // rows (no anilistId).
+      // Order-independence (ALL directions): link mal_id on AniList rows from
+      // AniList's idMal, then title-search the rest, BEFORE the engine runs. This
+      // is what lets push find a media id to write to, AND stops a pull from
+      // importing a duplicate for an anime the local library already holds under a
+      // not-yet-linked row. Both pre-passes are best-effort, idempotent, and skip
+      // their network round-trip once everything is already linked.
       await this.linkAniListIdMal();
       await this.adapter.backfillMalIds();
-      return await this.engine.runFullSync(onProgress);
+      return await this.engine.runFullSync(onProgress, options);
     } finally {
       this.running = false;
     }

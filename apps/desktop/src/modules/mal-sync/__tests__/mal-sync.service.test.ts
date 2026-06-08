@@ -285,6 +285,74 @@ describe('MalSyncService.sync', () => {
   });
 });
 
+describe('MalSyncService.sync — directional (push / pull) reaches the MAL adapter', () => {
+  it('push create-missing: writes only the MAL-absent entry, leaves the existing match, never imports', async () => {
+    const { service, client, library } = makeService({
+      remote: [remote({ mediaId: 100 }), remote({ mediaId: 999, title: 'MAL only' })],
+      local: [
+        local({ id: 1, malId: 100, status: 'completed', currentEpisode: 12 }),
+        local({ id: 2, malId: 200, status: 'watching', currentEpisode: 3 }),
+        local({ id: 3, malId: null }),
+      ],
+    });
+    const result = await service.sync(noop, { direction: 'push', pushMode: 'create-missing' });
+
+    expect(client.updateListStatus).toHaveBeenCalledTimes(1);
+    expect(client.updateListStatus).toHaveBeenCalledWith(expect.objectContaining({ malId: 200 }));
+    expect(client.updateListStatus).not.toHaveBeenCalledWith(
+      expect.objectContaining({ malId: 100 })
+    );
+    expect(library.addEntry).not.toHaveBeenCalled();
+    expect(result).toMatchObject({ pushedNew: 1, updatedRemote: 0, imported: 0, skippedNoId: 1 });
+  });
+
+  it('push overwrite: writes every linked local entry, never imports', async () => {
+    const { service, client, library } = makeService({
+      remote: [remote({ mediaId: 100 }), remote({ mediaId: 999 })],
+      local: [
+        local({ id: 1, malId: 100, status: 'completed', currentEpisode: 12 }),
+        local({ id: 2, malId: 200, status: 'watching', currentEpisode: 3 }),
+      ],
+    });
+    const result = await service.sync(noop, { direction: 'push', pushMode: 'overwrite' });
+
+    expect(client.updateListStatus).toHaveBeenCalledWith(expect.objectContaining({ malId: 100 }));
+    expect(client.updateListStatus).toHaveBeenCalledWith(expect.objectContaining({ malId: 200 }));
+    expect(client.updateListStatus).toHaveBeenCalledTimes(2);
+    expect(library.addEntry).not.toHaveBeenCalled();
+    expect(result).toMatchObject({ updatedRemote: 1, pushedNew: 1, imported: 0 });
+  });
+
+  it('pull: imports MAL-only and overwrites matched from MAL, never writes to MAL', async () => {
+    const { service, client, library } = makeService({
+      remote: [
+        remote({
+          mediaId: 999,
+          title: 'MAL only',
+          status: 'completed',
+          progress: 24,
+          updatedAt: EPOCH + 10,
+        }),
+        remote({ mediaId: 100, status: 'completed', progress: 12, updatedAt: EPOCH + 20 }),
+      ],
+      local: [
+        local({ id: 1, malId: 100, status: 'watching', currentEpisode: 2 }),
+        local({ id: 2, malId: 200, status: 'watching', currentEpisode: 5 }),
+      ],
+    });
+    const result = await service.sync(noop, { direction: 'pull' });
+
+    expect(library.addEntry).toHaveBeenCalledWith(expect.objectContaining({ malId: 999 }));
+    expect(library.updateEntry).toHaveBeenCalledWith(
+      1,
+      expect.objectContaining({ status: 'completed', currentEpisode: 12 })
+    );
+    expect(client.updateListStatus).not.toHaveBeenCalled();
+    expect(library.updateEntry).not.toHaveBeenCalledWith(2, expect.anything());
+    expect(result).toMatchObject({ imported: 1, updatedLocal: 1, pushedNew: 0, updatedRemote: 0 });
+  });
+});
+
 describe('MalSyncService backfill (mal_id resolution)', () => {
   it('resolves mal_id by a single confident search hit, then pushes', async () => {
     const { service, client, library } = makeService({

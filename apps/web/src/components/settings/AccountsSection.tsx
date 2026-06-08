@@ -5,12 +5,44 @@ import { Button } from '@/components/ui/button';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import { ProgressBar } from '@/components/shared/ProgressBar';
 import { SettingsCard, SettingsInfoCallout } from '@/components/settings/SettingsCard';
+import { SyncModeSelector, PushLibraryButton } from '@/components/settings/SyncDirectionControls';
 import { handleImageError } from '@/lib/image-utils';
 import { tDynamic } from '@/lib/i18n';
 import { useAniListAuthStore } from '@/stores/useAniListAuthStore';
 import { useAniListSyncStore } from '@/stores/useAniListSyncStore';
 import { useMalAuthStore } from '@/stores/useMalAuthStore';
 import { useMalSyncStore } from '@/stores/useMalSyncStore';
+import type { FullSyncDirection } from '@shiroani/shared';
+
+/**
+ * Direction-aware copy for the "Sync now" confirm dialog. Push-only and pull-only
+ * are one-way — and push-only OVERWRITES the remote — so the dialog must state
+ * that plainly instead of reusing the two-way reconcile copy (which would
+ * misrepresent a destructive push as a merge).
+ */
+function syncConfirmCopy(
+  i18n: Parameters<typeof tDynamic>[0],
+  provider: 'anilist' | 'mal',
+  mode: FullSyncDirection
+): { title: string; description: string } {
+  const base = `accounts:${provider}.sync`;
+  if (mode === 'push') {
+    return {
+      title: tDynamic(i18n, `${base}.confirmPushTitle`),
+      description: tDynamic(i18n, `${base}.confirmPushDescription`),
+    };
+  }
+  if (mode === 'pull') {
+    return {
+      title: tDynamic(i18n, `${base}.confirmPullTitle`),
+      description: tDynamic(i18n, `${base}.confirmPullDescription`),
+    };
+  }
+  return {
+    title: tDynamic(i18n, `${base}.confirmTitle`),
+    description: tDynamic(i18n, `${base}.confirmDescription`),
+  };
+}
 
 /**
  * Accounts settings section.
@@ -242,8 +274,14 @@ function AniListSyncCard() {
   const error = useAniListSyncStore(s => s.error);
   const lastSyncedAt = useAniListSyncStore(s => s.lastSyncedAt);
   const sync = useAniListSyncStore(s => s.sync);
+  const directionMode = useAniListSyncStore(s => s.directionMode);
+  const setDirectionMode = useAniListSyncStore(s => s.setDirectionMode);
+  const pushLibrary = useAniListSyncStore(s => s.pushLibrary);
 
   const [confirmOpen, setConfirmOpen] = useState(false);
+  // Both the full sync and a per-entry sync share one main-side guard, so any
+  // in-flight sync disables every trigger on this card.
+  const busy = syncing || entrySyncingId !== null;
 
   const errorMessage = error ? tDynamic(i18n, error) : null;
   const lastSyncedHint = lastSyncedAt
@@ -251,6 +289,7 @@ function AniListSyncCard() {
         date: new Date(lastSyncedAt).toLocaleString(i18n.language),
       })
     : null;
+  const anilistConfirmCopy = syncConfirmCopy(i18n, 'anilist', directionMode);
 
   return (
     <>
@@ -260,7 +299,14 @@ function AniListSyncCard() {
         title={t('anilist.sync.title')}
         subtitle={t('anilist.sync.description')}
       >
-        <div className="flex items-center justify-between gap-3">
+        <SyncModeSelector
+          provider="anilist"
+          value={directionMode}
+          onChange={setDirectionMode}
+          disabled={busy}
+        />
+
+        <div className="mt-3 flex items-center justify-between gap-3">
           {/* Busy state is conveyed via aria-busy + the button label; the per-entry
               line is NOT aria-live (it would announce once per item — far too
               chatty). The completion summary below carries the announced outcome. */}
@@ -281,10 +327,11 @@ function AniListSyncCard() {
               )
             )}
           </div>
+          <PushLibraryButton provider="anilist" onPush={pushLibrary} disabled={busy} />
           <Button
             size="sm"
             onClick={() => setConfirmOpen(true)}
-            disabled={syncing || entrySyncingId !== null}
+            disabled={busy}
             className="flex-shrink-0"
           >
             {syncing ? (
@@ -349,8 +396,8 @@ function AniListSyncCard() {
       <ConfirmDialog
         open={confirmOpen}
         onOpenChange={setConfirmOpen}
-        title={t('anilist.sync.confirmTitle')}
-        description={t('anilist.sync.confirmDescription')}
+        title={anilistConfirmCopy.title}
+        description={anilistConfirmCopy.description}
         confirmLabel={t('anilist.sync.confirmButton')}
         variant="default"
         onConfirm={() => {
@@ -380,8 +427,14 @@ function MalSyncCard() {
   const error = useMalSyncStore(s => s.error);
   const lastSyncedAt = useMalSyncStore(s => s.lastSyncedAt);
   const sync = useMalSyncStore(s => s.sync);
+  const directionMode = useMalSyncStore(s => s.directionMode);
+  const setDirectionMode = useMalSyncStore(s => s.setDirectionMode);
+  const pushLibrary = useMalSyncStore(s => s.pushLibrary);
 
   const [confirmOpen, setConfirmOpen] = useState(false);
+  // Both the full sync and a per-entry sync share one main-side guard (for MAL),
+  // so any in-flight MAL sync disables every trigger on this card.
+  const busy = syncing || entrySyncingId !== null;
 
   const errorMessage = error ? tDynamic(i18n, error) : null;
   const lastSyncedHint = lastSyncedAt
@@ -389,6 +442,7 @@ function MalSyncCard() {
         date: new Date(lastSyncedAt).toLocaleString(i18n.language),
       })
     : null;
+  const malConfirmCopy = syncConfirmCopy(i18n, 'mal', directionMode);
 
   return (
     <>
@@ -398,7 +452,14 @@ function MalSyncCard() {
         title={t('mal.sync.title')}
         subtitle={t('mal.sync.description')}
       >
-        <div className="flex items-center justify-between gap-3">
+        <SyncModeSelector
+          provider="mal"
+          value={directionMode}
+          onChange={setDirectionMode}
+          disabled={busy}
+        />
+
+        <div className="mt-3 flex items-center justify-between gap-3">
           {/* Busy state is conveyed via aria-busy + the button label; the per-entry
               line is NOT aria-live (it would announce once per item — far too
               chatty). The completion summary below carries the announced outcome. */}
@@ -419,10 +480,11 @@ function MalSyncCard() {
               )
             )}
           </div>
+          <PushLibraryButton provider="mal" onPush={pushLibrary} disabled={busy} />
           <Button
             size="sm"
             onClick={() => setConfirmOpen(true)}
-            disabled={syncing || entrySyncingId !== null}
+            disabled={busy}
             className="flex-shrink-0"
           >
             {syncing ? (
@@ -487,8 +549,8 @@ function MalSyncCard() {
       <ConfirmDialog
         open={confirmOpen}
         onOpenChange={setConfirmOpen}
-        title={t('mal.sync.confirmTitle')}
-        description={t('mal.sync.confirmDescription')}
+        title={malConfirmCopy.title}
+        description={malConfirmCopy.description}
         confirmLabel={t('mal.sync.confirmButton')}
         variant="default"
         onConfirm={() => {

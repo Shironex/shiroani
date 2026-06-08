@@ -205,8 +205,9 @@ export const ImportExportEvents = {
  * desktop main process (authenticated via the safeStorage-backed token store).
  */
 export const AniListSyncEvents = {
-  // Client -> Server (request): run a full two-way sync. Resolves with an
-  // AniListSyncResult ack once the run completes.
+  // Client -> Server (request): run a full-library sync. The payload is a
+  // FullSyncRequest ({ direction, pushMode? }) — a missing payload is treated as
+  // two-way (back-compat). Resolves with an AniListSyncResult ack once complete.
   SYNC: 'anilist-sync:run',
 
   // Client -> Server (request): sync a SINGLE library entry by local id, with a
@@ -233,8 +234,9 @@ export const AniListSyncEvents = {
  * {@link SyncProgress} / {@link SyncResult} shapes.
  */
 export const MalSyncEvents = {
-  // Client -> Server (request): run a full two-way MAL sync. Resolves with an
-  // AniListSyncResult ack once the run completes.
+  // Client -> Server (request): run a full-library MAL sync. The payload is a
+  // FullSyncRequest ({ direction, pushMode? }) — a missing payload is treated as
+  // two-way (back-compat). Resolves with a SyncResult ack once complete.
   SYNC: 'mal-sync:run',
 
   // Client -> Server (request): sync a SINGLE library entry by local id, with a

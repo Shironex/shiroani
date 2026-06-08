@@ -251,3 +251,31 @@ export const malSyncEntryPayloadSchema = z.object({
   localId: z.number().int().positive(),
   direction: z.enum(['push', 'pull', 'auto']),
 });
+
+/**
+ * Request payload for a FULL-LIBRARY sync ({@link AniListSyncEvents.SYNC} /
+ * {@link MalSyncEvents.SYNC}). `direction` selects two-way reconcile, push
+ * (local → remote) or pull (remote → local); for a push, `pushMode` selects
+ * create-missing (only remote-absent entries) or overwrite (every local entry).
+ * `pushMode` is REQUIRED when `direction` is `'push'`.
+ *
+ * `preprocess` substitutes the two-way default for a missing/undefined payload,
+ * so an older renderer that emits no payload still runs the original behaviour
+ * (and the gateway never has to special-case `undefined`). Shared by both
+ * providers — the full-sync wire is identical for AniList and MAL.
+ */
+const pushModeSchema = z.enum(['create-missing', 'overwrite']);
+
+export const fullSyncPayloadSchema = z.preprocess(
+  value => value ?? { direction: 'two-way' },
+  // Discriminated union so `pushMode` is REQUIRED for a push and optional (and
+  // ignored) otherwise — the runtime contract now matches the FullSyncRequest
+  // type exactly. `.strict()` per arm rejects unexpected keys at the trust
+  // boundary rather than silently stripping them; the write loop reads only
+  // these two fields, so anything else is a bug or an abuse attempt.
+  z.discriminatedUnion('direction', [
+    z.object({ direction: z.literal('two-way'), pushMode: pushModeSchema.optional() }).strict(),
+    z.object({ direction: z.literal('pull'), pushMode: pushModeSchema.optional() }).strict(),
+    z.object({ direction: z.literal('push'), pushMode: pushModeSchema }).strict(),
+  ])
+);

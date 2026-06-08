@@ -12,6 +12,7 @@ import {
   LibraryEvents,
   CrudActions,
   malSyncEntryPayloadSchema,
+  fullSyncPayloadSchema,
   type SyncResult,
   type SyncEntryResult,
 } from '@shiroani/shared';
@@ -45,22 +46,28 @@ export class MalSyncGateway {
   }
 
   /**
-   * Run a two-way MAL sync. Streams per-entry progress over
-   * {@link MalSyncEvents.PROGRESS} and resolves the ack with the final tally.
-   * Long-running — the client emits with an extended timeout. On any local
-   * mutation, broadcasts {@link LibraryEvents.UPDATED} so the library store
-   * re-fetches. The MAL run has its OWN single-flight guard (independent of the
-   * AniList sync gateway), so the two can run concurrently.
+   * Run a full-library MAL sync in the requested direction (the payload is a
+   * {@link FullSyncRequest}; a missing payload defaults to two-way). Streams
+   * per-entry progress over {@link MalSyncEvents.PROGRESS} and resolves the ack
+   * with the final tally. Long-running — the client emits with an extended
+   * timeout. On any local mutation (import / pull), broadcasts
+   * {@link LibraryEvents.UPDATED} so the library store re-fetches; a push-only run
+   * writes nothing locally, so no broadcast fires (correct). The MAL run has its
+   * OWN single-flight guard (independent of the AniList sync gateway), so the two
+   * can run concurrently.
    */
   @SubscribeMessage(MalSyncEvents.SYNC)
-  handleSync() {
+  handleSync(@MessageBody() payload: unknown) {
     return handleGatewayRequest({
       logger,
       action: MalSyncEvents.SYNC,
       defaultResult: EMPTY_RESULT,
-      handler: async () => {
-        const result = await this.syncService.sync(progress =>
-          this.server.emit(MalSyncEvents.PROGRESS, progress)
+      schema: fullSyncPayloadSchema,
+      payload,
+      handler: async parsed => {
+        const result = await this.syncService.sync(
+          progress => this.server.emit(MalSyncEvents.PROGRESS, progress),
+          parsed
         );
 
         if (result.imported > 0 || result.updatedLocal > 0) {
