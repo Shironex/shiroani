@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { AniListErrorState } from '@/components/shared/AniListErrorState';
 import { useMalProfileStore } from '@/stores/useMalProfileStore';
+import { useNavigateToBrowser } from '@/hooks/useNavigateToBrowser';
 import { ProfileSkeleton } from './ProfileSkeleton';
 import { ProgressRing } from './ProgressRing';
 
@@ -59,6 +60,7 @@ export function MalStatsPanel() {
   const isLoading = useMalProfileStore(s => s.isLoading);
   const error = useMalProfileStore(s => s.error);
   const fetchProfile = useMalProfileStore(s => s.fetchProfile);
+  const navigateToBrowser = useNavigateToBrowser();
 
   useEffect(() => {
     fetchProfile();
@@ -126,7 +128,7 @@ export function MalStatsPanel() {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => window.open(profileUrl, '_blank', 'noopener,noreferrer')}
+            onClick={() => navigateToBrowser(profileUrl)}
             className={cn(
               'h-8 px-3 text-[12px] font-medium gap-1.5',
               'bg-foreground/5 border border-foreground/10 hover:bg-foreground/10'
