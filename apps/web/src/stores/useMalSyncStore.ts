@@ -26,7 +26,12 @@ const logger = createLogger('MalSyncStore');
  * explicitly instead.
  */
 function requestForMode(mode: FullSyncDirection): FullSyncRequest {
-  return mode === 'push' ? { direction: 'push', pushMode: 'overwrite' } : { direction: mode };
+  // `mode` is rehydrated from localStorage, so a stale/corrupted value could
+  // reach here — default anything unrecognised to two-way rather than emit an
+  // invalid `direction` the gateway schema would reject.
+  if (mode === 'push') return { direction: 'push', pushMode: 'overwrite' };
+  if (mode === 'pull') return { direction: 'pull' };
+  return { direction: 'two-way' };
 }
 
 /**
