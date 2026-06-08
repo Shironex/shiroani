@@ -133,10 +133,13 @@ export type FullSyncPushMode = 'create-missing' | 'overwrite';
 /**
  * Request payload for a full-library sync. Rides in the (previously empty) `SYNC`
  * event. A missing/undefined payload is treated as `{ direction: 'two-way' }` so
- * the original behaviour is preserved. `pushMode` is REQUIRED when `direction` is
- * `'push'` and ignored otherwise.
+ * the original behaviour is preserved.
+ *
+ * Modelled as a discriminated union so `pushMode` is REQUIRED for `direction:
+ * 'push'` and ignored otherwise — this keeps the compile-time type in lockstep
+ * with {@link fullSyncPayloadSchema}'s runtime contract (which rejects a push
+ * payload missing `pushMode`).
  */
-export interface FullSyncRequest {
-  direction: FullSyncDirection;
-  pushMode?: FullSyncPushMode;
-}
+export type FullSyncRequest =
+  | { direction: 'push'; pushMode: FullSyncPushMode }
+  | { direction: 'two-way' | 'pull'; pushMode?: FullSyncPushMode };

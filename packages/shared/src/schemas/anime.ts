@@ -264,18 +264,18 @@ export const malSyncEntryPayloadSchema = z.object({
  * (and the gateway never has to special-case `undefined`). Shared by both
  * providers — the full-sync wire is identical for AniList and MAL.
  */
+const pushModeSchema = z.enum(['create-missing', 'overwrite']);
+
 export const fullSyncPayloadSchema = z.preprocess(
   value => value ?? { direction: 'two-way' },
-  z
-    .object({
-      direction: z.enum(['two-way', 'push', 'pull']),
-      pushMode: z.enum(['create-missing', 'overwrite']).optional(),
-    })
-    // Reject unexpected keys at the trust boundary rather than silently stripping
-    // them — the write loop reads only these two fields, so anything else is a bug
-    // or an abuse attempt.
-    .strict()
-    .refine(payload => payload.direction !== 'push' || payload.pushMode !== undefined, {
-      message: 'pushMode is required when direction is "push"',
-    })
+  // Discriminated union so `pushMode` is REQUIRED for a push and optional (and
+  // ignored) otherwise — the runtime contract now matches the FullSyncRequest
+  // type exactly. `.strict()` per arm rejects unexpected keys at the trust
+  // boundary rather than silently stripping them; the write loop reads only
+  // these two fields, so anything else is a bug or an abuse attempt.
+  z.discriminatedUnion('direction', [
+    z.object({ direction: z.literal('two-way'), pushMode: pushModeSchema.optional() }).strict(),
+    z.object({ direction: z.literal('pull'), pushMode: pushModeSchema.optional() }).strict(),
+    z.object({ direction: z.literal('push'), pushMode: pushModeSchema }).strict(),
+  ])
 );
