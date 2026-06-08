@@ -61,9 +61,11 @@ jobs:
       - name: Build desktop app
         run: pnpm --filter @shiroani/desktop build
         env:
-          # Public AniList OAuth client ID, baked into the bundle by esbuild
-          # (see apps/desktop/esbuild.config.mjs). Set as a repo secret.
+          # Public OAuth client IDs, baked into the bundle by esbuild
+          # (see apps/desktop/esbuild.config.mjs). Set as repo secrets. Both are
+          # public (PKCE / implicit grant) — no client secret ships in the build.
           ANILIST_CLIENT_ID: ${{ secrets.ANILIST_CLIENT_ID }}
+          MAL_CLIENT_ID: ${{ secrets.MAL_CLIENT_ID }}
 
       - name: Package macOS
         if: matrix.platform == 'mac'
