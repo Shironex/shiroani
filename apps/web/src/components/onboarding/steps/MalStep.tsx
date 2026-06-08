@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 import { BookMarked, Check, Loader2, UserCircle } from 'lucide-react';
 import { StepLayout } from '../StepLayout';
+import { ExperimentalBadge } from '@/components/ui/experimental-badge';
 import { IS_ELECTRON } from '@/lib/platform';
 import { handleImageError } from '@/lib/image-utils';
 import { tDynamic } from '@/lib/i18n';
@@ -18,6 +19,7 @@ import { useMalAuthStore } from '@/stores/useMalAuthStore';
  */
 export function MalStep() {
   const { t, i18n } = useTranslation('onboarding');
+  const { t: tCommon } = useTranslation('common');
   const status = useMalAuthStore(s => s.status);
   const loading = useMalAuthStore(s => s.loading);
   const error = useMalAuthStore(s => s.error);
@@ -47,7 +49,13 @@ export function MalStep() {
       }
       stepMarker={<Trans ns="onboarding" i18nKey="step.mal.marker" components={{ 1: bPrimary }} />}
       stepIcon={<BookMarked className="h-5 w-5" />}
-      stepTitle={t('step.mal.title')}
+      stepTitle={
+        <>
+          {t('step.mal.title')}
+          <ExperimentalBadge />
+        </>
+      }
+      stepHint={tCommon('experimental.hint')}
     >
       <div className="flex flex-col gap-3 rounded-2xl border border-border-glass bg-foreground/[0.02] p-4">
         {!IS_ELECTRON && <p className="text-xs text-amber-500">{t('step.mal.desktopOnly')}</p>}

@@ -67,5 +67,10 @@
     "removeFailed": "Couldn't remove the item — it was restored.",
     "addFailed": "Couldn't add the item."
   },
-  "unknownAnime": "Unknown anime"
+  "unknownAnime": "Unknown anime",
+  "experimental": {
+    "label": "Experimental",
+    "tooltip": "This integration is experimental — it isn't fully stable yet and may have rough edges.",
+    "hint": "Experimental: this integration isn't fully stable yet and is still being tested. Expect the occasional rough edge."
+  }
 }

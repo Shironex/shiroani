@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import { ProgressBar } from '@/components/shared/ProgressBar';
 import { SettingsCard, SettingsInfoCallout } from '@/components/settings/SettingsCard';
+import { ExperimentalBadge } from '@/components/ui/experimental-badge';
 import { SyncModeSelector, PushLibraryButton } from '@/components/settings/SyncDirectionControls';
 import { handleImageError } from '@/lib/image-utils';
 import { tDynamic } from '@/lib/i18n';
@@ -54,6 +55,7 @@ function syncConfirmCopy(
  */
 export function AccountsSection() {
   const { t, i18n } = useTranslation('accounts');
+  const { t: tCommon } = useTranslation('common');
   const status = useAniListAuthStore(s => s.status);
   const loading = useAniListAuthStore(s => s.loading);
   const error = useAniListAuthStore(s => s.error);
@@ -82,7 +84,11 @@ export function AccountsSection() {
         icon={UserCircle}
         title={t('anilist.title')}
         subtitle={t('anilist.description')}
+        headerAccessory={<ExperimentalBadge />}
       >
+        <p className="text-[12px] leading-snug text-amber-700 dark:text-amber-400">
+          {tCommon('experimental.hint')}
+        </p>
         {connected && viewer ? (
           <div className="flex items-center gap-3">
             {viewer.avatar ? (
@@ -166,6 +172,7 @@ export function AccountsSection() {
  */
 function MalAccountCard() {
   const { t, i18n } = useTranslation('accounts');
+  const { t: tCommon } = useTranslation('common');
   const status = useMalAuthStore(s => s.status);
   const loading = useMalAuthStore(s => s.loading);
   const error = useMalAuthStore(s => s.error);
@@ -190,7 +197,15 @@ function MalAccountCard() {
 
   return (
     <>
-      <SettingsCard icon={UserCircle} title={t('mal.title')} subtitle={t('mal.description')}>
+      <SettingsCard
+        icon={UserCircle}
+        title={t('mal.title')}
+        subtitle={t('mal.description')}
+        headerAccessory={<ExperimentalBadge />}
+      >
+        <p className="text-[12px] leading-snug text-amber-700 dark:text-amber-400">
+          {tCommon('experimental.hint')}
+        </p>
         {connected && viewer ? (
           <div className="flex items-center gap-3">
             {viewer.avatar ? (

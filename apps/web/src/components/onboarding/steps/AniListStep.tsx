@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 import { Check, Library, Loader2, UserCircle } from 'lucide-react';
 import { StepLayout } from '../StepLayout';
+import { ExperimentalBadge } from '@/components/ui/experimental-badge';
 import { IS_ELECTRON } from '@/lib/platform';
 import { handleImageError } from '@/lib/image-utils';
 import { tDynamic } from '@/lib/i18n';
@@ -18,6 +19,7 @@ import { useAniListAuthStore } from '@/stores/useAniListAuthStore';
  */
 export function AniListStep() {
   const { t, i18n } = useTranslation('onboarding');
+  const { t: tCommon } = useTranslation('common');
   const status = useAniListAuthStore(s => s.status);
   const loading = useAniListAuthStore(s => s.loading);
   const error = useAniListAuthStore(s => s.error);
@@ -51,7 +53,13 @@ export function AniListStep() {
         <Trans ns="onboarding" i18nKey="step.anilist.marker" components={{ 1: bPrimary }} />
       }
       stepIcon={<Library className="h-5 w-5" />}
-      stepTitle={t('step.anilist.title')}
+      stepTitle={
+        <>
+          {t('step.anilist.title')}
+          <ExperimentalBadge />
+        </>
+      }
+      stepHint={tCommon('experimental.hint')}
     >
       <div className="flex flex-col gap-3 rounded-2xl border border-border-glass bg-foreground/[0.02] p-4">
         {!IS_ELECTRON && <p className="text-xs text-amber-500">{t('step.anilist.desktopOnly')}</p>}
