@@ -172,7 +172,7 @@ export function DiaryView() {
             <TooltipButton
               variant="ghost"
               size="icon"
-              className="w-8 h-8"
+              className="size-8 shrink-0"
               onClick={toggleSortOrder}
               tooltip={sortOrder === 'asc' ? t('sort.ascending') : t('sort.descending')}
             >
@@ -180,16 +180,16 @@ export function DiaryView() {
                 className={cn('w-4 h-4 transition-transform', sortOrder === 'asc' && 'rotate-180')}
               />
             </TooltipButton>
-            <div className="w-px h-4 bg-border/50 mx-1" />
-            <Button size="sm" className="h-8 gap-1.5 text-xs" onClick={() => openEditor()}>
+            <div className="w-px h-4 bg-border/50 mx-1 shrink-0" />
+            <Button size="sm" className="h-8 gap-1.5 text-xs shrink-0" onClick={() => openEditor()}>
               <Plus className="w-3.5 h-3.5" />
               {t('actions.newEntry')}
             </Button>
-            <div className="w-px h-4 bg-border/50 mx-1" />
+            <div className="w-px h-4 bg-border/50 mx-1 shrink-0" />
             <TooltipButton
               variant="ghost"
               size="icon"
-              className="w-8 h-8"
+              className="size-8 shrink-0"
               onClick={() => setIsExportOpen(true)}
               tooltip={t('actions.export')}
             >
@@ -198,7 +198,7 @@ export function DiaryView() {
             <TooltipButton
               variant="ghost"
               size="icon"
-              className="w-8 h-8"
+              className="size-8 shrink-0"
               onClick={() => setIsImportOpen(true)}
               tooltip={t('actions.import')}
             >

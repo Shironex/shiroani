@@ -87,12 +87,12 @@ export function ViewHeader<T extends string = string>({
           {actions}
           {onViewModeChange && (
             <>
-              <div className="w-px h-4 bg-border-glass mx-1" />
+              <div className="w-px h-4 bg-border-glass mx-1 shrink-0" />
               <TooltipButton
                 variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
                 size="icon"
                 className={cn(
-                  'w-8 h-8',
+                  'size-8 shrink-0',
                   viewMode === 'grid' && 'bg-primary/15 text-primary hover:bg-primary/15'
                 )}
                 onClick={() => onViewModeChange('grid')}
@@ -104,7 +104,7 @@ export function ViewHeader<T extends string = string>({
                 variant={viewMode === 'list' ? 'secondary' : 'ghost'}
                 size="icon"
                 className={cn(
-                  'w-8 h-8',
+                  'size-8 shrink-0',
                   viewMode === 'list' && 'bg-primary/15 text-primary hover:bg-primary/15'
                 )}
                 onClick={() => onViewModeChange('list')}
