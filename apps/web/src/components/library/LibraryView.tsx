@@ -28,9 +28,9 @@ import { ViewHeader } from '@/components/shared/ViewHeader';
 import { EmptyState } from '@/components/shared/EmptyState';
 import { KanjiWatermark } from '@/components/shared/KanjiWatermark';
 import { useLibraryStore, getFilteredEntries } from '@/stores/useLibraryStore';
-import { AnimeCard } from '@/components/library/AnimeCard';
 import { AnimeDetailModal } from '@/components/library/AnimeDetailModal';
-import { LibraryListItem } from '@/components/library/LibraryListItem';
+import { LibraryGrid } from '@/components/library/LibraryGrid';
+import { LibraryList } from '@/components/library/LibraryList';
 import { LibrarySkeleton } from '@/components/library/LibrarySkeleton';
 import { LibraryStats } from '@/components/library/LibraryStats';
 import { BatchActionBar } from '@/components/library/BatchActionBar';
@@ -177,7 +177,7 @@ export function LibraryView() {
             <TooltipButton
               variant="ghost"
               size="icon"
-              className="w-8 h-8"
+              className="size-8 shrink-0"
               onClick={toggleSortOrder}
               tooltip={sortOrder === 'asc' ? t('sort.ascending') : t('sort.descending')}
             >
@@ -185,11 +185,11 @@ export function LibraryView() {
                 className={cn('w-4 h-4 transition-transform', sortOrder === 'asc' && 'rotate-180')}
               />
             </TooltipButton>
-            <div className="w-px h-4 bg-border-glass mx-1" />
+            <div className="w-px h-4 bg-border-glass mx-1 shrink-0" />
             <TooltipButton
               variant="ghost"
               size="icon"
-              className="w-8 h-8"
+              className="size-8 shrink-0"
               onClick={() => setIsExportOpen(true)}
               tooltip={t('actions.export')}
             >
@@ -198,18 +198,18 @@ export function LibraryView() {
             <TooltipButton
               variant="ghost"
               size="icon"
-              className="w-8 h-8"
+              className="size-8 shrink-0"
               onClick={() => setIsImportOpen(true)}
               tooltip={t('actions.import')}
             >
               <Upload className="w-4 h-4" />
             </TooltipButton>
-            <div className="w-px h-4 bg-border-glass mx-1" />
+            <div className="w-px h-4 bg-border-glass mx-1 shrink-0" />
             {selectionMode && (
               <TooltipButton
                 variant="ghost"
                 size="icon"
-                className="w-8 h-8"
+                className="size-8 shrink-0"
                 disabled={filteredEntries.length === 0}
                 onClick={handleSelectAllVisible}
                 tooltip={t('batch.selectAll')}
@@ -221,7 +221,7 @@ export function LibraryView() {
               variant={selectionMode ? 'secondary' : 'ghost'}
               size="icon"
               className={cn(
-                'w-8 h-8 transition-all duration-200',
+                'size-8 shrink-0 transition-all duration-200',
                 selectionMode && 'bg-primary/10 text-primary hover:bg-primary/15'
               )}
               disabled={entries.length === 0}
@@ -233,7 +233,7 @@ export function LibraryView() {
             <TooltipButton
               variant="ghost"
               size="icon"
-              className="w-8 h-8"
+              className="size-8 shrink-0"
               disabled={!entries.some(e => e.status === 'plan_to_watch')}
               onClick={handleRandomPick}
               tooltip={t('actions.randomPick')}
@@ -244,7 +244,7 @@ export function LibraryView() {
               variant={showStats ? 'secondary' : 'ghost'}
               size="icon"
               className={cn(
-                'w-8 h-8 transition-all duration-200',
+                'size-8 shrink-0 transition-all duration-200',
                 showStats && 'bg-primary/10 text-primary hover:bg-primary/15'
               )}
               onClick={() => setShowStats(v => !v)}
@@ -268,12 +268,19 @@ export function LibraryView() {
           <KanjiWatermark kanji="蔵" position="br" size={300} opacity={0.03} />
         </div>
 
-        <div className="absolute inset-0 overflow-y-auto overflow-x-hidden">
-          <div className="relative z-[1] px-7 pt-5 pb-24">
-            {isLoading ? (
+        {/* Height-bounded layer hosting the virtualized scroller. The grid/list
+            manage their own internal scroll and fill the full height, so content
+            scrolls under the floating navigation dock (full-bleed). Dock
+            clearance at the *end* of the scroll is handled inside the scroller
+            via a trailing spacer row, not by shrinking this viewport. */}
+        <div className="absolute inset-0 z-[1] px-7 pt-5 flex flex-col">
+          {isLoading ? (
+            <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden">
               <LibrarySkeleton />
-            ) : filteredEntries.length === 0 ? (
-              searchQuery ? (
+            </div>
+          ) : filteredEntries.length === 0 ? (
+            <div className="flex-1 min-h-0 overflow-y-auto">
+              {searchQuery ? (
                 <div className="flex flex-col items-center justify-center text-muted-foreground gap-4 py-24">
                   <div className="w-14 h-14 rounded-2xl bg-muted/40 flex items-center justify-center border border-border-glass">
                     <SearchX className="w-7 h-7 opacity-40" />
@@ -296,37 +303,27 @@ export function LibraryView() {
                     onClick: () => navigateTo('browser'),
                   }}
                 />
-              )
-            ) : viewMode === 'grid' ? (
-              <div className="grid gap-3.5 grid-cols-[repeat(auto-fill,minmax(130px,1fr))] xl:grid-cols-[repeat(auto-fill,minmax(140px,1fr))]">
-                {filteredEntries.map(entry => (
-                  <AnimeCard
-                    key={entry.id}
-                    entry={entry}
-                    nextAiring={
-                      entry.anilistId ? (nextAiringMap.get(entry.anilistId) ?? null) : null
-                    }
-                    onSelect={openDetail}
-                    onContinue={handleContinue}
-                    onRemove={setEntryToRemove}
-                  />
-                ))}
-              </div>
-            ) : (
-              <div className="space-y-0.5">
-                {filteredEntries.map(entry => (
-                  <LibraryListItem
-                    key={entry.id}
-                    entry={entry}
-                    nextAiring={
-                      entry.anilistId ? (nextAiringMap.get(entry.anilistId) ?? null) : null
-                    }
-                    onClick={openDetail}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
+              )}
+            </div>
+          ) : viewMode === 'grid' ? (
+            <div className="flex-1 min-h-0">
+              <LibraryGrid
+                entries={filteredEntries}
+                nextAiringMap={nextAiringMap}
+                onSelect={openDetail}
+                onContinue={handleContinue}
+                onRemove={setEntryToRemove}
+              />
+            </div>
+          ) : (
+            <div className="flex-1 min-h-0">
+              <LibraryList
+                entries={filteredEntries}
+                nextAiringMap={nextAiringMap}
+                onSelect={openDetail}
+              />
+            </div>
+          )}
         </div>
       </div>
 
