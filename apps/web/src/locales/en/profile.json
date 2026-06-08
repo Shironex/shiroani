@@ -236,6 +236,11 @@
       "dropped": "Dropped",
       "planToWatch": "Plan to watch"
     },
+    "time": {
+      "title": "Time invested",
+      "daysUnit": "days",
+      "barAria": "Share of days watched per list status"
+    },
     "lighterNote": "MyAnimeList exposes a lighter stat set — there are no genre or voice-actor breakdowns here like on the AniList tab."
   },
   "errors": {

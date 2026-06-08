@@ -6,8 +6,37 @@ import { Button } from '@/components/ui/button';
 import { AniListErrorState } from '@/components/shared/AniListErrorState';
 import { useMalProfileStore } from '@/stores/useMalProfileStore';
 import { ProfileSkeleton } from './ProfileSkeleton';
+import { ProgressRing } from './ProgressRing';
 
 const MAL_PROFILE_BASE = 'https://myanimelist.net/profile/';
+
+/** The five MAL list statuses (the `statuses` array below sets display order). */
+type MalStatusKey = 'watching' | 'completed' | 'onHold' | 'dropped' | 'planToWatch';
+
+/**
+ * Ring/segment colour per status, reusing the AniList dashboard's palette so the
+ * two profile tabs read as one design (completed pink, watching blue, planning
+ * gold, paused purple, dropped red).
+ */
+const STATUS_COLOR: Record<MalStatusKey, string> = {
+  watching: 'oklch(0.7 0.15 220)',
+  completed: 'oklch(0.74 0.15 355)',
+  onHold: 'oklch(0.6 0.05 298)',
+  dropped: 'oklch(0.65 0.18 25)',
+  planToWatch: 'oklch(0.8 0.14 70)',
+};
+
+/**
+ * Status label keys as a closed map so the literal-key `t()` overload accepts the
+ * lookup without the `tDynamic` escape hatch (mirrors ProfileView's TAB_LABEL_KEY).
+ */
+const STATUS_LABEL_KEY = {
+  watching: 'malPanel.status.watching',
+  completed: 'malPanel.status.completed',
+  onHold: 'malPanel.status.onHold',
+  dropped: 'malPanel.status.dropped',
+  planToWatch: 'malPanel.status.planToWatch',
+} as const satisfies Record<MalStatusKey, string>;
 
 /** Format MAL's fractional day counts to one decimal place, locale-aware. */
 function formatDays(days: number, locale: string): string {
@@ -44,21 +73,21 @@ export function MalStatsPanel() {
   const numberFmt = (n: number) => n.toLocaleString(locale);
   const profileUrl = `${MAL_PROFILE_BASE}${encodeURIComponent(viewer.name)}`;
 
-  const breakdown: { key: string; label: string; value: number }[] = [
-    { key: 'watching', label: t('malPanel.status.watching'), value: profile.num_items_watching },
-    {
-      key: 'completed',
-      label: t('malPanel.status.completed'),
-      value: profile.num_items_completed,
-    },
-    { key: 'onHold', label: t('malPanel.status.onHold'), value: profile.num_items_on_hold },
-    { key: 'dropped', label: t('malPanel.status.dropped'), value: profile.num_items_dropped },
-    {
-      key: 'planToWatch',
-      label: t('malPanel.status.planToWatch'),
-      value: profile.num_items_plan_to_watch,
-    },
+  // One row per status, reused by the breakdown rings (counts → proportion) and
+  // the time-investment bar (days). plan-to-watch carries no watch time, so its
+  // day figure is always 0 and it drops out of the time section.
+  const statuses: { key: MalStatusKey; count: number; days: number }[] = [
+    { key: 'watching', count: profile.num_items_watching, days: profile.num_days_watching },
+    { key: 'completed', count: profile.num_items_completed, days: profile.num_days_completed },
+    { key: 'onHold', count: profile.num_items_on_hold, days: profile.num_days_on_hold },
+    { key: 'dropped', count: profile.num_items_dropped, days: profile.num_days_dropped },
+    { key: 'planToWatch', count: profile.num_items_plan_to_watch, days: 0 },
   ];
+  // Guard the ring denominator: a brand-new account with an empty list has
+  // num_items === 0, which would make every proportion NaN.
+  const totalItems = profile.num_items || 1;
+  const timeRows = statuses.filter(s => s.days > 0);
+  const totalDays = timeRows.reduce((sum, s) => sum + s.days, 0);
 
   return (
     <div className="flex-1 overflow-y-auto px-7 pt-6 pb-24 flex flex-col gap-6">
@@ -136,20 +165,74 @@ export function MalStatsPanel() {
         />
       </section>
 
-      {/* ── Per-status breakdown ───────────────────────────── */}
+      {/* ── Library breakdown (status proportions) ─────────── */}
       <section>
         <SectionHead>{t('malPanel.breakdown.title')}</SectionHead>
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          {breakdown.map(item => (
-            <StatusCard key={item.key} label={item.label} value={numberFmt(item.value)} />
+        <div className="flex gap-5 items-center flex-wrap">
+          {statuses.map(s => (
+            <ProgressRing
+              key={s.key}
+              value={(s.count / totalItems) * 100}
+              stroke={STATUS_COLOR[s.key]}
+              label={t(STATUS_LABEL_KEY[s.key])}
+              valueLabel={numberFmt(s.count)}
+            />
           ))}
-          <StatusCard
-            label={t('malPanel.breakdown.rewatched')}
-            value={numberFmt(profile.num_times_rewatched)}
-            tone="accent"
-          />
+          {/* Summary column mirrors the AniList dashboard's breakdown layout. */}
+          <div className="flex-1 min-w-[200px] flex flex-col gap-2.5 px-1">
+            <SummaryRow label={t('malPanel.counters.items')} value={numberFmt(profile.num_items)} />
+            <SummaryRow
+              label={t('malPanel.breakdown.rewatched')}
+              value={numberFmt(profile.num_times_rewatched)}
+              tone="accent"
+            />
+            <SummaryRow
+              label={t('malPanel.counters.meanScore')}
+              value={
+                profile.mean_score > 0
+                  ? profile.mean_score.toLocaleString(locale, { maximumFractionDigits: 2 })
+                  : '—'
+              }
+            />
+          </div>
         </div>
       </section>
+
+      {/* ── Time investment (days per status) ──────────────── */}
+      {totalDays > 0 && (
+        <section>
+          <SectionHead>{t('malPanel.time.title')}</SectionHead>
+          <div className="space-y-3.5">
+            <div
+              className="flex h-2.5 w-full overflow-hidden rounded-full bg-foreground/[0.05]"
+              role="img"
+              aria-label={t('malPanel.time.barAria')}
+            >
+              {timeRows.map(s => (
+                <div
+                  key={s.key}
+                  className="h-full"
+                  style={{
+                    width: `${(s.days / totalDays) * 100}%`,
+                    backgroundColor: STATUS_COLOR[s.key],
+                  }}
+                  title={`${t(STATUS_LABEL_KEY[s.key])} · ${formatDays(s.days, locale)}`}
+                />
+              ))}
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              {timeRows.map(s => (
+                <TimeCard
+                  key={s.key}
+                  color={STATUS_COLOR[s.key]}
+                  label={t(STATUS_LABEL_KEY[s.key])}
+                  value={`${formatDays(s.days, locale)} ${t('malPanel.time.daysUnit')}`}
+                />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* ── "lighter stat set" note ────────────────────────── */}
       <section className="flex items-start gap-2.5 px-4 py-3 rounded-xl border border-border-glass bg-foreground/[0.025]">
@@ -202,20 +285,42 @@ function CounterCard({
   );
 }
 
-function StatusCard({ label, value, tone }: { label: string; value: string; tone?: 'accent' }) {
+/** Label/value row in the breakdown summary column (anime · rewatched · score). */
+function SummaryRow({ label, value, tone }: { label: string; value: string; tone?: 'accent' }) {
   return (
-    <div className="px-4 py-3 rounded-xl bg-foreground/[0.025] border border-border-glass flex items-baseline justify-between gap-3">
+    <div className="flex items-baseline justify-between gap-3 border-b border-border-glass/60 pb-2 last:border-0 last:pb-0">
       <span className="font-mono text-[9px] uppercase tracking-[0.18em] text-muted-foreground">
         {label}
       </span>
       <span
         className={cn(
-          'font-sans font-extrabold text-[18px] tracking-[-0.02em] tabular-nums',
+          'font-sans font-extrabold text-[16px] tracking-[-0.02em] tabular-nums',
           tone === 'accent' ? 'text-primary' : 'text-foreground'
         )}
       >
         {value}
       </span>
+    </div>
+  );
+}
+
+/** Per-status day-count card (colour dot + status + days) in the time section. */
+function TimeCard({ color, label, value }: { color: string; label: string; value: string }) {
+  return (
+    <div className="px-4 py-3 rounded-xl bg-foreground/[0.025] border border-border-glass">
+      <div className="flex items-center gap-1.5 mb-1.5">
+        <span
+          aria-hidden="true"
+          className="size-2 rounded-full flex-shrink-0"
+          style={{ backgroundColor: color }}
+        />
+        <span className="font-mono text-[9px] uppercase tracking-[0.18em] text-muted-foreground truncate">
+          {label}
+        </span>
+      </div>
+      <div className="font-sans font-extrabold text-[18px] tracking-[-0.02em] tabular-nums text-foreground">
+        {value}
+      </div>
     </div>
   );
 }

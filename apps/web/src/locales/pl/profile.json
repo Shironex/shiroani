@@ -256,6 +256,11 @@
       "dropped": "Porzucone",
       "planToWatch": "Planowane"
     },
+    "time": {
+      "title": "Poświęcony czas",
+      "daysUnit": "dni",
+      "barAria": "Udział dni oglądania wg statusu listy"
+    },
     "lighterNote": "MyAnimeList udostępnia lżejszy zestaw statystyk — nie ma tu podziału na gatunki ani aktorów głosowych jak w zakładce AniList."
   },
   "errors": {
