@@ -26,10 +26,47 @@
       "confirmTitle": "Sync with AniList?",
       "confirmDescription": "This imports your AniList list into ShiroAni and pushes local changes (progress, status, score, notes) back to your AniList account — it may add or modify entries there. On the first sync your AniList list takes precedence for conflicts; afterwards, the most recently changed side wins. Episode progress always keeps the higher number.",
       "confirmButton": "Synchronize",
+      "confirmPushTitle": "Push your library to AniList?",
+      "confirmPushDescription": "Push-only mode sends your entire local library to AniList and OVERWRITES existing AniList entries so they match your local list (your local list always wins), creating any that are missing. It never changes your local list. A large library may take a few minutes.",
+      "confirmPullTitle": "Pull your AniList list?",
+      "confirmPullDescription": "Pull-only mode replaces your local entries with your AniList list (AniList wins) and imports anything missing. It never writes to your AniList account.",
       "summary": "Imported {{imported}} · created on AniList {{pushedNew}} · updated locally {{updatedLocal}} · updated on AniList {{updatedRemote}}.",
       "summaryConflicts": "{{count}} conflict(s) resolved — newest change kept.",
       "summarySkipped": "{{count}} skipped — no AniList match.",
-      "summaryErrors": "{{count}} failed."
+      "summaryErrors": "{{count}} failed.",
+      "mode": {
+        "groupLabel": "Sync direction",
+        "twoWay": {
+          "label": "Two-way",
+          "hint": "Imports your AniList list and pushes local changes back (the original behaviour)."
+        },
+        "push": {
+          "label": "Push only",
+          "hint": "Sends your local library to AniList on every sync; never changes your local list."
+        },
+        "pull": {
+          "label": "Pull only",
+          "hint": "Brings your AniList list into ShiroAni on every sync; never writes to your AniList account."
+        }
+      },
+      "push": {
+        "button": "Push library…",
+        "dialogTitle": "Push library to AniList",
+        "dialogDescription": "Send your entire local library to AniList. This never modifies your local list.",
+        "mode": {
+          "createMissing": {
+            "label": "Only add missing",
+            "hint": "Create entries AniList doesn't have yet. Existing AniList entries are left untouched."
+          },
+          "overwrite": {
+            "label": "Overwrite existing",
+            "hint": "Create missing entries and rewrite existing ones so AniList matches your local library (local wins)."
+          }
+        },
+        "warning": "Pushing a large library can take a few minutes — AniList limits how fast entries can be written.",
+        "cancel": "Cancel",
+        "confirm": "Push"
+      }
     }
   },
   "mal": {
@@ -57,10 +94,47 @@
       "confirmTitle": "Sync with MyAnimeList?",
       "confirmDescription": "This imports your MyAnimeList list into ShiroAni and pushes local changes (progress, status, score, notes) back to your MyAnimeList account — it may add or modify entries there. On the first sync your MAL list takes precedence for conflicts; afterwards, the most recently changed side wins. Episode progress always keeps the higher number.",
       "confirmButton": "Synchronize",
+      "confirmPushTitle": "Push your library to MyAnimeList?",
+      "confirmPushDescription": "Push-only mode sends your entire local library to MyAnimeList and OVERWRITES existing MAL entries so they match your local list (your local list always wins), creating any that are missing. It never changes your local list. A large library may take a few minutes.",
+      "confirmPullTitle": "Pull your MyAnimeList list?",
+      "confirmPullDescription": "Pull-only mode replaces your local entries with your MyAnimeList list (MAL wins) and imports anything missing. It never writes to your MyAnimeList account.",
       "summary": "Imported {{imported}} · created on MAL {{pushedNew}} · updated locally {{updatedLocal}} · updated on MAL {{updatedRemote}}.",
       "summaryConflicts": "{{count}} conflict(s) resolved — newest change kept.",
       "summarySkipped": "{{count}} skipped — no MAL match.",
-      "summaryErrors": "{{count}} failed."
+      "summaryErrors": "{{count}} failed.",
+      "mode": {
+        "groupLabel": "Sync direction",
+        "twoWay": {
+          "label": "Two-way",
+          "hint": "Imports your MyAnimeList list and pushes local changes back (the original behaviour)."
+        },
+        "push": {
+          "label": "Push only",
+          "hint": "Sends your local library to MyAnimeList on every sync; never changes your local list."
+        },
+        "pull": {
+          "label": "Pull only",
+          "hint": "Brings your MyAnimeList list into ShiroAni on every sync; never writes to your MAL account."
+        }
+      },
+      "push": {
+        "button": "Push library…",
+        "dialogTitle": "Push library to MyAnimeList",
+        "dialogDescription": "Send your entire local library to MyAnimeList. This never modifies your local list.",
+        "mode": {
+          "createMissing": {
+            "label": "Only add missing",
+            "hint": "Create entries MyAnimeList doesn't have yet. Existing MAL entries are left untouched."
+          },
+          "overwrite": {
+            "label": "Overwrite existing",
+            "hint": "Create missing entries and rewrite existing ones so MyAnimeList matches your local library (local wins)."
+          }
+        },
+        "warning": "Pushing a large library can take a few minutes — MyAnimeList limits how fast entries can be written.",
+        "cancel": "Cancel",
+        "confirm": "Push"
+      }
     }
   }
 }

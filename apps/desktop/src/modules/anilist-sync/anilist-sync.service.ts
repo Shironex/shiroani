@@ -5,6 +5,7 @@ import {
   type AniListSyncResult,
   type AniListSyncAction,
   type AniListSyncEntryDirection,
+  type FullSyncRequest,
 } from '@shiroani/shared';
 import { AniListClient } from '../anime/anilist-client';
 import { AniListTokenPort } from '../anime/anilist-token.port';
@@ -49,12 +50,15 @@ export class AniListSyncService {
   }
 
   /**
-   * Run a full two-way sync. Reports per-entry progress via `onProgress` and
-   * resolves with the final tally.
+   * Run a full-library sync in the requested direction (default two-way). Reports
+   * per-entry progress via `onProgress` and resolves with the final tally.
    *
    * @throws if a sync is already running, or no AniList account is connected.
    */
-  async sync(onProgress: (progress: AniListSyncProgress) => void): Promise<AniListSyncResult> {
+  async sync(
+    onProgress: (progress: AniListSyncProgress) => void,
+    options?: FullSyncRequest
+  ): Promise<AniListSyncResult> {
     // Claim the single-flight slot SYNCHRONOUSLY — before any `await` — so a
     // second concurrent call can't slip past the guard during the gap an await
     // would open (a TOCTOU race that would double-run the sync).
@@ -65,7 +69,7 @@ export class AniListSyncService {
 
     try {
       await this.assertConnected();
-      return await this.engine.runFullSync(onProgress);
+      return await this.engine.runFullSync(onProgress, options);
     } finally {
       this.running = false;
     }

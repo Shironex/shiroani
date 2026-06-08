@@ -104,3 +104,39 @@ export interface AniListSyncResult {
 
 /** Final sync tally — provider-neutral alias of {@link AniListSyncResult}. */
 export type SyncResult = AniListSyncResult;
+
+// ============================================
+// Full-library sync direction (provider-neutral)
+// ============================================
+//
+// The full sync ({@link AniListSyncEvents.SYNC} / {@link MalSyncEvents.SYNC}) was
+// originally two-way only. These types let the renderer pick a direction per run
+// — distinct from the per-entry {@link SyncEntryDirection}, which forces ONE row.
+
+/**
+ * Direction for a FULL-LIBRARY sync run.
+ *
+ * - `two-way` — the original reconcile: import remote-only, push local-only, merge matches.
+ * - `push`    — local → remote only. Never pulls or modifies the local library.
+ * - `pull`    — remote → local only. Never writes to the remote account.
+ */
+export type FullSyncDirection = 'two-way' | 'push' | 'pull';
+
+/**
+ * For a `push` run, which local entries to write.
+ *
+ * - `create-missing` — push only entries the remote doesn't have yet; leave existing remote entries untouched.
+ * - `overwrite`      — push every local entry, overwriting the remote copy where it already exists (local wins).
+ */
+export type FullSyncPushMode = 'create-missing' | 'overwrite';
+
+/**
+ * Request payload for a full-library sync. Rides in the (previously empty) `SYNC`
+ * event. A missing/undefined payload is treated as `{ direction: 'two-way' }` so
+ * the original behaviour is preserved. `pushMode` is REQUIRED when `direction` is
+ * `'push'` and ignored otherwise.
+ */
+export interface FullSyncRequest {
+  direction: FullSyncDirection;
+  pushMode?: FullSyncPushMode;
+}

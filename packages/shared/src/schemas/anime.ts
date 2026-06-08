@@ -251,3 +251,31 @@ export const malSyncEntryPayloadSchema = z.object({
   localId: z.number().int().positive(),
   direction: z.enum(['push', 'pull', 'auto']),
 });
+
+/**
+ * Request payload for a FULL-LIBRARY sync ({@link AniListSyncEvents.SYNC} /
+ * {@link MalSyncEvents.SYNC}). `direction` selects two-way reconcile, push
+ * (local → remote) or pull (remote → local); for a push, `pushMode` selects
+ * create-missing (only remote-absent entries) or overwrite (every local entry).
+ * `pushMode` is REQUIRED when `direction` is `'push'`.
+ *
+ * `preprocess` substitutes the two-way default for a missing/undefined payload,
+ * so an older renderer that emits no payload still runs the original behaviour
+ * (and the gateway never has to special-case `undefined`). Shared by both
+ * providers — the full-sync wire is identical for AniList and MAL.
+ */
+export const fullSyncPayloadSchema = z.preprocess(
+  value => value ?? { direction: 'two-way' },
+  z
+    .object({
+      direction: z.enum(['two-way', 'push', 'pull']),
+      pushMode: z.enum(['create-missing', 'overwrite']).optional(),
+    })
+    // Reject unexpected keys at the trust boundary rather than silently stripping
+    // them — the write loop reads only these two fields, so anything else is a bug
+    // or an abuse attempt.
+    .strict()
+    .refine(payload => payload.direction !== 'push' || payload.pushMode !== undefined, {
+      message: 'pushMode is required when direction is "push"',
+    })
+);

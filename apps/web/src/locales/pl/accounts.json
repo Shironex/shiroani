@@ -26,10 +26,47 @@
       "confirmTitle": "Zsynchronizować z AniList?",
       "confirmDescription": "Ta operacja zaimportuje Twoją listę z AniList do ShiroAni i wyśle lokalne zmiany (postęp, status, ocenę, notatki) z powrotem na Twoje konto AniList — może dodać lub zmienić tam wpisy. Przy pierwszej synchronizacji w razie konfliktu pierwszeństwo ma Twoja lista AniList; później wygrywa ostatnio zmieniona strona. Postęp odcinków zawsze zachowuje wyższą liczbę.",
       "confirmButton": "Synchronizuj",
+      "confirmPushTitle": "Wysłać bibliotekę do AniList?",
+      "confirmPushDescription": "Tryb „tylko wysyłanie” wysyła całą lokalną bibliotekę do AniList i NADPISUJE istniejące wpisy w AniList, aby odpowiadały Twojej liście lokalnej (lokalna lista zawsze wygrywa), tworząc te, których brakuje. Nigdy nie zmienia Twojej listy lokalnej. Duża biblioteka może potrwać kilka minut.",
+      "confirmPullTitle": "Pobrać listę z AniList?",
+      "confirmPullDescription": "Tryb „tylko pobieranie” zastępuje Twoje lokalne wpisy listą z AniList (AniList wygrywa) i importuje brakujące. Nigdy nie zapisuje na Twoim koncie AniList.",
       "summary": "Zaimportowano {{imported}} · utworzono w AniList {{pushedNew}} · zaktualizowano lokalnie {{updatedLocal}} · zaktualizowano w AniList {{updatedRemote}}.",
       "summaryConflicts": "Rozwiązano konflikty: {{count}} — zachowano najnowszą zmianę.",
       "summarySkipped": "Pominięto: {{count}} — brak dopasowania w AniList.",
-      "summaryErrors": "Błędy: {{count}}."
+      "summaryErrors": "Błędy: {{count}}.",
+      "mode": {
+        "groupLabel": "Kierunek synchronizacji",
+        "twoWay": {
+          "label": "Dwukierunkowa",
+          "hint": "Importuje Twoją listę AniList i wysyła lokalne zmiany z powrotem (pierwotne zachowanie)."
+        },
+        "push": {
+          "label": "Tylko wysyłanie",
+          "hint": "Wysyła Twoją lokalną bibliotekę do AniList przy każdej synchronizacji; nigdy nie zmienia listy lokalnej."
+        },
+        "pull": {
+          "label": "Tylko pobieranie",
+          "hint": "Pobiera Twoją listę AniList do ShiroAni przy każdej synchronizacji; nigdy nie zapisuje na koncie AniList."
+        }
+      },
+      "push": {
+        "button": "Wyślij bibliotekę…",
+        "dialogTitle": "Wyślij bibliotekę do AniList",
+        "dialogDescription": "Wyślij całą lokalną bibliotekę do AniList. Ta operacja nigdy nie zmienia Twojej listy lokalnej.",
+        "mode": {
+          "createMissing": {
+            "label": "Dodaj tylko brakujące",
+            "hint": "Tworzy wpisy, których AniList jeszcze nie ma. Istniejące wpisy w AniList pozostają nietknięte."
+          },
+          "overwrite": {
+            "label": "Nadpisz istniejące",
+            "hint": "Tworzy brakujące wpisy i nadpisuje istniejące, aby AniList odpowiadał Twojej lokalnej bibliotece (lokalne wygrywa)."
+          }
+        },
+        "warning": "Wysyłanie dużej biblioteki może potrwać kilka minut — AniList ogranicza tempo zapisu wpisów.",
+        "cancel": "Anuluj",
+        "confirm": "Wyślij"
+      }
     }
   },
   "mal": {
@@ -57,10 +94,47 @@
       "confirmTitle": "Zsynchronizować z MyAnimeList?",
       "confirmDescription": "Ta operacja zaimportuje Twoją listę z MyAnimeList do ShiroAni i wyśle lokalne zmiany (postęp, status, ocenę, notatki) z powrotem na Twoje konto MyAnimeList — może dodać lub zmienić tam wpisy. Przy pierwszej synchronizacji w razie konfliktu pierwszeństwo ma Twoja lista MAL; później wygrywa ostatnio zmieniona strona. Postęp odcinków zawsze zachowuje wyższą liczbę.",
       "confirmButton": "Synchronizuj",
+      "confirmPushTitle": "Wysłać bibliotekę do MyAnimeList?",
+      "confirmPushDescription": "Tryb „tylko wysyłanie” wysyła całą lokalną bibliotekę do MyAnimeList i NADPISUJE istniejące wpisy w MAL, aby odpowiadały Twojej liście lokalnej (lokalna lista zawsze wygrywa), tworząc te, których brakuje. Nigdy nie zmienia Twojej listy lokalnej. Duża biblioteka może potrwać kilka minut.",
+      "confirmPullTitle": "Pobrać listę z MyAnimeList?",
+      "confirmPullDescription": "Tryb „tylko pobieranie” zastępuje Twoje lokalne wpisy listą z MyAnimeList (MAL wygrywa) i importuje brakujące. Nigdy nie zapisuje na Twoim koncie MyAnimeList.",
       "summary": "Zaimportowano {{imported}} · utworzono w MAL {{pushedNew}} · zaktualizowano lokalnie {{updatedLocal}} · zaktualizowano w MAL {{updatedRemote}}.",
       "summaryConflicts": "Rozwiązano konflikty: {{count}} — zachowano najnowszą zmianę.",
       "summarySkipped": "Pominięto: {{count}} — brak dopasowania w MAL.",
-      "summaryErrors": "Błędy: {{count}}."
+      "summaryErrors": "Błędy: {{count}}.",
+      "mode": {
+        "groupLabel": "Kierunek synchronizacji",
+        "twoWay": {
+          "label": "Dwukierunkowa",
+          "hint": "Importuje Twoją listę MyAnimeList i wysyła lokalne zmiany z powrotem (pierwotne zachowanie)."
+        },
+        "push": {
+          "label": "Tylko wysyłanie",
+          "hint": "Wysyła Twoją lokalną bibliotekę do MyAnimeList przy każdej synchronizacji; nigdy nie zmienia listy lokalnej."
+        },
+        "pull": {
+          "label": "Tylko pobieranie",
+          "hint": "Pobiera Twoją listę MyAnimeList do ShiroAni przy każdej synchronizacji; nigdy nie zapisuje na koncie MAL."
+        }
+      },
+      "push": {
+        "button": "Wyślij bibliotekę…",
+        "dialogTitle": "Wyślij bibliotekę do MyAnimeList",
+        "dialogDescription": "Wyślij całą lokalną bibliotekę do MyAnimeList. Ta operacja nigdy nie zmienia Twojej listy lokalnej.",
+        "mode": {
+          "createMissing": {
+            "label": "Dodaj tylko brakujące",
+            "hint": "Tworzy wpisy, których MyAnimeList jeszcze nie ma. Istniejące wpisy w MAL pozostają nietknięte."
+          },
+          "overwrite": {
+            "label": "Nadpisz istniejące",
+            "hint": "Tworzy brakujące wpisy i nadpisuje istniejące, aby MyAnimeList odpowiadał Twojej lokalnej bibliotece (lokalne wygrywa)."
+          }
+        },
+        "warning": "Wysyłanie dużej biblioteki może potrwać kilka minut — MyAnimeList ogranicza tempo zapisu wpisów.",
+        "cancel": "Anuluj",
+        "confirm": "Wyślij"
+      }
     }
   }
 }

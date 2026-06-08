@@ -12,6 +12,7 @@ import {
   LibraryEvents,
   CrudActions,
   anilistSyncEntryPayloadSchema,
+  fullSyncPayloadSchema,
   type AniListSyncResult,
   type AniListSyncEntryResult,
 } from '@shiroani/shared';
@@ -45,21 +46,26 @@ export class AniListSyncGateway {
   }
 
   /**
-   * Run a two-way AniList sync. Streams per-entry progress over
-   * {@link AniListSyncEvents.PROGRESS} and resolves the ack with the final
-   * tally. Long-running — the client emits with an extended timeout (mirrors the
-   * import flow). On any local mutation, broadcasts {@link LibraryEvents.UPDATED}
-   * so the library store re-fetches.
+   * Run a full-library AniList sync in the requested direction (the payload is a
+   * {@link FullSyncRequest}; a missing payload defaults to two-way). Streams
+   * per-entry progress over {@link AniListSyncEvents.PROGRESS} and resolves the
+   * ack with the final tally. Long-running — the client emits with an extended
+   * timeout (mirrors the import flow). On any local mutation (import / pull),
+   * broadcasts {@link LibraryEvents.UPDATED} so the library store re-fetches; a
+   * push-only run writes nothing locally, so no broadcast fires (correct).
    */
   @SubscribeMessage(AniListSyncEvents.SYNC)
-  handleSync() {
+  handleSync(@MessageBody() payload: unknown) {
     return handleGatewayRequest({
       logger,
       action: AniListSyncEvents.SYNC,
       defaultResult: EMPTY_RESULT,
-      handler: async () => {
-        const result = await this.syncService.sync(progress =>
-          this.server.emit(AniListSyncEvents.PROGRESS, progress)
+      schema: fullSyncPayloadSchema,
+      payload,
+      handler: async parsed => {
+        const result = await this.syncService.sync(
+          progress => this.server.emit(AniListSyncEvents.PROGRESS, progress),
+          parsed
         );
 
         if (result.imported > 0 || result.updatedLocal > 0) {

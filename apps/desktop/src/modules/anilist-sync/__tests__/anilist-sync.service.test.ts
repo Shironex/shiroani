@@ -300,6 +300,122 @@ describe('AniListSyncService.sync', () => {
   });
 });
 
+describe('AniListSyncService.sync — push direction (one-way local → AniList)', () => {
+  // A mixed library exercised by both push modes: one entry that already exists
+  // on AniList, one local-only entry AniList lacks, one entry with no AniList id —
+  // plus a remote-only entry that push must NEVER import.
+  function mixedService() {
+    return makeService({
+      remote: [
+        remote({ mediaId: 100, title: 'On both sides' }),
+        remote({ mediaId: 999, title: 'Remote only — must not import' }),
+      ],
+      local: [
+        local({ id: 1, anilistId: 100, status: 'completed', currentEpisode: 12 }),
+        local({ id: 2, anilistId: 200, status: 'watching', currentEpisode: 3 }),
+        local({ id: 3, anilistId: null }),
+      ],
+    });
+  }
+
+  it('create-missing: pushes only the entry AniList lacks, leaves the existing match untouched, never imports', async () => {
+    const { service, client, library } = mixedService();
+    const result = await service.sync(noop, { direction: 'push', pushMode: 'create-missing' });
+
+    // Only the local-only entry (id=2 / mediaId=200) is written to AniList.
+    expect(client.saveMediaListEntry).toHaveBeenCalledTimes(1);
+    expect(client.saveMediaListEntry).toHaveBeenCalledWith(
+      expect.objectContaining({ mediaId: 200, status: 'CURRENT', progress: 3 })
+    );
+    // The already-present match (mediaId=100) is deliberately NOT rewritten.
+    expect(client.saveMediaListEntry).not.toHaveBeenCalledWith(
+      expect.objectContaining({ mediaId: 100 })
+    );
+    // Push never imports remote-only entries into the local library.
+    expect(library.addEntry).not.toHaveBeenCalled();
+    expect(result).toMatchObject({
+      pushedNew: 1,
+      updatedRemote: 0,
+      imported: 0,
+      unchanged: 1,
+      skippedNoId: 1,
+    });
+  });
+
+  it('overwrite: pushes every local entry (creates the missing one AND rewrites the existing one), never imports', async () => {
+    const { service, client, library } = mixedService();
+    const result = await service.sync(noop, { direction: 'push', pushMode: 'overwrite' });
+
+    // Both the existing match and the local-only entry are written.
+    expect(client.saveMediaListEntry).toHaveBeenCalledWith(
+      expect.objectContaining({ mediaId: 100, status: 'COMPLETED', progress: 12 })
+    );
+    expect(client.saveMediaListEntry).toHaveBeenCalledWith(
+      expect.objectContaining({ mediaId: 200, status: 'CURRENT', progress: 3 })
+    );
+    expect(client.saveMediaListEntry).toHaveBeenCalledTimes(2);
+    expect(library.addEntry).not.toHaveBeenCalled();
+    expect(result).toMatchObject({
+      updatedRemote: 1,
+      pushedNew: 1,
+      imported: 0,
+      skippedNoId: 1,
+    });
+  });
+
+  it('skips a row edited locally mid-push (optimistic re-read guard)', async () => {
+    const { service, client, library } = makeService({
+      remote: [],
+      local: [local({ id: 2, anilistId: 200, status: 'watching', currentEpisode: 3 })],
+    });
+    // The row changed since the start-of-run snapshot → don't mirror a stale value.
+    library.getEntryById.mockReturnValue({ id: 2, updatedAt: '2099-01-01 00:00:00' });
+    const result = await service.sync(noop, { direction: 'push', pushMode: 'overwrite' });
+    expect(client.saveMediaListEntry).not.toHaveBeenCalled();
+    expect(result.pushedNew).toBe(0);
+  });
+});
+
+describe('AniListSyncService.sync — pull direction (one-way AniList → local)', () => {
+  it('imports remote-only and overwrites matched rows from remote, never pushes or writes remote', async () => {
+    const { service, client, library } = makeService({
+      remote: [
+        remote({
+          mediaId: 999,
+          title: 'Remote only',
+          status: 'COMPLETED',
+          progress: 24,
+          updatedAt: EPOCH + 10,
+        }),
+        remote({ mediaId: 100, status: 'COMPLETED', progress: 12, updatedAt: EPOCH + 20 }),
+      ],
+      local: [
+        local({ id: 1, anilistId: 100, status: 'watching', currentEpisode: 2 }),
+        local({ id: 2, anilistId: 200, status: 'watching', currentEpisode: 5 }),
+      ],
+    });
+    const result = await service.sync(noop, { direction: 'pull' });
+
+    // Remote-only entry imported locally.
+    expect(library.addEntry).toHaveBeenCalledWith(expect.objectContaining({ anilistId: 999 }));
+    // Matched row overwritten from the remote (remote wins).
+    expect(library.updateEntry).toHaveBeenCalledWith(
+      1,
+      expect.objectContaining({ status: 'completed', currentEpisode: 12 })
+    );
+    // Pull NEVER writes to the remote account…
+    expect(client.saveMediaListEntry).not.toHaveBeenCalled();
+    // …and never touches a local-only entry (id=2 has no remote counterpart).
+    expect(library.updateEntry).not.toHaveBeenCalledWith(2, expect.anything());
+    expect(result).toMatchObject({
+      imported: 1,
+      updatedLocal: 1,
+      pushedNew: 0,
+      updatedRemote: 0,
+    });
+  });
+});
+
 describe('AniListSyncService.syncEntry', () => {
   it('throws when no AniList account is connected', async () => {
     const { service, client } = makeService({
