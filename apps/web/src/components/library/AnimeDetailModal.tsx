@@ -115,6 +115,16 @@ export function AnimeDetailModal({ entry, open, onOpenChange }: AnimeDetailModal
     onOpenChange(false);
   }, [entry, navigateToBrowser, onOpenChange]);
 
+  // Reference links (AniList / MAL) open in the in-app browser and close the
+  // modal, matching handleOpenInBrowser and the schedule view's onNavigate.
+  const handleNavigate = useCallback(
+    (url: string) => {
+      navigateToBrowser(url);
+      onOpenChange(false);
+    },
+    [navigateToBrowser, onOpenChange]
+  );
+
   const handleUpdateUrl = useCallback(() => {
     if (!entry) return;
 
@@ -417,8 +427,10 @@ export function AnimeDetailModal({ entry, open, onOpenChange }: AnimeDetailModal
               {/* Related entries (AniList relations) */}
               {entry.anilistId ? <RelationsSection anilistId={entry.anilistId} /> : null}
 
-              {/* Recommendations + streaming episodes + MyAnimeList deep-link */}
-              {entry.anilistId ? <AnimeDetailExtras anilistId={entry.anilistId} /> : null}
+              {/* Recommendations + streaming episodes + AniList/MAL reference links */}
+              {entry.anilistId ? (
+                <AnimeDetailExtras anilistId={entry.anilistId} onNavigate={handleNavigate} />
+              ) : null}
             </div>
 
             {/* Bottom action bar */}
