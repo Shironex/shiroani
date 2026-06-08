@@ -234,9 +234,11 @@
     }
   },
   "malPanel": {
-    "heroTag": "Twoje statystyki z MyAnimeList",
-    "heroSubtitle": "{{items}} anime · {{episodes}} odcinków",
     "openProfile": "Otwórz na MAL",
+    "sidebar": {
+      "connectedBadge": "MyAnimeList · połączono",
+      "syncHeading": "Synchronizacja MyAnimeList"
+    },
     "counters": {
       "items": "Anime",
       "episodes": "Odcinki",
@@ -255,6 +257,14 @@
       "onHold": "Wstrzymane",
       "dropped": "Porzucone",
       "planToWatch": "Planowane"
+    },
+    "time": {
+      "title": "Poświęcony czas",
+      "daysValue_one": "{{value}} dzień",
+      "daysValue_few": "{{value}} dni",
+      "daysValue_many": "{{value}} dni",
+      "daysValue_other": "{{value}} dnia",
+      "barAria": "Udział dni oglądania wg statusu listy"
     },
     "lighterNote": "MyAnimeList udostępnia lżejszy zestaw statystyk — nie ma tu podziału na gatunki ani aktorów głosowych jak w zakładce AniList."
   },

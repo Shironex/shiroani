@@ -10,6 +10,7 @@ import { AniListErrorState } from '@/components/shared/AniListErrorState';
 import { useProfileStore, startProfileRefresh, stopProfileRefresh } from '@/stores/useProfileStore';
 import { useAniListAuthStore } from '@/stores/useAniListAuthStore';
 import { useMalAuthStore } from '@/stores/useMalAuthStore';
+import { useNavigateToBrowser } from '@/hooks/useNavigateToBrowser';
 import { ProfileSetup } from './ProfileSetup';
 import { ProfileSkeleton } from './ProfileSkeleton';
 import { ProfileDashboard } from './ProfileDashboard';
@@ -64,6 +65,8 @@ export function ProfileView() {
 
   const malConnected = useMalAuthStore(s => s.status.connected);
   const fetchMalStatus = useMalAuthStore(s => s.fetchStatus);
+
+  const navigateToBrowser = useNavigateToBrowser();
 
   const [shareOpen, setShareOpen] = useState(false);
   const [tab, setTab] = useState<ProfileTab>('anilist');
@@ -180,7 +183,7 @@ export function ProfileView() {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => window.open(profile.siteUrl, '_blank', 'noopener,noreferrer')}
+                onClick={() => navigateToBrowser(profile.siteUrl)}
                 className={cn(
                   'h-8 px-3 text-[12px] font-medium gap-1.5',
                   'bg-foreground/5 border border-foreground/10 hover:bg-foreground/10'

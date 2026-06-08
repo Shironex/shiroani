@@ -77,6 +77,7 @@
     "anilistIdPlaceholder": "e.g. 21",
     "save": "Save",
     "openInBrowser": "Open",
+    "openOnAniList": "AniList",
     "openOnMal": "MyAnimeList",
     "delete": "Delete"
   },

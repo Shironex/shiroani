@@ -214,9 +214,11 @@
     }
   },
   "malPanel": {
-    "heroTag": "Your MyAnimeList stats",
-    "heroSubtitle": "{{items}} anime · {{episodes}} episodes",
     "openProfile": "Open on MAL",
+    "sidebar": {
+      "connectedBadge": "MyAnimeList · connected",
+      "syncHeading": "MyAnimeList sync"
+    },
     "counters": {
       "items": "Anime",
       "episodes": "Episodes",
@@ -235,6 +237,12 @@
       "onHold": "On hold",
       "dropped": "Dropped",
       "planToWatch": "Plan to watch"
+    },
+    "time": {
+      "title": "Time invested",
+      "daysValue_one": "{{value}} day",
+      "daysValue_other": "{{value}} days",
+      "barAria": "Share of days watched per list status"
     },
     "lighterNote": "MyAnimeList exposes a lighter stat set — there are no genre or voice-actor breakdowns here like on the AniList tab."
   },
