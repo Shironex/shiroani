@@ -260,7 +260,10 @@
     },
     "time": {
       "title": "Poświęcony czas",
-      "daysUnit": "dni",
+      "daysValue_one": "{{value}} dzień",
+      "daysValue_few": "{{value}} dni",
+      "daysValue_many": "{{value}} dni",
+      "daysValue_other": "{{value}} dnia",
       "barAria": "Udział dni oglądania wg statusu listy"
     },
     "lighterNote": "MyAnimeList udostępnia lżejszy zestaw statystyk — nie ma tu podziału na gatunki ani aktorów głosowych jak w zakładce AniList."

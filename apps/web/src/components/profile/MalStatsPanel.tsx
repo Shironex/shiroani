@@ -273,7 +273,10 @@ export function MalStatsPanel() {
                     key={s.key}
                     color={STATUS_COLOR[s.key]}
                     label={t(STATUS_LABEL_KEY[s.key])}
-                    value={`${formatDays(s.days, locale)} ${t('malPanel.time.daysUnit')}`}
+                    value={t('malPanel.time.daysValue', {
+                      count: s.days,
+                      value: formatDays(s.days, locale),
+                    })}
                   />
                 ))}
               </div>
