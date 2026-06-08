@@ -133,10 +133,105 @@ export function localizeReleases(locale: Locale): ResolvedRelease[] {
 
 export const RELEASES: readonly Release[] = [
   {
+    version: '0.13.0',
+    shortDate: '08.06.2026',
+    type: 'minor',
+    latest: true,
+    pl: {
+      date: '8 czerwca 2026',
+      title: 'Konta AniList i MyAnimeList — logowanie i dwukierunkowa synchronizacja biblioteki',
+      description:
+        'Największa nowość tej wersji: można teraz połączyć konto AniList i MyAnimeList i synchronizować swoją bibliotekę w obie strony — z wyborem kierunku (import, wysyłka albo pełna synchronizacja). To funkcje eksperymentalne, wciąż w trakcie testów, więc mogą zdarzyć się drobne usterki. Do tego profil pokazuje statystyki z MyAnimeList, biblioteka działa płynniej i radzi sobie z wieloma pozycjami naraz.',
+      categories: [
+        {
+          kind: 'feature',
+          label: 'Konta i synchronizacja (eksperymentalne)',
+          entries: [
+            'Logowanie do AniList i MyAnimeList prosto w aplikacji',
+            'Dwukierunkowa synchronizacja biblioteki — zmiany płyną w obie strony',
+            'Wybór kierunku: tylko import, tylko wysyłka albo pełna synchronizacja',
+            'Pozycje z MyAnimeList są automatycznie dopasowywane do AniList',
+          ],
+        },
+        {
+          kind: 'feature',
+          label: 'Profil',
+          entries: [
+            'Statystyki z MyAnimeList z pierścieniami i podziałem czasu oglądania',
+            'Układ zakładki MyAnimeList dopasowany do panelu AniList',
+            'Linki do profili AniList i MyAnimeList otwierają się we wbudowanej przeglądarce',
+          ],
+        },
+        {
+          kind: 'feature',
+          label: 'Biblioteka',
+          entries: [
+            'Zaznaczanie wielu pozycji i akcje zbiorcze — status, ocena i usuwanie naraz',
+            'Linki do AniList i MyAnimeList otwierają się w aplikacji',
+            'Płynniejsze przewijanie dużych bibliotek (widok siatki i listy)',
+          ],
+        },
+        {
+          kind: 'fix',
+          label: 'Stabilność i poprawki',
+          entries: [
+            'Wiele poprawek odporności logowania i synchronizacji — pomijanie nieaktualnych odpowiedzi oraz walidacja danych konta i tokenów',
+            'Liczba dni „czasu oglądania" z MyAnimeList jest poprawnie odmieniana',
+            'Przyciski w paskach narzędzi pozostają kwadratowe w ciasnych nagłówkach',
+          ],
+        },
+      ],
+    },
+    en: {
+      date: 'June 8, 2026',
+      title: 'AniList & MyAnimeList accounts — sign-in and two-way library sync',
+      description:
+        'The headline of this release: you can now connect your AniList and MyAnimeList accounts and sync your library both ways — choosing the direction (import, push, or full sync). These are experimental features, still being tested, so the odd rough edge is expected. Plus your profile shows MyAnimeList stats, and the library is smoother and handles many entries at once.',
+      categories: [
+        {
+          kind: 'feature',
+          label: 'Accounts & sync (experimental)',
+          entries: [
+            'Sign in to AniList and MyAnimeList right inside the app',
+            'Two-way library sync — changes flow both ways',
+            'Choose the direction: import only, push only, or full sync',
+            'MyAnimeList entries are auto-matched to AniList',
+          ],
+        },
+        {
+          kind: 'feature',
+          label: 'Profile',
+          entries: [
+            'MyAnimeList stats with rings and a watch-time breakdown',
+            'The MyAnimeList tab now matches the AniList dashboard layout',
+            'AniList and MyAnimeList profile links open in the built-in browser',
+          ],
+        },
+        {
+          kind: 'feature',
+          label: 'Library',
+          entries: [
+            'Multi-select mode and batch actions — status, score and delete in one go',
+            'AniList and MyAnimeList reference links open in-app',
+            'Smoother scrolling for large libraries (grid and list views)',
+          ],
+        },
+        {
+          kind: 'fix',
+          label: 'Stability & fixes',
+          entries: [
+            'Many sign-in and sync robustness fixes — ignoring stale responses and validating account data and tokens',
+            'MyAnimeList "time invested" day counts now pluralize correctly',
+            'Toolbar icon buttons stay square in tight headers',
+          ],
+        },
+      ],
+    },
+  },
+  {
     version: '0.12.0',
     shortDate: '01.06.2026',
     type: 'minor',
-    latest: true,
     pl: {
       date: '1 czerwca 2026',
       title: 'Nowości w przeglądarce, odkrywaniu i bibliotece + automatyczne śledzenie postępów',
