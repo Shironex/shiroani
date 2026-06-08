@@ -1,11 +1,21 @@
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Sparkles, ExternalLink, Info } from 'lucide-react';
+import {
+  User,
+  ExternalLink,
+  Info,
+  RefreshCw,
+  RotateCw,
+  AlertCircle,
+  CheckCircle2,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { AniListErrorState } from '@/components/shared/AniListErrorState';
 import { useMalProfileStore } from '@/stores/useMalProfileStore';
+import { useMalSyncStore } from '@/stores/useMalSyncStore';
 import { useNavigateToBrowser } from '@/hooks/useNavigateToBrowser';
+import { tDynamic } from '@/lib/i18n';
 import { ProfileSkeleton } from './ProfileSkeleton';
 import { ProgressRing } from './ProgressRing';
 
@@ -45,14 +55,16 @@ function formatDays(days: number, locale: string): string {
 }
 
 /**
- * "MyAnimeList" tab body — the connected viewer's THIN stat set. Fed by the
- * desktop main process via {@link MalEvents.GET_VIEWER_PROFILE} (token never
- * crosses the socket) and rendered to mirror {@link InAppStatsPanel}'s
- * card/grid styling.
+ * "MyAnimeList" tab body. Mirrors the AniList tab's two-column
+ * {@link ProfileDashboard} layout — a fixed sidebar (avatar + summary stats +
+ * sync status + open-profile action) beside a scrollable main column — so the
+ * two profile tabs read as one design. Fed by the desktop main process via
+ * {@link MalEvents.GET_VIEWER_PROFILE} (token never crosses the socket).
  *
- * Deliberately lighter than the AniList tab: MAL's v2 API only exposes these
- * 15 scalars for `@me`, so there are no genre / voice-actor / score-distribution
- * breakdowns to render here.
+ * The stat set is deliberately lighter than AniList's: MAL's v2 API only exposes
+ * ~15 scalars for `@me`, so there are no genre / voice-actor / score-distribution
+ * breakdowns — the main column visualises the status counts and per-status day
+ * counts instead.
  */
 export function MalStatsPanel() {
   const { t, i18n } = useTranslation('profile');
@@ -73,6 +85,10 @@ export function MalStatsPanel() {
   const locale = i18n.language;
   const { viewer } = profile;
   const numberFmt = (n: number) => n.toLocaleString(locale);
+  const meanScore =
+    profile.mean_score > 0
+      ? profile.mean_score.toLocaleString(locale, { maximumFractionDigits: 2 })
+      : '—';
   const profileUrl = `${MAL_PROFILE_BASE}${encodeURIComponent(viewer.name)}`;
 
   // One row per status, reused by the breakdown rings (counts → proportion) and
@@ -92,157 +108,273 @@ export function MalStatsPanel() {
   const totalDays = timeRows.reduce((sum, s) => sum + s.days, 0);
 
   return (
-    <div className="flex-1 overflow-y-auto px-7 pt-6 pb-24 flex flex-col gap-6">
-      {/* ── Hero block ─────────────────────────────────────── */}
-      <section
-        className={cn(
-          'relative px-6 py-6 rounded-2xl border border-border-glass overflow-hidden',
-          'bg-gradient-to-br from-primary/[0.08] via-foreground/[0.02] to-foreground/[0.04]'
-        )}
-      >
-        <div className="font-mono text-[9.5px] uppercase tracking-[0.22em] text-muted-foreground mb-3 flex items-center gap-2">
-          <Sparkles className="w-3 h-3 text-primary" />
-          <span>{t('malPanel.heroTag')}</span>
-        </div>
-        <div className="flex items-center gap-3.5">
+    <div className="flex-1 flex min-h-0">
+      {/* ── Sidebar (mirrors the AniList ProfileSidebar) ───────────── */}
+      <aside className="w-[280px] shrink-0 border-r border-border-glass overflow-y-auto px-5 pt-6 pb-20 flex flex-col">
+        {/* Avatar + handle + connected badge */}
+        <div className="flex flex-col items-center pb-[18px] mb-4 border-b border-border-glass/60">
           {viewer.avatar ? (
             <img
               src={viewer.avatar}
               alt=""
-              className="size-12 flex-shrink-0 rounded-full border border-border-glass object-cover"
+              className={cn(
+                'w-20 h-20 rounded-full object-cover mb-2.5',
+                'border-2 border-primary/40',
+                'shadow-[0_0_24px_oklch(from_var(--primary)_l_c_h/0.3)]'
+              )}
+              draggable={false}
             />
-          ) : null}
-          <div className="min-w-0">
-            <h2 className="font-sans font-extrabold text-[22px] leading-[1.2] tracking-[-0.02em] text-foreground truncate">
-              {viewer.name}
-            </h2>
-            <p className="mt-1 text-[13px] text-foreground/75">
-              {t('malPanel.heroSubtitle', {
-                items: numberFmt(profile.num_items),
-                episodes: numberFmt(profile.num_episodes),
-              })}
-            </p>
+          ) : (
+            <div
+              className={cn(
+                'w-20 h-20 rounded-full grid place-items-center mb-2.5',
+                'bg-gradient-to-br from-primary/60 to-primary/30 border-2 border-primary/40',
+                'shadow-[0_0_24px_oklch(from_var(--primary)_l_c_h/0.3)]',
+                'font-serif font-extrabold text-[28px] text-foreground'
+              )}
+            >
+              {viewer.name.charAt(0).toUpperCase() || <User className="w-8 h-8" />}
+            </div>
+          )}
+          <div className="font-sans font-extrabold text-[16px] tracking-[-0.01em] text-foreground truncate max-w-full">
+            {viewer.name}
+          </div>
+          <div
+            className={cn(
+              'mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full',
+              'bg-[oklch(0.45_0.14_220/0.18)] border border-[oklch(0.45_0.14_220/0.35)]',
+              'font-mono text-[9.5px] tracking-[0.1em] uppercase text-[oklch(0.7_0.12_220)]'
+            )}
+          >
+            <span
+              aria-hidden="true"
+              className="w-[5px] h-[5px] rounded-full bg-[oklch(0.7_0.12_220)] shadow-[0_0_6px_oklch(0.7_0.12_220)]"
+            />
+            {t('malPanel.sidebar.connectedBadge')}
           </div>
         </div>
-        <div className="mt-4">
+
+        {/* Summary stat grid (2×2) */}
+        <div className="font-mono text-[9px] uppercase tracking-[0.2em] text-muted-foreground font-semibold mb-2">
+          {t('sidebar.summaryHeading')}
+        </div>
+        <div className="grid grid-cols-2 gap-2 mb-4">
+          <SideStat label={t('sidebar.stats.anime')} value={numberFmt(profile.num_items)} />
+          <SideStat label={t('sidebar.stats.episodes')} value={numberFmt(profile.num_episodes)} />
+          <SideStat
+            label={t('malPanel.counters.daysWatched')}
+            value={formatDays(profile.num_days_watched, locale)}
+          />
+          <SideStat label={t('sidebar.stats.meanScore')} value={meanScore} sub="/10" />
+        </div>
+
+        {/* MAL sync status (read-only; the trigger lives in Settings → Accounts) */}
+        <MalSyncStatusWidget />
+
+        {/* Open on MAL — pinned to the bottom like the AniList actions */}
+        <div className="mt-auto pt-4">
           <Button
             variant="ghost"
             size="sm"
             onClick={() => navigateToBrowser(profileUrl)}
             className={cn(
-              'h-8 px-3 text-[12px] font-medium gap-1.5',
-              'bg-foreground/5 border border-foreground/10 hover:bg-foreground/10'
+              'w-full h-9 justify-start gap-2 px-3 text-[12px] font-medium',
+              'bg-foreground/5 border border-foreground/10 text-foreground/90 hover:bg-foreground/10'
             )}
           >
             <ExternalLink className="w-3.5 h-3.5" />
             {t('malPanel.openProfile')}
           </Button>
         </div>
-      </section>
+      </aside>
 
-      {/* ── Headline counters ──────────────────────────────── */}
-      <section className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <CounterCard label={t('malPanel.counters.items')} value={numberFmt(profile.num_items)} />
-        <CounterCard
-          label={t('malPanel.counters.episodes')}
-          value={numberFmt(profile.num_episodes)}
-          tone="accent"
-        />
-        <CounterCard
-          label={t('malPanel.counters.daysWatched')}
-          value={formatDays(profile.num_days_watched, locale)}
-          sub={t('malPanel.counters.daysWatchedSub')}
-          tone="gold"
-        />
-        <CounterCard
-          label={t('malPanel.counters.meanScore')}
-          // mean_score is a 0–10 average rating (NOT a day count) — render it as a
-          // localized number, not via formatDays.
-          value={
-            profile.mean_score > 0
-              ? profile.mean_score.toLocaleString(locale, { maximumFractionDigits: 2 })
-              : '—'
-          }
-          sub={t('malPanel.counters.meanScoreSub')}
-        />
-      </section>
+      {/* ── Main scroll column ─────────────────────────────────────── */}
+      <div className="flex-1 overflow-y-auto px-7 pt-6 pb-24 flex flex-col gap-6">
+        {/* Headline stat grid — status-focused, mirroring AniList's ProfileStatGrid */}
+        <section className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <StatCard
+            label={t('malPanel.status.completed')}
+            value={numberFmt(profile.num_items_completed)}
+            tone="accent"
+          />
+          <StatCard
+            label={t('malPanel.status.watching')}
+            value={numberFmt(profile.num_items_watching)}
+          />
+          <StatCard
+            label={t('malPanel.status.planToWatch')}
+            value={numberFmt(profile.num_items_plan_to_watch)}
+          />
+          <StatCard
+            label={t('malPanel.counters.meanScore')}
+            value={meanScore}
+            sub={t('malPanel.counters.meanScoreSub')}
+            tone="gold"
+          />
+        </section>
 
-      {/* ── Library breakdown (status proportions) ─────────── */}
-      <section>
-        <SectionHead>{t('malPanel.breakdown.title')}</SectionHead>
-        <div className="flex gap-5 items-center flex-wrap">
-          {statuses.map(s => (
-            <ProgressRing
-              key={s.key}
-              value={(s.count / totalItems) * 100}
-              stroke={STATUS_COLOR[s.key]}
-              label={t(STATUS_LABEL_KEY[s.key])}
-              valueLabel={numberFmt(s.count)}
-            />
-          ))}
-          {/* Summary column mirrors the AniList dashboard's breakdown layout. */}
-          <div className="flex-1 min-w-[200px] flex flex-col gap-2.5 px-1">
-            <SummaryRow label={t('malPanel.counters.items')} value={numberFmt(profile.num_items)} />
-            <SummaryRow
-              label={t('malPanel.breakdown.rewatched')}
-              value={numberFmt(profile.num_times_rewatched)}
-              tone="accent"
-            />
-            <SummaryRow
-              label={t('malPanel.counters.meanScore')}
-              value={
-                profile.mean_score > 0
-                  ? profile.mean_score.toLocaleString(locale, { maximumFractionDigits: 2 })
-                  : '—'
-              }
-            />
-          </div>
-        </div>
-      </section>
-
-      {/* ── Time investment (days per status) ──────────────── */}
-      {totalDays > 0 && (
+        {/* Library breakdown (status proportions) */}
         <section>
-          <SectionHead>{t('malPanel.time.title')}</SectionHead>
-          <div className="space-y-3.5">
-            <div
-              className="flex h-2.5 w-full overflow-hidden rounded-full bg-foreground/[0.05]"
-              role="img"
-              aria-label={t('malPanel.time.barAria')}
-            >
-              {timeRows.map(s => (
-                <div
-                  key={s.key}
-                  className="h-full"
-                  style={{
-                    width: `${(s.days / totalDays) * 100}%`,
-                    backgroundColor: STATUS_COLOR[s.key],
-                  }}
-                  title={`${t(STATUS_LABEL_KEY[s.key])} · ${formatDays(s.days, locale)}`}
-                />
-              ))}
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              {timeRows.map(s => (
-                <TimeCard
-                  key={s.key}
-                  color={STATUS_COLOR[s.key]}
-                  label={t(STATUS_LABEL_KEY[s.key])}
-                  value={`${formatDays(s.days, locale)} ${t('malPanel.time.daysUnit')}`}
-                />
-              ))}
+          <SectionHead>{t('malPanel.breakdown.title')}</SectionHead>
+          <div className="flex gap-5 items-center flex-wrap">
+            {statuses.map(s => (
+              <ProgressRing
+                key={s.key}
+                value={(s.count / totalItems) * 100}
+                stroke={STATUS_COLOR[s.key]}
+                label={t(STATUS_LABEL_KEY[s.key])}
+                valueLabel={`${Math.round((s.count / totalItems) * 100)}%`}
+              />
+            ))}
+            {/* Summary column mirrors the AniList dashboard's breakdown layout. */}
+            <div className="flex-1 min-w-[200px] flex flex-col gap-2.5 px-1">
+              <SummaryRow
+                label={t('malPanel.counters.episodes')}
+                value={numberFmt(profile.num_episodes)}
+              />
+              <SummaryRow
+                label={t('malPanel.breakdown.rewatched')}
+                value={numberFmt(profile.num_times_rewatched)}
+                tone="accent"
+              />
+              <SummaryRow
+                label={t('malPanel.counters.daysWatched')}
+                value={formatDays(profile.num_days_watched, locale)}
+              />
             </div>
           </div>
         </section>
-      )}
 
-      {/* ── "lighter stat set" note ────────────────────────── */}
-      <section className="flex items-start gap-2.5 px-4 py-3 rounded-xl border border-border-glass bg-foreground/[0.025]">
-        <Info className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-muted-foreground" />
-        <p className="text-[11.5px] text-muted-foreground/80 leading-relaxed">
-          {t('malPanel.lighterNote')}
-        </p>
-      </section>
+        {/* Time invested (days per status) */}
+        {totalDays > 0 && (
+          <section>
+            <SectionHead>{t('malPanel.time.title')}</SectionHead>
+            <div className="space-y-3.5">
+              <div
+                className="flex h-2.5 w-full overflow-hidden rounded-full bg-foreground/[0.05]"
+                role="img"
+                aria-label={t('malPanel.time.barAria')}
+              >
+                {timeRows.map(s => (
+                  <div
+                    key={s.key}
+                    className="h-full"
+                    style={{
+                      width: `${(s.days / totalDays) * 100}%`,
+                      backgroundColor: STATUS_COLOR[s.key],
+                    }}
+                    title={`${t(STATUS_LABEL_KEY[s.key])} · ${formatDays(s.days, locale)}`}
+                  />
+                ))}
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {timeRows.map(s => (
+                  <TimeCard
+                    key={s.key}
+                    color={STATUS_COLOR[s.key]}
+                    label={t(STATUS_LABEL_KEY[s.key])}
+                    value={`${formatDays(s.days, locale)} ${t('malPanel.time.daysUnit')}`}
+                  />
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* "lighter stat set" note */}
+        <section className="flex items-start gap-2.5 px-4 py-3 rounded-xl border border-border-glass bg-foreground/[0.025]">
+          <Info className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-muted-foreground" />
+          <p className="text-[11.5px] text-muted-foreground/80 leading-relaxed">
+            {t('malPanel.lighterNote')}
+          </p>
+        </section>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Read-only MAL sync status, mirroring the AniList sidebar's widget. The trigger
+ * lives confirm-gated in Settings → Accounts; a second un-gated trigger here
+ * would be a hazard since sync mutates the live MAL account.
+ */
+function MalSyncStatusWidget() {
+  const { t, i18n } = useTranslation('profile');
+  const syncing = useMalSyncStore(s => s.syncing);
+  const progress = useMalSyncStore(s => s.progress);
+  const error = useMalSyncStore(s => s.error);
+  const lastSyncedAt = useMalSyncStore(s => s.lastSyncedAt);
+
+  const pct =
+    progress && progress.total > 0
+      ? Math.min(100, Math.round((progress.current / progress.total) * 100))
+      : null;
+
+  let icon: React.ReactNode;
+  let line: string;
+  let tone: 'syncing' | 'error' | 'ok' | 'idle';
+
+  if (syncing) {
+    tone = 'syncing';
+    icon = <RotateCw className="w-3 h-3 animate-spin" aria-hidden="true" />;
+    line = progress
+      ? t('sync.progress', { current: progress.current, total: progress.total })
+      : t('sync.running');
+  } else if (error) {
+    tone = 'error';
+    icon = <AlertCircle className="w-3 h-3" aria-hidden="true" />;
+    line = tDynamic(i18n, error);
+  } else if (lastSyncedAt) {
+    tone = 'ok';
+    icon = <CheckCircle2 className="w-3 h-3" aria-hidden="true" />;
+    line = t('sync.lastSynced', {
+      time: new Date(lastSyncedAt).toLocaleTimeString(i18n.language, {
+        hour: '2-digit',
+        minute: '2-digit',
+      }),
+    });
+  } else {
+    tone = 'idle';
+    icon = <RefreshCw className="w-3 h-3" aria-hidden="true" />;
+    line = t('sync.idle');
+  }
+
+  return (
+    <div
+      className={cn(
+        'mb-4 px-3 py-2.5 rounded-lg border',
+        tone === 'error'
+          ? 'bg-destructive/[0.06] border-destructive/25'
+          : 'bg-foreground/3 border-border-glass'
+      )}
+      aria-live={syncing ? 'off' : 'polite'}
+    >
+      <div className="font-mono text-[8.5px] uppercase tracking-[0.2em] text-muted-foreground mb-1.5">
+        {t('malPanel.sidebar.syncHeading')}
+      </div>
+      <div
+        className={cn(
+          'flex items-center gap-1.5 text-[11.5px] leading-snug',
+          tone === 'error' && 'text-destructive',
+          tone === 'syncing' && 'text-primary',
+          tone === 'ok' && 'text-foreground/80',
+          tone === 'idle' && 'text-muted-foreground'
+        )}
+      >
+        <span className="shrink-0">{icon}</span>
+        <span className="min-w-0 truncate">{line}</span>
+      </div>
+      {syncing && (
+        <div className="mt-2 h-1 rounded-full bg-foreground/7 overflow-hidden">
+          <div
+            className={cn(
+              'h-full rounded-full bg-primary transition-[width] duration-500 ease-out',
+              pct === null && 'animate-pulse'
+            )}
+            style={{ width: pct === null ? '100%' : `${pct}%` }}
+          />
+        </div>
+      )}
     </div>
   );
 }
@@ -256,7 +388,27 @@ function SectionHead({ children }: { children: React.ReactNode }) {
   );
 }
 
-function CounterCard({
+/** Compact 2-col summary stat in the sidebar (mirrors ProfileSidebar's SideStat). */
+function SideStat({ label, value, sub }: { label: string; value: string; sub?: string }) {
+  return (
+    <div className="px-2.5 py-2 rounded-lg bg-foreground/3 border border-border-glass">
+      <div className="font-mono text-[8.5px] uppercase tracking-[0.14em] text-muted-foreground mb-0.5">
+        {label}
+      </div>
+      <div className="font-extrabold text-[18px] tracking-[-0.02em] text-foreground leading-none tabular-nums">
+        {value}
+        {sub && (
+          <span className="ml-1 font-mono text-[10px] font-medium text-muted-foreground">
+            {sub}
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/** Big 4-up headline stat card (mirrors ProfileStatGrid's StatCard). */
+function StatCard({
   label,
   value,
   sub,
@@ -274,7 +426,7 @@ function CounterCard({
       </div>
       <div
         className={cn(
-          'font-sans font-extrabold text-[22px] tracking-[-0.02em] leading-[1.15] tabular-nums',
+          'font-sans font-extrabold text-[28px] tracking-[-0.03em] leading-none tabular-nums',
           tone === 'accent' && 'text-primary',
           tone === 'gold' && 'text-[oklch(0.8_0.14_70)]',
           !tone && 'text-foreground'
@@ -287,7 +439,7 @@ function CounterCard({
   );
 }
 
-/** Label/value row in the breakdown summary column (anime · rewatched · score). */
+/** Label/value row in the breakdown summary column (episodes · rewatched · days). */
 function SummaryRow({ label, value, tone }: { label: string; value: string; tone?: 'accent' }) {
   return (
     <div className="flex items-baseline justify-between gap-3 border-b border-border-glass/60 pb-2 last:border-0 last:pb-0">

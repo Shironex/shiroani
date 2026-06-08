@@ -234,9 +234,11 @@
     }
   },
   "malPanel": {
-    "heroTag": "Twoje statystyki z MyAnimeList",
-    "heroSubtitle": "{{items}} anime · {{episodes}} odcinków",
     "openProfile": "Otwórz na MAL",
+    "sidebar": {
+      "connectedBadge": "MyAnimeList · połączono",
+      "syncHeading": "Synchronizacja MyAnimeList"
+    },
     "counters": {
       "items": "Anime",
       "episodes": "Odcinki",
