@@ -13,9 +13,8 @@
  * `client_id` is PUBLIC and maintainer-supplied at runtime via
  *   - main: `process.env.MAL_CLIENT_ID`
  * falling back to {@link DEFAULT_MAL_CLIENT_ID} ('' = not configured).
- * `client_secret` (if the registered client has one) is read main-side ONLY
- * from `process.env.MAL_CLIENT_SECRET` and never leaves the main process — the
- * PKCE flow works for public clients without it, so it is OPTIONAL.
+ * The MAL client is registered as a PUBLIC ("other") app type, so there is NO
+ * client secret — the PKCE proof authenticates the token exchange on its own.
  */
 
 /** Base authorize endpoint. Use {@link buildMalAuthorizeUrl} to add params. */

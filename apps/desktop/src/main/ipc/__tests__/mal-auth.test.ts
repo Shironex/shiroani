@@ -28,7 +28,6 @@ const viewer = { id: 7, name: 'Neo', avatar: 'a.png' };
 
 describe('registerMalAuthHandlers', () => {
   const origId = process.env.MAL_CLIENT_ID;
-  const origSecret = process.env.MAL_CLIENT_SECRET;
 
   beforeEach(() => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -37,12 +36,10 @@ describe('registerMalAuthHandlers', () => {
     mockFetchViewer.mockReset();
     Object.values(mockStore).forEach(fn => fn.mockReset());
     process.env.MAL_CLIENT_ID = 'client-123';
-    delete process.env.MAL_CLIENT_SECRET;
   });
 
   afterAll(() => {
     process.env.MAL_CLIENT_ID = origId;
-    process.env.MAL_CLIENT_SECRET = origSecret;
   });
 
   it('connect runs OAuth, fetches viewer, saves both tokens, returns status', async () => {
@@ -58,8 +55,7 @@ describe('registerMalAuthHandlers', () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const result = await (ipcMain as any).__invoke('mal-auth:connect');
 
-    // No secret configured → passed undefined.
-    expect(mockStartOAuth).toHaveBeenCalledWith('client-123', undefined);
+    expect(mockStartOAuth).toHaveBeenCalledWith('client-123');
     expect(mockFetchViewer).toHaveBeenCalledWith('tok');
     expect(mockStore.saveSession).toHaveBeenCalledWith(
       { accessToken: 'tok', refreshToken: 'ref' },
@@ -85,18 +81,6 @@ describe('registerMalAuthHandlers', () => {
       undefined
     );
     expect(result).toEqual({ connected: true, expiresAt: 123 });
-  });
-
-  it('connect forwards the client secret to the OAuth flow when configured', async () => {
-    process.env.MAL_CLIENT_SECRET = 'shh';
-    mockStartOAuth.mockResolvedValue({ accessToken: 't', refreshToken: 'r', expiresIn: 3600 });
-    mockFetchViewer.mockResolvedValue(viewer);
-    mockStore.getStatus.mockReturnValue({ connected: true });
-
-    registerMalAuthHandlers();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (ipcMain as any).__invoke('mal-auth:connect');
-    expect(mockStartOAuth).toHaveBeenCalledWith('client-123', 'shh');
   });
 
   it('connect throws when client id is not configured', async () => {

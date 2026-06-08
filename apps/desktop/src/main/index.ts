@@ -54,23 +54,6 @@ import { createTray, destroyTray } from './tray';
 import { safeCleanup, isHardCrashReason } from './cleanup-utils';
 import { appStatsTracker } from './stats/app-stats-tracker';
 
-// Dev only: load apps/desktop/.env so runtime-read secrets — notably
-// MAL_CLIENT_SECRET, which is deliberately NOT baked into the bundle (the public
-// client IDs ARE baked at build time via esbuild `define`) — are available during
-// `pnpm dev`. Packaged builds never ship a .env. Resolved via app.getAppPath()
-// (= apps/desktop in dev) so it doesn't depend on the invoking cwd. A missing or
-// unreadable file is non-fatal: the vars may instead come from the shell.
-// `process.loadEnvFile` is Node ≥20.12; guard on its presence so a future
-// Electron on an older bundled Node degrades gracefully instead of relying on
-// the catch below to swallow a `TypeError`.
-if (!app.isPackaged && typeof process.loadEnvFile === 'function') {
-  try {
-    process.loadEnvFile(join(app.getAppPath(), '.env'));
-  } catch {
-    // No local .env — fine.
-  }
-}
-
 // Override Electron's default User-Agent so "Electron/<version>" and the app
 // name never leak in request headers — some subframe/worker requests bypass
 // session.setUserAgent and fall back to this default, which Cloudflare's

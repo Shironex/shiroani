@@ -13,18 +13,13 @@ function resolveClientId(): string {
   return process.env.MAL_CLIENT_ID || DEFAULT_MAL_CLIENT_ID;
 }
 
-/** Optional client secret — present only for confidential clients. Main-side ONLY. */
-function resolveClientSecret(): string | undefined {
-  return process.env.MAL_CLIENT_SECRET || undefined;
-}
-
 /**
  * Register MAL OAuth IPC handlers.
  *
  * Neither the access token nor the refresh token EVER crosses IPC — handlers
  * only ever return a {@link MalAuthStatus}. Both tokens are held in the
- * main-process safeStorage-backed store. The client secret (when set) likewise
- * never leaves the main process.
+ * main-process safeStorage-backed store. The MAL client is a public ("other")
+ * app type, so the auth-code + PKCE flow needs no client secret.
  */
 export function registerMalAuthHandlers(): void {
   handle('mal-auth:connect', async (): Promise<MalAuthStatus> => {
@@ -33,10 +28,7 @@ export function registerMalAuthHandlers(): void {
       throw new Error('MAL client ID is not configured (set MAL_CLIENT_ID). Cannot start OAuth.');
     }
 
-    const { accessToken, refreshToken, expiresIn } = await startMalOAuth(
-      clientId,
-      resolveClientSecret()
-    );
+    const { accessToken, refreshToken, expiresIn } = await startMalOAuth(clientId);
 
     // Fetch the viewer with the FRESH access token — the session is not saved
     // yet, so a store-backed read would return null here. The viewer is only

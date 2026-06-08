@@ -109,7 +109,7 @@ describe('mal-token-request', () => {
       });
     });
 
-    it('OMITS client_secret when none is provided (public PKCE client)', async () => {
+    it('never sends a client_secret (public PKCE "other" client)', async () => {
       fetchMock.mockResolvedValue(okJson(tokenBody));
       await exchangeMalCodeForToken({
         clientId: 'client-1',
@@ -120,31 +120,17 @@ describe('mal-token-request', () => {
       expect(body).not.toHaveProperty('client_secret');
     });
 
-    it('INCLUDES client_secret when provided (confidential client)', async () => {
-      fetchMock.mockResolvedValue(okJson(tokenBody));
-      await exchangeMalCodeForToken({
-        clientId: 'client-1',
-        clientSecret: 'shh-secret',
-        code: 'c',
-        codeVerifier: 'v',
-      });
-      const body = decodeBody(fetchMock.mock.calls[0]);
-      expect(body.client_secret).toBe('shh-secret');
-    });
-
-    it('throws with status only on a non-2xx (never echoes the code/verifier/secret)', async () => {
+    it('throws with status only on a non-2xx (never echoes the code/verifier)', async () => {
       fetchMock.mockResolvedValue(
         errResponse(400, {
           error: 'invalid_grant',
-          // A hostile/echoing endpoint reflecting the submitted secrets back.
+          // A hostile/echoing endpoint reflecting the submitted values back.
           code: 'the-code',
           code_verifier: 'the-verifier',
-          client_secret: 'the-secret',
         })
       );
       const args = {
         clientId: 'c',
-        clientSecret: 'the-secret',
         code: 'the-code',
         codeVerifier: 'the-verifier',
       };
@@ -156,10 +142,9 @@ describe('mal-token-request', () => {
       }
       const message = (thrown as Error).message;
       expect(message).toMatch(/status 400/);
-      // The thrown error must not leak any submitted secret.
+      // The thrown error must not leak any submitted secret value.
       expect(message).not.toContain('the-code');
       expect(message).not.toContain('the-verifier');
-      expect(message).not.toContain('the-secret');
     });
   });
 
@@ -183,16 +168,6 @@ describe('mal-token-request', () => {
         refresh_token: 'old-refresh',
       });
       expect(body).not.toHaveProperty('client_secret');
-    });
-
-    it('includes client_secret on refresh when provided', async () => {
-      fetchMock.mockResolvedValue(okJson(tokenBody));
-      await refreshMalToken({
-        clientId: 'client-1',
-        clientSecret: 'shh',
-        refreshToken: 'r',
-      });
-      expect(decodeBody(fetchMock.mock.calls[0]).client_secret).toBe('shh');
     });
   });
 });

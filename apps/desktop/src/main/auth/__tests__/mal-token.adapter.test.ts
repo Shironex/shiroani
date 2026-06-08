@@ -37,7 +37,6 @@ function deferred<T>(): {
 
 describe('ElectronMalTokenAdapter', () => {
   const origId = process.env.MAL_CLIENT_ID;
-  const origSecret = process.env.MAL_CLIENT_SECRET;
 
   beforeEach(() => {
     mockStore.getSession.mockReset();
@@ -45,12 +44,10 @@ describe('ElectronMalTokenAdapter', () => {
     mockStore.getSessionEpoch.mockReset().mockReturnValue(0);
     mockRefresh.mockReset();
     process.env.MAL_CLIENT_ID = 'client-1';
-    delete process.env.MAL_CLIENT_SECRET;
   });
 
   afterAll(() => {
     process.env.MAL_CLIENT_ID = origId;
-    process.env.MAL_CLIENT_SECRET = origSecret;
   });
 
   it('returns null when no session is stored', async () => {
@@ -91,7 +88,6 @@ describe('ElectronMalTokenAdapter', () => {
     expect(token).toBe('fresh-access');
     expect(mockRefresh).toHaveBeenCalledWith({
       clientId: 'client-1',
-      clientSecret: undefined,
       refreshToken: 'old-refresh',
     });
     // Persists the NEW pair, preserving the cached viewer.
@@ -118,22 +114,6 @@ describe('ElectronMalTokenAdapter', () => {
     const adapter = new ElectronMalTokenAdapter();
     expect(await adapter.getAccessToken()).toBe('fresh-access');
     expect(mockRefresh).toHaveBeenCalledTimes(1);
-  });
-
-  it('forwards the client secret to refresh when configured', async () => {
-    process.env.MAL_CLIENT_SECRET = 'shh';
-    mockStore.getSession.mockReturnValue({
-      accessToken: 'old',
-      refreshToken: 'old-refresh',
-      expiresAt: Date.now() - 1,
-      viewer,
-    });
-    mockRefresh.mockResolvedValue({ accessToken: 'a', refreshToken: 'b', expiresIn: 3600 });
-    const adapter = new ElectronMalTokenAdapter();
-    await adapter.getAccessToken();
-    expect(mockRefresh).toHaveBeenCalledWith(
-      expect.objectContaining({ clientSecret: 'shh', refreshToken: 'old-refresh' })
-    );
   });
 
   it('single-flight: concurrent callers trigger exactly ONE refresh', async () => {

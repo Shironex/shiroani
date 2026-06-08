@@ -18,10 +18,6 @@ function resolveClientId(): string {
   return process.env.MAL_CLIENT_ID || DEFAULT_MAL_CLIENT_ID;
 }
 
-function resolveClientSecret(): string | undefined {
-  return process.env.MAL_CLIENT_SECRET || undefined;
-}
-
 /**
  * Concrete {@link MalTokenPort} wired into the Nest container at bootstrap (see
  * `main/index.ts` `malTokenProvider`). Reads the safeStorage-backed tokens from
@@ -92,7 +88,6 @@ export class ElectronMalTokenAdapter extends MalTokenPort {
     try {
       const tokens = await refreshMalToken({
         clientId,
-        clientSecret: resolveClientSecret(),
         refreshToken,
       });
       if (getSessionEpoch() !== epochBeforeRefresh) {

@@ -10,7 +10,7 @@ import { MAL_OAUTH_REDIRECT_URI, MAL_OAUTH_TOKEN_URL } from '@shiroani/shared';
  * exchange and every refresh run through these pure functions.
  *
  * Security: these functions NEVER log their inputs or outputs. The `code`,
- * `code_verifier`, `client_secret`, and every token are secrets.
+ * `code_verifier`, and every token are secrets.
  */
 
 /** Shape every MAL token grant resolves to (exchange and refresh alike). */
@@ -59,7 +59,7 @@ export function parseMalTokenResponse(raw: unknown): MalTokenResponse {
  *
  * Shared by both the authorization-code exchange and the refresh grant. On a
  * non-2xx response it throws with the status only — the body may echo the
- * submitted secret, so it is deliberately NOT included in the error.
+ * submitted code/verifier, so it is deliberately NOT included in the error.
  */
 async function postToken(params: URLSearchParams): Promise<MalTokenResponse> {
   const response = await fetch(MAL_OAUTH_TOKEN_URL, {
@@ -69,7 +69,7 @@ async function postToken(params: URLSearchParams): Promise<MalTokenResponse> {
   });
 
   if (!response.ok) {
-    // Never include the response body — MAL may echo the submitted code/secret.
+    // Never include the response body — MAL may echo the submitted code/verifier.
     throw new Error(`MAL token request failed with status ${response.status}`);
   }
 
@@ -81,13 +81,12 @@ async function postToken(params: URLSearchParams): Promise<MalTokenResponse> {
  * Exchange an authorization code for an access + refresh token pair.
  *
  * PKCE: `code_verifier` is sent VERBATIM (MAL's `plain` method means the
- * authorize-time `code_challenge` equalled this value). `client_secret` is
- * included ONLY when the registered client has one — the PKCE flow works for
- * public clients without it, so it stays optional.
+ * authorize-time `code_challenge` equalled this value). ShiroAni's MAL client is
+ * registered as a PUBLIC ("other") app type, so no `client_secret` is sent — the
+ * PKCE proof is what authenticates the exchange.
  */
 export async function exchangeMalCodeForToken(args: {
   clientId: string;
-  clientSecret?: string;
   code: string;
   codeVerifier: string;
 }): Promise<MalTokenResponse> {
@@ -98,20 +97,16 @@ export async function exchangeMalCodeForToken(args: {
     code_verifier: args.codeVerifier,
     redirect_uri: MAL_OAUTH_REDIRECT_URI,
   });
-  if (args.clientSecret) {
-    params.set('client_secret', args.clientSecret);
-  }
   return postToken(params);
 }
 
 /**
  * Refresh an access token using a refresh token. MAL ROTATES the refresh token
  * on every refresh, so the caller MUST persist BOTH tokens from the result and
- * discard the old refresh token. `client_secret` is sent only when present.
+ * discard the old refresh token. No `client_secret` — public ("other") client.
  */
 export async function refreshMalToken(args: {
   clientId: string;
-  clientSecret?: string;
   refreshToken: string;
 }): Promise<MalTokenResponse> {
   const params = new URLSearchParams({
@@ -119,8 +114,5 @@ export async function refreshMalToken(args: {
     client_id: args.clientId,
     refresh_token: args.refreshToken,
   });
-  if (args.clientSecret) {
-    params.set('client_secret', args.clientSecret);
-  }
   return postToken(params);
 }

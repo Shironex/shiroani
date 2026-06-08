@@ -86,10 +86,7 @@ export function parseAuthCode(url: string): ParsedAuthCode | null {
  * - Rejects on the user closing the window without a code, on timeout, and on a
  *   forwarded MAL `?error=` redirect.
  */
-export async function startMalOAuth(
-  clientId: string,
-  clientSecret?: string
-): Promise<MalTokenResponse> {
+export async function startMalOAuth(clientId: string): Promise<MalTokenResponse> {
   // PKCE: MAL supports `plain` ONLY, so the code_challenge IS the code_verifier.
   const codeVerifier = base64url(randomBytes(CODE_VERIFIER_BYTES));
   const state = base64url(randomBytes(STATE_BYTES));
@@ -210,7 +207,6 @@ export async function startMalOAuth(
         // here surfaces to the connect handler. Errors never include the code.
         exchangeMalCodeForToken({
           clientId,
-          clientSecret,
           code: parsed.code,
           codeVerifier,
         })
