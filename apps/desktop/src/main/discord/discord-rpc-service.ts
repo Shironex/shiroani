@@ -85,11 +85,22 @@ function setStatus(status: DiscordRpcStatus): void {
   }
 }
 
+/** A single activity template is only adopted when COMPLETE — a partial or
+ * malformed template object must not replace a default wholesale. */
+const storedTemplateSchema = z.object({
+  details: z.string(),
+  state: z.string(),
+  showTimestamp: z.boolean(),
+  showLargeImage: z.boolean(),
+  showButton: z.boolean(),
+});
+
 /**
  * Stored-settings shape, validated at the electron-store boundary. Every field
- * is optional with per-field fallback to defaults, and each template is only
- * adopted when COMPLETE — the previous shallow spread let a partial or
- * malformed template object replace a default wholesale.
+ * is optional with per-field fallback to defaults. Templates are validated
+ * individually (see `storedTemplateSchema` in `getSettings`) so one malformed
+ * template entry falls back to its default without resetting every other
+ * setting and template.
  */
 const storedDiscordSettingsSchema = z
   .object({
@@ -97,16 +108,7 @@ const storedDiscordSettingsSchema = z
     showAnimeDetails: z.boolean(),
     showElapsedTime: z.boolean(),
     useCustomTemplates: z.boolean(),
-    templates: z.record(
-      z.string(),
-      z.object({
-        details: z.string(),
-        state: z.string(),
-        showTimestamp: z.boolean(),
-        showLargeImage: z.boolean(),
-        showButton: z.boolean(),
-      })
-    ),
+    templates: z.record(z.string(), z.unknown()),
   })
   .partial();
 
@@ -116,12 +118,14 @@ function getSettings(): DiscordRpcSettings {
   if (!stored) return { ...DEFAULT_SETTINGS, templates: { ...DEFAULT_DISCORD_TEMPLATES } };
 
   // Merge per known activity key only — unknown keys in the stored record are
-  // dropped rather than spread into the typed templates object.
+  // dropped rather than spread into the typed templates object. Each candidate
+  // is validated individually; an incomplete/malformed template falls back to
+  // its default without affecting the others.
   const templates = { ...DEFAULT_DISCORD_TEMPLATES };
   if (stored.templates) {
     for (const key of Object.keys(DEFAULT_DISCORD_TEMPLATES) as DiscordActivityType[]) {
-      const candidate = stored.templates[key];
-      if (candidate) templates[key] = candidate;
+      const candidate = storedTemplateSchema.safeParse(stored.templates[key]);
+      if (candidate.success) templates[key] = candidate.data;
     }
   }
 
