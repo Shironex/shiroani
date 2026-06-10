@@ -22,6 +22,9 @@ import { CORS_CONFIG } from '../kernel/cors.config';
 import { WsThrottlerGuard } from '../kernel/ws-throttler.guard';
 import { handleGatewayRequest } from '../kernel/gateway-handler';
 import { AnimeService } from './anime.service';
+import { AnimeProfileService } from './anime-profile.service';
+import { AnimeSocialService } from './anime-social.service';
+import { AnimeRecommendationsService } from './anime-recommendations.service';
 
 const logger = createLogger('AnimeGateway');
 
@@ -30,7 +33,12 @@ const EMPTY_PAGE_INFO = { total: 0, currentPage: 1, lastPage: 1, hasNextPage: fa
 @WebSocketGateway({ cors: CORS_CONFIG })
 @UseGuards(WsThrottlerGuard)
 export class AnimeGateway {
-  constructor(private readonly animeService: AnimeService) {
+  constructor(
+    private readonly animeService: AnimeService,
+    private readonly profileService: AnimeProfileService,
+    private readonly socialService: AnimeSocialService,
+    private readonly recommendationsService: AnimeRecommendationsService
+  ) {
     logger.info('AnimeGateway initialized');
   }
 
@@ -177,7 +185,7 @@ export class AnimeGateway {
       schema: animeGetUserProfilePayloadSchema,
       payload,
       handler: async parsed => {
-        const profile = await this.animeService.getUserProfile(parsed.username);
+        const profile = await this.profileService.getUserProfile(parsed.username);
         return { profile };
       },
     });
@@ -190,7 +198,7 @@ export class AnimeGateway {
       action: AnimeEvents.GET_VIEWER_PROFILE,
       defaultResult: { profile: null },
       handler: async () => {
-        const profile = await this.animeService.getViewerProfile();
+        const profile = await this.profileService.getViewerProfile();
         return { profile };
       },
     });
@@ -203,7 +211,7 @@ export class AnimeGateway {
       action: MalEvents.GET_VIEWER_PROFILE,
       defaultResult: { profile: null },
       handler: async () => {
-        const profile = await this.animeService.getMalViewerProfile();
+        const profile = await this.profileService.getMalViewerProfile();
         return { profile };
       },
     });
@@ -216,7 +224,7 @@ export class AnimeGateway {
       action: AnimeEvents.GET_VIEWER_ACTIVITY,
       defaultResult: { activities: [] },
       handler: async () => {
-        const activities = await this.animeService.getViewerActivity();
+        const activities = await this.socialService.getViewerActivity();
         return { activities };
       },
     });
@@ -246,7 +254,9 @@ export class AnimeGateway {
       schema: animeGetRecommendationsPayloadSchema,
       payload,
       handler: async parsed => {
-        const recommendations = await this.animeService.getRecommendations(parsed?.mediaId);
+        const recommendations = await this.recommendationsService.getRecommendations(
+          parsed?.mediaId
+        );
         return { recommendations };
       },
     });
@@ -261,7 +271,7 @@ export class AnimeGateway {
       schema: animeSaveRecommendationPayloadSchema,
       payload,
       handler: async parsed => {
-        const userRating = await this.animeService.saveRecommendation(parsed);
+        const userRating = await this.recommendationsService.saveRecommendation(parsed);
         return { userRating };
       },
     });
@@ -276,7 +286,7 @@ export class AnimeGateway {
       schema: animeGetFollowPayloadSchema,
       payload,
       handler: async parsed => {
-        const users = await this.animeService.getFollowing(parsed?.userId);
+        const users = await this.socialService.getFollowing(parsed?.userId);
         return { users };
       },
     });
@@ -291,7 +301,7 @@ export class AnimeGateway {
       schema: animeGetFollowPayloadSchema,
       payload,
       handler: async parsed => {
-        const users = await this.animeService.getFollowers(parsed?.userId);
+        const users = await this.socialService.getFollowers(parsed?.userId);
         return { users };
       },
     });
@@ -308,7 +318,7 @@ export class AnimeGateway {
       schema: animeToggleFollowPayloadSchema,
       payload,
       handler: async parsed => {
-        const isFollowing = await this.animeService.toggleFollow(parsed.userId);
+        const isFollowing = await this.socialService.toggleFollow(parsed.userId);
         return { isFollowing };
       },
     });
@@ -321,7 +331,7 @@ export class AnimeGateway {
       action: AnimeEvents.GET_SOCIAL_FEED,
       defaultResult: { activities: [] },
       handler: async () => {
-        const activities = await this.animeService.getSocialFeed();
+        const activities = await this.socialService.getSocialFeed();
         return { activities };
       },
     });
@@ -334,7 +344,7 @@ export class AnimeGateway {
       action: AnimeEvents.GET_NOTIFICATIONS,
       defaultResult: { notifications: [], unreadCount: 0 },
       handler: async () => {
-        return this.animeService.getNotifications();
+        return this.socialService.getNotifications();
       },
     });
   }
@@ -346,7 +356,7 @@ export class AnimeGateway {
       action: AnimeEvents.MARK_NOTIFICATIONS_READ,
       defaultResult: { unreadCount: 0 },
       handler: async () => {
-        const unreadCount = await this.animeService.markNotificationsRead();
+        const unreadCount = await this.socialService.markNotificationsRead();
         return { unreadCount };
       },
     });

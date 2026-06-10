@@ -42,7 +42,9 @@ function makeService(rows: AnimeEntry[]) {
   const library = {
     getAllEntries: jest.fn(() => rows),
     addEntry: jest.fn((payload: unknown) => ({ id: 99, ...(payload as object) })),
-    updateEntry: jest.fn((id: number) => rows.find(r => r.id === id)),
+    updateEntry: jest.fn((id: number, _updates: Record<string, unknown>) =>
+      rows.find(r => r.id === id)
+    ),
     setMalId: jest.fn(),
   };
   const diary = { getAllEntries: jest.fn(() => []) };
