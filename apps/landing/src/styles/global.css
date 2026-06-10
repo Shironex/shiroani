@@ -29,29 +29,35 @@
 /* Cross-cutting responsive rules (last so they override) */
 @import './responsive.css';
 
-/* Tailwind theme tokens — used on /download and /changelog pages */
-@theme {
-  --font-sans: 'DM Sans', system-ui, sans-serif;
-  --font-display: 'Zen Kaku Gothic New', 'DM Sans', system-ui, sans-serif;
+/* Tailwind theme tokens — used on /download and /changelog pages.
+   `@theme inline` so the generated utilities reference the underlying
+   design vars (`--accent`, `--bg`, `--gold`, …) defined in themes.css by
+   `var()` rather than copying a frozen value. That keeps themes.css the single
+   source of truth and lets `data-theme` switches flow through these tokens. */
+@theme inline {
+  /* Reuse the self-hosted, metric-optimized stacks emitted by the Astro Fonts
+     API (see astro.config.mjs / BaseHead.astro). `--font-display` is owned by
+     the <Font> component, so it is intentionally not redefined here. */
+  --font-sans: var(--font-body);
 
-  --color-background: oklch(0.12 0.018 300);
-  --color-foreground: oklch(0.96 0.01 300);
-  --color-muted: oklch(0.21 0.03 298);
-  --color-muted-foreground: oklch(0.72 0.03 300);
-  --color-primary: oklch(0.74 0.15 355);
-  --color-primary-foreground: oklch(0.12 0.018 300);
-  --color-brand: oklch(0.74 0.15 355);
-  --color-gold: oklch(0.75 0.12 85);
-  --color-gold-dim: oklch(0.62 0.08 85);
-  --color-card: oklch(0.16 0.025 300);
-  --color-card-foreground: oklch(0.96 0.01 300);
+  --color-background: var(--bg);
+  --color-foreground: var(--text);
+  --color-muted: var(--bg-3);
+  --color-muted-foreground: var(--text-2);
+  --color-primary: var(--accent);
+  --color-primary-foreground: var(--bg);
+  --color-brand: var(--accent);
+  --color-gold: var(--gold);
+  --color-gold-dim: var(--gold-dim);
+  --color-card: var(--bg-2);
+  --color-card-foreground: var(--text);
   --color-surface: oklch(0.14 0.02 300);
-  --color-border: oklch(1 0 0 / 0.14);
+  --color-border: var(--hairline-2);
   --color-crimson: oklch(0.55 0.25 10);
 
-  --color-primary-glow: oklch(0.74 0.15 355 / 0.3);
+  --color-primary-glow: var(--accent-glow);
   --color-brand-glow: oklch(0.74 0.15 355 / 0.5);
-  --color-gold-glow: oklch(0.7 0.1 85 / 0.5);
+  --color-gold-glow: var(--gold-glow);
 
   --radius-sm: 0.5rem;
   --radius-md: 0.75rem;

@@ -8,6 +8,13 @@
   --fs-display-lg: clamp(40px, 5.5vw, 72px);
   --fs-display-md: clamp(36px, 4.8vw, 60px);
   --fs-display-sm: clamp(26px, 3.4vw, 40px);
+
+  /* Loid-gold secondary accent (Spy×Family brand). Held constant across all
+     themes — pink stays the primary accent, gold is rhythm/accent only.
+     9:1 contrast on the dark plum bg, safe for the small meta text it marks. */
+  --gold: oklch(0.75 0.12 85);
+  --gold-dim: oklch(0.62 0.08 85);
+  --gold-glow: oklch(0.7 0.1 85 / 0.5);
 }
 :root,
 html[data-theme='plum'] {
@@ -20,7 +27,9 @@ html[data-theme='plum'] {
   --hairline-2: oklch(1 0 0 / 0.14);
   --text: oklch(0.96 0.01 300);
   --text-2: oklch(0.72 0.03 300);
-  --text-3: oklch(0.5 0.035 298);
+  /* 0.6 (was 0.5) clears AA 4.5:1 even on the lighter --bg-2 surfaces
+     (footer, ticker) while staying clearly below --text-2 (0.72). */
+  --text-3: oklch(0.6 0.035 298);
   --accent: oklch(0.74 0.15 355);
   --accent-2: oklch(0.62 0.2 355);
   --accent-glow: oklch(0.74 0.15 355 / 0.3);

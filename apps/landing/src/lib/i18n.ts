@@ -1,4 +1,5 @@
 import {
+  BUILT_IN_THEME_METADATA,
   DEFAULT_LANGUAGE,
   LANGUAGE_STORAGE_KEY,
   SUPPORTED_LANGUAGES,
@@ -170,9 +171,9 @@ export const translations: Record<SupportedLanguage, Record<string, string>> = {
     'features.06.desc': 'Kafelki szybkiego dostępu. Raz skonfigurujesz, masz na zawsze.',
     'features.06.alt': 'Nowa karta',
     'features.07.no': '№ 07 · THEMES',
-    'features.07.title': '17 motywów plus edytor własnych.',
+    'features.07.title': '{themeCount} motywów plus edytor własnych.',
     'features.07.desc':
-      '15 ciemnych, 2 jasne, większość inspirowana anime. Wizualny edytor palety, czcionek i tła.',
+      '{darkCount} ciemnych, {lightCount} jasne, większość inspirowana anime. Wizualny edytor palety, czcionek i tła.',
     'features.08.no': '№ 08 · NOTIFICATIONS',
     'features.08.title': 'Nowy odcinek? Jesteś pierwszy.',
     'features.08.desc':
@@ -217,19 +218,19 @@ export const translations: Record<SupportedLanguage, Record<string, string>> = {
     'faq.heading.lead': 'Najczęstsze ',
     'faq.heading.em': 'pytania',
     'faq.heading.tail': '.',
-    'faq.sub': 'Masz inne pytanie? Zajrzyj na Discorda.',
+    'faq.sub': 'Masz inne pytanie? Napisz do nas na GitHubie.',
     'faq.q1': 'Czy ShiroAni jest darmowe?',
     'faq.a1':
       'Tak, całkowicie. Żadnego konta, reklam, ani subskrypcji. Kod jest otwarty do wglądu, ale nie wolno go redystrybuować.',
     'faq.q2': 'Na jakich systemach działa?',
     'faq.a2':
-      'Windows 10/11 (auto-update) i macOS 11+. Żadna z wersji nie jest podpisana: Windows pokaże ostrzeżenie SmartScreen (kliknij „Więcej informacji" → „Uruchom mimo to"), a na macOS po każdym pobraniu trzeba uruchomić <code>xattr -cr /Applications/ShiroAni.app</code>, bo macOS nakłada kwarantannę na każdy świeżo pobrany plik.',
+      'Windows 10/11 (auto-update) i macOS 11+. Żadna z wersji nie jest podpisana: Windows pokaże ostrzeżenie SmartScreen (kliknij „Więcej informacji" → „Uruchom mimo to"), a na macOS po każdym pobraniu trzeba uruchomić <code>xattr -rd com.apple.quarantine /Applications/ShiroAni.app</code>, bo macOS nakłada kwarantannę na każdy świeżo pobrany plik.',
     'faq.q3': 'Jak działa wbudowana przeglądarka?',
     'faq.a3':
       'Pełna przeglądarka na Chromium z wbudowanym adblockiem Ghostery. Karty, sesje, zakładki, historia — działa jak zwykła przeglądarka, tylko bez reklam i w tym samym oknie co biblioteka.',
     'faq.q4': 'Skąd dane w harmonogramie?',
     'faq.a4':
-      'Harmonogram pobiera dane bezpośrednio z publicznego API AniList. Import biblioteki z MyAnimeList i AniList jest w planach.',
+      'Harmonogram pobiera dane bezpośrednio z publicznego API AniList. Dwukierunkowa synchronizacja biblioteki z AniList i MyAnimeList jest już dostępna (oznaczona jako eksperymentalna).',
     'faq.q5': 'Czy moje dane są bezpieczne?',
     'faq.a5':
       'Wszystkie dane (biblioteka, pamiętnik, ustawienia) są lokalne — SQLite na Twoim dysku. Nie wysyłamy niczego na serwer.',
@@ -239,7 +240,7 @@ export const translations: Record<SupportedLanguage, Record<string, string>> = {
 
     // Footer
     'footer.blurb':
-      'Shiro-chan wciąż rośnie. Apka jest na wczesnym etapie, ale z każdym wydaniem robi się przytulniej.',
+      'Shiro-chan dorosła. Stabilna, dopracowana i bezpłatna — a z każdym wydaniem robi się przytulniej.',
     'footer.col.product': 'Produkt',
     'footer.col.resources': 'Zasoby',
     'footer.col.suite': 'Rodzina',
@@ -276,7 +277,7 @@ export const translations: Record<SupportedLanguage, Record<string, string>> = {
       'Sortowanie, import, eksport, statystyki oraz przełącznik siatki i listy.',
     'anatomy.library.pin3.title': 'Filtry statusu',
     'anatomy.library.pin3.text':
-      'Sześć statusów: Wszystkie, Oglądam, Ukończone, Planowane, Wstrzymane, Porzucone.',
+      'Pięć statusów plus filtr Wszystkie: Oglądam, Ukończone, Planowane, Wstrzymane, Porzucone.',
     'anatomy.library.pin4.title': 'Karty serii',
     'anatomy.library.pin4.text':
       'Okładki z biblioteki, postęp (Odc. 8/12), badge statusu. Klik otwiera szczegóły i pamiętnik.',
@@ -307,7 +308,7 @@ export const translations: Record<SupportedLanguage, Record<string, string>> = {
     'anatomy.settings.pin2.text': 'Skala tekstu i interfejsu. Pięć poziomów od 95% do 115%.',
     'anatomy.settings.pin3.title': 'Motywy kolorystyczne',
     'anatomy.settings.pin3.text':
-      '17 wbudowanych palet: 15 ciemnych i 2 jasne. Kliknięcie zastosuje motyw od razu.',
+      '{themeCount} wbudowanych palet: {darkCount} ciemnych i {lightCount} jasne. Kliknięcie zastosuje motyw od razu.',
     'anatomy.settings.pin4.title': 'Import własnego motywu',
     'anatomy.settings.pin4.text':
       'Zaimportuj motyw z pliku lub zbuduj własny w edytorze z podglądem na żywo.',
@@ -518,9 +519,9 @@ export const translations: Record<SupportedLanguage, Record<string, string>> = {
     'features.06.desc': 'Quick-access tiles. Set them once, keep them forever.',
     'features.06.alt': 'New tab',
     'features.07.no': '№ 07 · THEMES',
-    'features.07.title': '17 themes plus a custom theme editor.',
+    'features.07.title': '{themeCount} themes plus a custom theme editor.',
     'features.07.desc':
-      '15 dark, 2 light, mostly anime-inspired. A visual editor for palette, fonts and background.',
+      '{darkCount} dark, {lightCount} light, mostly anime-inspired. A visual editor for palette, fonts and background.',
     'features.08.no': '№ 08 · NOTIFICATIONS',
     'features.08.title': 'New episode? You’re first to know.',
     'features.08.desc':
@@ -566,19 +567,19 @@ export const translations: Record<SupportedLanguage, Record<string, string>> = {
     'faq.heading.lead': 'Frequently asked ',
     'faq.heading.em': 'questions',
     'faq.heading.tail': '.',
-    'faq.sub': 'Got another question? Drop by the Discord.',
+    'faq.sub': 'Got another question? Reach out on GitHub.',
     'faq.q1': 'Is ShiroAni free?',
     'faq.a1':
       'Yes, completely. No account, no ads, no subscription. The source is available to read but not to redistribute.',
     'faq.q2': 'Which systems does it run on?',
     'faq.a2':
-      'Windows 10/11 (auto-update) and macOS 11+. Neither build is signed: Windows shows a SmartScreen warning (click "More info" → "Run anyway"), and on macOS you have to run <code>xattr -cr /Applications/ShiroAni.app</code> after every download because macOS quarantines anything fresh off the internet.',
+      'Windows 10/11 (auto-update) and macOS 11+. Neither build is signed: Windows shows a SmartScreen warning (click "More info" → "Run anyway"), and on macOS you have to run <code>xattr -rd com.apple.quarantine /Applications/ShiroAni.app</code> after every download because macOS quarantines anything fresh off the internet.',
     'faq.q3': 'How does the built-in browser work?',
     'faq.a3':
       'A full Chromium browser with Ghostery ad-blocking baked in. Tabs, sessions, bookmarks, history — it works like a normal browser, just without the ads and in the same window as the library.',
     'faq.q4': 'Where does the schedule data come from?',
     'faq.a4':
-      'The schedule pulls directly from the public AniList API. Library import from MyAnimeList and AniList is on the roadmap.',
+      'The schedule pulls directly from the public AniList API. Two-way library sync with AniList and MyAnimeList is available now (marked experimental).',
     'faq.q5': 'Is my data safe?',
     'faq.a5':
       'All data (library, diary, settings) is local — SQLite on your disk. Nothing is sent to a server.',
@@ -588,7 +589,7 @@ export const translations: Record<SupportedLanguage, Record<string, string>> = {
 
     // Footer
     'footer.blurb':
-      'Shiro-chan is still growing. The app is early, but every release makes it cozier.',
+      'Shiro-chan is all grown up. Stable, polished, and free — and every release makes it cozier.',
     'footer.col.product': 'Product',
     'footer.col.resources': 'Resources',
     'footer.col.suite': 'Family',
@@ -624,7 +625,7 @@ export const translations: Record<SupportedLanguage, Record<string, string>> = {
     'anatomy.library.pin2.text': 'Sort, import, export, statistics and a grid/list switcher.',
     'anatomy.library.pin3.title': 'Status filters',
     'anatomy.library.pin3.text':
-      'Six statuses: All, Watching, Completed, Planned, On hold, Dropped.',
+      'Five statuses plus an All filter: Watching, Completed, Planned, On hold, Dropped.',
     'anatomy.library.pin4.title': 'Series cards',
     'anatomy.library.pin4.text':
       'Library covers, progress (Ep. 8/12), status badge. Click opens details and the diary.',
@@ -656,7 +657,7 @@ export const translations: Record<SupportedLanguage, Record<string, string>> = {
     'anatomy.settings.pin2.text': 'Text and interface scale. Five levels from 95% to 115%.',
     'anatomy.settings.pin3.title': 'Color themes',
     'anatomy.settings.pin3.text':
-      '17 built-in palettes: 15 dark and 2 light. A click applies the theme instantly.',
+      '{themeCount} built-in palettes: {darkCount} dark and {lightCount} light. A click applies the theme instantly.',
     'anatomy.settings.pin4.title': 'Import a custom theme',
     'anatomy.settings.pin4.text':
       'Import a theme from a file or build your own in the editor with a live preview.',
@@ -721,6 +722,27 @@ export const translations: Record<SupportedLanguage, Record<string, string>> = {
     'changelog.end.quote': '"What if tracking anime were comfortable?"',
   },
 };
+
+/**
+ * Theme counts are the single source of truth in `BUILT_IN_THEME_METADATA`.
+ * Strings reference them through `{themeCount}` / `{darkCount}` / `{lightCount}`
+ * placeholders so adding a built-in theme can never desync the marketing copy
+ * (hero strip, features.07, anatomy settings pin) from the actual app.
+ */
+const THEME_COUNTS: Record<string, string> = {
+  themeCount: String(BUILT_IN_THEME_METADATA.length),
+  darkCount: String(BUILT_IN_THEME_METADATA.filter(th => th.isDark).length),
+  lightCount: String(BUILT_IN_THEME_METADATA.filter(th => !th.isDark).length),
+};
+
+for (const dict of Object.values(translations)) {
+  for (const key of Object.keys(dict)) {
+    dict[key] = dict[key].replace(
+      /\{(themeCount|darkCount|lightCount)\}/g,
+      (_, name: string) => THEME_COUNTS[name]
+    );
+  }
+}
 
 /**
  * Synchronously read the stored language. Falls back to {@link DEFAULT_LANGUAGE}

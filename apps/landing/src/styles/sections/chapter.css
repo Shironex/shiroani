@@ -13,7 +13,9 @@
   font-weight: 800;
   font-size: var(--fs-display-xxl);
   line-height: 0.85;
-  color: var(--accent);
+  /* Gold chapter numeral — Loid-gold secondary accent sets the section rhythm
+     while pink stays the primary call-to-action colour. */
+  color: var(--gold);
   letter-spacing: -0.03em;
 }
 .divider .t {
@@ -30,7 +32,8 @@
   font-size: 11px;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: var(--accent);
+  /* Gold eyebrow label pairs with the gold chapter numeral. */
+  color: var(--gold);
   font-weight: 600;
 }
 .divider .t em {

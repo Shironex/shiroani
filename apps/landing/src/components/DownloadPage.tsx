@@ -272,7 +272,7 @@ export function DownloadPage({ lang: initialLang }: { lang?: SupportedLanguage }
         </div>
 
         <div className="dlp-links">
-          <a href="/changelog" className="dlp-btn">
+          <a href={lang === 'en' ? '/en/changelog' : '/changelog'} className="dlp-btn">
             <span aria-hidden="true">≡</span>
             <span>{t('dlp.links.changelog')}</span>
           </a>

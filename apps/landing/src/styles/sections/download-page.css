@@ -307,6 +307,16 @@
   background: var(--accent);
   border-color: var(--accent);
 }
+/* Gold leading glyph (≡ / ↗) on the secondary footer links — a quiet
+   secondary accent. The text label keeps its muted colour and the primary
+   error CTA stays fully pink. */
+.dlp-links .dlp-btn > span[aria-hidden] {
+  color: var(--gold);
+  transition: color 0.2s;
+}
+.dlp-links .dlp-btn:hover > span[aria-hidden] {
+  color: var(--gold-dim);
+}
 
 /* ---- SR-only live region ---- */
 .dlp-sr {

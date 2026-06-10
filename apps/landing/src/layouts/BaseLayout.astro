@@ -1,5 +1,6 @@
 ---
 import BaseHead from '../components/BaseHead.astro';
+import { LANGUAGE_STORAGE_KEY, SUPPORTED_LANGUAGES } from '../lib/i18n';
 import type { SupportedLanguage } from '../lib/i18n';
 
 interface Props {
@@ -35,6 +36,42 @@ const {
       ogImage={ogImage}
       noindex={noindex}
     />
+    <!--
+      Anti-FOUC gate. A returning EN visitor landing on a PL-SSR route (`/`)
+      would otherwise see a flash of Polish before the deferred swap script
+      runs. This blocking script (before first paint) checks the stored
+      preference against the SSR `<html lang>` and, only on a mismatch, hides
+      the body until the swap completes. Failure-safe: it is a no-op when the
+      languages already agree, and a 300 ms timeout reveals the body even if
+      the module swap never runs (JS error, slow chunk) so the page can never
+      stay blank.
+    -->
+    <style>
+      html.lang-pending body {
+        visibility: hidden;
+      }
+    </style>
+    <script is:inline define:vars={{ storageKey: LANGUAGE_STORAGE_KEY, supported: SUPPORTED_LANGUAGES }}>
+      (function () {
+        try {
+          var stored = localStorage.getItem(storageKey);
+          var ssr = document.documentElement.lang;
+          if (
+            stored &&
+            stored !== ssr &&
+            supported.indexOf(stored) !== -1 &&
+            supported.indexOf(ssr) !== -1
+          ) {
+            document.documentElement.classList.add('lang-pending');
+            window.setTimeout(function () {
+              document.documentElement.classList.remove('lang-pending');
+            }, 300);
+          }
+        } catch (e) {
+          /* localStorage unavailable (private mode) — no gate, no risk */
+        }
+      })();
+    </script>
   </head>
   <body>
     <a href="#main" class="skip-link" data-i18n="layout.skipToContent">Skip to content</a>
@@ -97,6 +134,16 @@ const {
             }
           }
         });
+
+        // The home route has no localeRoutes entry because `/` and `/en/` are
+        // the locale roots, not sibling sub-pages. Anchors tagged
+        // `data-locale-home` (e.g. the 404 "back home" CTA, which is SSR'd in
+        // Polish) get their href pointed at the matching locale root.
+        document
+          .querySelectorAll<HTMLAnchorElement>('a[data-locale-home]')
+          .forEach((a) => {
+            a.href = lang === 'en' ? '/en/' : '/';
+          });
       }
 
       function applyTranslations(lang: SupportedLanguage) {
@@ -149,12 +196,18 @@ const {
         }
 
         document.querySelectorAll<HTMLButtonElement>('[data-lang-toggle]').forEach((btn) => {
-          btn.textContent = lang === 'en' ? 'PL' : 'EN';
+          const visible = lang === 'en' ? 'PL' : 'EN';
+          btn.textContent = visible;
           const nextKey = lang === 'en' ? 'nav.switchLanguageToPl' : 'nav.switchLanguageToEn';
-          if (dict[nextKey] != null) btn.setAttribute('aria-label', dict[nextKey]);
+          // Accessible name must contain the visible text (WCAG 2.5.3).
+          if (dict[nextKey] != null) btn.setAttribute('aria-label', `${visible} — ${dict[nextKey]}`);
         });
 
         rewriteLocalizedLinks(lang);
+
+        // Reveal the body now that the swap is done — see the anti-FOUC gate
+        // in <head>. Removing it is idempotent and harmless when never set.
+        document.documentElement.classList.remove('lang-pending');
 
         document.dispatchEvent(new CustomEvent('shiroani:lang-change', { detail: { lang } }));
       }

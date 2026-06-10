@@ -58,7 +58,7 @@ const activeLocalizedHref = activeHref ? localized(activeHref) : undefined;
         class="lang-toggle"
         type="button"
         data-lang-toggle
-        aria-label={tt(lang === 'en' ? 'nav.switchLanguageToPl' : 'nav.switchLanguageToEn')}
+        aria-label={`${lang === 'en' ? 'PL' : 'EN'} — ${tt(lang === 'en' ? 'nav.switchLanguageToPl' : 'nav.switchLanguageToEn')}`}
       >{lang === 'en' ? 'PL' : 'EN'}</button>
       <a class="nav-cta" href={localized('/download')}><span data-i18n="nav.cta">{tt('nav.cta')}</span> <span aria-hidden="true">↗</span></a>
       <button class="nav-burger" type="button" aria-label={tt('nav.toggleMenu')} data-i18n-aria-label="nav.toggleMenu" aria-expanded="false" aria-controls="nav-mobile">
@@ -108,10 +108,19 @@ const activeLocalizedHref = activeHref ? localized(activeHref) : undefined;
   const burger = document.querySelector<HTMLButtonElement>('.nav-burger');
   const menu = document.getElementById('nav-mobile');
   if (burger && menu) {
+    // Everything outside the nav is made `inert` while the burger menu is open
+    // so Tab can't escape into the (visually covered) page content behind it.
+    // Querying lazily keeps it correct across Astro view transitions.
+    const setOutsideInert = (inert: boolean) => {
+      document
+        .querySelectorAll<HTMLElement>('main, footer')
+        .forEach((el) => el.toggleAttribute('inert', inert));
+    };
     const setOpen = (open: boolean) => {
       burger.setAttribute('aria-expanded', String(open));
       menu.toggleAttribute('hidden', !open);
       document.documentElement.classList.toggle('nav-open', open);
+      setOutsideInert(open);
     };
     burger.addEventListener('click', () => {
       setOpen(burger.getAttribute('aria-expanded') !== 'true');

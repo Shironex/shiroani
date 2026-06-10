@@ -50,7 +50,9 @@ details.faq summary::-webkit-details-marker {
 details.faq .n {
   font-family: var(--font-mono);
   font-size: 10.5px;
-  color: var(--accent);
+  /* Gold Q.0x numerals — secondary accent rhythm; the open-state plus toggle
+     stays pink as the primary interaction colour. */
+  color: var(--gold);
   letter-spacing: 0.12em;
 }
 details.faq .plus {

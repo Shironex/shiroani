@@ -1,8 +1,11 @@
 ---
 import { Image } from 'astro:assets';
+import { BUILT_IN_THEME_METADATA } from '@shiroani/shared';
 import mascotWave from '../assets/mascot-wave.png';
 import { currentVersion, getReleases } from '../lib/releases';
 import { t, type SupportedLanguage } from '../lib/i18n';
+
+const themeCount = BUILT_IN_THEME_METADATA.length;
 
 interface Props {
   /** Active SSR language. Defaults to PL (`/` is the canonical PL page);
@@ -53,7 +56,7 @@ const libraryCards = [
         </a>
       </div>
       <p class="hero-strip">
-        <span><b>17</b> <span data-i18n="hero.strip.themes">{tt('hero.strip.themes')}</span></span>
+        <span><b>{themeCount}</b> <span data-i18n="hero.strip.themes">{tt('hero.strip.themes')}</span></span>
         <span class="dot" aria-hidden="true">·</span>
         <span><b>05</b> <span data-i18n="hero.strip.statuses">{tt('hero.strip.statuses')}</span></span>
         <span class="dot" aria-hidden="true">·</span>
@@ -63,7 +66,7 @@ const libraryCards = [
       </p>
     </div>
 
-    <div class="mock" aria-hidden="true">
+    <div class="mock" aria-hidden="true" inert>
       <div class="mock-bg"></div>
       <div class="mock-titlebar">
         <div class="dots"><span></span><span></span><span></span></div>
