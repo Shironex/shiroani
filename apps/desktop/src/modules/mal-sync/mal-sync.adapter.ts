@@ -14,7 +14,7 @@
  * and `updatedAt: number` — `MalListEntry.updatedAt` is `number | null`).
  */
 
-import { createLogger, extractErrorMessage } from '@shiroani/shared';
+import { createLogger, extractErrorMessage, normalizeAnimeTitle } from '@shiroani/shared';
 import type { LibraryService } from '../library';
 import type { AniListSyncRow } from '../library/library.types';
 import type { MalClient, MalListEntry } from '../anime/mal-client';
@@ -229,25 +229,36 @@ export class MalSyncProviderAdapter implements SyncProviderAdapter<MalSyncRemote
    * returns null (skip+log upstream) rather than risk linking a wrong mal_id.
    */
   private async resolveMalId(title: string): Promise<number | null> {
-    const hits = await this.client.searchAnime(title);
-    if (hits.length === 0) return null;
-
     const wanted = normalizeTitle(title);
+    // Session-scoped negative cache: a title that resolved to no confident
+    // match will resolve the same way on every later sync this session, and
+    // re-searching it added one remote roundtrip per permanently-ambiguous row
+    // to EVERY run. Transient search errors throw and never reach the cache.
+    if (this.unresolvableTitles.has(wanted)) return null;
+
+    const hits = await this.client.searchAnime(title);
+    if (hits.length === 0) {
+      this.unresolvableTitles.add(wanted);
+      return null;
+    }
+
     const exact = hits.filter(h => normalizeTitle(h.title) === wanted);
     if (exact.length === 1) return exact[0].id;
 
     // No single exact-title match (fuzzy-only single hit, or multiple exacts) →
     // too ambiguous to trust; skip the backfill rather than mis-link.
     logger.warn(`[mal] ambiguous search for "${title}" (${hits.length} hits) — skipping backfill`);
+    this.unresolvableTitles.add(wanted);
     return null;
   }
+
+  /** See {@link resolveMalId} — keyed by normalized title so an edit re-searches. */
+  private readonly unresolvableTitles = new Set<string>();
 }
 
-/** Case/space/punctuation-insensitive title key for the confident-match test. */
-function normalizeTitle(title: string): string {
-  return title
-    .toLowerCase()
-    .normalize('NFKD')
-    .replace(/[^\p{L}\p{N}]+/gu, ' ')
-    .trim();
-}
+/**
+ * Case/space/punctuation/diacritic-insensitive title key for the
+ * confident-match test — the shared rule both processes use (the previous
+ * local version kept combining marks, so "Pokémon" failed to match "Pokemon").
+ */
+const normalizeTitle = normalizeAnimeTitle;
