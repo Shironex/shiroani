@@ -1,12 +1,11 @@
 import { useEffect, useRef, useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Compass, SearchX, X, Loader2 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { Compass, SearchX, X } from 'lucide-react';
 import { EmptyState } from '@/components/shared/EmptyState';
 import { AniListErrorState } from '@/components/shared/AniListErrorState';
 import { KanjiWatermark } from '@/components/shared/KanjiWatermark';
 import { ViewHeader } from '@/components/shared/ViewHeader';
-import { DiscoverCard } from '@/components/discover/DiscoverCard';
+import { DiscoverGrid } from '@/components/discover/DiscoverGrid';
 import { DiscoverSkeleton } from '@/components/discover/DiscoverSkeleton';
 import { DiscoverSortSelect } from '@/components/discover/DiscoverSortSelect';
 import { DiscoverFiltersPanel } from '@/components/discover/DiscoverFiltersPanel';
@@ -124,7 +123,6 @@ export function DiscoverView() {
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const initialFetchDone = useRef(false);
-  const observerRef = useRef<IntersectionObserver | null>(null);
 
   // Fetch trending on mount
   useEffect(() => {
@@ -204,24 +202,10 @@ export function DiscoverView() {
     }
   }, []);
 
-  // Infinite scroll — callback ref so the observer re-attaches when the sentinel mounts/unmounts
-  const sentinelRef = useCallback((node: HTMLDivElement | null) => {
-    if (observerRef.current) {
-      observerRef.current.disconnect();
-      observerRef.current = null;
-    }
-    if (!node) return;
-
-    observerRef.current = new IntersectionObserver(
-      entries => {
-        if (entries[0].isIntersecting) {
-          const state = useDiscoverStore.getState();
-          if (!state.isLoading) state.loadMore();
-        }
-      },
-      { rootMargin: '200px' }
-    );
-    observerRef.current.observe(node);
+  // Infinite scroll — DiscoverGrid calls this when rendering nears the last
+  // row. loadMore self-guards (in-flight fetch, per-mode hasNext).
+  const handleLoadMore = useCallback(() => {
+    useDiscoverStore.getState().loadMore();
   }, []);
 
   // Determine which data to display
@@ -261,6 +245,41 @@ export function DiscoverView() {
   const showLoading = isSearchMode ? isSearching : isLoading;
   const showEmpty = !isSpecialMode && !showLoading && items.length === 0;
   const showGrid = !isSpecialMode && items.length > 0;
+
+  /* Browse/search controls: sort (item 2), advanced filters (item 6) and the
+     library-exclude toggle (item 14). The Random tab keeps its own genre
+     picker but still honours the exclude toggle; the Recommendations tab owns
+     its full surface, so it skips controls. Rendered fixed above the
+     virtualized grid in grid mode, inside the scroller otherwise. */
+  const controlsBlock = !isRecommendationsMode && (
+    <div className="flex flex-col gap-3 mb-5">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        {!isRandomMode ? (
+          <DiscoverSortSelect value={sort} onChange={handleSortChange} disabled={showLoading} />
+        ) : (
+          <span />
+        )}
+        <label className="flex items-center gap-2 cursor-pointer">
+          <Switch
+            checked={excludeLibrary}
+            onCheckedChange={handleExcludeToggle}
+            aria-label={t('controls.excludeLibrary')}
+          />
+          <span className="text-xs text-muted-foreground" title={t('controls.excludeLibraryHint')}>
+            {t('controls.excludeLibrary')}
+          </span>
+        </label>
+      </div>
+      {!isRandomMode && (
+        <DiscoverFiltersPanel
+          filters={filters}
+          disabled={showLoading}
+          connected={connected}
+          onChange={handleFiltersChange}
+        />
+      )}
+    </div>
+  );
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden animate-fade-in relative">
@@ -304,117 +323,71 @@ export function DiscoverView() {
           <KanjiWatermark kanji="探" position="br" size={300} opacity={0.03} />
         </div>
 
-        <div className="absolute inset-0 overflow-y-auto overflow-x-hidden">
-          <div className="relative z-[1] px-7 pt-5 pb-24">
-            {/* Browse/search controls: sort (item 2), advanced filters (item 6)
-                and the library-exclude toggle (item 14). The Random tab keeps
-                its own genre picker but still honours the exclude toggle; the
-                Recommendations tab owns its full surface, so it skips controls. */}
-            {!isRecommendationsMode && (
-              <div className="flex flex-col gap-3 mb-5">
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  {!isRandomMode ? (
-                    <DiscoverSortSelect
-                      value={sort}
-                      onChange={handleSortChange}
-                      disabled={showLoading}
-                    />
-                  ) : (
-                    <span />
-                  )}
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <Switch
-                      checked={excludeLibrary}
-                      onCheckedChange={handleExcludeToggle}
-                      aria-label={t('controls.excludeLibrary')}
-                    />
-                    <span
-                      className="text-xs text-muted-foreground"
-                      title={t('controls.excludeLibraryHint')}
-                    >
-                      {t('controls.excludeLibrary')}
-                    </span>
-                  </label>
-                </div>
-                {!isRandomMode && (
-                  <DiscoverFiltersPanel
-                    filters={filters}
-                    disabled={showLoading}
-                    connected={connected}
-                    onChange={handleFiltersChange}
-                  />
-                )}
-              </div>
-            )}
-
-            {/* Random discovery — owns its own loading/error/empty */}
-            {isRandomMode && (
-              <RandomDiscoveryPanel
+        {showGrid ? (
+          /* Browse/search grid — controls stay fixed while the virtualized
+             grid owns scrolling (mirrors LibraryView). Remount per tab so each
+             tab starts at the top instead of inheriting the previous scroll. */
+          <div className="absolute inset-0 z-[1] px-7 pt-5 flex flex-col">
+            {controlsBlock}
+            {error && !showLoading && <AniListErrorState error={error} onRetry={handleRetry} />}
+            <div className="flex-1 min-h-0">
+              <DiscoverGrid
+                key={isSearchMode ? 'search' : activeTab}
+                items={items}
                 libraryIds={libraryIds}
-                excludedIds={excludedIds}
+                hasNextPage={page.hasNext}
+                isLoadingMore={isLoading}
+                onLoadMore={handleLoadMore}
                 onCardClick={handleCardClick}
-                onError={handleRetry}
+                onAddToLibrary={handleAddToLibrary}
               />
-            )}
-
-            {/* Community recommendations — owns its own loading/error/empty */}
-            {isRecommendationsMode && (
-              <RecommendationsPanel
-                libraryIds={libraryIds}
-                connected={connected}
-                onCardClick={handleCardClick}
-              />
-            )}
-
-            {/* Error state */}
-            {!isSpecialMode && error && !showLoading && (
-              <AniListErrorState error={error} onRetry={handleRetry} />
-            )}
-
-            {/* Loading state — only show skeleton on initial load (no items yet) */}
-            {!isSpecialMode && showLoading && items.length === 0 && <DiscoverSkeleton />}
-
-            {/* Empty state */}
-            {showEmpty && !error && (
-              <EmptyState
-                icon={isSearchMode ? SearchX : Compass}
-                title={isSearchMode ? t('empty.noResultsTitle') : t('empty.noAnimeTitle')}
-                subtitle={isSearchMode ? t('empty.noResultsSubtitle') : t('empty.noAnimeSubtitle')}
-              />
-            )}
-
-            {/* Grid — responsive 2:3 anime cards */}
-            {showGrid && (
-              <div
-                className={cn(
-                  'grid gap-3.5',
-                  'grid-cols-2',
-                  'sm:grid-cols-3',
-                  'md:grid-cols-4',
-                  'lg:grid-cols-5',
-                  '2xl:grid-cols-6'
-                )}
-              >
-                {items.map(media => (
-                  <DiscoverCard
-                    key={media.id}
-                    media={media}
-                    inLibrary={libraryIds.has(media.id)}
-                    onClick={handleCardClick}
-                    onAddToLibrary={handleAddToLibrary}
-                  />
-                ))}
-              </div>
-            )}
-
-            {/* Infinite scroll sentinel */}
-            {!isSpecialMode && page.hasNext && (
-              <div ref={sentinelRef} className="flex justify-center py-8">
-                {isLoading && <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />}
-              </div>
-            )}
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="absolute inset-0 overflow-y-auto overflow-x-hidden">
+            <div className="relative z-[1] px-7 pt-5 pb-24">
+              {controlsBlock}
+
+              {/* Random discovery — owns its own loading/error/empty */}
+              {isRandomMode && (
+                <RandomDiscoveryPanel
+                  libraryIds={libraryIds}
+                  excludedIds={excludedIds}
+                  onCardClick={handleCardClick}
+                  onError={handleRetry}
+                />
+              )}
+
+              {/* Community recommendations — owns its own loading/error/empty */}
+              {isRecommendationsMode && (
+                <RecommendationsPanel
+                  libraryIds={libraryIds}
+                  connected={connected}
+                  onCardClick={handleCardClick}
+                />
+              )}
+
+              {/* Error state */}
+              {!isSpecialMode && error && !showLoading && (
+                <AniListErrorState error={error} onRetry={handleRetry} />
+              )}
+
+              {/* Loading state — only show skeleton on initial load (no items yet) */}
+              {!isSpecialMode && showLoading && items.length === 0 && <DiscoverSkeleton />}
+
+              {/* Empty state */}
+              {showEmpty && !error && (
+                <EmptyState
+                  icon={isSearchMode ? SearchX : Compass}
+                  title={isSearchMode ? t('empty.noResultsTitle') : t('empty.noAnimeTitle')}
+                  subtitle={
+                    isSearchMode ? t('empty.noResultsSubtitle') : t('empty.noAnimeSubtitle')
+                  }
+                />
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       <AnimeInfoDialog anime={selectedAnime} open={dialogOpen} onOpenChange={setDialogOpen} />
