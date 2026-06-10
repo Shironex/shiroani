@@ -85,14 +85,7 @@ export function validateImportData(data: unknown): string | null {
   const invalidFile = () => i18n.t('settings:themes.toast.invalidFile');
   // Literal union (not `string`) so the template-literal i18n key resolves to a
   // concrete, type-checked key instead of widening to `unknown`.
-  type InvalidField =
-    | 'format'
-    | 'theme'
-    | 'name'
-    | 'baseTheme'
-    | 'isDark'
-    | 'color'
-    | 'variables';
+  type InvalidField = 'format' | 'theme' | 'name' | 'baseTheme' | 'isDark' | 'color' | 'variables';
   const invalidField = (field: InvalidField) =>
     i18n.t(`settings:themes.toast.invalidField.${field}`);
 

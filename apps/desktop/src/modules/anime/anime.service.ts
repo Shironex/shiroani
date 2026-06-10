@@ -276,8 +276,8 @@ export class AnimeService {
 
     // Enforce AND semantics for ≥2 included genres
     if (includedGenres.length >= 2) {
-      const required = includedGenres;
-      const matchesAll = (m: AniListMedia) => required.every(g => (m.genres ?? []).includes(g));
+      const matchesAll = (m: AniListMedia) =>
+        includedGenres.every(g => (m.genres ?? []).includes(g));
       const filtered = pool.filter(matchesAll);
 
       // If the random page yielded nothing after AND-filter, fall back to page 1

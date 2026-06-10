@@ -398,8 +398,7 @@ export const useSettingsStore = create<SettingsStore>()(
             }
 
             try {
-              const persistedAutoTrack =
-                await electronStoreGet<boolean>(AUTO_TRACK_SETTING_KEY);
+              const persistedAutoTrack = await electronStoreGet<boolean>(AUTO_TRACK_SETTING_KEY);
               if (
                 typeof persistedAutoTrack === 'boolean' &&
                 persistedAutoTrack !== get().autoTrackProgress

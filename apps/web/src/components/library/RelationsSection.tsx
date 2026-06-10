@@ -39,10 +39,7 @@ export function RelationsSection({ anilistId }: RelationsSectionProps) {
     ensureDetails([anilistId]);
   }, [anilistId]);
 
-  const relations = useMemo<AnimeDetailRelation[]>(
-    () => detail?.relations?.edges ?? [],
-    [detail]
-  );
+  const relations = useMemo<AnimeDetailRelation[]>(() => detail?.relations?.edges ?? [], [detail]);
 
   const entryByAnilistId = useMemo(() => {
     const map = new Map<number, (typeof libraryByAnilistId)[number]>();
@@ -99,9 +96,7 @@ export function RelationsSection({ anilistId }: RelationsSectionProps) {
               onClick={() => {
                 if (libraryEntry) openDetail(libraryEntry);
               }}
-              aria-label={
-                clickable ? t('relations.openInLibrary') : t('relations.notInLibrary')
-              }
+              aria-label={clickable ? t('relations.openInLibrary') : t('relations.notInLibrary')}
               className={cn(
                 'flex items-center gap-2.5 p-1.5 rounded-md border text-left',
                 'border-border-glass bg-background/40 transition-colors',

@@ -1,11 +1,4 @@
-import {
-  useCallback,
-  useMemo,
-  useRef,
-  useState,
-  type KeyboardEvent,
-  type RefObject,
-} from 'react';
+import { useCallback, useMemo, useRef, useState, type KeyboardEvent, type RefObject } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ArrowLeft,
@@ -126,7 +119,15 @@ export function BrowserToolbar({
         closeSuggestions();
       }
     },
-    [showSuggestions, suggestions, activeIndex, urlInput, isOpen, commitNavigation, closeSuggestions]
+    [
+      showSuggestions,
+      suggestions,
+      activeIndex,
+      urlInput,
+      isOpen,
+      commitNavigation,
+      closeSuggestions,
+    ]
   );
 
   const handleUrlChange = useCallback(
