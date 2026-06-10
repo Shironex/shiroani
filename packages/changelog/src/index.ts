@@ -133,10 +133,95 @@ export function localizeReleases(locale: Locale): ResolvedRelease[] {
 
 export const RELEASES: readonly Release[] = [
   {
+    version: '1.0.0',
+    shortDate: '10.06.2026',
+    type: 'major',
+    latest: true,
+    pl: {
+      date: '10 czerwca 2026',
+      title: 'ShiroAni 1.0 — pierwsza stabilna wersja',
+      description:
+        'ShiroAni wychodzi z fazy beta. To pierwsze wydanie 1.0 — przeglądarka, biblioteka, śledzenie postępów i odkrywanie są gotowe do codziennego użytku. Integracje z AniList i MyAnimeList pozostają eksperymentalne. Przed tą wersją cały kod przeszedł pełny audyt, więc całość jest stabilniejsza, szybsza i bardziej niezawodna.',
+      categories: [
+        {
+          kind: 'feature',
+          label: 'Kamień milowy 1.0',
+          entries: [
+            'ShiroAni wychodzi z fazy beta — to pierwsza stabilna wersja',
+            'Integracje z AniList i MyAnimeList wciąż są eksperymentalne, reszta aplikacji jest gotowa do codziennego użytku',
+          ],
+        },
+        {
+          kind: 'polish',
+          label: 'Płynność i wygląd',
+          entries: [
+            'Płynniejsze przewijanie w sekcji Odkrywaj',
+            'Czytelne stany ładowania i błędów w bibliotece, dzienniku i profilu MyAnimeList',
+            'Dopracowana strona z odświeżonym wyglądem',
+          ],
+        },
+        {
+          kind: 'fix',
+          label: 'Stabilność i niezawodność',
+          entries: [
+            'Pełny audyt kodu — dziesiątki poprawek odporności pod maską',
+            'Bardziej niezawodny import i eksport biblioteki (lepsze dopasowywanie, brak duplikatów)',
+            'Synchronizacja MyAnimeList nie nadpisuje już oceny przy drobnym zaokrągleniu',
+            'Pewniejsze migracje bazy danych i dokładniejsze logi',
+          ],
+        },
+        {
+          kind: 'security',
+          label: 'Bezpieczeństwo',
+          entries: ['Aktualizacja zależności usuwająca znane podatności'],
+        },
+      ],
+    },
+    en: {
+      date: 'June 10, 2026',
+      title: 'ShiroAni 1.0 — the first stable release',
+      description:
+        'ShiroAni leaves beta. This is the first 1.0 release — the browser, library, progress tracking and discovery are ready for everyday use. The AniList and MyAnimeList integrations stay experimental. Ahead of this release the whole codebase went through a full audit, so everything is more stable, faster and more reliable.',
+      categories: [
+        {
+          kind: 'feature',
+          label: 'The 1.0 milestone',
+          entries: [
+            'ShiroAni leaves beta — this is the first stable release',
+            'AniList and MyAnimeList integrations are still experimental; the rest of the app is ready for daily use',
+          ],
+        },
+        {
+          kind: 'polish',
+          label: 'Smoothness & looks',
+          entries: [
+            'Smoother scrolling in Discover',
+            'Clear loading and error states in the library, diary and MyAnimeList profile',
+            'Polished website with a refreshed look',
+          ],
+        },
+        {
+          kind: 'fix',
+          label: 'Stability & reliability',
+          entries: [
+            'A full codebase audit — dozens of robustness fixes under the hood',
+            'More reliable library import/export (better matching, no duplicates)',
+            'MyAnimeList sync no longer overwrites your score on minor rounding',
+            'Sturdier database migrations and more accurate logs',
+          ],
+        },
+        {
+          kind: 'security',
+          label: 'Security',
+          entries: ['Dependency updates clearing known vulnerabilities'],
+        },
+      ],
+    },
+  },
+  {
     version: '0.13.0',
     shortDate: '08.06.2026',
     type: 'minor',
-    latest: true,
     pl: {
       date: '8 czerwca 2026',
       title: 'Konta AniList i MyAnimeList — logowanie i dwukierunkowa synchronizacja biblioteki',
