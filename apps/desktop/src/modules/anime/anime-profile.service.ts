@@ -147,7 +147,13 @@ export class AnimeProfileService {
   private mapUserProfile(user: UserProfileResponse['User']): UserProfile {
     const stats = user.statistics?.anime;
     const favourites = user.favourites;
-    const favouriteNodes = favourites?.anime?.nodes ?? [];
+
+    // AniList connection nodes can be null (deleted media/characters), so drop
+    // those before mapping to avoid TypeErrors on .id/.name access.
+    const nonNullNodes = <T>(nodes: Array<T | null> | undefined): T[] =>
+      (nodes ?? []).filter((n): n is T => n != null);
+
+    const favouriteNodes = nonNullNodes(favourites?.anime?.nodes);
 
     const mapMediaFav = (f: {
       id: number;
@@ -262,10 +268,10 @@ export class AnimeProfileService {
           })),
       },
       favourites: favouriteNodes.map(mapMediaFav),
-      favouritesManga: (favourites?.manga?.nodes ?? []).map(mapMediaFav),
-      favouritesCharacters: (favourites?.characters?.nodes ?? []).map(mapPersonFav),
-      favouritesStaff: (favourites?.staff?.nodes ?? []).map(mapPersonFav),
-      favouritesStudios: (favourites?.studios?.nodes ?? []).map(s => ({
+      favouritesManga: nonNullNodes(favourites?.manga?.nodes).map(mapMediaFav),
+      favouritesCharacters: nonNullNodes(favourites?.characters?.nodes).map(mapPersonFav),
+      favouritesStaff: nonNullNodes(favourites?.staff?.nodes).map(mapPersonFav),
+      favouritesStudios: nonNullNodes(favourites?.studios?.nodes).map(s => ({
         id: s.id,
         name: s.name,
       })),

@@ -210,6 +210,23 @@ describe('AnimeProfileService', () => {
       expect(profile.statistics.countries).toEqual([]);
     });
 
+    it('drops null favourite nodes (deleted media/characters)', async () => {
+      const raw = makeRawProfile();
+      raw.favourites!.anime!.nodes = [null, ...raw.favourites!.anime!.nodes!];
+      raw.favourites!.characters!.nodes = [null];
+      raw.favourites!.studios!.nodes = [null, { id: 5, name: 'CloverWorks' }];
+      const client = makeClient();
+      client.cachedQuery.mockResolvedValue({ User: raw } as UserProfileResponse);
+      const service = new AnimeProfileService(client as unknown as AniListClient);
+
+      const profile = await service.getUserProfile('Anya');
+
+      expect(profile.favourites).toHaveLength(1);
+      expect(profile.favourites[0].id).toBe(1);
+      expect(profile.favouritesCharacters).toEqual([]);
+      expect(profile.favouritesStudios).toEqual([{ id: 5, name: 'CloverWorks' }]);
+    });
+
     it('falls back to userPreferred / "Unknown" for person favourites and VA names', async () => {
       const raw = makeRawProfile();
       raw.statistics!.anime!.voiceActors = [

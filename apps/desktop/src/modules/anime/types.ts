@@ -303,11 +303,13 @@ export interface AniListFavouriteStudioNode {
 }
 
 export interface AniListUserFavourites {
-  anime?: { nodes?: Array<AniListFavouriteMediaNode> };
-  manga?: { nodes?: Array<AniListFavouriteMediaNode> };
-  characters?: { nodes?: Array<AniListPersonNode> };
-  staff?: { nodes?: Array<AniListPersonNode> };
-  studios?: { nodes?: Array<AniListFavouriteStudioNode> };
+  // Connection nodes can be null (e.g. deleted media/characters), so each
+  // array element is nullable and consumers must filter before mapping.
+  anime?: { nodes?: Array<AniListFavouriteMediaNode | null> };
+  manga?: { nodes?: Array<AniListFavouriteMediaNode | null> };
+  characters?: { nodes?: Array<AniListPersonNode | null> };
+  staff?: { nodes?: Array<AniListPersonNode | null> };
+  studios?: { nodes?: Array<AniListFavouriteStudioNode | null> };
 }
 
 export interface AniListUserProfile {
