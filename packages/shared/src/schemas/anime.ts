@@ -169,6 +169,10 @@ export const libraryAddPayloadSchema = z.object({
   episodes: z.number().int().nonnegative().max(10_000).optional(),
   status: animeStatusSchema.optional(),
   currentEpisode: z.number().int().nonnegative().max(10_000).optional(),
+  // Declared by LibraryAddPayload — without these here zod silently strips
+  // them and an ADD carrying a rating/notes persists without them.
+  score: z.number().min(0).max(10).optional(),
+  notes: z.string().max(5_000).optional(),
   resumeUrl: z.string().url().max(2048).optional(),
 });
 

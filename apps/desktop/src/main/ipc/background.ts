@@ -175,9 +175,12 @@ export function registerBackgroundHandlers(mainWindow: BrowserWindow): void {
 
       const filePath = join(getBackgroundsDir(), fileName);
 
-      if (existsSync(filePath)) {
+      try {
         await unlink(filePath);
         logger.info(`Background image removed: ${fileName}`);
+      } catch (err) {
+        // Already gone (e.g. removed externally) — deletion is idempotent.
+        if ((err as NodeJS.ErrnoException).code !== 'ENOENT') throw err;
       }
     },
     { schema: backgroundRemoveSchema }
