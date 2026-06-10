@@ -38,7 +38,7 @@
   },
   "error": {
     "title": "Nie udało się wczytać biblioteki",
-    "subtitle": "Twoja kolekcja jest bezpieczna — wystąpił problem z połączeniem. Spróbuj ponownie."
+    "subtitle": "Twoja kolekcja jest bezpieczna — coś poszło nie tak podczas jej wczytywania. Spróbuj ponownie."
   },
   "stats": {
     "total": "Razem",
