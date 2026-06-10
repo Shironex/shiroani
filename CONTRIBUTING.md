@@ -68,7 +68,7 @@ shiroani/
 
 ## Refreshing README screenshots
 
-`pnpm screenshots` drives a running Electron window over CDP, walks every top-level view in each supported UI language, and writes PNGs to `assets/screenshots/<lang>/<view>.png`. The READMEs reference those paths directly.
+`pnpm screenshots` drives a running Electron window over CDP, walks every top-level view in each supported UI language, and writes PNGs to `assets/screenshots/<lang>/<view>.png`, plus compressed `.webp` variants alongside them. The READMEs embed the `.webp` files; the Remotion demo reel (`apps/landing-demo`) reads the canonical PNGs.
 
 Steps:
 

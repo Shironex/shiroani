@@ -31,7 +31,7 @@
   </p>
 
   <blockquote>
-    <p>Shiro-chan is still growing up! The app is in early development — some things might be rough around the edges, but new stuff lands with every release.</p>
+    <p>Shiro-chan is all grown up — ShiroAni 1.0 is stable, polished, and free. Welcome home.</p>
   </blockquote>
 </div>
 
@@ -45,32 +45,32 @@ ShiroAni is a desktop app that brings everything anime into one place — browse
 
 <table>
   <tr>
-    <td width="50%"><img src="assets/screenshots/en/library.png" alt="Your library — track everything you're watching" /></td>
-    <td width="50%"><img src="assets/screenshots/en/schedule.png" alt="Weekly airing schedule from AniList" /></td>
+    <td width="50%"><img src="assets/screenshots/en/library.webp" alt="Your library — track everything you're watching" /></td>
+    <td width="50%"><img src="assets/screenshots/en/schedule.webp" alt="Weekly airing schedule from AniList" /></td>
   </tr>
   <tr>
     <td align="center"><sub>Library — watching, completed, plan-to-watch, on-hold, dropped.</sub></td>
     <td align="center"><sub>Schedule — weekly, daily, and timetable views from AniList.</sub></td>
   </tr>
   <tr>
-    <td width="50%"><img src="assets/screenshots/en/browser.png" alt="Built-in browser new tab with curated anime sites" /></td>
-    <td width="50%"><img src="assets/screenshots/en/discover.png" alt="Discover — random anime roulette and genre browser" /></td>
+    <td width="50%"><img src="assets/screenshots/en/browser.webp" alt="Built-in browser new tab with curated anime sites" /></td>
+    <td width="50%"><img src="assets/screenshots/en/discover.webp" alt="Discover — random anime roulette and genre browser" /></td>
   </tr>
   <tr>
     <td align="center"><sub>Browser — ad-free new tab with curated sites.</sub></td>
     <td align="center"><sub>Discover — random anime roulette and genre browser.</sub></td>
   </tr>
   <tr>
-    <td width="50%"><img src="assets/screenshots/en/feed.png" alt="Bookmarkable RSS feed of anime news" /></td>
-    <td width="50%"><img src="assets/screenshots/en/diary.png" alt="Personal diary with rich text editor" /></td>
+    <td width="50%"><img src="assets/screenshots/en/feed.webp" alt="Bookmarkable RSS feed of anime news" /></td>
+    <td width="50%"><img src="assets/screenshots/en/diary.webp" alt="Personal diary with rich text editor" /></td>
   </tr>
   <tr>
     <td align="center"><sub>News — bookmarkable RSS feed across EN + PL sources.</sub></td>
     <td align="center"><sub>Diary — a personal journal with a rich text editor.</sub></td>
   </tr>
   <tr>
-    <td width="50%"><img src="assets/screenshots/en/profile.png" alt="Profile — your AniList stats and recent activity" /></td>
-    <td width="50%"><img src="assets/screenshots/en/settings.png" alt="Settings — themes, backgrounds, dock" /></td>
+    <td width="50%"><img src="assets/screenshots/en/profile.webp" alt="Profile — your AniList stats and recent activity" /></td>
+    <td width="50%"><img src="assets/screenshots/en/settings.webp" alt="Settings — themes, backgrounds, dock" /></td>
   </tr>
   <tr>
     <td align="center"><sub>Profile — your AniList stats and recent activity.</sub></td>
@@ -80,18 +80,19 @@ ShiroAni is a desktop app that brings everything anime into one place — browse
 
 ## What's inside
 
-|                           |                                                                                   |
-| ------------------------- | --------------------------------------------------------------------------------- |
-| **Built-in Browser**      | Watch anime without ads — powered by Ghostery's ad-blocker                        |
-| **Your Anime Library**    | Track everything: watching, completed, plan to watch, on hold, dropped            |
-| **Airing Schedule**       | Never miss an episode — weekly, daily, and timetable views from AniList           |
-| **News Feed**             | Bookmarkable RSS feed of anime news and episode drops (EN + PL sources)           |
-| **Discover**              | Random anime roulette and genre browser powered by AniList                        |
-| **Diary**                 | A personal journal with a rich text editor, just for you                          |
-| **Desktop Mascot**        | A chibi companion who lives on your desktop — swap in your own sprite if you like |
-| **17 Themes**             | 15 dark + 2 light, plus a visual editor for unlimited custom themes               |
-| **Discord Rich Presence** | Show your friends what you're watching with customizable templates                |
-| **Bilingual UI**          | English + Polish, auto-detected from your OS locale                               |
+|                           |                                                                                                                    |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| **Built-in Browser**      | Watch anime without ads — powered by Ghostery's ad-blocker; auto-detects watched episodes and updates your library |
+| **Your Anime Library**    | Track everything: watching, completed, plan to watch, on hold, dropped                                             |
+| **Airing Schedule**       | Never miss an episode — weekly, daily, and timetable views from AniList                                            |
+| **News Feed**             | Bookmarkable RSS feed of anime news and episode drops (EN + PL sources)                                            |
+| **Discover**              | Random anime roulette and genre browser powered by AniList                                                         |
+| **Diary**                 | A personal journal with a rich text editor, just for you                                                           |
+| **Desktop Mascot**        | A chibi companion who lives on your desktop — swap in your own sprite if you like                                  |
+| **17 Themes**             | 15 dark + 2 light, plus a visual editor for unlimited custom themes                                                |
+| **AniList & MAL Sync**    | Two-way sync with AniList and MyAnimeList — push, pull, or both (experimental)                                     |
+| **Discord Rich Presence** | Show your friends what you're watching with customizable templates                                                 |
+| **Bilingual UI**          | English + Polish, auto-detected from your OS locale                                                                |
 
 ## Getting started
 
@@ -109,8 +110,9 @@ Grab the latest version for your system from [Releases](https://github.com/Shiro
 2. Open it and drag ShiroAni to your Applications folder.
 3. macOS will block it because it's not code-signed. Open Terminal and run:
    ```bash
-   xattr -cr /Applications/ShiroAni.app
+   xattr -rd com.apple.quarantine /Applications/ShiroAni.app
    ```
+   This is a one-time step that only removes macOS's quarantine flag — the app isn't notarized yet, but nothing else is modified.
 4. Auto-updates aren't available on macOS yet, so grab new versions manually from [Releases](https://github.com/Shironex/shiroani/releases).
 
 ## Building from source

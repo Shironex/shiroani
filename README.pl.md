@@ -31,7 +31,7 @@
   </p>
 
   <blockquote>
-    <p>Shiro-chan jeszcze rośnie! Aplikacja jest we wczesnym rozwoju — niektóre rzeczy mogą być chropowate, ale z każdym wydaniem pojawia się coś nowego.</p>
+    <p>Shiro-chan dorosła — ShiroAni 1.0 jest stabilna, dopracowana i bezpłatna. Witaj w domu.</p>
   </blockquote>
 </div>
 
@@ -45,32 +45,32 @@ ShiroAni to aplikacja desktopowa, która zbiera wszystko co anime w jednym miejs
 
 <table>
   <tr>
-    <td width="50%"><img src="assets/screenshots/pl/library.png" alt="Biblioteka — wszystko, co oglądasz" /></td>
-    <td width="50%"><img src="assets/screenshots/pl/schedule.png" alt="Tygodniowy harmonogram emisji z AniList" /></td>
+    <td width="50%"><img src="assets/screenshots/pl/library.webp" alt="Biblioteka — wszystko, co oglądasz" /></td>
+    <td width="50%"><img src="assets/screenshots/pl/schedule.webp" alt="Tygodniowy harmonogram emisji z AniList" /></td>
   </tr>
   <tr>
     <td align="center"><sub>Biblioteka — oglądane, ukończone, planowane, wstrzymane, porzucone.</sub></td>
     <td align="center"><sub>Harmonogram — widok tygodniowy, dzienny i tabelaryczny z AniList.</sub></td>
   </tr>
   <tr>
-    <td width="50%"><img src="assets/screenshots/pl/browser.png" alt="Nowa karta wbudowanej przeglądarki z wybranymi serwisami" /></td>
-    <td width="50%"><img src="assets/screenshots/pl/discover.png" alt="Odkrywaj — losowanie anime i przegląd po gatunkach" /></td>
+    <td width="50%"><img src="assets/screenshots/pl/browser.webp" alt="Nowa karta wbudowanej przeglądarki z wybranymi serwisami" /></td>
+    <td width="50%"><img src="assets/screenshots/pl/discover.webp" alt="Odkrywaj — losowanie anime i przegląd po gatunkach" /></td>
   </tr>
   <tr>
     <td align="center"><sub>Przeglądarka — nowa karta bez reklam z wybranymi serwisami.</sub></td>
     <td align="center"><sub>Odkrywaj — losowanie anime i przegląd po gatunkach.</sub></td>
   </tr>
   <tr>
-    <td width="50%"><img src="assets/screenshots/pl/feed.png" alt="Aktualności anime z zakładkami" /></td>
-    <td width="50%"><img src="assets/screenshots/pl/diary.png" alt="Pamiętnik z edytorem tekstu" /></td>
+    <td width="50%"><img src="assets/screenshots/pl/feed.webp" alt="Aktualności anime z zakładkami" /></td>
+    <td width="50%"><img src="assets/screenshots/pl/diary.webp" alt="Pamiętnik z edytorem tekstu" /></td>
   </tr>
   <tr>
     <td align="center"><sub>Aktualności — RSS z anime newsami, źródła PL + EN.</sub></td>
     <td align="center"><sub>Pamiętnik — osobisty dziennik z edytorem tekstu.</sub></td>
   </tr>
   <tr>
-    <td width="50%"><img src="assets/screenshots/pl/profile.png" alt="Profil — Twoje statystyki AniList i aktywność" /></td>
-    <td width="50%"><img src="assets/screenshots/pl/settings.png" alt="Ustawienia — motywy, tła, dock" /></td>
+    <td width="50%"><img src="assets/screenshots/pl/profile.webp" alt="Profil — Twoje statystyki AniList i aktywność" /></td>
+    <td width="50%"><img src="assets/screenshots/pl/settings.webp" alt="Ustawienia — motywy, tła, dock" /></td>
   </tr>
   <tr>
     <td align="center"><sub>Profil — Twoje statystyki AniList i ostatnia aktywność.</sub></td>
@@ -80,18 +80,19 @@ ShiroAni to aplikacja desktopowa, która zbiera wszystko co anime w jednym miejs
 
 ## Co znajdziesz w środku
 
-|                            |                                                                                |
-| -------------------------- | ------------------------------------------------------------------------------ |
-| **Wbudowana przeglądarka** | Oglądaj anime bez reklam — blokowanie przez Ghostery                           |
-| **Biblioteka anime**       | Śledź wszystko: oglądane, ukończone, planowane, wstrzymane, porzucone          |
-| **Harmonogram emisji**     | Nigdy nie przegap odcinka — widok tygodniowy, dzienny i tabelaryczny z AniList |
-| **Aktualności**            | RSS z wiadomościami anime i premierami odcinków, z zakładkami (źródła PL + EN) |
-| **Odkrywaj**               | Losowanie anime i przegląd po gatunkach napędzany przez AniList                |
-| **Pamiętnik**              | Osobisty dziennik z edytorem tekstu, tylko dla Ciebie                          |
-| **Maskotka na pulpicie**   | Chibi towarzyszka na pulpicie — możesz podmienić ją na własną grafikę          |
-| **17 motywów**             | 15 ciemnych + 2 jasne, plus wizualny edytor do tworzenia własnych              |
-| **Discord Rich Presence**  | Pokaż znajomym, co oglądasz, z konfigurowalnymi szablonami                     |
-| **Dwujęzyczny interfejs**  | Polski i angielski, wykrywany automatycznie z ustawień systemu                 |
+|                                  |                                                                                                                        |
+| -------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| **Wbudowana przeglądarka**       | Oglądaj anime bez reklam — blokowanie przez Ghostery; automatycznie wykrywa obejrzane odcinki i aktualizuje bibliotekę |
+| **Biblioteka anime**             | Śledź wszystko: oglądane, ukończone, planowane, wstrzymane, porzucone                                                  |
+| **Harmonogram emisji**           | Nigdy nie przegap odcinka — widok tygodniowy, dzienny i tabelaryczny z AniList                                         |
+| **Aktualności**                  | RSS z wiadomościami anime i premierami odcinków, z zakładkami (źródła PL + EN)                                         |
+| **Odkrywaj**                     | Losowanie anime i przegląd po gatunkach napędzany przez AniList                                                        |
+| **Pamiętnik**                    | Osobisty dziennik z edytorem tekstu, tylko dla Ciebie                                                                  |
+| **Maskotka na pulpicie**         | Chibi towarzyszka na pulpicie — możesz podmienić ją na własną grafikę                                                  |
+| **17 motywów**                   | 15 ciemnych + 2 jasne, plus wizualny edytor do tworzenia własnych                                                      |
+| **Synchronizacja AniList i MAL** | Dwukierunkowa synchronizacja z AniList i MyAnimeList — push, pull lub oba (eksperymentalne)                            |
+| **Discord Rich Presence**        | Pokaż znajomym, co oglądasz, z konfigurowalnymi szablonami                                                             |
+| **Dwujęzyczny interfejs**        | Polski i angielski, wykrywany automatycznie z ustawień systemu                                                         |
 
 ## Jak zacząć
 
@@ -109,8 +110,9 @@ Pobierz najnowszą wersję ze strony [Releases](https://github.com/Shironex/shir
 2. Otwórz go i przeciągnij ShiroAni do folderu Aplikacje.
 3. macOS zablokuje aplikację, bo nie ma podpisu cyfrowego. Otwórz Terminal i wpisz:
    ```bash
-   xattr -cr /Applications/ShiroAni.app
+   xattr -rd com.apple.quarantine /Applications/ShiroAni.app
    ```
+   To jednorazowy krok, który usuwa wyłącznie flagę kwarantanny macOS — aplikacja nie jest jeszcze notaryzowana, ale nic więcej nie jest zmieniane.
 4. Automatyczne aktualizacje na macOS nie są jeszcze dostępne — nowe wersje pobieraj ręcznie z [Releases](https://github.com/Shironex/shiroani/releases).
 
 ## Budowanie ze źródeł

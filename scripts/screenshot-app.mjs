@@ -9,11 +9,22 @@
  *   cd apps/desktop && electron . --remote-debugging-port=9222  # terminal 2
  *
  * Output: assets/screenshots/<lang>/<view>.png
+ *         assets/screenshots/<lang>/<view>.webp (READMEs embed these; PNGs stay
+ *         canonical for the Remotion demo reel in apps/landing-demo)
  */
 const PW = process.env.PLAYWRIGHT_PATH ?? 'playwright';
 const { chromium } = await import(PW);
 import { mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { createRequire } from 'node:module';
+
+// sharp lives in apps/landing's devDependencies — borrow it from there.
+let sharp = null;
+try {
+  sharp = createRequire(resolve(process.cwd(), 'apps/landing/package.json'))('sharp');
+} catch {
+  console.warn('sharp not resolvable from apps/landing — .webp variants will be stale.');
+}
 
 const CDP = process.env.CDP_URL ?? 'http://127.0.0.1:9222';
 const OUT_ROOT = resolve(process.cwd(), 'assets/screenshots');
@@ -101,6 +112,11 @@ async function shot(lang, view) {
   const file = resolve(dir, `${view}.png`);
   await page.screenshot({ path: file });
   console.log('  ->', file);
+  if (sharp) {
+    const webp = resolve(dir, `${view}.webp`);
+    await sharp(file).webp({ quality: 85 }).toFile(webp);
+    console.log('  ->', webp);
+  }
 }
 
 await waitForReady();
