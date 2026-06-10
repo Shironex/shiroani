@@ -20,7 +20,7 @@ overrides:
   undici: '8.1.0'
   'jsdom>undici': '^7.25.0'
   tar: '>=7.5.11'
-  hono: '>=4.12.18 <5'
+  hono: '>=4.12.21 <5'
   axios: '>=1.15.2'
   follow-redirects: '>=1.16.0'
   '@hono/node-server': '>=1.19.13 <2'
@@ -41,6 +41,7 @@ overrides:
   devalue: '>=5.8.1 <6'
   yaml: '>=2.8.3 <3'
   # CVE pins
+  shell-quote: '>=1.8.4'
   qs: '>=6.15.2'
   ws: '>=8.20.1'
   'engine.io': '>=6.6.8'
