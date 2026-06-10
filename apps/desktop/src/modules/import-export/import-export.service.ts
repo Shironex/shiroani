@@ -151,10 +151,19 @@ export class ImportExportService {
           try {
             this.libraryService.setMalId(duplicate.id, entry.malId);
             duplicate.malId = entry.malId;
-          } catch {
-            logger.warn(
-              `Import: mal_id ${entry.malId} already linked to another row; left "${entry.title}" unlinked`
-            );
+          } catch (error) {
+            const message = extractErrorMessage(error);
+            // Only a UNIQUE collision means the id is already linked elsewhere —
+            // mirror mal-sync.adapter.ts and log other failures at error level.
+            if (/unique/i.test(message)) {
+              logger.warn(
+                `Import: mal_id ${entry.malId} already linked to another row; left "${entry.title}" unlinked`
+              );
+            } else {
+              logger.error(
+                `Import: failed to link mal_id ${entry.malId} for "${entry.title}": ${message}`
+              );
+            }
           }
         }
         return { ...baseResult, status: 'success' };

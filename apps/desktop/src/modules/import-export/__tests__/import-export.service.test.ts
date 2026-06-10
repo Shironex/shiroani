@@ -87,6 +87,25 @@ describe('importLibraryEntry — malId round-trip', () => {
   });
 });
 
+describe('importLibraryEntry — setMalId failures are isolated', () => {
+  it.each([['UNIQUE constraint failed: anime_entries.mal_id'], ['disk I/O error']])(
+    'still reports success when setMalId throws (%s)',
+    message => {
+      const { service, library } = makeService([
+        existing({ id: 7, anilistId: 21, title: 'Some Show', malId: null }),
+      ]);
+      library.setMalId.mockImplementation(() => {
+        throw new Error(message);
+      });
+      const result = service.importLibraryEntry(
+        entry({ title: 'Some Show', anilistId: 21, malId: 5114 }),
+        'overwrite'
+      );
+      expect(result.status).toBe('success');
+    }
+  );
+});
+
 describe('importLibraryEntry — overwrite must not unlink provider ids', () => {
   it('does not write anilistId when the import entry lacks one', () => {
     const { service, library } = makeService([
