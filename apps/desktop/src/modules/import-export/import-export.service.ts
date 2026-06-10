@@ -15,8 +15,12 @@ import { DatabaseService } from '../database';
 
 const logger = createLogger('ImportExportService');
 
-/** Artificial per-item delay so the renderer can render import progress incrementally. */
-const IMPORT_PROGRESS_THROTTLE_MS = 1000;
+/**
+ * Artificial per-item delay so the renderer can render import progress
+ * incrementally. Kept small — at 1000ms a 600-entry import took ~10 minutes,
+ * virtually all of it sleep; 25ms still lets the progress list animate.
+ */
+const IMPORT_PROGRESS_THROTTLE_MS = 25;
 
 /** Small helper to wait for a given number of milliseconds. */
 function sleep(ms: number): Promise<void> {
@@ -84,10 +88,19 @@ export class ImportExportService {
     return result;
   }
 
-  /** Import a single library entry with duplicate detection. */
+  /**
+   * Import a single library entry with duplicate detection.
+   *
+   * `allEntries` lets {@link importBatch} share ONE library snapshot across the
+   * whole run instead of re-reading the full table per item (O(N×M) row
+   * materializations on large imports). The snapshot is kept current in place:
+   * fresh adds are pushed, overwrites mutate the matched element — so
+   * intra-file duplicates still dedupe against each other.
+   */
   importLibraryEntry(
     entry: Omit<AnimeEntry, 'id'>,
-    strategy: 'skip' | 'overwrite'
+    strategy: 'skip' | 'overwrite',
+    allEntries?: AnimeEntry[]
   ): ImportItemResult {
     const baseResult: ImportItemResult = {
       index: 0,
@@ -96,39 +109,63 @@ export class ImportExportService {
     };
 
     try {
-      const allEntries = this.libraryService.getAllEntries();
-      // Match on the AniList id (DB-unique) or an exact title only. `resumeUrl`
-      // was intentionally dropped: two different shows on the same player/landing
-      // site share a URL, so keying on it merged distinct entries (and with the
-      // overwrite strategy, clobbered one with the other).
-      const duplicate = allEntries.find(
-        existing =>
-          (entry.anilistId !== undefined && existing.anilistId === entry.anilistId) ||
-          existing.title === entry.title
-      );
+      allEntries ??= this.libraryService.getAllEntries();
+      // Match on a provider id (both DB-unique) first, then exact title.
+      // `resumeUrl` was intentionally dropped: two different shows on the same
+      // player/landing site share a URL, so keying on it merged distinct
+      // entries (and with the overwrite strategy, clobbered one with the other).
+      // A title match is rejected when both sides carry DIFFERENT AniList ids —
+      // seasons/remakes often share a display title and must stay distinct.
+      const duplicate = allEntries.find(existing => {
+        if (entry.anilistId !== undefined && existing.anilistId === entry.anilistId) return true;
+        if (entry.malId != null && existing.malId === entry.malId) return true;
+        if (existing.title !== entry.title) return false;
+        return !(
+          entry.anilistId !== undefined &&
+          existing.anilistId != null &&
+          existing.anilistId !== entry.anilistId
+        );
+      });
 
       if (duplicate) {
         if (strategy === 'skip') {
           return { ...baseResult, status: 'skipped' };
         }
 
-        // Overwrite: update the existing entry
+        // Overwrite: update the existing entry. `anilistId` is written ONLY
+        // when the import carries one — coercing an absent id to null would
+        // silently unlink an AniList-connected row and drop it from sync.
         this.libraryService.updateEntry(duplicate.id, {
-          anilistId: entry.anilistId ?? null,
+          ...(entry.anilistId !== undefined && { anilistId: entry.anilistId }),
           status: entry.status,
           currentEpisode: entry.currentEpisode,
           score: entry.score,
           notes: entry.notes,
           resumeUrl: entry.resumeUrl,
         });
+        if (entry.anilistId !== undefined) duplicate.anilistId = entry.anilistId;
+        // Link the MAL id when the import carries one and the row is unlinked.
+        // setMalId rethrows on a UNIQUE collision (another row owns the id) —
+        // skip-and-continue, mirroring the sync adapters.
+        if (entry.malId != null && duplicate.malId == null) {
+          try {
+            this.libraryService.setMalId(duplicate.id, entry.malId);
+            duplicate.malId = entry.malId;
+          } catch {
+            logger.warn(
+              `Import: mal_id ${entry.malId} already linked to another row; left "${entry.title}" unlinked`
+            );
+          }
+        }
         return { ...baseResult, status: 'success' };
       }
 
-      // No duplicate — add new entry. `score`/`notes` are now carried on insert
-      // (addEntry persists them) so a fresh import keeps the rating/notes instead
-      // of silently dropping them, matching the overwrite branch above.
-      this.libraryService.addEntry({
+      // No duplicate — add new entry. `score`/`notes`/`malId` are carried on
+      // insert (addEntry persists them) so a fresh import keeps the rating,
+      // notes and MAL link instead of silently dropping them.
+      const created = this.libraryService.addEntry({
         anilistId: entry.anilistId,
+        malId: entry.malId,
         title: entry.title,
         titleRomaji: entry.titleRomaji,
         titleNative: entry.titleNative,
@@ -140,6 +177,7 @@ export class ImportExportService {
         notes: entry.notes,
         resumeUrl: entry.resumeUrl,
       });
+      allEntries.push(created);
       return { ...baseResult, status: 'success' };
     } catch (error) {
       const message = extractErrorMessage(error, 'Unknown error');
@@ -148,10 +186,14 @@ export class ImportExportService {
     }
   }
 
-  /** Import a single diary entry with duplicate detection. */
+  /**
+   * Import a single diary entry with duplicate detection. `allEntries` shares
+   * one snapshot across a batch run (see {@link importLibraryEntry}).
+   */
   importDiaryEntry(
     entry: Omit<DiaryEntry, 'id' | 'animeId'>,
-    strategy: 'skip' | 'overwrite'
+    strategy: 'skip' | 'overwrite',
+    allEntries?: DiaryEntry[]
   ): ImportItemResult {
     const baseResult: ImportItemResult = {
       index: 0,
@@ -160,7 +202,7 @@ export class ImportExportService {
     };
 
     try {
-      const allEntries = this.diaryService.getAllEntries();
+      allEntries ??= this.diaryService.getAllEntries();
       const duplicate = allEntries.find(
         existing => existing.title === entry.title && existing.createdAt === entry.createdAt
       );
@@ -185,7 +227,7 @@ export class ImportExportService {
       }
 
       // No duplicate — create new entry
-      this.diaryService.createEntry({
+      const created = this.diaryService.createEntry({
         title: entry.title,
         contentJson: entry.contentJson,
         coverGradient: entry.coverGradient,
@@ -194,6 +236,7 @@ export class ImportExportService {
         animeTitle: entry.animeTitle,
         animeCoverImage: entry.animeCoverImage,
       });
+      allEntries.push(created);
       return { ...baseResult, status: 'success' };
     } catch (error) {
       const message = extractErrorMessage(error, 'Unknown error');
@@ -234,8 +277,10 @@ export class ImportExportService {
     const hasLibrary =
       (request.type === 'library' || request.type === 'all') && libraryEntries.length > 0;
     if (hasLibrary) {
+      // One snapshot for the whole run — per-item getAllEntries() was O(N×M).
+      const librarySnapshot = this.libraryService.getAllEntries();
       for (const entry of libraryEntries) {
-        tally(this.importLibraryEntry(entry, request.strategy));
+        tally(this.importLibraryEntry(entry, request.strategy, librarySnapshot));
         await sleep(IMPORT_PROGRESS_THROTTLE_MS);
       }
     }
@@ -244,8 +289,9 @@ export class ImportExportService {
     const hasDiary =
       (request.type === 'diary' || request.type === 'all') && diaryEntries.length > 0;
     if (hasDiary) {
+      const diarySnapshot = this.diaryService.getAllEntries();
       for (const entry of diaryEntries) {
-        tally(this.importDiaryEntry(entry, request.strategy));
+        tally(this.importDiaryEntry(entry, request.strategy, diarySnapshot));
         await sleep(IMPORT_PROGRESS_THROTTLE_MS);
       }
     }
