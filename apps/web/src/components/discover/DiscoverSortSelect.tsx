@@ -36,11 +36,7 @@ export const DiscoverSortSelect = memo(function DiscoverSortSelect({
   const { t } = useTranslation('discover');
 
   return (
-    <Select
-      value={value}
-      onValueChange={v => onChange(v as DiscoverSort)}
-      disabled={disabled}
-    >
+    <Select value={value} onValueChange={v => onChange(v as DiscoverSort)} disabled={disabled}>
       <SelectTrigger
         aria-label={t('controls.sortLabel')}
         className="h-8 w-auto gap-1.5 px-2.5 text-xs"

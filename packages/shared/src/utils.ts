@@ -122,3 +122,23 @@ export function truncate(text: string, max: number, ellipsis = '...'): string {
   if (max <= ellipsis.length) return ellipsis.slice(0, max);
   return text.slice(0, max - ellipsis.length) + ellipsis;
 }
+
+/**
+ * Normalize an anime title for fuzzy equality: NFKD, strip diacritics,
+ * lowercase, collapse punctuation/whitespace runs to single spaces, trim.
+ * Unicode-aware so CJK titles survive (an ASCII-only class would normalize
+ * every native title to the empty string, making them all "match").
+ *
+ * The ONE title-matching rule for both processes — the renderer's progress
+ * tracking (detected title → library entry) and the desktop MAL backfill
+ * (search-hit title → local title). These previously used two divergent
+ * implementations, so a title could match in one process and not the other.
+ */
+export function normalizeAnimeTitle(title: string): string {
+  return title
+    .normalize('NFKD')
+    .replace(/\p{M}+/gu, '')
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}]+/gu, ' ')
+    .trim();
+}

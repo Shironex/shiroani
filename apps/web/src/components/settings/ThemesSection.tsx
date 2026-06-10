@@ -170,7 +170,9 @@ export function ThemesSection() {
           <span
             className={cn(
               'grid size-8 shrink-0 place-items-center rounded-lg',
-              theme === SYSTEM_THEME ? 'bg-primary/20 text-primary' : 'bg-foreground/[0.06] text-muted-foreground'
+              theme === SYSTEM_THEME
+                ? 'bg-primary/20 text-primary'
+                : 'bg-foreground/[0.06] text-muted-foreground'
             )}
           >
             <Monitor className="h-4 w-4" />

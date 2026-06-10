@@ -11,7 +11,7 @@ import { getTitle } from './random/random-utils';
 interface DiscoverCardProps {
   media: DiscoverMedia;
   inLibrary?: boolean;
-  onClick?: () => void;
+  onClick?: (media: DiscoverMedia) => void;
   onAddToLibrary?: (media: DiscoverMedia) => void;
 }
 
@@ -26,14 +26,16 @@ const DiscoverCard = memo(function DiscoverCard({
   const { t } = useTranslation('discover');
   const [imgError, setImgError] = useState(false);
 
+  const handleClick = useCallback(() => onClick?.(media), [onClick, media]);
+
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
-        onClick?.();
+        onClick?.(media);
       }
     },
-    [onClick]
+    [onClick, media]
   );
 
   const handleImageError = useCallback(() => setImgError(true), []);
@@ -66,7 +68,7 @@ const DiscoverCard = memo(function DiscoverCard({
         'hover:-translate-y-0.5 hover:shadow-primary-glow',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:-translate-y-0.5'
       )}
-      onClick={onClick}
+      onClick={handleClick}
       onKeyDown={handleKeyDown}
     >
       {/* Cover — 2:3 aspect, matching Library card vocabulary */}

@@ -2,7 +2,9 @@ import { useCallback, useMemo, useState } from 'react';
 import {
   Library as LibraryIcon,
   BookOpen,
+  CloudOff,
   Globe,
+  RefreshCw,
   SearchX,
   BarChart3,
   Download,
@@ -62,7 +64,7 @@ const {
 } = useLibraryStore.getState();
 
 export function LibraryView() {
-  const { t, i18n } = useTranslation('library');
+  const { t, i18n } = useTranslation(['library', 'common']);
   const entries = useLibraryStore(s => s.entries);
   const activeFilter = useLibraryStore(s => s.activeFilter);
   const searchQuery = useLibraryStore(s => s.searchQuery);
@@ -70,6 +72,7 @@ export function LibraryView() {
   const sortOrder = useLibraryStore(s => s.sortOrder);
   const viewMode = useLibraryStore(s => s.viewMode);
   const isLoading = useLibraryStore(s => s.isLoading);
+  const error = useLibraryStore(s => s.error);
   const isDetailOpen = useLibraryStore(s => s.isDetailOpen);
   const selectedEntry = useLibraryStore(s => s.selectedEntry);
   const selectionMode = useLibraryStore(s => s.selectionMode);
@@ -277,6 +280,21 @@ export function LibraryView() {
           {isLoading ? (
             <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden">
               <LibrarySkeleton />
+            </div>
+          ) : error && entries.length === 0 ? (
+            // A failed initial fetch must NOT render the "library is empty"
+            // CTA — the user's collection isn't gone, the backend hiccuped.
+            <div className="flex-1 min-h-0 overflow-y-auto">
+              <EmptyState
+                icon={CloudOff}
+                title={t('error.title')}
+                subtitle={t('error.subtitle')}
+                action={{
+                  label: t('common:actions.retry'),
+                  icon: RefreshCw,
+                  onClick: () => useLibraryStore.getState().fetchLibrary(),
+                }}
+              />
             </div>
           ) : filteredEntries.length === 0 ? (
             <div className="flex-1 min-h-0 overflow-y-auto">

@@ -88,8 +88,9 @@ export function resetMascotPosition(): void {
   store.delete('settings.mascotPosition');
   const primaryDisplay = screen.getPrimaryDisplay();
   const workArea = primaryDisplay.workArea;
-  const sizeVal = store.get('settings.mascotSize') as number | undefined;
-  const size = sizeVal && sizeVal >= 48 && sizeVal <= 512 ? sizeVal : DEFAULT_MASCOT_SIZE;
+  const sizeVal = store.get('settings.mascotSize');
+  const size =
+    typeof sizeVal === 'number' && sizeVal >= 48 && sizeVal <= 512 ? sizeVal : DEFAULT_MASCOT_SIZE;
   const x = workArea.x + workArea.width - size - 20;
   const y = workArea.y + workArea.height - size - 10;
 

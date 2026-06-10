@@ -1,4 +1,5 @@
 import { safeStorage } from 'electron';
+import { z } from 'zod';
 import type { MalAuthStatus, MalViewer } from '@shiroani/shared';
 import { createLogger } from '@shiroani/shared';
 import { store } from '../store';
@@ -17,29 +18,37 @@ const logger = createLogger('MalTokenStore');
  */
 const SESSION_KEY = 'mal-session';
 
-interface PersistedSession {
-  /**
-   * Encrypted access token, base64-encoded.
-   *
-   * When `encrypted` is true this is `safeStorage.encryptString(token)` →
-   * base64. When `encrypted` is false (no OS encryption backend available, e.g.
-   * some Linux setups), this is the PLAINTEXT token and we flag it so the risk
-   * is explicit and auditable.
-   */
-  accessToken: string;
-  /**
-   * Encrypted refresh token, base64-encoded (same `encrypted` flag governs it).
-   * UNLIKE AniList (implicit grant, no refresh token), MAL issues a refresh
-   * token that outlives the access token (~1mo) — it is the MORE sensitive
-   * secret, so it is encrypted alongside the access token, never stored bare.
-   */
-  refreshToken: string;
-  encrypted: boolean;
+/**
+ * Persisted-session shape, validated at the electron-store boundary — the
+ * store file is user-editable on disk, so a bare `as` cast would let a
+ * malformed value flow into decryption/refresh paths.
+ *
+ * `accessToken`: encrypted, base64-encoded. When `encrypted` is true this is
+ * `safeStorage.encryptString(token)` → base64; when false (no OS encryption
+ * backend, e.g. some Linux setups) it is the PLAINTEXT token, flagged so the
+ * risk is explicit and auditable.
+ *
+ * `refreshToken`: encrypted alongside (same `encrypted` flag). UNLIKE AniList
+ * (implicit grant, no refresh token), MAL issues a refresh token that outlives
+ * the access token (~1mo) — the MORE sensitive secret, never stored bare.
+ */
+const persistedSessionSchema = z.object({
+  accessToken: z.string(),
+  refreshToken: z.string(),
+  encrypted: z.boolean(),
   /** Unix epoch ms the ACCESS token expires. */
-  expiresAt: number;
+  expiresAt: z.number().finite(),
   /** Optional cached viewer (absent if the viewer fetch failed at connect). */
-  viewer?: MalViewer;
-}
+  viewer: z
+    .object({
+      id: z.number(),
+      name: z.string(),
+      avatar: z.string().optional(),
+    })
+    .optional(),
+});
+
+type PersistedSession = z.infer<typeof persistedSessionSchema>;
 
 /** The decrypted session a main-process caller (e.g. the token adapter) needs. */
 export interface MalSession {
@@ -65,18 +74,8 @@ export function getSessionEpoch(): number {
 }
 
 function readPersisted(): PersistedSession | null {
-  const raw = store.get(SESSION_KEY) as PersistedSession | undefined;
-  if (
-    !raw ||
-    typeof raw.accessToken !== 'string' ||
-    typeof raw.refreshToken !== 'string' ||
-    typeof raw.expiresAt !== 'number' ||
-    !Number.isFinite(raw.expiresAt) ||
-    typeof raw.encrypted !== 'boolean'
-  ) {
-    return null;
-  }
-  return raw;
+  const parsed = persistedSessionSchema.safeParse(store.get(SESSION_KEY));
+  return parsed.success ? parsed.data : null;
 }
 
 /** Decrypt one stored token, honoring the `encrypted` flag. Returns null on failure. */

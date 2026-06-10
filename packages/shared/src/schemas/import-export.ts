@@ -32,8 +32,24 @@ export const exportRequestSchema = z.object({
 // Import — entry shapes (mirror Omit<AnimeEntry, 'id'>)
 // ============================================
 
+// Sync-STATE fields on AnimeEntry (`synced`, `anilistSyncedAt`, `malSynced`,
+// `malSyncedAt`) are deliberately absent: baselines describe an agreement with
+// a specific remote account on a specific machine, so importing them would
+// poison reconciliation on the target. zod strips them silently. The provider
+// LINK ids (`anilistId`, `malId`) ARE part of the contract — dropping `malId`
+// here once cost every restored backup its MAL links.
+//
+// Note the deliberately asymmetric nullability (mirrors AnimeEntry):
+//   - `anilistId` is `.optional()` only — absent means "not set" (undefined);
+//     there is no explicit-null state for AniList links.
+//   - `malId` is `.nullable().optional()` — undefined means "never resolved",
+//     while an explicit `null` means "known to be unlinked" (AniList's
+//     `Media.idMal` is nullable, so "checked and absent" is a real state).
+// Sync/UI logic distinguishes the two, so MAL checks must use `malId != null`
+// rather than truthiness/presence alone.
 const libraryEntryImportSchema = z.object({
   anilistId: z.number().int().positive().optional(),
+  malId: z.number().int().positive().nullable().optional(),
   title: z.string().min(1).max(500),
   titleRomaji: z.string().max(500).optional(),
   titleNative: z.string().max(500).optional(),

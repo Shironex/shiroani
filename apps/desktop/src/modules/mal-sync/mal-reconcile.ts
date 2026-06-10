@@ -103,6 +103,11 @@ function mergeField<T>(
   if (firstContact) winner = remote as T;
   else if (localChanged && !remoteChanged) winner = local as T;
   else if (remoteChanged && !localChanged) winner = remote as T;
+  // Neither side edited since baseline: the difference is representational
+  // (MAL stores integer scores, so a pushed 7.5 reads back as 8). Keep local —
+  // arbitrating by timestamp would pull the rounded value over the user's
+  // fractional rating and re-push it to AniList as a fresh edit.
+  else if (!localChanged && !remoteChanged) winner = local as T;
   else winner = localNewer ? (local as T) : (remote as T);
   return { value: winner, differed: true };
 }

@@ -274,7 +274,10 @@ describe('detectAnimeFromUrl', () => {
     });
 
     it('leaves the episode undefined (info page, not a watch page)', () => {
-      const result = detectAnimeFromUrl('https://anilist.co/anime/21/One-Piece', 'One Piece - AniList');
+      const result = detectAnimeFromUrl(
+        'https://anilist.co/anime/21/One-Piece',
+        'One Piece - AniList'
+      );
       expect(result?.episode).toBeUndefined();
       expect(result?.anilistId).toBe(21);
     });

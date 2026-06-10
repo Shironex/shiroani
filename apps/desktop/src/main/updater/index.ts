@@ -111,7 +111,7 @@ function sendToMainWindow(channel: string, ...args: unknown[]): void {
 }
 
 function getPersistedChannel(): UpdateChannel {
-  const stored = store.get('preferences.updateChannel') as string | undefined;
+  const stored = store.get('preferences.updateChannel');
   if (stored === 'stable' || stored === 'beta') return stored;
   return DEFAULT_UPDATE_CHANNEL;
 }

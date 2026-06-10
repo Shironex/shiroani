@@ -51,8 +51,10 @@ export function isMascotEnabled(): boolean {
  * Get the configured mascot size from settings.
  */
 export function getMascotSize(): number {
-  const size = store.get('settings.mascotSize') as number | undefined;
-  return size && size >= 48 && size <= 512 ? size : DEFAULT_MASCOT_SIZE;
+  const size = store.get('settings.mascotSize');
+  // The typeof guard matters: a string "100" from a hand-edited store file
+  // passes >= / <= via coercion and would flow into pixel math as a string.
+  return typeof size === 'number' && size >= 48 && size <= 512 ? size : DEFAULT_MASCOT_SIZE;
 }
 
 /**
@@ -75,7 +77,7 @@ export function setMascotAnimationEnabledStored(enabled: boolean): void {
  * Get the mascot visibility mode.
  */
 export function getMascotVisibilityMode(): MascotVisibilityMode {
-  const mode = store.get('settings.mascotVisibilityMode') as string | undefined;
+  const mode = store.get('settings.mascotVisibilityMode');
   return mode === 'tray-only' ? 'tray-only' : 'always';
 }
 
@@ -87,7 +89,21 @@ export function setMascotVisibilityMode(mode: MascotVisibilityMode): void {
 }
 
 export function getSavedPosition(): { x: number; y: number } | undefined {
-  return store.get('settings.mascotPosition') as { x: number; y: number } | undefined;
+  const raw = store.get('settings.mascotPosition') as
+    | { x?: unknown; y?: unknown }
+    | undefined
+    | null;
+  if (
+    raw &&
+    typeof raw === 'object' &&
+    typeof raw.x === 'number' &&
+    Number.isFinite(raw.x) &&
+    typeof raw.y === 'number' &&
+    Number.isFinite(raw.y)
+  ) {
+    return { x: raw.x, y: raw.y };
+  }
+  return undefined;
 }
 
 export function savePosition(pos: { x: number; y: number }): void {

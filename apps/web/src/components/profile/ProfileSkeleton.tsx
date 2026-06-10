@@ -2,7 +2,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 export function ProfileSkeleton() {
   return (
-    <div className="flex-1 overflow-y-auto">
+    <div aria-busy="true" className="flex-1 overflow-y-auto">
       {/* Banner skeleton */}
       <div className="h-40 relative">
         <Skeleton className="absolute inset-0 rounded-none" />

@@ -299,13 +299,19 @@ export function runMigrations(db: Database.Database, migrations: Migration[] = M
     );
   `);
 
-  // Determine current schema version
-  const row = db.prepare('SELECT MAX(version) AS current_version FROM _migrations').get() as
-    | { current_version: number | null }
-    | undefined;
-  const currentVersion = row?.current_version ?? 0;
+  // Pending = set difference against the individually-recorded versions, NOT
+  // `version > MAX(version)`: the array has reserved gaps (v6 lives on a
+  // sibling branch), and a MAX-based ledger would silently skip a reserved
+  // version forever once any later migration has run.
+  const appliedRows = db.prepare('SELECT version FROM _migrations').all() as {
+    version: number;
+  }[];
+  const applied = new Set(appliedRows.map(r => r.version));
+  const currentVersion = appliedRows.reduce((max, r) => Math.max(max, r.version), 0);
 
-  const pending = migrations.filter(m => m.version > currentVersion);
+  const pending = migrations
+    .filter(m => !applied.has(m.version))
+    .sort((a, b) => a.version - b.version);
 
   if (pending.length === 0) {
     logger.debug(`Database is up to date (version ${currentVersion})`);

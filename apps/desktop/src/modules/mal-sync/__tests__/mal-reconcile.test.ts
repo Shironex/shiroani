@@ -118,6 +118,29 @@ describe('decideMalMerge', () => {
     expect(decision.remotePush).toBeNull();
   });
 
+  it('does not arbitrate a rounding-only difference when NEITHER side changed since baseline', () => {
+    // Round-trip scenario: local 7.5 was pushed to MAL as 8 (integer space) and
+    // baselines were stamped. On the next run neither side has edited — the
+    // persistent 7.5 vs 8 difference is representational, not a conflict. The
+    // merge must keep the local 7.5 (no pull) and, since both round to 8, push
+    // nothing either. Arbitrating by timestamp here destroyed the half-point
+    // rating and cascaded it to AniList as a fresh local edit.
+    const pushMomentEpoch = EPOCH + 500;
+    const decision = decideMalMerge(
+      local({
+        score: 7.5,
+        currentEpisode: 5,
+        updatedAt: '2024-01-01 00:00:00', // local edit predates the push
+        malSyncedAt: '2024-01-01 00:10:00', // baseline stamped after the edit
+        malRemoteUpdatedAt: pushMomentEpoch, // baseline = remote's post-push timestamp
+      }),
+      remote({ score: 8, progress: 5, updatedAt: pushMomentEpoch })
+    );
+    expect(decision.localUpdate).toBeNull();
+    expect(decision.remotePush).toBeNull();
+    expect(decision.conflict).toBe(false);
+  });
+
   it('maps status 1:1 (no wire enum) on both sides', () => {
     const decision = decideMalMerge(
       local({ status: 'on_hold', updatedAt: '2024-06-01 00:00:00' }),

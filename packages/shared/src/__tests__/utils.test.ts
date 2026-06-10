@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { extractErrorMessage, toLocalDate, getWeekStart } from '../utils';
+import { extractErrorMessage, toLocalDate, getWeekStart, normalizeAnimeTitle } from '../utils';
 
 describe('extractErrorMessage', () => {
   it('returns message from an Error instance', () => {
@@ -124,5 +124,28 @@ describe('getWeekStart', () => {
     const result = getWeekStart();
     expect(result.getDay()).toBe(1); // Monday
     expect(result.getHours()).toBe(0);
+  });
+});
+
+describe('normalizeAnimeTitle', () => {
+  it('matches case/punctuation variants of the same title', () => {
+    expect(normalizeAnimeTitle('Attack On Titan')).toBe(normalizeAnimeTitle('attack-on-titan'));
+    expect(normalizeAnimeTitle('Re:Zero — Starting Life')).toBe(
+      normalizeAnimeTitle('re zero starting life')
+    );
+  });
+
+  it('strips diacritics so "Pokémon" matches "Pokemon"', () => {
+    expect(normalizeAnimeTitle('Pokémon')).toBe(normalizeAnimeTitle('Pokemon'));
+  });
+
+  it('preserves CJK titles instead of normalizing them to the empty string', () => {
+    const norm = normalizeAnimeTitle('進撃の巨人');
+    expect(norm.length).toBeGreaterThan(0);
+    expect(normalizeAnimeTitle('葬送のフリーレン')).not.toBe(norm);
+  });
+
+  it('collapses whitespace runs and trims', () => {
+    expect(normalizeAnimeTitle('  One   Piece  ')).toBe('one piece');
   });
 });

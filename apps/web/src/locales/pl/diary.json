@@ -30,6 +30,10 @@
     "subtitle": "Zapisuj wrażenia z odcinków, recenzje i notatki",
     "action": "Napisz pierwszy wpis"
   },
+  "error": {
+    "title": "Nie udało się wczytać dziennika",
+    "subtitle": "Twoje wpisy są bezpieczne — coś poszło nie tak podczas ich wczytywania. Spróbuj ponownie."
+  },
   "card": {
     "pin": "Przypnij",
     "unpin": "Odepnij",

@@ -140,3 +140,43 @@ describe('migrations — v14 MAL bridge', () => {
     expect(count.c).toBe(2);
   });
 });
+
+describe('migrations — runner gap backfill', () => {
+  function freshDb() {
+    const raw = new DatabaseSync(':memory:');
+    return { raw, db: adapt(raw) };
+  }
+
+  const V1 = { version: 1, description: 'table a', up: 'CREATE TABLE a (id INTEGER);' };
+  const V2 = { version: 2, description: 'table b', up: 'CREATE TABLE b (id INTEGER);' };
+  const V3 = { version: 3, description: 'table c', up: 'CREATE TABLE c (id INTEGER);' };
+
+  it('applies a reserved-version migration even when later versions already ran', () => {
+    const { raw, db } = freshDb();
+    // First boot on a branch missing v2 (the reserved-slot scenario: the
+    // production array has a v6 gap reserved for a sibling branch).
+    runMigrations(db, [V1, V3]);
+
+    // The branch carrying v2 merges; the runner must backfill it.
+    runMigrations(db, [V1, V2, V3]);
+
+    const versions = (
+      raw.prepare('SELECT version FROM _migrations ORDER BY version').all() as {
+        version: number;
+      }[]
+    ).map(r => r.version);
+    expect(versions).toEqual([1, 2, 3]);
+
+    const tableB = raw
+      .prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'b'")
+      .get() as { name: string } | undefined;
+    expect(tableB?.name).toBe('b');
+  });
+
+  it('never re-applies an already-recorded version', () => {
+    const { db } = freshDb();
+    runMigrations(db, [V1, V2, V3]);
+    // CREATE TABLE without IF NOT EXISTS would throw if any migration re-ran.
+    expect(() => runMigrations(db, [V1, V2, V3])).not.toThrow();
+  });
+});

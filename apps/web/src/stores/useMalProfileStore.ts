@@ -13,6 +13,12 @@ interface MalProfileState {
   isLoading: boolean;
   error: string | null;
   lastFetchedAt: number | null;
+  /**
+   * True once a fetch SETTLED with no connected account (main process found no
+   * token). Distinguishes "not connected" from "not yet loaded" — without it a
+   * stale connected=true auth status leaves the MAL tab on a skeleton forever.
+   */
+  notConnected: boolean;
 }
 
 interface MalProfileActions {
@@ -35,10 +41,15 @@ export const useMalProfileStore = create<MalProfileStore>()(
       isLoading: false,
       error: null,
       lastFetchedAt: null,
+      notConnected: false,
 
       fetchProfile: () => {
         logger.info('Fetching connected MAL viewer profile');
-        set({ isLoading: true, error: null }, undefined, 'mal-profile/fetching');
+        set(
+          { isLoading: true, error: null, notConnected: false },
+          undefined,
+          'mal-profile/fetching'
+        );
 
         emitWithErrorHandling<Record<string, never>, { profile: MalUserStats | null }>(
           MalEvents.GET_VIEWER_PROFILE,
@@ -63,7 +74,13 @@ export const useMalProfileStore = create<MalProfileStore>()(
               // A null profile means "not connected" (no token) — clear quietly
               // rather than surfacing it as an error.
               set(
-                { profile: null, isLoading: false, error: null, lastFetchedAt: null },
+                {
+                  profile: null,
+                  isLoading: false,
+                  error: null,
+                  lastFetchedAt: null,
+                  notConnected: true,
+                },
                 undefined,
                 'mal-profile/notConnected'
               );
@@ -80,7 +97,13 @@ export const useMalProfileStore = create<MalProfileStore>()(
 
       clearProfile: () => {
         set(
-          { profile: null, isLoading: false, error: null, lastFetchedAt: null },
+          {
+            profile: null,
+            isLoading: false,
+            error: null,
+            lastFetchedAt: null,
+            notConnected: false,
+          },
           undefined,
           'mal-profile/clear'
         );

@@ -108,7 +108,11 @@ export function BatchActionBar() {
         {/* Set / clear score */}
         <Select value="" onValueChange={handleScoreChange}>
           <SelectTrigger className="w-[130px] h-8 text-xs bg-background/40 border-border-glass">
-            <Star className="w-3.5 h-3.5 text-[oklch(0.8_0.14_70)]" strokeWidth={0} fill="currentColor" />
+            <Star
+              className="w-3.5 h-3.5 text-[oklch(0.8_0.14_70)]"
+              strokeWidth={0}
+              fill="currentColor"
+            />
             <SelectValue placeholder={t('batch.setScore')} />
           </SelectTrigger>
           <SelectContent>

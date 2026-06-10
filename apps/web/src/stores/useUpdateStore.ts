@@ -52,7 +52,10 @@ function callUpdaterAPI<T>(
   }
   return (fn(updater) ?? Promise.resolve(undefined))?.catch((err: Error) => {
     logger.error(`Failed to ${action}:`, err.message);
-    return undefined;
+    // Rethrow so each action's recovery .catch (resetting isInstalling,
+    // isChannelSwitching, status) actually runs — swallowing here leaves
+    // the splash/UI stuck in a transient state forever.
+    throw err;
   });
 }
 

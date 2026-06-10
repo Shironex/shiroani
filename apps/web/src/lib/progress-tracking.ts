@@ -1,3 +1,4 @@
+import { normalizeAnimeTitle } from '@shiroani/shared';
 import type { AnimeEntry } from '@shiroani/shared';
 import type { AnimeDetection } from '@/lib/anime-detection';
 
@@ -12,18 +13,12 @@ import type { AnimeDetection } from '@/lib/anime-detection';
  */
 
 /**
- * Normalize a title for fuzzy equality: lowercase, strip diacritics, collapse
- * non-alphanumeric runs to single spaces, trim. Lets "Attack On Titan" match an
- * entry stored as "Attack on Titan" / "attack-on-titan".
+ * Normalize a title for fuzzy equality. Lets "Attack On Titan" match an entry
+ * stored as "Attack on Titan" / "attack-on-titan". Aliased from shared so the
+ * renderer and the desktop MAL backfill apply the SAME matching rule \u2014 the
+ * previous local ASCII-only version normalized every CJK title to ''.
  */
-export function normalizeTitle(title: string): string {
-  return title
-    .normalize('NFKD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, ' ')
-    .trim();
-}
+export const normalizeTitle = normalizeAnimeTitle;
 
 /**
  * Find the library entry a detection refers to. Prefers an exact `anilistId`

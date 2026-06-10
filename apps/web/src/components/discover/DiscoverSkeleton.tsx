@@ -6,7 +6,10 @@ const TITLE_WIDTHS = ['w-[70%]', 'w-[55%]', 'w-[80%]', 'w-[62%]', 'w-[75%]', 'w-
 
 export function DiscoverSkeleton() {
   return (
-    <div className="grid gap-3.5 grid-cols-[repeat(auto-fill,minmax(130px,1fr))] xl:grid-cols-[repeat(auto-fill,minmax(140px,1fr))]">
+    <div
+      aria-busy="true"
+      className="grid gap-3.5 grid-cols-[repeat(auto-fill,minmax(130px,1fr))] xl:grid-cols-[repeat(auto-fill,minmax(140px,1fr))]"
+    >
       {Array.from({ length: 14 }).map((_, i) => (
         <div
           key={i}

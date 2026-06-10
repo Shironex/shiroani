@@ -1,4 +1,5 @@
 import { safeStorage } from 'electron';
+import { z } from 'zod';
 import type { AniListAuthStatus, AniListViewer } from '@shiroani/shared';
 import { createLogger } from '@shiroani/shared';
 import { store } from '../store';
@@ -16,35 +17,34 @@ const logger = createLogger('AniListTokenStore');
  */
 const SESSION_KEY = 'anilist-session';
 
-interface PersistedSession {
-  /**
-   * Encrypted access token, base64-encoded.
-   *
-   * When `encrypted` is true this is `safeStorage.encryptString(token)` →
-   * base64. When `encrypted` is false (no OS encryption backend available, e.g.
-   * some Linux setups), this is the PLAINTEXT token and we flag it so the risk
-   * is explicit and auditable.
-   */
-  token: string;
-  encrypted: boolean;
+/**
+ * Persisted-session shape, validated at the electron-store boundary — the
+ * store file is user-editable on disk, so a bare `as` cast would let a
+ * malformed value flow into decryption/status paths.
+ *
+ * `token`: encrypted access token, base64-encoded. When `encrypted` is true
+ * this is `safeStorage.encryptString(token)` → base64. When `encrypted` is
+ * false (no OS encryption backend available, e.g. some Linux setups), this is
+ * the PLAINTEXT token and we flag it so the risk is explicit and auditable.
+ */
+const persistedSessionSchema = z.object({
+  token: z.string(),
+  encrypted: z.boolean(),
   /** Unix epoch ms the token expires. */
-  expiresAt: number;
-  viewer: AniListViewer;
-}
+  expiresAt: z.number().finite(),
+  viewer: z.object({
+    id: z.number(),
+    name: z.string(),
+    avatar: z.string().optional(),
+    bannerImage: z.string().optional(),
+  }),
+});
+
+type PersistedSession = z.infer<typeof persistedSessionSchema>;
 
 function readSession(): PersistedSession | null {
-  const raw = store.get(SESSION_KEY) as PersistedSession | undefined;
-  if (
-    !raw ||
-    typeof raw.token !== 'string' ||
-    typeof raw.expiresAt !== 'number' ||
-    !Number.isFinite(raw.expiresAt) ||
-    !raw.viewer ||
-    typeof raw.viewer !== 'object'
-  ) {
-    return null;
-  }
-  return raw;
+  const parsed = persistedSessionSchema.safeParse(store.get(SESSION_KEY));
+  return parsed.success ? parsed.data : null;
 }
 
 /**

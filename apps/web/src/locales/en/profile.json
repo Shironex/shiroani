@@ -244,7 +244,11 @@
       "daysValue_other": "{{value}} days",
       "barAria": "Share of days watched per list status"
     },
-    "lighterNote": "MyAnimeList exposes a lighter stat set — there are no genre or voice-actor breakdowns here like on the AniList tab."
+    "lighterNote": "MyAnimeList exposes a lighter stat set — there are no genre or voice-actor breakdowns here like on the AniList tab.",
+    "notConnected": {
+      "title": "MyAnimeList not connected",
+      "subtitle": "Your MAL session expired or the account was disconnected. Reconnect it in Settings."
+    }
   },
   "errors": {
     "userNotFound": "AniList user not found",

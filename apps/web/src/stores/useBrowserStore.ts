@@ -468,8 +468,12 @@ export const useBrowserStore = create<BrowserStore>()(
 
         const next = [...current, normalized];
         set({ adblockWhitelist: next }, undefined, 'browser/addAdblockDomain');
-        void window.electronAPI?.browser?.setAdblockWhitelist?.(next);
-        void persistBrowserSettings({ adblockWhitelist: next });
+        window.electronAPI?.browser?.setAdblockWhitelist?.(next)?.catch((err: Error) => {
+          logger.warn('useBrowserStore: failed to push adblock whitelist to main', err);
+        });
+        persistBrowserSettings({ adblockWhitelist: next }).catch((err: Error) => {
+          logger.warn('useBrowserStore: failed to persist adblock whitelist', err);
+        });
       },
 
       setRestoreTabsOnStartup: async (enabled: boolean) => {
@@ -539,8 +543,12 @@ export const useBrowserStore = create<BrowserStore>()(
 
         const next = current.filter(h => h !== normalized);
         set({ adblockWhitelist: next }, undefined, 'browser/removeAdblockDomain');
-        void window.electronAPI?.browser?.setAdblockWhitelist?.(next);
-        void persistBrowserSettings({ adblockWhitelist: next });
+        window.electronAPI?.browser?.setAdblockWhitelist?.(next)?.catch((err: Error) => {
+          logger.warn('useBrowserStore: failed to push adblock whitelist to main', err);
+        });
+        persistBrowserSettings({ adblockWhitelist: next }).catch((err: Error) => {
+          logger.warn('useBrowserStore: failed to persist adblock whitelist', err);
+        });
       },
 
       // ── Persistence ─────────────────────────────────────────────
@@ -595,8 +603,14 @@ export const useBrowserStore = create<BrowserStore>()(
             set({ popupBlockEnabled: popupEnabled });
             // Sync with main process and persist in the new shape so this
             // migration runs at most once.
-            void window.electronAPI?.browser?.setPopupBlockEnabled?.(popupEnabled);
-            void persistBrowserSettings({ popupBlockEnabled: popupEnabled });
+            window.electronAPI?.browser
+              ?.setPopupBlockEnabled?.(popupEnabled)
+              ?.catch((err: Error) => {
+                logger.warn('useBrowserStore: failed to push popup-block setting to main', err);
+              });
+            persistBrowserSettings({ popupBlockEnabled: popupEnabled }).catch((err: Error) => {
+              logger.warn('useBrowserStore: failed to persist popup-block setting', err);
+            });
           }
 
           if (typeof settings.restoreTabsOnStartup === 'boolean') {
@@ -618,7 +632,9 @@ export const useBrowserStore = create<BrowserStore>()(
               )
             );
             set({ adblockWhitelist: cleaned });
-            void window.electronAPI?.browser?.setAdblockWhitelist?.(cleaned);
+            window.electronAPI?.browser?.setAdblockWhitelist?.(cleaned)?.catch((err: Error) => {
+              logger.warn('useBrowserStore: failed to push adblock whitelist to main', err);
+            });
           }
         }
 
@@ -683,7 +699,11 @@ export const useBrowserStore = create<BrowserStore>()(
             // entry) into a single refreshed entry rather than stacking them.
             const head = state.history[0];
             const rest = head && head.url === url ? state.history.slice(1) : state.history;
-            const next = [entry, ...rest].slice(0, BROWSER_HISTORY_MAX_ENTRIES);
+            const combined = [entry, ...rest];
+            const next =
+              combined.length > BROWSER_HISTORY_MAX_ENTRIES
+                ? combined.slice(0, BROWSER_HISTORY_MAX_ENTRIES)
+                : combined;
             return { history: next };
           },
           undefined,

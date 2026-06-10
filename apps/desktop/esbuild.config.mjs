@@ -27,17 +27,11 @@ mkdirSync(outdir, { recursive: true });
 // to avoid workspace-protocol resolution issues in production builds.
 const external = [
   'electron',
-  ...Object.keys(pkg.dependencies ?? {}).filter(
-    (d) => !d.startsWith('@shiroani/')
-  ),
+  ...Object.keys(pkg.dependencies ?? {}).filter(d => !d.startsWith('@shiroani/')),
 ];
 
 await build({
-  entryPoints: [
-    'src/main/index.ts',
-    'src/main/preload.ts',
-    'src/main/menu-preload.ts',
-  ],
+  entryPoints: ['src/main/index.ts', 'src/main/preload.ts', 'src/main/menu-preload.ts'],
   bundle: true,
   platform: 'node',
   target: 'node22',

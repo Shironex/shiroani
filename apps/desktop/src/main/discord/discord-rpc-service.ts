@@ -1,7 +1,9 @@
 import { Client } from '@xhayper/discord-rpc';
 import type { BrowserWindow } from 'electron';
+import { z } from 'zod';
 import { DEFAULT_DISCORD_TEMPLATES } from '@shiroani/shared';
 import type {
+  DiscordActivityType,
   DiscordRpcSettings,
   DiscordPresenceActivity,
   DiscordRpcStatus,
@@ -83,26 +85,56 @@ function setStatus(status: DiscordRpcStatus): void {
   }
 }
 
+/** A single activity template is only adopted when COMPLETE — a partial or
+ * malformed template object must not replace a default wholesale. */
+const storedTemplateSchema = z.object({
+  details: z.string(),
+  state: z.string(),
+  showTimestamp: z.boolean(),
+  showLargeImage: z.boolean(),
+  showButton: z.boolean(),
+});
+
+/**
+ * Stored-settings shape, validated at the electron-store boundary. Every field
+ * is optional with per-field fallback to defaults. Templates are validated
+ * individually (see `storedTemplateSchema` in `getSettings`) so one malformed
+ * template entry falls back to its default without resetting every other
+ * setting and template.
+ */
+const storedDiscordSettingsSchema = z
+  .object({
+    enabled: z.boolean(),
+    showAnimeDetails: z.boolean(),
+    showElapsedTime: z.boolean(),
+    useCustomTemplates: z.boolean(),
+    templates: z.record(z.string(), z.unknown()),
+  })
+  .partial();
+
 function getSettings(): DiscordRpcSettings {
-  const stored = store.get(STORE_KEY) as Partial<DiscordRpcSettings> | undefined;
+  const parsed = storedDiscordSettingsSchema.safeParse(store.get(STORE_KEY));
+  const stored = parsed.success ? parsed.data : undefined;
   if (!stored) return { ...DEFAULT_SETTINGS, templates: { ...DEFAULT_DISCORD_TEMPLATES } };
+
+  // Merge per known activity key only — unknown keys in the stored record are
+  // dropped rather than spread into the typed templates object. Each candidate
+  // is validated individually; an incomplete/malformed template falls back to
+  // its default without affecting the others.
+  const templates = { ...DEFAULT_DISCORD_TEMPLATES };
+  if (stored.templates) {
+    for (const key of Object.keys(DEFAULT_DISCORD_TEMPLATES) as DiscordActivityType[]) {
+      const candidate = storedTemplateSchema.safeParse(stored.templates[key]);
+      if (candidate.success) templates[key] = candidate.data;
+    }
+  }
+
   return {
-    enabled: typeof stored.enabled === 'boolean' ? stored.enabled : DEFAULT_SETTINGS.enabled,
-    showAnimeDetails:
-      typeof stored.showAnimeDetails === 'boolean'
-        ? stored.showAnimeDetails
-        : DEFAULT_SETTINGS.showAnimeDetails,
-    showElapsedTime:
-      typeof stored.showElapsedTime === 'boolean'
-        ? stored.showElapsedTime
-        : DEFAULT_SETTINGS.showElapsedTime,
-    useCustomTemplates:
-      typeof stored.useCustomTemplates === 'boolean'
-        ? stored.useCustomTemplates
-        : DEFAULT_SETTINGS.useCustomTemplates,
-    templates: stored.templates
-      ? { ...DEFAULT_DISCORD_TEMPLATES, ...stored.templates }
-      : { ...DEFAULT_DISCORD_TEMPLATES },
+    enabled: stored.enabled ?? DEFAULT_SETTINGS.enabled,
+    showAnimeDetails: stored.showAnimeDetails ?? DEFAULT_SETTINGS.showAnimeDetails,
+    showElapsedTime: stored.showElapsedTime ?? DEFAULT_SETTINGS.showElapsedTime,
+    useCustomTemplates: stored.useCustomTemplates ?? DEFAULT_SETTINGS.useCustomTemplates,
+    templates,
   };
 }
 

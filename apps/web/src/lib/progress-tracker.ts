@@ -89,7 +89,5 @@ function commitBump(key: string, detection: AnimeDetection): void {
   logger.debug(`Advancing "${entry.title}" → episode ${next}`);
   useLibraryStore.getState().updateEntry({ id: entry.id, currentEpisode: next });
 
-  toast.success(
-    i18n.t('library:toast.progressTracked', { title: entry.title, episode: next })
-  );
+  toast.success(i18n.t('library:toast.progressTracked', { title: entry.title, episode: next }));
 }

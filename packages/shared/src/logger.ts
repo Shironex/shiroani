@@ -270,25 +270,26 @@ const REDACT_KEY_SET = new Set(LOG_REDACT_KEYS.map(k => k.toLowerCase()));
 // class on [^\\/] so the capture stops at either separator even when Node has
 // normalized one side to forward slashes. All three are anchored on the
 // literal prefix (C:\Users\, /Users/, /home/) to avoid matching arbitrary
-// substrings that happen to contain a username-shaped segment.
-const WIN_USER_PATH_RE = /([A-Za-z]:[\\/]Users[\\/])[^\\/]+([\\/])/gi;
-const MAC_USER_PATH_RE = /(\/Users\/)[^/]+(\/)/g;
-const LINUX_USER_PATH_RE = /(\/home\/)[^/]+(\/)/g;
+// substrings that happen to contain a username-shaped segment. The trailing
+// separator is a lookahead (separator, whitespace, or end-of-string) so a path
+// that ENDS at the username — e.g. `ENOENT: /Users/<name>` — is still scrubbed.
+const WIN_USER_PATH_RE = /([A-Za-z]:[\\/]Users[\\/])[^\\/\s]+(?=[\\/\s]|$)/gi;
+const MAC_USER_PATH_RE = /(\/Users\/)[^/\s]+(?=[/\s]|$)/g;
+const LINUX_USER_PATH_RE = /(\/home\/)[^/\s]+(?=[/\s]|$)/g;
 
-// Starts at the first '?' after a URL scheme and consumes until fragment or
-// end so query-string secrets (access_token, sig, etc.) never leak verbatim.
-const URL_QUERY_RE = /^(https?:\/\/[^?#\s]*)\?[^#]*(.*)$/i;
+// Matches every URL occurrence (not just a whole-string URL — composed
+// messages embed URLs mid-string) and consumes from the first '?' until
+// fragment, whitespace, or end so query-string secrets (access_token, sig,
+// etc.) never leak verbatim.
+const URL_QUERY_RE = /(https?:\/\/[^?#\s]*)\?[^#\s]*/gi;
 
 const redactionEnabled = true;
 
 function redactString(value: string): string {
-  let out = value.replace(WIN_USER_PATH_RE, '$1<USER>$2');
-  out = out.replace(MAC_USER_PATH_RE, '$1<USER>$2');
-  out = out.replace(LINUX_USER_PATH_RE, '$1<USER>$2');
-  const urlMatch = out.match(URL_QUERY_RE);
-  if (urlMatch) {
-    out = `${urlMatch[1]}?${LOG_REDACT_PLACEHOLDER}${urlMatch[2]}`;
-  }
+  let out = value.replace(WIN_USER_PATH_RE, '$1<USER>');
+  out = out.replace(MAC_USER_PATH_RE, '$1<USER>');
+  out = out.replace(LINUX_USER_PATH_RE, '$1<USER>');
+  out = out.replace(URL_QUERY_RE, `$1?${LOG_REDACT_PLACEHOLDER}`);
   return out;
 }
 
@@ -301,7 +302,13 @@ function redactWalk<T>(value: T, seen: WeakMap<object, unknown>): T {
   if (value === null || value === undefined) return value;
   if (typeof value === 'string') return redactString(value) as unknown as T;
   if (typeof value !== 'object') return value;
-  if (value instanceof Error) return value;
+  // Flatten Errors to their (redacted) stack/message string. Passing the Error
+  // through untouched fed `JSON.stringify(new Error())` → '{}' in the JSONL
+  // file transport (every logged error lost its message and stack), and the
+  // raw stack bypassed the home-dir/URL scrubbing contract entirely.
+  if (value instanceof Error) {
+    return redactString(value.stack ?? value.message) as unknown as T;
+  }
 
   const asObject = value as unknown as object;
   const cached = seen.get(asObject);

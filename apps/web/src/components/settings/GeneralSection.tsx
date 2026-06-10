@@ -34,12 +34,19 @@ export function GeneralSection() {
     Promise.all([
       window.electronAPI?.app?.getAutoLaunch(),
       window.electronAPI?.store?.get<boolean>(FEED_STARTUP_REFRESH_SETTING_KEY),
-    ]).then(([enabled, startupRefresh]) => {
-      if (!isMounted()) return;
-      setAutoLaunch(enabled ?? false);
-      setFeedRefreshOnStartup(startupRefresh ?? DEFAULT_FEED_STARTUP_REFRESH);
-      setLoaded(true);
-    });
+    ])
+      .then(([enabled, startupRefresh]) => {
+        if (!isMounted()) return;
+        setAutoLaunch(enabled ?? false);
+        setFeedRefreshOnStartup(startupRefresh ?? DEFAULT_FEED_STARTUP_REFRESH);
+      })
+      .catch(() => {
+        // Fall back to defaults — still mark loaded so the section renders
+        // instead of staying blank forever.
+      })
+      .finally(() => {
+        if (isMounted()) setLoaded(true);
+      });
   }, [isMounted]);
 
   const handleAutoLaunchChange = async (enabled: boolean) => {

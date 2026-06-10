@@ -266,7 +266,11 @@
       "daysValue_other": "{{value}} dnia",
       "barAria": "Udział dni oglądania wg statusu listy"
     },
-    "lighterNote": "MyAnimeList udostępnia lżejszy zestaw statystyk — nie ma tu podziału na gatunki ani aktorów głosowych jak w zakładce AniList."
+    "lighterNote": "MyAnimeList udostępnia lżejszy zestaw statystyk — nie ma tu podziału na gatunki ani aktorów głosowych jak w zakładce AniList.",
+    "notConnected": {
+      "title": "Brak połączenia z MyAnimeList",
+      "subtitle": "Sesja MAL wygasła lub konto zostało odłączone. Połącz konto ponownie w Ustawieniach."
+    }
   },
   "errors": {
     "userNotFound": "Nie znaleziono użytkownika na AniList",
