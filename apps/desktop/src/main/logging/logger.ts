@@ -285,6 +285,7 @@ async function doFlush(): Promise<void> {
   try {
     await rotateIfNeeded(logPath);
     await fs.promises.appendFile(logPath, entries.join(''));
+    handleLoggingSuccess();
   } catch (error) {
     // Re-queue entries on failure so they are not lost
     buffer.unshift(...entries);
@@ -328,6 +329,7 @@ export function flushLogsSync(): void {
 
   try {
     fs.appendFileSync(logPath, entries.join(''));
+    handleLoggingSuccess();
   } catch (error) {
     buffer.unshift(...entries);
     handleLoggingError(error);
@@ -338,7 +340,16 @@ export function flushLogsSync(): void {
 // Error handling
 // ============================================================================
 
+/**
+ * Consecutive flush failures before the file transport latches off for the
+ * session. A single transient ENOSPC/EPERM used to disable logging forever;
+ * the periodic flush timer now retries, and only a persistent failure latches.
+ */
+const MAX_CONSECUTIVE_LOG_FAILURES = 5;
+let consecutiveLogFailures = 0;
+
 function handleLoggingError(error: unknown): void {
+  consecutiveLogFailures++;
   if (!loggingErrorNotified) {
     loggingErrorNotified = true;
     if (onLoggingError) {
@@ -351,7 +362,22 @@ function handleLoggingError(error: unknown): void {
     // Also log to console once
     console.error('[Logger] File logging failed:', error);
   }
-  loggingFailed = true;
+  if (consecutiveLogFailures >= MAX_CONSECUTIVE_LOG_FAILURES) {
+    loggingFailed = true;
+    console.error(
+      `[Logger] File logging disabled after ${consecutiveLogFailures} consecutive failures`
+    );
+  }
+  // Cap the re-queued buffer while the disk is unwritable — drop the OLDEST
+  // entries so the eventual recovery flush carries the most recent context.
+  const cap = LOG_BUFFER_MAX_ENTRIES * 2;
+  if (buffer.length > cap) {
+    buffer.splice(0, buffer.length - cap);
+  }
+}
+
+function handleLoggingSuccess(): void {
+  consecutiveLogFailures = 0;
 }
 
 // ============================================================================
