@@ -8,10 +8,13 @@ import {
   RotateCw,
   AlertCircle,
   CheckCircle2,
+  UserX,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { AniListErrorState } from '@/components/shared/AniListErrorState';
+import { EmptyState } from '@/components/shared/EmptyState';
+import { useMalAuthStore } from '@/stores/useMalAuthStore';
 import { useMalProfileStore } from '@/stores/useMalProfileStore';
 import { useMalSyncStore } from '@/stores/useMalSyncStore';
 import { useNavigateToBrowser } from '@/hooks/useNavigateToBrowser';
@@ -67,10 +70,11 @@ function formatDays(days: number, locale: string): string {
  * counts instead.
  */
 export function MalStatsPanel() {
-  const { t, i18n } = useTranslation('profile');
+  const { t, i18n } = useTranslation(['profile', 'common']);
   const profile = useMalProfileStore(s => s.profile);
   const isLoading = useMalProfileStore(s => s.isLoading);
   const error = useMalProfileStore(s => s.error);
+  const notConnected = useMalProfileStore(s => s.notConnected);
   const fetchProfile = useMalProfileStore(s => s.fetchProfile);
   const navigateToBrowser = useNavigateToBrowser();
 
@@ -78,9 +82,33 @@ export function MalStatsPanel() {
     fetchProfile();
   }, [fetchProfile]);
 
+  // The fetch settled with no token main-side — the renderer's connected=true
+  // was stale. Re-resolve the auth status so the MAL tab vanishes and
+  // ProfileView falls back to the AniList tab on its own.
+  useEffect(() => {
+    if (notConnected) void useMalAuthStore.getState().fetchStatus();
+  }, [notConnected]);
+
   if (isLoading && !profile) return <ProfileSkeleton />;
   if (error && !profile) return <AniListErrorState error={error} onRetry={() => fetchProfile()} />;
-  if (!profile) return <ProfileSkeleton />;
+  if (!profile) {
+    // Settled not-connected: never park on a skeleton with no exit.
+    if (notConnected) {
+      return (
+        <EmptyState
+          icon={UserX}
+          title={t('malPanel.notConnected.title')}
+          subtitle={t('malPanel.notConnected.subtitle')}
+          action={{
+            label: t('common:actions.retry'),
+            icon: RefreshCw,
+            onClick: () => fetchProfile(),
+          }}
+        />
+      );
+    }
+    return <ProfileSkeleton />;
+  }
 
   const locale = i18n.language;
   const { viewer } = profile;
@@ -302,7 +330,7 @@ export function MalStatsPanel() {
  * would be a hazard since sync mutates the live MAL account.
  */
 function MalSyncStatusWidget() {
-  const { t, i18n } = useTranslation('profile');
+  const { t, i18n } = useTranslation(['profile', 'common']);
   const syncing = useMalSyncStore(s => s.syncing);
   const progress = useMalSyncStore(s => s.progress);
   const error = useMalSyncStore(s => s.error);

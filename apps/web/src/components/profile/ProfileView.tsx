@@ -10,6 +10,7 @@ import { AniListErrorState } from '@/components/shared/AniListErrorState';
 import { useProfileStore, startProfileRefresh, stopProfileRefresh } from '@/stores/useProfileStore';
 import { useAniListAuthStore } from '@/stores/useAniListAuthStore';
 import { useMalAuthStore } from '@/stores/useMalAuthStore';
+import { useMalProfileStore } from '@/stores/useMalProfileStore';
 import { useNavigateToBrowser } from '@/hooks/useNavigateToBrowser';
 import { ProfileSetup } from './ProfileSetup';
 import { ProfileSkeleton } from './ProfileSkeleton';
@@ -65,6 +66,10 @@ export function ProfileView() {
 
   const malConnected = useMalAuthStore(s => s.status.connected);
   const fetchMalStatus = useMalAuthStore(s => s.fetchStatus);
+
+  const malProfile = useMalProfileStore(s => s.profile);
+  const malLoading = useMalProfileStore(s => s.isLoading);
+  const fetchMalProfile = useMalProfileStore(s => s.fetchProfile);
 
   const navigateToBrowser = useNavigateToBrowser();
 
@@ -164,6 +169,20 @@ export function ProfileView() {
                 aria-label={t('view.actions.refreshAria')}
               >
                 <RefreshCw className={cn('w-3.5 h-3.5', isLoading && 'animate-spin')} />
+              </TooltipButton>
+            )}
+            {tab === 'mal' && malProfile && (
+              <TooltipButton
+                variant="ghost"
+                size="icon"
+                className="w-8 h-8"
+                onClick={() => fetchMalProfile()}
+                disabled={malLoading}
+                tooltip={t('view.actions.refresh')}
+                tooltipSide="bottom"
+                aria-label={t('view.actions.refreshAria')}
+              >
+                <RefreshCw className={cn('w-3.5 h-3.5', malLoading && 'animate-spin')} />
               </TooltipButton>
             )}
             {isAniListTab && canShare && (

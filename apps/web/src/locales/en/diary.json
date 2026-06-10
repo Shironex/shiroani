@@ -30,6 +30,10 @@
     "subtitle": "Save your impressions of episodes, reviews and notes",
     "action": "Write your first entry"
   },
+  "error": {
+    "title": "Couldn't load your diary",
+    "subtitle": "Your entries are safe — something went wrong while loading them. Try again."
+  },
   "card": {
     "pin": "Pin",
     "unpin": "Unpin",

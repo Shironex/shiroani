@@ -9,9 +9,12 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { createLogger } from '@shiroani/shared';
 import type { UserProfile } from '@shiroani/shared';
 import { renderProfileCard, renderProfileCardDataUrl } from './renderProfileCard';
 import { IS_ELECTRON } from '@/lib/platform';
+
+const logger = createLogger('ProfileShareDialog');
 
 interface ProfileShareDialogProps {
   open: boolean;
@@ -78,7 +81,8 @@ export function ProfileShareDialog({ open, onOpenChange, profile }: ProfileShare
 
       setCopyState('done');
       setTimeout(() => setCopyState('idle'), 2000);
-    } catch {
+    } catch (err) {
+      logger.warn('Share-card clipboard copy failed', err);
       setError(t('share.errors.clipboard'));
       setCopyState('idle');
     }
@@ -113,7 +117,8 @@ export function ProfileShareDialog({ open, onOpenChange, profile }: ProfileShare
 
       setSaveState('done');
       setTimeout(() => setSaveState('idle'), 2000);
-    } catch {
+    } catch (err) {
+      logger.warn('Share-card PNG save failed', err);
       setError(t('share.errors.save'));
       setSaveState('idle');
     }

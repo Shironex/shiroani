@@ -36,6 +36,10 @@
     "title": "Your library is empty",
     "subtitle": "Open the browser to add your first anime"
   },
+  "error": {
+    "title": "Couldn't load your library",
+    "subtitle": "Your collection is safe — something went wrong while loading it. Try again."
+  },
   "stats": {
     "total": "Total",
     "episodes": "Episodes",

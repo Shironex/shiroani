@@ -1,5 +1,14 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { NotebookPen, Plus, SearchX, Download, Upload, ArrowUpDown } from 'lucide-react';
+import {
+  CloudOff,
+  NotebookPen,
+  Plus,
+  RefreshCw,
+  SearchX,
+  Download,
+  Upload,
+  ArrowUpDown,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { TooltipButton } from '@/components/ui/tooltip-button';
@@ -20,6 +29,7 @@ import { useTranslation } from 'react-i18next';
 import { tDynamic } from '@/lib/i18n';
 import { useDiaryStore, getFilteredDiaryEntries } from '@/stores/useDiaryStore';
 import { DiaryEntryGrid } from './DiaryEntryGrid';
+import { DiarySkeleton } from './DiarySkeleton';
 import { DiaryTimeline } from './DiaryTimeline';
 import { DiarySidebar } from './DiarySidebar';
 import { DiaryEditor } from './DiaryEditor';
@@ -70,7 +80,7 @@ const {
  * is preserved exactly as before the redesign.
  */
 export function DiaryView() {
-  const { t, i18n } = useTranslation('diary');
+  const { t, i18n } = useTranslation(['diary', 'common']);
   const entries = useDiaryStore(s => s.entries);
   const activeFilter = useDiaryStore(s => s.activeFilter);
   const searchQuery = useDiaryStore(s => s.searchQuery);
@@ -79,6 +89,8 @@ export function DiaryView() {
   const sortOrder = useDiaryStore(s => s.sortOrder);
   const isEditorOpen = useDiaryStore(s => s.isEditorOpen);
   const selectedEntry = useDiaryStore(s => s.selectedEntry);
+  const isLoading = useDiaryStore(s => s.isLoading);
+  const error = useDiaryStore(s => s.error);
 
   const [entryToRemove, setEntryToRemove] = useState<DiaryEntry | null>(null);
   const [isExportOpen, setIsExportOpen] = useState(false);
@@ -223,7 +235,22 @@ export function DiaryView() {
           {/* Main column — independent scroll */}
           <div className="overflow-y-auto overflow-x-hidden">
             <div className="min-w-0 px-7 pt-6 pb-24">
-              {isEmpty ? (
+              {isLoading && entries.length === 0 ? (
+                <DiarySkeleton />
+              ) : error && entries.length === 0 ? (
+                // A failed initial fetch must NOT render the "create your
+                // first entry" CTA — the entries aren't gone, the fetch failed.
+                <EmptyState
+                  icon={CloudOff}
+                  title={t('error.title')}
+                  subtitle={t('error.subtitle')}
+                  action={{
+                    label: t('common:actions.retry'),
+                    icon: RefreshCw,
+                    onClick: () => fetchEntries(),
+                  }}
+                />
+              ) : isEmpty ? (
                 searchQuery ? (
                   <div className="flex flex-col items-center justify-center gap-4 py-24 text-muted-foreground">
                     <div className="w-14 h-14 rounded-2xl bg-muted/40 flex items-center justify-center border border-border-glass">

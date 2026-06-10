@@ -34,7 +34,7 @@ interface WeekGridSkeletonProps {
 
 function WeekGridSkeleton({ counts, listClassName, renderCard }: WeekGridSkeletonProps) {
   return (
-    <div className="flex-1 overflow-x-auto overflow-y-hidden">
+    <div aria-busy="true" className="flex-1 overflow-x-auto overflow-y-hidden">
       <div className="grid h-full min-w-[1100px] grid-cols-7 divide-x divide-border-glass">
         {DAY_KEYS.map((dayKey, colIdx) => (
           <div key={dayKey} className="flex flex-col min-h-0">
@@ -66,7 +66,7 @@ function WeekGridSkeleton({ counts, listClassName, renderCard }: WeekGridSkeleto
  */
 export function DailyViewSkeleton() {
   return (
-    <div className="flex-1 overflow-y-auto">
+    <div aria-busy="true" className="flex-1 overflow-y-auto">
       <div className="relative grid pb-24" style={{ gridTemplateColumns: '64px 1fr' }}>
         <div className="relative pr-2 pl-7 pt-3 space-y-9">
           {Array.from({ length: 6 }).map((_, i) => (
