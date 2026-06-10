@@ -160,7 +160,9 @@
 .mock-bg {
   position: absolute;
   inset: 0;
-  background-image: url('../../assets/library_view.webp');
+  /* 480w variant — this layer is blurred to 18px, so the full-size
+     screenshot (244 KB) is indistinguishable from this 29 KB one. */
+  background-image: url('../../assets/library_view_blur.webp');
   background-size: cover;
   background-position: center;
   filter: blur(18px) saturate(1.1);

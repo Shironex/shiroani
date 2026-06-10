@@ -1,5 +1,6 @@
 ---
 import '../styles/global.css';
+import { Font } from 'astro:assets';
 import { translations, type SupportedLanguage } from '../lib/i18n';
 
 interface Props {
@@ -35,7 +36,10 @@ const resolvedDescription =
 const resolvedOgTitle = dict[ogTitleKey] ?? resolvedTitle;
 
 const ogImage = new URL(ogImageProp ?? '/og-default.png', Astro.site);
-const logoUrl = new URL('/og-default.png', Astro.site).href;
+// Organization.logo wants a square mark; the 1200×630 OG banner is reused for
+// the OG/SoftwareApplication `image` fields instead.
+const logoUrl = new URL('/logo-512.png', Astro.site).href;
+const ogImageUrl = ogImage.href;
 
 // Structured data (JSON-LD). Organization + SoftwareApplication + WebSite as a
 // single @graph, emitted on every page. Absolute URLs are required by schema.org.
@@ -51,10 +55,10 @@ const jsonLd = {
       logo: {
         '@type': 'ImageObject',
         url: logoUrl,
-        width: 1200,
-        height: 630,
+        width: 512,
+        height: 512,
       },
-      sameAs: ['https://github.com/Shironex/shiroani', 'https://discord.gg/M3ujRdUJpn'],
+      sameAs: ['https://github.com/Shironex/shiroani'],
     },
     {
       '@type': 'SoftwareApplication',
@@ -69,7 +73,7 @@ const jsonLd = {
         price: '0',
         priceCurrency: 'USD',
       },
-      image: logoUrl,
+      image: ogImageUrl,
       creator: {
         '@type': 'Organization',
         '@id': 'https://shiroani.app/#organization',
@@ -100,7 +104,11 @@ const canonicalUrl = lang === 'en' ? enUrl : plUrl;
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <meta name="color-scheme" content="dark" />
+<!-- theme-color is the hex of the `--bg` token (oklch(0.12 0.018 300)). -->
+<meta name="theme-color" content="#07050b" />
 <link rel="icon" type="image/png" href="/favicon.png" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+<link rel="manifest" href="/manifest.webmanifest" />
 <link rel="sitemap" href="/sitemap-index.xml" />
 {noindex && <meta name="robots" content="noindex" />}
 
@@ -109,21 +117,19 @@ const canonicalUrl = lang === 'en' ? enUrl : plUrl;
 <link rel="alternate" hreflang="en" href={enUrl} />
 <link rel="alternate" hreflang="x-default" href={plUrl} />
 
-<!-- Fonts -->
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link
-  rel="stylesheet"
-  href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&family=Shippori+Mincho:wght@500;700;800&display=swap"
-  media="print"
-  onload="this.media='all'"
-/>
-<noscript>
-  <link
-    rel="stylesheet"
-    href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&family=Shippori+Mincho:wght@500;700;800&display=swap"
-  />
-</noscript>
+{/*
+  Self-hosted fonts (Astro Fonts API), served from /_astro/fonts with subsetting
+  preserved per astro.config.mjs. Deliberately NO `preload` prop here: the
+  provider mislabels the JP unicode-range chunks as subset "latin", so any
+  subset/weight preload filter floods the head with 100+ CJK chunk preloads.
+  Instead the `font-preload-fix` integration in astro.config.mjs injects
+  precise preload links per page (latin faces of the above-the-fold fonts) by
+  parsing the inlined @font-face CSS after the build.
+*/}
+<Font cssVariable="--font-display" />
+<Font cssVariable="--font-body" />
+<Font cssVariable="--font-mono" />
+<Font cssVariable="--font-mincho" />
 
 <title data-i18n-text={titleKey}>{resolvedTitle}</title>
 <meta name="description" content={resolvedDescription} data-i18n-content={descriptionKey} />

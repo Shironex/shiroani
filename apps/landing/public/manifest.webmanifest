@@ -1,0 +1,21 @@
+{
+  "name": "ShiroAni",
+  "short_name": "ShiroAni",
+  "description": "Desktop browser and anime tracker: ad-free browser, library, airing schedule and diary.",
+  "theme_color": "#07050b",
+  "background_color": "#07050b",
+  "display": "browser",
+  "icons": [
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    },
+    {
+      "src": "/logo-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

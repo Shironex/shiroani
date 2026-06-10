@@ -1,9 +1,8 @@
-:root {
-  --font-display: 'Zen Kaku Gothic New', system-ui, sans-serif;
-  --font-mincho: 'Shippori Mincho', serif;
-  --font-body: 'DM Sans', system-ui, sans-serif;
-  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
-}
+/* --font-display / --font-mincho / --font-body / --font-mono are emitted by
+   the Astro Fonts API <Font> components in BaseHead.astro (self-hosted, subset
+   at build time, with optimized fallback metrics). Defining them here too would
+   shadow those metric-tuned stacks, so the source of truth lives in
+   astro.config.mjs `experimental.fonts`. */
 
 * {
   box-sizing: border-box;

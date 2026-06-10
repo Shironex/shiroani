@@ -16,10 +16,20 @@ type TabKey = 'library' | 'schedule' | 'newtab' | 'settings';
 
 const ANA: Record<
   TabKey,
-  { src: string; titleKey: string; labelKey: string; viewLabelKey: string; pins: Pin[] }
+  {
+    src: string;
+    width: number;
+    height: number;
+    titleKey: string;
+    labelKey: string;
+    viewLabelKey: string;
+    pins: Pin[];
+  }
 > = {
   library: {
     src: libraryView.src,
+    width: libraryView.width,
+    height: libraryView.height,
     titleKey: 'anatomy.title.library',
     labelKey: 'anatomy.tab.library',
     viewLabelKey: 'anatomy.viewLabel.library',
@@ -42,6 +52,8 @@ const ANA: Record<
   },
   schedule: {
     src: scheduleView.src,
+    width: scheduleView.width,
+    height: scheduleView.height,
     titleKey: 'anatomy.title.schedule',
     labelKey: 'anatomy.tab.schedule',
     viewLabelKey: 'anatomy.viewLabel.schedule',
@@ -68,6 +80,8 @@ const ANA: Record<
   },
   newtab: {
     src: onboarding.src,
+    width: onboarding.width,
+    height: onboarding.height,
     titleKey: 'anatomy.title.newtab',
     labelKey: 'anatomy.tab.newtab',
     viewLabelKey: 'anatomy.viewLabel.newtab',
@@ -79,6 +93,8 @@ const ANA: Record<
   },
   settings: {
     src: screenshotSettings.src,
+    width: screenshotSettings.width,
+    height: screenshotSettings.height,
     titleKey: 'anatomy.title.settings',
     labelKey: 'anatomy.tab.settings',
     viewLabelKey: 'anatomy.viewLabel.settings',
@@ -113,13 +129,35 @@ const ANA: Record<
 
 const TAB_ORDER: TabKey[] = ['library', 'schedule', 'newtab', 'settings'];
 
-export function Anatomy({ lang }: { lang?: SupportedLanguage } = {}) {
+/**
+ * Responsive image descriptor produced by `getImage()` in the host .astro
+ * frontmatter (index.astro / en/index.astro). React can't run astro:assets'
+ * <Image>, so the Astro page resolves the srcset/sizes at build time and hands
+ * them down per view. When omitted (e.g. unit tests), the component falls back
+ * to the bundled `.src` so it still renders a valid <img>.
+ */
+export type AnatomyShot = { src: string; srcSet?: string; width: number; height: number };
+export type AnatomyShots = Partial<Record<TabKey, AnatomyShot>>;
+
+type AnatomyProps = { lang?: SupportedLanguage; shots?: AnatomyShots };
+
+export function Anatomy({ lang, shots }: AnatomyProps = {}) {
   const t = useT(lang);
   const [tab, setTab] = useState<TabKey>('library');
   const [pin, setPin] = useState(0);
 
   const data = ANA[tab];
   const active = data.pins[pin];
+  // Prefer the build-time responsive descriptor; fall back to the bundled
+  // single-resolution asset. `shots` is identical on the SSR pass and after
+  // hydration (it's a serialized prop), so the rendered <img> attributes match
+  // — preserving the SSR-vs-hydration consistency the import-sharing comment
+  // above guards against.
+  const shot = shots?.[tab];
+  const imgSrc = shot?.src ?? data.src;
+  const imgSrcSet = shot?.srcSet;
+  const imgWidth = shot?.width ?? data.width;
+  const imgHeight = shot?.height ?? data.height;
 
   const handleTab = (next: TabKey) => {
     setTab(next);
@@ -164,14 +202,22 @@ export function Anatomy({ lang }: { lang?: SupportedLanguage } = {}) {
           aria-labelledby={`ana-tab-${tab}`}
         >
           <div className="ana-screen">
-            <img src={data.src} alt={t(data.labelKey)} decoding="async" />
+            <img
+              src={imgSrc}
+              srcSet={imgSrcSet}
+              sizes="(max-width: 1100px) 92vw, (max-width: 1440px) 70vw, 950px"
+              width={imgWidth}
+              height={imgHeight}
+              alt={t(data.labelKey)}
+              decoding="async"
+            />
             {data.pins.map((p, i) => (
               <button
                 key={i}
                 className={`ana-pin${i === pin ? ' active' : ''}`}
                 style={{ left: `${p.x}%`, top: `${p.y}%` }}
                 onClick={() => setPin(i)}
-                aria-label={t(p.titleKey)}
+                aria-label={`${i + 1} · ${t(p.titleKey)}`}
                 aria-describedby={i === pin ? 'ana-note' : undefined}
                 aria-pressed={i === pin}
               >

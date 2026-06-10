@@ -11,8 +11,8 @@ const tt = (key: string) => t(key, lang);
 
 const mp4En = '/demo/shiroani-demo.en.mp4';
 const mp4Pl = '/demo/shiroani-demo.pl.mp4';
-const posterEn = '/demo/shiroani-demo.en.jpg';
-const posterPl = '/demo/shiroani-demo.pl.jpg';
+const posterEn = '/demo/shiroani-demo.en.avif';
+const posterPl = '/demo/shiroani-demo.pl.avif';
 
 const mp4 = lang === 'en' ? mp4En : mp4Pl;
 const poster = lang === 'en' ? posterEn : posterPl;
@@ -89,16 +89,18 @@ const poster = lang === 'en' ? posterEn : posterPl;
     font-size: 0.78rem;
     letter-spacing: 0.32em;
     text-transform: uppercase;
-    color: var(--color-brand);
+    /* Gold eyebrow label — matches the chapter section eyebrows. */
+    color: var(--gold);
     padding: 6px 12px;
     border-radius: 999px;
     background: oklch(1 0 0 / 0.04);
-    border: 1px solid oklch(0.74 0.15 355 / 0.25);
+    border: 1px solid oklch(from var(--gold) l c h / 0.25);
   }
 
   .demo-title {
     font-family: var(--font-display);
-    font-size: clamp(2rem, 4vw, 3rem);
+    /* Routed through the shared display scale (matches the FAQ section h2). */
+    font-size: var(--fs-display-md);
     font-weight: 700;
     margin: 0;
     color: var(--color-foreground);

@@ -18,6 +18,11 @@ interface Props {
 const { lang = 'pl' } = Astro.props;
 const tt = (key: string) => t(key, lang);
 
+// Single source of truth — same metadata that drives the theme swatch strip.
+const themeCount = BUILT_IN_THEME_METADATA.length;
+const darkThemeCount = BUILT_IN_THEME_METADATA.filter((m) => m.isDark).length;
+const lightThemeCount = BUILT_IN_THEME_METADATA.filter((m) => !m.isDark).length;
+
 type Feature = {
   cls: string;
   noKey: string;
@@ -141,10 +146,9 @@ const features: Feature[] = [
     noKey: 'features.07.no',
     noFallback: '№ 07 · THEMES',
     titleKey: 'features.07.title',
-    titleFallback: '17 motywów plus edytor własnych.',
+    titleFallback: `${themeCount} motywów plus edytor własnych.`,
     descKey: 'features.07.desc',
-    descFallback:
-      '15 ciemnych, 2 jasne, większość inspirowana anime. Wizualny edytor palety, czcionek i tła.',
+    descFallback: `${darkThemeCount} ciemnych, ${lightThemeCount} jasne, większość inspirowana anime. Wizualny edytor palety, czcionek i tła.`,
     themes: BUILT_IN_THEME_METADATA,
   },
   {
@@ -190,6 +194,8 @@ const features: Feature[] = [
               decoding="async"
               width={f.w}
               height={f.h}
+              widths={[480, 800, 1400]}
+              sizes="(max-width: 1100px) 92vw, (max-width: 1440px) 50vw, 720px"
             />
           </div>
         )}

@@ -7,6 +7,7 @@ import Demo from '../components/Demo.astro';
 import Chapter from '../components/Chapter.astro';
 import Features from '../components/Features.astro';
 import { Anatomy } from '../components/Anatomy';
+import { anatomyShots } from '../lib/anatomyShots';
 import Mascot from '../components/Mascot.astro';
 import Suite from '../components/Suite.astro';
 import Download from '../components/Download.astro';
@@ -14,6 +15,7 @@ import FAQ from '../components/FAQ.astro';
 import { Footer } from '../components/Footer';
 
 const lang = 'pl';
+const shots = await anatomyShots();
 ---
 
 <BaseLayout
@@ -58,7 +60,7 @@ const lang = 'pl';
       titleSuffixKey="chapter.02.titleSuffix"
       metaKey="chapter.02.meta"
     />
-    <Anatomy client:visible lang={lang} />
+    <Anatomy client:visible lang={lang} shots={shots} />
 
     <Chapter
       id="maskotka"
