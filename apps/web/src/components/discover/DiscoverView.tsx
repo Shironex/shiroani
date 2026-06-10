@@ -400,7 +400,7 @@ export function DiscoverView() {
                     key={media.id}
                     media={media}
                     inLibrary={libraryIds.has(media.id)}
-                    onClick={() => handleCardClick(media)}
+                    onClick={handleCardClick}
                     onAddToLibrary={handleAddToLibrary}
                   />
                 ))}

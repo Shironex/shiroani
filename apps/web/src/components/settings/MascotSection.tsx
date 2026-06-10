@@ -57,14 +57,19 @@ export function MascotSection() {
       api.getVisibilityMode(),
       api.isPositionLocked(),
       api.isAnimationEnabled(),
-    ]).then(([en, sz, mode, locked, anim]) => {
-      setEnabled(en);
-      setSize(sz);
-      setVisibilityMode(mode);
-      setPositionLocked(locked);
-      setAnimationEnabled(anim);
-      setLoaded(true);
-    });
+    ])
+      .then(([en, sz, mode, locked, anim]) => {
+        setEnabled(en);
+        setSize(sz);
+        setVisibilityMode(mode);
+        setPositionLocked(locked);
+        setAnimationEnabled(anim);
+      })
+      .catch(() => {
+        // Fall back to defaults — still mark loaded so the section renders
+        // instead of staying blank forever.
+      })
+      .finally(() => setLoaded(true));
   }, []);
 
   useEffect(() => {

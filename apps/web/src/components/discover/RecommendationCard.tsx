@@ -65,7 +65,7 @@ export const RecommendationCard = memo(function RecommendationCard({
       <DiscoverCard
         media={media}
         inLibrary={inLibrary}
-        onClick={onClick ? () => onClick(media) : undefined}
+        onClick={onClick}
         onAddToLibrary={onAddToLibrary}
       />
 

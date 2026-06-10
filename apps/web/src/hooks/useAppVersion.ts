@@ -14,9 +14,14 @@ export function useAppVersion<T extends string | null>(initial: T): string | T {
   const isMounted = useMountedRef();
 
   useEffect(() => {
-    window.electronAPI?.app?.getVersion().then(v => {
-      if (isMounted() && v) setVersion(v);
-    });
+    window.electronAPI?.app?.getVersion().then(
+      v => {
+        if (isMounted() && v) setVersion(v);
+      },
+      () => {
+        // IPC failure is benign — the version simply stays at `initial`.
+      }
+    );
   }, [isMounted]);
 
   return version;

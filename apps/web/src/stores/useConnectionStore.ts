@@ -61,6 +61,9 @@ export const useConnectionStore = create<ConnectionStore>()(
           clearTimeout(failureTimeoutHandle);
           failureTimeoutHandle = null;
         }
+        // Idempotent: socket.io can re-emit connect events; skip the log spam
+        // and subscriber notification when nothing changed.
+        if (get().status === 'connected') return;
         logger.info('Connection established');
         set({ status: 'connected', disconnectedAt: null }, undefined, 'connection/setConnected');
       },

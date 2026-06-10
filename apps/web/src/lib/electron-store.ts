@@ -3,6 +3,10 @@
  * Provides debounced persistence and typed get/set wrappers.
  */
 
+import { createLogger } from '@shiroani/shared';
+
+const logger = createLogger('ElectronStore');
+
 /**
  * Creates a debounced persist function scoped to a specific electron-store key.
  * Each call resets the timer; the actual write fires after `delayMs` of inactivity.
@@ -13,7 +17,11 @@ export function createDebouncedPersist(key: string, delayMs: number = 500) {
     if (timer) clearTimeout(timer);
     timer = setTimeout(() => {
       timer = null;
-      window.electronAPI?.store?.set(key, data);
+      window.electronAPI?.store?.set(key, data)?.catch((err: Error) => {
+        // A key missing from ALLOWED_STORE_KEYS rejects main-side — without
+        // this log the write is silently dropped and state vanishes on restart.
+        logger.error(`Persist failed for '${key}':`, err.message);
+      });
     }, delayMs);
   };
 }
