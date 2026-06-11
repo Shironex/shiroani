@@ -117,6 +117,13 @@ function fontPreloadFix() {
 
 export default defineConfig({
   site: 'https://shiroani.app',
+  // Canonicalize to no-trailing-slash URLs. Internal links (Navbar/Footer) and
+  // the URLs Google already discovered are all slash-less, so this aligns
+  // canonical + sitemap + links to one form. `build.format: 'file'` is required
+  // for `trailingSlash: 'never'` — it emits `changelog.html` instead of
+  // `changelog/index.html`. The host (serve.json) 301s the slash variant.
+  trailingSlash: 'never',
+  build: { format: 'file' },
   integrations: [
     fontPreloadFix(),
     react(),

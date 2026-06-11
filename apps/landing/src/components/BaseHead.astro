@@ -93,9 +93,14 @@ const jsonLd = {
 // link plus reciprocal hreflang alternates. The route convention is `/foo` for
 // PL (the default locale) and `/en/foo` for EN; strip/prepend the `/en` segment
 // to derive the counterpart. `x-default` points at the PL page.
-const path = Astro.url.pathname;
-const plPath = path === '/en' || path === '/en/' ? '/' : path.replace(/^\/en(?=\/)/, '');
-const enPath = plPath === '/' ? '/en/' : `/en${plPath}`;
+// `build.format: 'file'` yields pathnames like `/changelog.html` and
+// `/index.html`; normalize to a clean, slash-less path so canonical + hreflang
+// match the sitemap and the no-trailing-slash URLs the host serves.
+let path =
+  Astro.url.pathname.replace(/\.html$/, '').replace(/\/index$/, '').replace(/\/$/, '') || '/';
+const isEnHome = path === '/en';
+const plPath = isEnHome ? '/' : path.replace(/^\/en(?=\/)/, '') || '/';
+const enPath = plPath === '/' ? '/en' : `/en${plPath}`;
 const plUrl = new URL(plPath, Astro.site);
 const enUrl = new URL(enPath, Astro.site);
 const canonicalUrl = lang === 'en' ? enUrl : plUrl;
