@@ -1,0 +1,59 @@
+{
+  "frameSize": 256,
+  "animations": {
+    "walk": {
+      "file": "walk.png",
+      "frames": 12,
+      "fps": 14,
+      "loop": true
+    },
+    "climb": {
+      "file": "climb.png",
+      "frames": 6,
+      "fps": 8,
+      "loop": true
+    },
+    "sit": {
+      "file": "sit.png",
+      "frames": 2,
+      "fps": 1,
+      "loop": true
+    },
+    "sleep": {
+      "file": "sleep.png",
+      "frames": 4,
+      "fps": 2,
+      "loop": true
+    },
+    "think": {
+      "file": "think.png",
+      "frames": 2,
+      "fps": 2,
+      "loop": true
+    },
+    "wave": {
+      "file": "wave.png",
+      "frames": 4,
+      "fps": 8,
+      "loop": true
+    },
+    "fall": {
+      "file": "fall.png",
+      "frames": 4,
+      "fps": 12,
+      "loop": true
+    },
+    "dragged": {
+      "file": "dragged.png",
+      "frames": 4,
+      "fps": 6,
+      "loop": true
+    },
+    "land": {
+      "file": "land.png",
+      "frames": 3,
+      "fps": 8,
+      "loop": false
+    }
+  }
+}

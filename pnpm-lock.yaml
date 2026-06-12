@@ -290,6 +290,9 @@ importers:
       jest:
         specifier: ^30.3.0
         version: 30.4.2(@types/node@25.9.1)
+      sharp:
+        specifier: ^0.33.5
+        version: 0.33.5
       ts-jest:
         specifier: ^29.4.11
         version: 29.4.11(@babel/core@7.29.0)(@jest/transform@30.4.1)(@jest/types@30.4.1)(babel-jest@30.4.1(@babel/core@7.29.0))(esbuild@0.28.0)(jest-util@30.4.1)(jest@30.4.2(@types/node@25.9.1))(typescript@5.9.3)
