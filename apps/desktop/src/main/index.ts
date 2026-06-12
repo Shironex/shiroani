@@ -397,7 +397,8 @@ async function bootstrap(): Promise<void> {
     logger.warn('Failed to create context menu window:', error);
   }
 
-  // Create the mascot overlay (Windows only, non-blocking)
+  // Create the mascot overlay (native static overlay on Windows,
+  // Shimeji roam engine on macOS / opt-in on Windows; non-blocking)
   try {
     createMascotOverlay();
   } catch (error) {

@@ -25,6 +25,14 @@ function isValidSpriteFile(filePath: string): boolean {
 
 type MascotVisibilityMode = 'always' | 'tray-only';
 
+/**
+ * Which overlay backend renders the mascot.
+ *  - 'static': the native Win32 GDI+ overlay (bobbing sprite, Windows only)
+ *  - 'roam':   the cross-platform Shimeji engine (walks, climbs, reacts)
+ * macOS has no native backend, so 'roam' is the only mode there.
+ */
+export type MascotMode = 'static' | 'roam';
+
 /** Sprite scale mode persisted alongside the custom sprite filename. */
 export type MascotSpriteScaleMode = 'contain' | 'cover' | 'stretch';
 
@@ -38,6 +46,24 @@ export const MASCOT_SPRITES_DIR_NAME = 'mascot-sprites';
 
 export const MASCOT_FRAME_COUNT = 8;
 export const MASCOT_ANIM_INTERVAL = 100;
+
+/**
+ * Get the persisted mascot mode. Defaults keep behavior stable per platform:
+ * Windows users keep the native static overlay they've always had (roam is
+ * opt-in); macOS only has the roam backend.
+ */
+export function getMascotMode(): MascotMode {
+  if (process.platform === 'darwin') return 'roam';
+  const mode = store.get('settings.mascotMode');
+  return mode === 'roam' ? 'roam' : 'static';
+}
+
+/**
+ * Persist the mascot mode (the caller re-creates the overlay to apply it).
+ */
+export function setMascotModeStored(mode: MascotMode): void {
+  store.set('settings.mascotMode', mode);
+}
 
 /**
  * Check if the mascot overlay is enabled in settings.

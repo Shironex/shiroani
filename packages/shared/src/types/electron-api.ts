@@ -222,6 +222,14 @@ export interface ElectronAPI {
     /** Read the persisted "is the bob animation enabled" toggle. */
     isAnimationEnabled: () => Promise<boolean>;
     /**
+     * Switch the overlay backend: 'static' (native bobbing sprite, Windows
+     * only) or 'roam' (Shimeji engine — walks the taskbar, climbs windows).
+     * macOS is always 'roam'. Applies live.
+     */
+    setMode: (mode: string) => Promise<{ success: boolean; mode?: string; error?: string }>;
+    /** Read the active mascot mode. */
+    getMode: () => Promise<'static' | 'roam'>;
+    /**
      * Open a native dialog to pick a custom mascot sprite. Returns the
      * persisted filename and `shiroani-mascot://` URL on success, or `null`
      * when the user cancels. Validation, copy, and live overlay update all

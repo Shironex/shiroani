@@ -15,6 +15,8 @@ import {
   resetMascotPosition,
   isMascotAnimationEnabled,
   setMascotAnimationEnabled,
+  getMascotMode,
+  applyMascotMode,
 } from '../mascot/overlay';
 import { z } from 'zod';
 import { handleWithFallback } from './with-ipc-handler';
@@ -34,6 +36,8 @@ import {
   overlaySetPositionLockedSchema,
   overlaySetAnimationEnabledSchema,
   overlayGetAnimationEnabledSchema,
+  overlayGetModeSchema,
+  overlaySetModeSchema,
 } from './schemas';
 
 /**
@@ -226,6 +230,26 @@ export function registerOverlayHandlers(): void {
     { schema: overlayGetAnimationEnabledSchema }
   );
 
+  handleWithFallback<[unknown], ModeEnvelope>(
+    'overlay:set-mode',
+    (_event, mode) => {
+      if (mode !== 'static' && mode !== 'roam') {
+        return { success: false, error: 'Invalid mascot mode' };
+      }
+      applyMascotMode(mode);
+      return { success: true, mode };
+    },
+    err => ({ success: false, error: String(err) }),
+    { schema: overlaySetModeSchema }
+  );
+
+  handleWithFallback(
+    'overlay:get-mode',
+    () => getMascotMode(),
+    () => 'static' as const,
+    { schema: overlayGetModeSchema }
+  );
+
   handleWithFallback<[], EnvelopeBase>(
     'overlay:reset-position',
     () => {
@@ -257,4 +281,6 @@ export function cleanupOverlayHandlers(): void {
   ipcMain.removeHandler('overlay:reset-position');
   ipcMain.removeHandler('overlay:set-animation-enabled');
   ipcMain.removeHandler('overlay:get-animation-enabled');
+  ipcMain.removeHandler('overlay:set-mode');
+  ipcMain.removeHandler('overlay:get-mode');
 }

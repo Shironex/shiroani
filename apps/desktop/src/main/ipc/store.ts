@@ -50,6 +50,7 @@ const ALLOWED_STORE_KEYS = new Set([
   'settings.mascotPositionLocked',
   'settings.mascotPosition',
   'settings.mascotAnimationEnabled',
+  'settings.mascotMode',
   // Discord RPC settings
   'discord-rpc-settings',
   // Browser tab persistence (renderer saves/loads tabs directly)

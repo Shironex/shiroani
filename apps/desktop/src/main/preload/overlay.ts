@@ -25,6 +25,8 @@ export const overlayApi: ElectronAPI['overlay'] = {
   setAnimationEnabled: (enabled: boolean) =>
     ipcRenderer.invoke('overlay:set-animation-enabled', enabled),
   isAnimationEnabled: () => ipcRenderer.invoke('overlay:get-animation-enabled') as Promise<boolean>,
+  setMode: (mode: string) => ipcRenderer.invoke('overlay:set-mode', mode),
+  getMode: () => ipcRenderer.invoke('overlay:get-mode') as Promise<'static' | 'roam'>,
   pickSprite: () =>
     ipcRenderer.invoke('overlay:pick-sprite') as Promise<{
       fileName: string;

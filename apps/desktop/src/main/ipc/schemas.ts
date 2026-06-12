@@ -242,6 +242,13 @@ export const overlaySetVisibilityModeSchema = z.tuple([z.enum(['always', 'tray-o
 export const overlaySetPositionLockedSchema = z.tuple([z.boolean()]);
 export const overlaySetAnimationEnabledSchema = z.tuple([z.boolean()]);
 export const overlayGetAnimationEnabledSchema = z.tuple([]);
+export const overlayGetModeSchema = z.tuple([]);
+/**
+ * Permissive on the IPC boundary; the handler validates the literal value so
+ * invalid modes return the `{ success: false }` envelope instead of a thrown
+ * BAD_REQUEST. Mirrors {@link overlaySetVisibilityModeSchema}'s pattern.
+ */
+export const overlaySetModeSchema = z.tuple([z.unknown()]);
 
 // ============================================================================
 // Discord RPC channels
