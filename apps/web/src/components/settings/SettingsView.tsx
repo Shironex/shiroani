@@ -22,7 +22,7 @@ import {
 import type { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { tDynamic } from '@/lib/i18n';
-import { IS_WINDOWS, IS_ELECTRON } from '@/lib/platform';
+import { IS_WINDOWS, IS_MAC_ELECTRON, IS_ELECTRON } from '@/lib/platform';
 import { KanjiWatermark } from '@/components/shared/KanjiWatermark';
 import { ViewHeader } from '@/components/shared/ViewHeader';
 import { ThemesSection } from '@/components/settings/ThemesSection';
@@ -241,7 +241,7 @@ export function SettingsView() {
   const sections = useMemo(
     () =>
       ALL_SECTIONS.filter(s => {
-        if (s.id === 'mascot') return IS_WINDOWS;
+        if (s.id === 'mascot') return IS_WINDOWS || IS_MAC_ELECTRON;
         if (s.id === 'general') return IS_ELECTRON;
         return true;
       }),

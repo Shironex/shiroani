@@ -444,6 +444,15 @@
       "subtitle": "Animated chibi mascot on your desktop with a system tray icon.",
       "enableAria": "Enable mascot"
     },
+    "mode": {
+      "title": "Mascot mode",
+      "description": "Static mascot or one that roams the desktop (experimental)",
+      "options": {
+        "static": "Static (classic)",
+        "roam": "Roaming — walks, climbs, reacts"
+      },
+      "roamInfo": "The mascot strolls along your taskbar, climbs window edges and reacts to clicks. Grab and drop her to move her around."
+    },
     "size": "Mascot size",
     "sizeAria": "Mascot size",
     "sprite": {

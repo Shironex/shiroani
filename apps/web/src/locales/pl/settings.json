@@ -444,6 +444,15 @@
       "subtitle": "Animowana maskotka chibi na pulpicie z ikonką w zasobniku systemowym.",
       "enableAria": "Włącz maskotkę"
     },
+    "mode": {
+      "title": "Tryb maskotki",
+      "description": "Statyczna maskotka albo wędrująca po pulpicie (eksperymentalne)",
+      "options": {
+        "static": "Statyczna (klasyczna)",
+        "roam": "Wędrująca — chodzi, wspina się, reaguje"
+      },
+      "roamInfo": "Maskotka spaceruje po pasku zadań, wspina się po krawędziach okien i reaguje na kliknięcia. Złap ją i upuść, żeby ją przenieść."
+    },
     "size": "Rozmiar maskotki",
     "sizeAria": "Rozmiar maskotki",
     "sprite": {

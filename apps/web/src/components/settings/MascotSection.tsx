@@ -14,6 +14,7 @@ import {
 } from '@/components/settings/SettingsCard';
 import { MascotPreview } from '@/components/settings/MascotPreview';
 import { useMascotSpriteStore } from '@/stores/useMascotSpriteStore';
+import { IS_MAC_ELECTRON } from '@/lib/platform';
 
 const MASCOT_MIN_SIZE = 48;
 const MASCOT_MAX_SIZE = 256;
@@ -25,6 +26,10 @@ export function MascotSection() {
   const [visibilityMode, setVisibilityMode] = useState('always');
   const [positionLocked, setPositionLocked] = useState(false);
   const [animationEnabled, setAnimationEnabled] = useState(true);
+  // macOS only has the roam backend, so the stored mode is irrelevant there.
+  const [mascotMode, setMascotMode] = useState<'static' | 'roam'>(
+    IS_MAC_ELECTRON ? 'roam' : 'static'
+  );
   const [loaded, setLoaded] = useState(false);
   const [picking, setPicking] = useState(false);
   const [pickError, setPickError] = useState<string | null>(null);
@@ -40,6 +45,13 @@ export function MascotSection() {
     { value: 'always', label: t('mascot.visibility.options.always') },
     { value: 'tray-only', label: t('mascot.visibility.options.trayOnly') },
   ];
+
+  const modeOptions = [
+    { value: 'static', label: t('mascot.mode.options.static') },
+    { value: 'roam', label: t('mascot.mode.options.roam') },
+  ];
+
+  const isRoaming = IS_MAC_ELECTRON || mascotMode === 'roam';
 
   const scaleModeOptions: ReadonlyArray<{ value: MascotSpriteScaleMode; label: string }> = [
     { value: 'contain', label: t('mascot.scaleMode.options.contain') },
@@ -57,13 +69,15 @@ export function MascotSection() {
       api.getVisibilityMode(),
       api.isPositionLocked(),
       api.isAnimationEnabled(),
+      api.getMode(),
     ])
-      .then(([en, sz, mode, locked, anim]) => {
+      .then(([en, sz, mode, locked, anim, mascotModeValue]) => {
         setEnabled(en);
         setSize(sz);
         setVisibilityMode(mode);
         setPositionLocked(locked);
         setAnimationEnabled(anim);
+        setMascotMode(mascotModeValue);
       })
       .catch(() => {
         // Fall back to defaults — still mark loaded so the section renders
@@ -92,6 +106,12 @@ export function MascotSection() {
     debounceRef.current = setTimeout(() => {
       window.electronAPI?.overlay?.setSize(newSize);
     }, 150);
+  };
+
+  const handleMascotModeChange = async (mode: string) => {
+    if (mode !== 'static' && mode !== 'roam') return;
+    setMascotMode(mode);
+    await window.electronAPI?.overlay?.setMode(mode);
   };
 
   const handleVisibilityModeChange = async (mode: string) => {
@@ -189,37 +209,57 @@ export function MascotSection() {
               </div>
             </div>
 
-            <SettingsRow divider>
-              <SettingsRowLabel
-                title={t('mascot.sprite.title')}
-                description={t('mascot.sprite.description')}
+            {!IS_MAC_ELECTRON && (
+              <SettingsSelectRow
+                divider
+                title={t('mascot.mode.title')}
+                description={t('mascot.mode.description')}
+                value={mascotMode}
+                onValueChange={handleMascotModeChange}
+                options={modeOptions}
+                triggerClassName="w-64"
               />
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-8 text-xs border-border-glass"
-                  onClick={handlePickSprite}
-                  disabled={picking}
-                >
-                  <ImageIcon className="w-3.5 h-3.5" />
-                  {customSpriteUrl ? t('mascot.sprite.change') : t('mascot.sprite.pick')}
-                </Button>
-                {customSpriteUrl && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-8 text-xs border border-border-glass"
-                    onClick={handleRemoveSprite}
-                  >
-                    <RotateCcw className="w-3.5 h-3.5" />
-                    {t('mascot.sprite.reset')}
-                  </Button>
-                )}
-              </div>
-            </SettingsRow>
+            )}
 
-            {pickError && (
+            {isRoaming && (
+              <p className="text-[11.5px] text-muted-foreground tracking-[0.01em]">
+                {t('mascot.mode.roamInfo')}
+              </p>
+            )}
+
+            {!isRoaming && (
+              <SettingsRow divider>
+                <SettingsRowLabel
+                  title={t('mascot.sprite.title')}
+                  description={t('mascot.sprite.description')}
+                />
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-8 text-xs border-border-glass"
+                    onClick={handlePickSprite}
+                    disabled={picking}
+                  >
+                    <ImageIcon className="w-3.5 h-3.5" />
+                    {customSpriteUrl ? t('mascot.sprite.change') : t('mascot.sprite.pick')}
+                  </Button>
+                  {customSpriteUrl && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 text-xs border border-border-glass"
+                      onClick={handleRemoveSprite}
+                    >
+                      <RotateCcw className="w-3.5 h-3.5" />
+                      {t('mascot.sprite.reset')}
+                    </Button>
+                  )}
+                </div>
+              </SettingsRow>
+            )}
+
+            {!isRoaming && pickError && (
               <p
                 role="alert"
                 className="text-[11.5px] text-destructive/90 font-medium tracking-[0.01em]"
@@ -228,7 +268,7 @@ export function MascotSection() {
               </p>
             )}
 
-            {customSpriteUrl && (
+            {!isRoaming && customSpriteUrl && (
               <SettingsSelectRow
                 divider
                 title={t('mascot.scaleMode.title')}
@@ -259,14 +299,16 @@ export function MascotSection() {
               onCheckedChange={handleLockToggle}
             />
 
-            <SettingsToggleRow
-              divider
-              id="mascot-animation-label"
-              title={t('mascot.animation.title')}
-              description={t('mascot.animation.description')}
-              checked={animationEnabled}
-              onCheckedChange={handleAnimationToggle}
-            />
+            {!isRoaming && (
+              <SettingsToggleRow
+                divider
+                id="mascot-animation-label"
+                title={t('mascot.animation.title')}
+                description={t('mascot.animation.description')}
+                checked={animationEnabled}
+                onCheckedChange={handleAnimationToggle}
+              />
+            )}
 
             <SettingsRow divider>
               <SettingsRowLabel

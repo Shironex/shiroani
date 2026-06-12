@@ -6,6 +6,9 @@ const platform = IS_ELECTRON ? window.electronAPI?.platform : undefined;
 /** Whether the app is running on Windows inside Electron */
 export const IS_WINDOWS = IS_ELECTRON && platform === 'win32';
 
+/** Whether the app is running on macOS inside Electron */
+export const IS_MAC_ELECTRON = IS_ELECTRON && platform === 'darwin';
+
 /** Whether the app is running on macOS */
 export const IS_MAC =
   platform === 'darwin' ||
