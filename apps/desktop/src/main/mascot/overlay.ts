@@ -40,6 +40,7 @@ import {
   setShimejiPosition,
   getShimejiPosition,
   setShimejiSize,
+  setShimejiStaticMode,
   saveShimejiPosition,
   hasShimejiOverlay,
 } from './shimeji/shimeji-window';
@@ -98,13 +99,19 @@ export { getMascotMode };
 export type { MascotMode };
 
 /**
- * Persist a new mascot mode and live-swap the overlay backend.
- * No-op on macOS, where roam is the only backend.
+ * Persist a new mascot mode and apply it live. On Windows this swaps the
+ * overlay backend (native GDI+ vs shimeji); on macOS the shimeji overlay is
+ * the only backend, so 'static' just idles the behavior engine in place.
  */
 export function applyMascotMode(mode: MascotMode): void {
   setMascotModeStored(mode);
-  if (process.platform !== 'win32') return;
   if (!isMascotEnabled()) return;
+
+  if (process.platform === 'darwin') {
+    setShimejiStaticMode(mode === 'static');
+    return;
+  }
+  if (process.platform !== 'win32') return;
 
   const desired = resolveBackend();
   if (desired === activeBackend) return;

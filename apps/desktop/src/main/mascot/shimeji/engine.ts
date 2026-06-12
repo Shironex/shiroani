@@ -84,6 +84,7 @@ export class ShimejiEngine {
 
   private timer: ReturnType<typeof setInterval> | null = null;
   private paused = false;
+  private staticMode = false;
 
   constructor(size: number, callbacks: EngineCallbacks) {
     this.size = size;
@@ -128,15 +129,32 @@ export class ShimejiEngine {
     if (paused && this.state !== 'sit') this.enter('sit');
   }
 
+  /**
+   * Static mode: the classic pet behavior. She sits where you put her —
+   * no wandering, no gravity — but stays draggable and waves on click.
+   * This is what 'static' means on macOS, where the Win32 native overlay
+   * doesn't exist and this engine is the only backend.
+   */
+  setStaticMode(staticMode: boolean): void {
+    this.staticMode = staticMode;
+    if (staticMode) {
+      if (this.state !== 'sit') this.enter('sit');
+    } else if (this.state === 'sit') {
+      // Re-entering roam: settle onto whatever is below the current spot.
+      this.enter('fall');
+    }
+  }
+
   /** Place the mascot somewhere explicitly (settings "reset position"). It
-   * falls from there and settles on whatever is below. */
+   * falls from there and settles on whatever is below — or simply stays
+   * there in static mode. */
   teleport(x: number, y: number): void {
     this.x = x;
     this.y = y;
     this.vx = 0;
     this.vy = 0;
     this.emitMove();
-    this.enter('fall');
+    this.enter(this.staticMode ? 'sit' : 'fall');
   }
 
   // ── Interaction (from the renderer) ──────────────────────────────────────
@@ -153,10 +171,11 @@ export class ShimejiEngine {
     this.enter('dragged');
   }
 
-  /** User released the sprite: fall, keeping throw momentum. */
+  /** User released the sprite: fall with throw momentum — or, in static
+   * mode, stay exactly where dropped (classic overlay behavior). */
   endDrag(): void {
     if (this.state !== 'dragged') return;
-    this.enter('fall');
+    this.enter(this.staticMode ? 'sit' : 'fall');
   }
 
   /** Plain click (no drag): wave back. */
@@ -199,7 +218,9 @@ export class ShimejiEngine {
       case 'sit':
       case 'sleep':
       case 'think':
-        this.tickGroundedIdle(now);
+        // Static mode: no behavior rotation, no floor-snap — she stays
+        // exactly where the user put her.
+        if (!this.staticMode) this.tickGroundedIdle(now);
         break;
       case 'wave':
         if (this.stateElapsed >= WAVE_DURATION_S) this.enter('sit');

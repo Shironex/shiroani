@@ -26,7 +26,7 @@ export function MascotSection() {
   const [visibilityMode, setVisibilityMode] = useState('always');
   const [positionLocked, setPositionLocked] = useState(false);
   const [animationEnabled, setAnimationEnabled] = useState(true);
-  // macOS only has the roam backend, so the stored mode is irrelevant there.
+  // Default mirrors the main process: roam on macOS, static on Windows.
   const [mascotMode, setMascotMode] = useState<'static' | 'roam'>(
     IS_MAC_ELECTRON ? 'roam' : 'static'
   );
@@ -51,7 +51,7 @@ export function MascotSection() {
     { value: 'roam', label: t('mascot.mode.options.roam') },
   ];
 
-  const isRoaming = IS_MAC_ELECTRON || mascotMode === 'roam';
+  const isRoaming = mascotMode === 'roam';
 
   const scaleModeOptions: ReadonlyArray<{ value: MascotSpriteScaleMode; label: string }> = [
     { value: 'contain', label: t('mascot.scaleMode.options.contain') },
@@ -209,17 +209,15 @@ export function MascotSection() {
               </div>
             </div>
 
-            {!IS_MAC_ELECTRON && (
-              <SettingsSelectRow
-                divider
-                title={t('mascot.mode.title')}
-                description={t('mascot.mode.description')}
-                value={mascotMode}
-                onValueChange={handleMascotModeChange}
-                options={modeOptions}
-                triggerClassName="w-64"
-              />
-            )}
+            <SettingsSelectRow
+              divider
+              title={t('mascot.mode.title')}
+              description={t('mascot.mode.description')}
+              value={mascotMode}
+              onValueChange={handleMascotModeChange}
+              options={modeOptions}
+              triggerClassName="w-64"
+            />
 
             {isRoaming && (
               <p className="text-[11.5px] text-muted-foreground tracking-[0.01em]">
@@ -227,7 +225,7 @@ export function MascotSection() {
               </p>
             )}
 
-            {!isRoaming && (
+            {!isRoaming && !IS_MAC_ELECTRON && (
               <SettingsRow divider>
                 <SettingsRowLabel
                   title={t('mascot.sprite.title')}
@@ -259,7 +257,7 @@ export function MascotSection() {
               </SettingsRow>
             )}
 
-            {!isRoaming && pickError && (
+            {!isRoaming && !IS_MAC_ELECTRON && pickError && (
               <p
                 role="alert"
                 className="text-[11.5px] text-destructive/90 font-medium tracking-[0.01em]"
@@ -268,7 +266,7 @@ export function MascotSection() {
               </p>
             )}
 
-            {!isRoaming && customSpriteUrl && (
+            {!isRoaming && !IS_MAC_ELECTRON && customSpriteUrl && (
               <SettingsSelectRow
                 divider
                 title={t('mascot.scaleMode.title')}
@@ -299,7 +297,7 @@ export function MascotSection() {
               onCheckedChange={handleLockToggle}
             />
 
-            {!isRoaming && (
+            {!isRoaming && !IS_MAC_ELECTRON && (
               <SettingsToggleRow
                 divider
                 id="mascot-animation-label"

@@ -6,7 +6,7 @@ import { logger } from '../../logging/logger';
 import { showContextMenu, setMenuSelectHandler, type MenuState } from '../context-menu';
 import { handleOverlayAction } from '../mascot-actions';
 import { isMascotPositionLocked, registerPositionCallbacks } from '../mascot-position';
-import { getMascotSize, getSavedPosition, savePosition } from '../overlay-state';
+import { getMascotMode, getMascotSize, getSavedPosition, savePosition } from '../overlay-state';
 import { ShimejiEngine } from './engine';
 import type { ShimejiManifest } from './types';
 
@@ -196,6 +196,12 @@ export function createShimejiOverlay(mainWindow: BrowserWindow | null): boolean 
 
       const saved = getSavedPosition();
       engine?.start(saved?.x, saved?.y);
+      // On macOS 'static' runs through this same overlay with the behavior
+      // engine idled (the native static backend is Win32-only). On Windows
+      // this window only exists in roam mode, so the check is a no-op.
+      if (process.platform === 'darwin' && getMascotMode() === 'static') {
+        engine?.setStaticMode(true);
+      }
       if (isMascotPositionLocked()) engine?.setPaused(true);
     })
     .catch(error => {
@@ -259,6 +265,11 @@ export function getShimejiPosition(): { x: number; y: number } {
 
 export function setShimejiPosition(x: number, y: number): void {
   engine?.teleport(x, y);
+}
+
+/** Toggle static mode (sit-in-place, classic pet) on the live engine. */
+export function setShimejiStaticMode(staticMode: boolean): void {
+  engine?.setStaticMode(staticMode);
 }
 
 export function setShimejiSize(size: number): void {

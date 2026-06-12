@@ -50,12 +50,13 @@ export const MASCOT_ANIM_INTERVAL = 100;
 /**
  * Get the persisted mascot mode. Defaults keep behavior stable per platform:
  * Windows users keep the native static overlay they've always had (roam is
- * opt-in); macOS only has the roam backend.
+ * opt-in); macOS defaults to roam (its "static" is the same Shimeji overlay
+ * with the behavior engine idled — the native backend is Win32-only).
  */
 export function getMascotMode(): MascotMode {
-  if (process.platform === 'darwin') return 'roam';
   const mode = store.get('settings.mascotMode');
-  return mode === 'roam' ? 'roam' : 'static';
+  if (mode === 'roam' || mode === 'static') return mode;
+  return process.platform === 'darwin' ? 'roam' : 'static';
 }
 
 /**
