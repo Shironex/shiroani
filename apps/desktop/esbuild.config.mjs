@@ -31,7 +31,12 @@ const external = [
 ];
 
 await build({
-  entryPoints: ['src/main/index.ts', 'src/main/preload.ts', 'src/main/menu-preload.ts'],
+  entryPoints: [
+    'src/main/index.ts',
+    'src/main/preload.ts',
+    'src/main/menu-preload.ts',
+    'src/main/mascot/shimeji-preload.ts',
+  ],
   bundle: true,
   platform: 'node',
   target: 'node22',

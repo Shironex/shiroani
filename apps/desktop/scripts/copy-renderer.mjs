@@ -33,7 +33,7 @@ cpSync(webDist, rendererDist, { recursive: true });
 console.log('Renderer files copied to:', rendererDist);
 
 // Copy standalone renderer files (context menu, etc.)
-const standaloneFiles = ['context-menu.html'];
+const standaloneFiles = ['context-menu.html', 'shimeji-overlay.html'];
 const srcRenderer = resolve(__dirname, '../src/renderer');
 
 for (const file of standaloneFiles) {

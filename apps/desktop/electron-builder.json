@@ -10,10 +10,6 @@
   "asarUnpack": ["**/node_modules/better-sqlite3/**", "**/build/Release/*.node"],
   "extraResources": [
     {
-      "from": "build/Release/desktop_overlay.node",
-      "to": "native/desktop_overlay.node"
-    },
-    {
       "from": "resources/mascot",
       "to": "mascot"
     },
@@ -41,11 +37,27 @@
   "mac": {
     "category": "public.app-category.entertainment",
     "icon": "resources/icon.png",
-    "target": ["dmg"]
+    "target": ["dmg"],
+    "extraResources": [
+      {
+        "from": "build/Release/window_sensor.node",
+        "to": "native/window_sensor.node"
+      }
+    ]
   },
   "win": {
     "icon": "resources/icon.ico",
-    "target": ["nsis"]
+    "target": ["nsis"],
+    "extraResources": [
+      {
+        "from": "build/Release/desktop_overlay.node",
+        "to": "native/desktop_overlay.node"
+      },
+      {
+        "from": "build/Release/window_sensor.node",
+        "to": "native/window_sensor.node"
+      }
+    ]
   },
   "nsis": {
     "oneClick": false,

@@ -1,14 +1,15 @@
 /**
- * Build the native addon (desktop_overlay) only on Windows.
- * On other platforms the overlay uses an Electron BrowserWindow instead,
- * so there is nothing to compile.
+ * Build the native addons:
+ *  - Windows: desktop_overlay (GDI+ static mascot) + window_sensor (climbing)
+ *  - macOS:   window_sensor (climbing; the overlay itself is a BrowserWindow)
+ *  - Linux:   nothing to compile
  */
 
 import { execSync } from 'child_process';
 import process from 'process';
 
-if (process.platform !== 'win32') {
-  console.log('Skipping native addon build (not Windows — macOS overlay uses BrowserWindow)');
+if (process.platform !== 'win32' && process.platform !== 'darwin') {
+  console.log('Skipping native addon build (no native targets on this platform)');
   process.exit(0);
 }
 

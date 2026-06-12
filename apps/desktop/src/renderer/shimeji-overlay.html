@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' file: data:;"
+    />
+    <title>Mascot</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        background: transparent;
+        overflow: hidden;
+        user-select: none;
+        width: 100%;
+        height: 100%;
+      }
+      #stage {
+        width: 100%;
+        height: 100%;
+        display: block;
+        image-rendering: auto;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="stage"></canvas>
+    <script>
+      // Shimeji overlay sprite player.
+      // The engine (main process) owns position + behavior and only tells us
+      // which animation to play and which way to face. We own frame timing,
+      // pixel hit-testing (for click-through), and mouse gestures.
+      const bridge = window.shimeji;
+      const stage = document.getElementById('stage');
+      const ctx = stage.getContext('2d');
+
+      let manifest = null;
+      let frameSize = 256;
+      const sheets = new Map(); // anim name -> HTMLImageElement
+
+      let currentAnim = 'sit';
+      let facing = 'left';
+      let frameIndex = 0;
+      let lastFrameAt = 0;
+
+      // Offscreen copy of the current frame for alpha hit-testing.
+      const hitCanvas = document.createElement('canvas');
+      const hitCtx = hitCanvas.getContext('2d', { willReadFrequently: true });
+
+      let needsRedraw = true;
+
+      function resizeStage() {
+        const dpr = window.devicePixelRatio || 1;
+        stage.width = Math.round(window.innerWidth * dpr);
+        stage.height = Math.round(window.innerHeight * dpr);
+        needsRedraw = true;
+      }
+      window.addEventListener('resize', resizeStage);
+      resizeStage();
+
+      bridge.onConfig(config => {
+        manifest = config.manifest;
+        frameSize = manifest.frameSize;
+        hitCanvas.width = frameSize;
+        hitCanvas.height = frameSize;
+        for (const [name, anim] of Object.entries(manifest.animations)) {
+          const img = new Image();
+          img.src = config.spriteDirUrl + '/' + anim.file;
+          sheets.set(name, img);
+        }
+      });
+
+      bridge.onAnim(msg => {
+        if (msg.anim !== currentAnim) {
+          currentAnim = msg.anim;
+          frameIndex = 0;
+          // Stamp now so frame 0 holds for a full frame duration (matters for
+          // non-looping anims like the landing squash).
+          lastFrameAt = performance.now();
+          needsRedraw = true;
+        }
+        if (msg.facing !== facing) needsRedraw = true;
+        facing = msg.facing;
+      });
+
+      function draw(now) {
+        requestAnimationFrame(draw);
+        if (!manifest) return;
+        const anim = manifest.animations[currentAnim];
+        const sheet = sheets.get(currentAnim);
+        if (!anim || !sheet || !sheet.complete || sheet.naturalWidth === 0) return;
+
+        const frameDuration = 1000 / anim.fps;
+        if (now - lastFrameAt >= frameDuration) {
+          lastFrameAt = now;
+          const prev = frameIndex;
+          if (anim.loop) {
+            frameIndex = (frameIndex + 1) % anim.frames;
+          } else if (frameIndex < anim.frames - 1) {
+            frameIndex += 1;
+          }
+          if (frameIndex !== prev) needsRedraw = true;
+        }
+
+        // A sitting mascot at 1 fps shouldn't repaint at 60 fps.
+        if (!needsRedraw) return;
+        needsRedraw = false;
+
+        ctx.clearRect(0, 0, stage.width, stage.height);
+        ctx.save();
+        // Art is authored facing LEFT; mirror for right.
+        if (facing === 'right') {
+          ctx.translate(stage.width, 0);
+          ctx.scale(-1, 1);
+        }
+        ctx.drawImage(
+          sheet,
+          frameIndex * frameSize,
+          0,
+          frameSize,
+          frameSize,
+          0,
+          0,
+          stage.width,
+          stage.height
+        );
+        ctx.restore();
+
+        // Keep the hit-test copy in sync (cheap: 1 drawImage per repaint).
+        hitCtx.clearRect(0, 0, frameSize, frameSize);
+        hitCtx.save();
+        if (facing === 'right') {
+          hitCtx.translate(frameSize, 0);
+          hitCtx.scale(-1, 1);
+        }
+        hitCtx.drawImage(
+          sheet,
+          frameIndex * frameSize,
+          0,
+          frameSize,
+          frameSize,
+          0,
+          0,
+          frameSize,
+          frameSize
+        );
+        hitCtx.restore();
+      }
+      requestAnimationFrame(draw);
+
+      // ── Click-through management ─────────────────────────────────────────
+      // The window starts in ignore-with-forward mode, so we keep receiving
+      // mousemove. Over an opaque sprite pixel we become interactive; over
+      // transparent pixels clicks fall through to whatever is below.
+      let interactive = false;
+      let dragging = false;
+
+      function isOpaqueAt(clientX, clientY) {
+        if (!manifest) return false;
+        const fx = Math.floor((clientX / window.innerWidth) * frameSize);
+        const fy = Math.floor((clientY / window.innerHeight) * frameSize);
+        if (fx < 0 || fy < 0 || fx >= frameSize || fy >= frameSize) return false;
+        try {
+          return hitCtx.getImageData(fx, fy, 1, 1).data[3] > 24;
+        } catch {
+          return false;
+        }
+      }
+
+      function setInteractive(on) {
+        if (interactive === on) return;
+        interactive = on;
+        bridge.setIgnoreMouse(!on);
+      }
+
+      window.addEventListener('mousemove', event => {
+        if (dragging) return;
+        setInteractive(isOpaqueAt(event.clientX, event.clientY));
+      });
+
+      window.addEventListener('mouseleave', () => {
+        if (!dragging) setInteractive(false);
+      });
+
+      // ── Drag vs click gesture ────────────────────────────────────────────
+      const DRAG_THRESHOLD_PX = 5;
+      let pressX = 0;
+      let pressY = 0;
+      let pressed = false;
+
+      window.addEventListener('mousedown', event => {
+        if (event.button !== 0 || !interactive) return;
+        pressed = true;
+        pressX = event.screenX;
+        pressY = event.screenY;
+      });
+
+      window.addEventListener('mousemove', event => {
+        if (!pressed || dragging) return;
+        const moved = Math.hypot(event.screenX - pressX, event.screenY - pressY);
+        if (moved >= DRAG_THRESHOLD_PX) {
+          dragging = true;
+          bridge.dragStart();
+        }
+      });
+
+      window.addEventListener('mouseup', event => {
+        if (event.button !== 0 || !pressed) return;
+        pressed = false;
+        if (dragging) {
+          dragging = false;
+          bridge.dragEnd();
+          setInteractive(isOpaqueAt(event.clientX, event.clientY));
+        } else {
+          bridge.click();
+        }
+      });
+
+      window.addEventListener('contextmenu', event => {
+        event.preventDefault();
+        if (interactive) bridge.contextMenu(event.screenX, event.screenY);
+      });
+    </script>
+  </body>
+</html>
