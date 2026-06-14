@@ -3,7 +3,7 @@
  *
  * IMPORTANT — this interface has ZERO consumers today. It is a deliberate
  * forward-declaration of the seam both providers will eventually implement; the
- * shipped AniList sync (merged via #147) is NOT refactored onto it. Expect to
+ * shipped AniList sync is NOT refactored onto it. Expect to
  * revise these signatures when the MAL adapter is actually built (P5) and the
  * real call sites apply pressure — treat this as a sketch, not a frozen contract.
  *

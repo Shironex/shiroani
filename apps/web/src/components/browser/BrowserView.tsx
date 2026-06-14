@@ -413,9 +413,9 @@ export function BrowserView() {
         el.style.position = 'absolute';
         el.style.display = 'none';
         el.style.pointerEvents = 'auto';
-        // Pane focus is normally driven by onMouseDownCapture on the leaf
-        // wrapper, but the wrapper no longer contains the webview — wire it
-        // up directly on the floating container instead.
+        // Pane focus is driven by onMouseDownCapture, but the floating
+        // container — not the leaf wrapper — holds the webview, so wire the
+        // focus handler directly on the container here.
         el.addEventListener('mousedown', () => handlePaneClick(paneId), true);
         paneContainersRef.current.set(paneId, el);
       }
@@ -430,7 +430,7 @@ export function BrowserView() {
     [handlePaneClick]
   );
 
-  // Drop containers for panes that no longer exist anywhere in the tree.
+  // Drop containers for panes that are gone from the tree.
   useEffect(() => {
     const live = new Set(liveLeaves.map(l => l.id));
     for (const [paneId, el] of paneContainersRef.current) {

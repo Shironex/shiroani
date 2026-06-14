@@ -26,10 +26,10 @@ export const MAX_EPISODES = 9999;
 // Status — color/style config + i18n helpers
 // ============================================
 //
-// Labels are no longer baked into the map — they live in the `status`
-// namespace and are read at call time so they react to language changes.
-// Components should use `useTranslation('status')` and `t(STATUS_LABEL_KEY[s])`,
-// or call `getStatusLabel(s)` from non-component code (e.g. random-utils).
+// Labels live in the `status` i18n namespace and are read at call time so they
+// react to language changes. Components should use `useTranslation('status')`
+// and `t(STATUS_LABEL_KEY[s])`, or call `getStatusLabel(s)` from non-component
+// code (e.g. random-utils).
 
 export const STATUS_CONFIG: Record<
   AnimeStatus,

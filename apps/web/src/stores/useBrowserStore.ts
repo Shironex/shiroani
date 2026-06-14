@@ -500,7 +500,7 @@ export const useBrowserStore = create<BrowserStore>()(
         const previous = get().splitTabsEnabled;
         set({ splitTabsEnabled: enabled }, undefined, 'browser/setSplitTabsEnabled');
         // When the feature is disabled, flatten any open splits into adjacent
-        // tabs so the user is not left with a UI they can no longer manage.
+        // tabs so the user is not stranded with a split UI they cannot manage.
         // Build the flat list deterministically via collectLeaves rather than
         // looping unsplitTab — unsplitTab is focus-biased and single-pass, so
         // it can leave nested splits intact or evict leaves in reversed order.

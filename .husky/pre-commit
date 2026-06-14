@@ -1,1 +1,4 @@
+# Build the internal ESLint plugin before lint-staged so `eslint --fix` sees an
+# up-to-date dist (lint-staged bypasses the workspace build, so it never fires).
+pnpm --filter @shiroani/eslint-plugin-repo build
 pnpm exec lint-staged
