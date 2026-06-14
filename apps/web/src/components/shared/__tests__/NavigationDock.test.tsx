@@ -162,7 +162,7 @@ describe('NavigationDock', () => {
 
   it('collapsed-mode logo is a button that calls setExpanded', async () => {
     const setExpanded = vi.fn();
-    useDockStore.setState({ autoHide: true, isExpanded: false, setExpanded } as any);
+    useDockStore.setState({ autoHide: true, isExpanded: false, setExpanded });
     const { user } = render(<NavigationDock hasBg={false} />);
 
     const logoButton = screen.getByRole('button', { name: 'Expand navigation' });

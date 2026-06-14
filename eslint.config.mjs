@@ -24,6 +24,10 @@ export default defineConfig(
         ecmaFeatures: { jsx: true },
       },
     },
+    linterOptions: {
+      // error-or-off policy: a stale suppression is a lint failure, not a warning.
+      reportUnusedDisableDirectives: 'error',
+    },
     rules: {
       '@typescript-eslint/no-unused-vars': [
         'error',
@@ -31,7 +35,7 @@ export default defineConfig(
       ],
       '@typescript-eslint/explicit-function-return-type': 'off',
       '@typescript-eslint/explicit-module-boundary-types': 'off',
-      '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/no-explicit-any': 'error',
       '@typescript-eslint/no-empty-object-type': 'off',
       '@typescript-eslint/no-require-imports': 'off',
     },

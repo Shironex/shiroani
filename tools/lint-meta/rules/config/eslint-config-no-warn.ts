@@ -38,6 +38,13 @@ function severityToNumber(value: unknown): number {
 function findPackageConfigDirs(root: string): string[] {
   const dirs: string[] = [];
 
+  // Single-root flat config (ShiroAni): one repo-level eslint.config.* governs
+  // every workspace, so probe it directly. Per-package configs (below) are also
+  // collected for repos that use them.
+  if (CONFIG_BASENAMES.some(name => existsSync(join(root, name)))) {
+    dirs.push(root);
+  }
+
   for (const group of WORKSPACE_GROUPS) {
     const groupDir = join(root, group);
     let entries: string[];
@@ -62,7 +69,7 @@ function findPackageConfigDirs(root: string): string[] {
 }
 
 async function checkPackage(pkgDir: string, root: string): Promise<IViolation[]> {
-  const rel = relative(root, pkgDir);
+  const rel = relative(root, pkgDir) || '(repo root)';
   // A fresh instance per package so ESLint discovers that package's own
   // eslint.config.* (flat config is single-rooted; it does not look downward).
   const eslint = new ESLint({ cwd: pkgDir, errorOnUnmatchedPattern: false });

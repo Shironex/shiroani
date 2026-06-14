@@ -16,6 +16,21 @@ function isGenerated(file: string): boolean {
   );
 }
 
+/*
+ * Test and mock files legitimately use inline eslint-disable to stub partial
+ * mocks or exercise edge cases the rules forbid in production. The ban on inline
+ * disables applies to shipped source; tests/mocks are exempt.
+ */
+function isTestOrMock(file: string): boolean {
+  return (
+    /\.(test|spec)\.tsx?$/u.test(file) ||
+    file.includes('/__tests__/') ||
+    file.includes('/__mocks__/') ||
+    file.includes('/test/') ||
+    file.includes('/tests/')
+  );
+}
+
 const INLINE_DISABLE = /\beslint-disable(?:-next-line|-line)?\b/u;
 const TS_SUPPRESSION = /@ts-(?:ignore|expect-error)\b/u;
 
@@ -43,10 +58,10 @@ function scan(
 export const noInlineLintDisableRule: IMetaRule = {
   id: 'no-inline-lint-disable',
   category: 'source-text',
-  description: 'Source files must not contain inline eslint-disable directives.',
+  description: 'Production source files must not contain inline eslint-disable directives.',
   run({ sourceFiles }: IMetaContext): IViolation[] {
     return scan(
-      sourceFiles,
+      sourceFiles.filter(file => !isTestOrMock(file)),
       INLINE_DISABLE,
       'no-inline-lint-disable',
       'Inline eslint-disable is not allowed. Fix the rule violation, or add a scoped override to eslint config (a generated-file path is exempt).'

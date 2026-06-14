@@ -7,7 +7,7 @@ function AllProviders({ children }: { children: React.ReactNode }) {
   return <TooltipProvider delayDuration={0}>{children}</TooltipProvider>;
 }
 
-function customRender(ui: ReactElement<any>, options?: Omit<RenderOptions, 'wrapper'>) {
+function customRender(ui: ReactElement, options?: Omit<RenderOptions, 'wrapper'>) {
   return {
     user: userEvent.setup(),
     ...render(ui, { wrapper: AllProviders, ...options }),

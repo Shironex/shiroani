@@ -1,25 +1,17 @@
 import { eslintConfigNoWarnRule } from './rules/config/eslint-config-no-warn';
-import { envCascadeDriftRule } from './rules/config/env-cascade-drift';
-import { eslintOverridePathsExistRule } from './rules/config/eslint-override-paths-exist';
-import { githubActionsPermissionsRule } from './rules/ci/github-actions-permissions';
-import { githubActionsTimeoutRequiredRule } from './rules/ci/github-actions-timeout-required';
-import { launchPathParityRule } from './rules/ci/launch-path-parity';
-import { prePushCiParityRule } from './rules/ci/pre-push-ci-parity';
 import { noInlineLintDisableRule, noTsIgnoreRule } from './rules/source-text/forbidden-text';
-import { routesRequireTestSiblingRule } from './rules/testing/routes-require-test-sibling';
 import { skippedTestsNeedTrackingRule } from './rules/testing/skipped-tests-need-tracking';
 import type { IMetaRule } from './types';
 
+/*
+ * ShiroAni-applicable meta rules. The template also ships nestjs-trpc route,
+ * tenancy env-cascade, CI launch-path/pre-push-parity, and GitHub-Actions rules
+ * — those are deferred or template-specific and intentionally not wired here
+ * (the rule files remain under rules/ for later adoption).
+ */
 export const META_RULES: readonly IMetaRule[] = [
   eslintConfigNoWarnRule,
-  eslintOverridePathsExistRule,
-  envCascadeDriftRule,
   noInlineLintDisableRule,
   noTsIgnoreRule,
   skippedTestsNeedTrackingRule,
-  routesRequireTestSiblingRule,
-  githubActionsPermissionsRule,
-  githubActionsTimeoutRequiredRule,
-  launchPathParityRule,
-  prePushCiParityRule,
 ];
