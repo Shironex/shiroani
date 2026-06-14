@@ -84,7 +84,10 @@ export default defineConfig(
   // (.stories/.test/.parts) and design-system primitives (components/ui) are
   // exempt — they legitimately hold state, computation, and free-form structure.
   {
-    files: ['apps/web/src/components/social/**/*.{ts,tsx}'],
+    files: [
+      'apps/web/src/components/social/**/*.{ts,tsx}',
+      'apps/web/src/components/changelog/**/*.{ts,tsx}',
+    ],
     ignores: ['**/*.stories.tsx', '**/*.test.tsx', '**/*.parts.tsx', '**/components/ui/**'],
     plugins: { repo },
     rules: {

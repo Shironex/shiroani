@@ -1,133 +1,28 @@
-import { useMemo, useState } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 import { Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { PillTag } from '@/components/ui/pill-tag';
-import { KanjiWatermark } from '@/components/shared/KanjiWatermark';
-import { Timeline, type TimelineEntry } from '@/components/shared/Timeline';
-import {
-  CHANGELOG_CATEGORY_VARIANT,
-  getChangelogReleases,
-  type ChangelogRelease,
-  type ChangelogReleaseType,
-} from '@/lib/changelog-entries';
+import { CHANGELOG_CATEGORY_VARIANT, type ChangelogRelease } from '@/lib/changelog-entries';
+import type { FilterValue, IChangelogFilterChip } from './ChangelogView.types';
 
-type FilterValue = 'all' | ChangelogReleaseType;
-
-interface FilterChip {
-  value: FilterValue;
-  label: string;
-  count: number;
-}
-
-interface ChangelogViewProps {
-  /** When true, skip outer chrome (kanji watermark, tall header padding) — used when the view is embedded inside a narrower container. */
-  compact?: boolean;
-  /** Optional className for the root. */
-  className?: string;
-}
-
-/**
- * ChangelogView — vertical release timeline.
- *
- * Mirrors the mock at `shiroani-design/Changelog.html`:
- *   - Sticky eyebrow + serif headline with a kanji watermark.
- *   - Filter chips (all / major / minor).
- *   - Vertical timeline with version tag, "Najnowsza" badge on the latest entry,
- *     and color-coded `PillTag` category lists inside each release card.
- *
- * The entry data lives in `@/lib/changelog-entries` — a thin adapter over the
- * shared `@shiroani/changelog` package. Edit the package when shipping a new
- * release; both the landing page and this view pick up the change.
- *
- * Routing: rendered as a full dockable view via `App.tsx` (`activeView ===
- * 'changelog'`) and reachable from the dock or from Settings → About.
- */
-export function ChangelogView({ compact = false, className }: ChangelogViewProps) {
-  const { t, i18n } = useTranslation('changelog');
-  const [filter, setFilter] = useState<FilterValue>('all');
-
-  // Release copy is bilingual — follow the active UI language.
-  const releases = useMemo(() => getChangelogReleases(i18n.language), [i18n.language]);
-
-  const filters: FilterChip[] = useMemo(() => {
-    const majorCount = releases.filter(r => r.type === 'major').length;
-    const minorCount = releases.filter(r => r.type === 'minor').length;
-    return [
-      { value: 'all', label: t('filter.all'), count: releases.length },
-      { value: 'major', label: t('filter.major'), count: majorCount },
-      { value: 'minor', label: t('filter.minor'), count: minorCount },
-    ];
-  }, [t, releases]);
-
-  const visible = useMemo(
-    () => (filter === 'all' ? releases : releases.filter(r => r.type === filter)),
-    [filter, releases]
-  );
-
-  // Jump-nav anchors: major releases only to keep the strip short.
-  const jumpTargets = useMemo(
-    () => releases.filter(r => r.type === 'major').slice(0, 6),
-    [releases]
-  );
-
-  const latest = useMemo(() => releases.find(r => r.latest) ?? releases[0], [releases]);
-
-  const entries: TimelineEntry[] = visible.map(release => ({
-    id: `v${release.version}`,
-    title: <>v{release.version}</>,
-    timestamp: release.shortDate,
-    markerVariant: release.latest ? 'solid' : 'outline',
-    children: <ReleaseCard release={release} />,
-  }));
-
-  // Closing dashed marker — only shown when viewing the full list
-  if (filter === 'all') {
-    entries.push({
-      id: 'origin',
-      markerVariant: 'dashed',
-      children: <OriginMarker />,
-    });
-  }
-
-  return (
-    <div
-      className={cn(
-        'flex-1 flex flex-col overflow-hidden animate-fade-in',
-        !compact && 'relative',
-        className
-      )}
-    >
-      {!compact && <KanjiWatermark kanji="記録" position="tr" size={280} opacity={0.035} />}
-
-      <div className="flex-1 overflow-y-auto">
-        <div className="mx-auto w-full max-w-[1100px] px-8 pb-20">
-          <Header
-            filter={filter}
-            onFilterChange={setFilter}
-            filters={filters}
-            jumpTargets={jumpTargets}
-            latest={latest}
-            compact={compact}
-          />
-
-          <Timeline entries={entries} className="mt-6" sideWidth={76} gap={48} />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-interface HeaderProps {
+interface IHeaderProps {
   filter: FilterValue;
   onFilterChange: (f: FilterValue) => void;
-  filters: FilterChip[];
+  filters: IChangelogFilterChip[];
   jumpTargets: ChangelogRelease[];
   latest: ChangelogRelease;
   compact: boolean;
 }
 
-function Header({ filter, onFilterChange, filters, jumpTargets, latest, compact }: HeaderProps) {
+/** Sticky eyebrow + serif headline + filter chips + jump-nav. */
+export function Header({
+  filter,
+  onFilterChange,
+  filters,
+  jumpTargets,
+  latest,
+  compact,
+}: IHeaderProps) {
   const { t } = useTranslation('changelog');
   const emPrimary = <em className="font-serif italic font-extrabold text-primary" />;
 
@@ -205,15 +100,12 @@ function Header({ filter, onFilterChange, filters, jumpTargets, latest, compact 
   );
 }
 
-interface ReleaseCardProps {
-  release: ChangelogRelease;
-}
-
-function ReleaseCard({ release }: ReleaseCardProps) {
+/** One release card: version pill, latest badge, title/description, category lists. */
+export function ReleaseCard({ release }: { release: ChangelogRelease }) {
   const { t } = useTranslation('changelog');
   return (
     <article>
-      {/* Top row: version pill + optional "Najnowsza" badge + human date */}
+      {/* Top row: version pill + optional "latest" badge + human date */}
       <div className="mb-3 flex flex-wrap items-center gap-2.5">
         <span
           className={cn(
@@ -274,7 +166,8 @@ function ReleaseCard({ release }: ReleaseCardProps) {
   );
 }
 
-function OriginMarker() {
+/** Closing dashed timeline marker shown at the bottom of the full list. */
+export function OriginMarker() {
   const { t } = useTranslation('changelog');
   return (
     <div className="flex flex-col items-start">
