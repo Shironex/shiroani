@@ -89,6 +89,7 @@ export default defineConfig(
       'apps/web/src/components/changelog/**/*.{ts,tsx}',
       'apps/web/src/components/onboarding/**/*.{ts,tsx}',
       'apps/web/src/components/splash/**/*.{ts,tsx}',
+      'apps/web/src/components/feed/**/*.{ts,tsx}',
     ],
     ignores: ['**/*.stories.tsx', '**/*.test.tsx', '**/*.parts.tsx', '**/components/ui/**'],
     plugins: { repo },

@@ -1,37 +1,15 @@
-import { memo, useCallback, useEffect, useMemo } from 'react';
+import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, ExternalLink, Share2, Bookmark, Loader2 } from 'lucide-react';
+import { ArrowLeft, ExternalLink, Share2, Bookmark } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { handleImageError } from '@/lib/image-utils';
-import type { FeedItem } from '@shiroani/shared';
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { TooltipButton } from '@/components/ui/tooltip-button';
 import { PillTag } from '@/components/ui/pill-tag';
-import { hostFromUrl } from '@/lib/url-utils';
-import { useFeedBookmarksStore } from '@/stores/useFeedBookmarksStore';
-import { useFeedStore } from '@/stores/useFeedStore';
-import { htmlToParagraphs } from '@/lib/html-text';
-import { sanitizeArticleHtml } from '@/lib/sanitize-html';
-import { useCategoryLabels } from './feed-constants';
-import { useTimeAgo } from './useTimeAgo';
-
-interface FeedReaderModalProps {
-  item: FeedItem | null;
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  relatedItems: FeedItem[];
-  onOpenRelated: (item: FeedItem) => void;
-  onOpenExternal: (item: FeedItem) => void;
-}
-
-function getInitials(name: string): string {
-  return name
-    .split(/\s+/)
-    .map(s => s.charAt(0).toUpperCase())
-    .slice(0, 2)
-    .join('');
-}
+import { useFeedReaderModal } from './FeedReaderModal.hooks';
+import { ArticleBody, RelatedPanel } from './FeedReaderModal.parts';
+import type { IFeedReaderModalProps } from './FeedReaderModal.types';
 
 /**
  * In-app article reader modal.
@@ -44,54 +22,30 @@ function getInitials(name: string): string {
  * sanitized HTML in a prose container; otherwise we fall back to the plain-text
  * `description` teaser and the "Otwórz w przeglądarce" CTA for the full piece.
  */
-export const FeedReaderModal = memo(function FeedReaderModal({
+function FeedReaderModal({
   item,
   open,
   onOpenChange,
   relatedItems,
   onOpenRelated,
   onOpenExternal,
-}: FeedReaderModalProps) {
+}: IFeedReaderModalProps) {
   const { t } = useTranslation('feed');
-  const categoryLabels = useCategoryLabels();
-  const timeAgo = useTimeAgo();
-  const handleClose = useCallback(() => onOpenChange(false), [onOpenChange]);
-
-  // Preserve legacy fallback of rendering the raw URL when parsing fails.
-  const domain = useMemo(() => (item ? (hostFromUrl(item.url) ?? item.url) : ''), [item]);
-  const paragraphs = useMemo(
-    () => (item?.description ? htmlToParagraphs(item.description) : []),
-    [item?.description]
-  );
-  const feedBodyHtml = useMemo(
-    () => (item?.contentHtml ? sanitizeArticleHtml(item.contentHtml, item.url) : ''),
-    [item?.contentHtml, item?.url]
-  );
-
-  // On-demand extraction (Phase 2): for teaser-only items, ask the main process
-  // to fetch + Readability-extract the article when the reader opens. Selected
-  // as granular primitives so the modal only re-renders when this item changes.
-  const loadArticleContent = useFeedStore(s => s.loadArticleContent);
-  const extractedRaw = useFeedStore(s => (item ? s.articleContent[item.id] : undefined));
-  const extractionStatus = useFeedStore(s => (item ? s.articleStatus[item.id] : undefined));
-  useEffect(() => {
-    if (open && item && !item.contentHtml && item.sourceSupportsFullContent) {
-      loadArticleContent(item);
-    }
-  }, [open, item, loadArticleContent]);
-
-  const extractedHtml = useMemo(
-    () => (extractedRaw && item ? sanitizeArticleHtml(extractedRaw, item.url) : ''),
-    [extractedRaw, item]
-  );
-  const articleHtml = feedBodyHtml || extractedHtml;
-  const isExtracting = !feedBodyHtml && !extractedRaw && extractionStatus === 'loading';
-
-  const bookmarked = useFeedBookmarksStore(s => (item ? s.bookmarks.has(item.id) : false));
-  const toggleBookmark = useFeedBookmarksStore(s => s.toggle);
-  const handleToggleBookmark = useCallback(() => {
-    if (item) toggleBookmark(item);
-  }, [item, toggleBookmark]);
+  const {
+    domain,
+    paragraphs,
+    articleHtml,
+    isExtracting,
+    bookmarked,
+    handleToggleBookmark,
+    handleClose,
+    publishedLabel,
+    published,
+    initials,
+    relatedFiltered,
+    categoryLabels,
+    timeAgo,
+  } = useFeedReaderModal(item, open, relatedItems, onOpenChange);
 
   if (!item) {
     return (
@@ -100,11 +54,6 @@ export const FeedReaderModal = memo(function FeedReaderModal({
       </Dialog>
     );
   }
-
-  const published = item.publishedAt ?? item.createdAt;
-  const publishedLabel = timeAgo(published);
-  const initials = item.author ? getInitials(item.author) : getInitials(item.sourceName);
-  const relatedFiltered = relatedItems.filter(r => r.id !== item.id).slice(0, 3);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -274,44 +223,11 @@ export const FeedReaderModal = memo(function FeedReaderModal({
 
             <div className="h-px bg-white/[0.07] my-4" />
 
-            {articleHtml ? (
-              <div
-                className="feed-prose"
-                // Sanitized via DOMPurify in sanitizeArticleHtml (scripts/iframes
-                // stripped, lazy images rewritten, links forced rel/target).
-                dangerouslySetInnerHTML={{ __html: articleHtml }}
-              />
-            ) : isExtracting ? (
-              <div className="space-y-3.5" aria-busy="true">
-                <div className="flex items-center gap-2 text-muted-foreground/80">
-                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                  <span className="text-[12px]">{t('reader.loadingArticle')}</span>
-                </div>
-                {paragraphs.map((p, i) => (
-                  <p
-                    key={i}
-                    className="text-[13.5px] leading-[1.75] text-foreground/80 text-pretty"
-                  >
-                    {p}
-                  </p>
-                ))}
-              </div>
-            ) : paragraphs.length > 0 ? (
-              <div className="space-y-3.5">
-                {paragraphs.map((p, i) => (
-                  <p
-                    key={i}
-                    className="text-[13.5px] leading-[1.75] text-foreground/80 text-pretty"
-                  >
-                    {p}
-                  </p>
-                ))}
-              </div>
-            ) : (
-              <p className="text-[13.5px] leading-[1.75] text-muted-foreground/80">
-                {t('reader.previewUnavailable')}
-              </p>
-            )}
+            <ArticleBody
+              articleHtml={articleHtml}
+              isExtracting={isExtracting}
+              paragraphs={paragraphs}
+            />
 
             <div className="h-px bg-white/[0.07] my-6" />
 
@@ -328,60 +244,18 @@ export const FeedReaderModal = memo(function FeedReaderModal({
             </div>
 
             {relatedFiltered.length > 0 && (
-              <div className="mt-8">
-                <div className="font-mono text-[9px] tracking-[0.2em] uppercase text-muted-foreground/60 mb-2.5">
-                  {t('reader.related')}
-                </div>
-                <ul className="flex flex-col gap-2">
-                  {relatedFiltered.map(rel => (
-                    <li key={rel.id}>
-                      <button
-                        type="button"
-                        onClick={() => onOpenRelated(rel)}
-                        className={cn(
-                          'group w-full grid grid-cols-[72px_1fr] gap-2.5 p-2.5 text-left',
-                          'rounded-[9px] border border-white/[0.07] bg-white/[0.03]',
-                          'transition-colors duration-150',
-                          'hover:border-white/[0.15] hover:bg-white/[0.06]',
-                          'focus-visible:outline-none focus-visible:border-primary/40'
-                        )}
-                      >
-                        <div
-                          className="rounded-[6px] aspect-[16/10] bg-gradient-to-br from-primary/30 to-foreground/20 overflow-hidden"
-                          aria-hidden="true"
-                        >
-                          {rel.imageUrl && (
-                            <img
-                              src={rel.imageUrl}
-                              alt=""
-                              loading="lazy"
-                              decoding="async"
-                              draggable={false}
-                              onError={handleImageError}
-                              className="w-full h-full object-cover"
-                            />
-                          )}
-                        </div>
-                        <div className="flex flex-col justify-center min-w-0">
-                          <div className="font-mono text-[8.5px] tracking-[0.14em] uppercase text-primary mb-0.5">
-                            {categoryLabels[rel.sourceCategory]}
-                          </div>
-                          <div className="text-[12px] font-semibold leading-[1.3] text-foreground/90 line-clamp-2 group-hover:text-primary transition-colors">
-                            {rel.title}
-                          </div>
-                          <div className="font-mono text-[9.5px] text-muted-foreground/60 mt-0.5">
-                            {rel.sourceName} · {timeAgo(rel.publishedAt ?? rel.createdAt)}
-                          </div>
-                        </div>
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+              <RelatedPanel
+                related={relatedFiltered}
+                categoryLabels={categoryLabels}
+                timeAgo={timeAgo}
+                onOpenRelated={onOpenRelated}
+              />
             )}
           </div>
         </div>
       </DialogContent>
     </Dialog>
   );
-});
+}
+
+export default memo(FeedReaderModal);

@@ -4,8 +4,9 @@ import { useFeedStore, getFilteredItems } from '@/stores/useFeedStore';
 import { useFeedBookmarksStore } from '@/stores/useFeedBookmarksStore';
 import { useNavigateToBrowser } from '@/hooks/useNavigateToBrowser';
 import type { FeedCategory, FeedItem, FeedLanguage } from '@shiroani/shared';
-import { useCategoryLabels, useLanguageLabels } from './feed-constants';
-import { getFeedViewState } from './feed-view-state';
+import { useCategoryLabels, useLanguageLabels } from '../feed-constants';
+import { getFeedViewState } from '../feed-view-state';
+import type { IFeedViewView } from './FeedView.types';
 
 // Extract stable action references outside the component
 const {
@@ -18,7 +19,7 @@ const {
   markAllRead,
 } = useFeedStore.getState();
 
-export function useFeedView() {
+export function useFeedView(): IFeedViewView {
   const { t } = useTranslation('feed');
   const categoryLabels = useCategoryLabels();
   const languageLabels = useLanguageLabels();
@@ -186,6 +187,10 @@ export function useFeedView() {
     error,
   });
 
+  const hasNewCount = lastRefreshNewCount !== null && lastRefreshNewCount > 0;
+  const showNoResults = searchedItems.length === 0 && searchQuery !== '' && feedView === 'all';
+  const canLoadMore = feedView === 'all' && hasMore && searchQuery === '';
+
   const handleSearchChange = useCallback((q: string) => {
     setSearchQuery(q);
   }, []);
@@ -224,6 +229,9 @@ export function useFeedView() {
     listItems,
     subtitle,
     viewState,
+    hasNewCount,
+    showNoResults,
+    canLoadMore,
     handleOpenInReader,
     handleOpenExternal,
     handleLoadMore,

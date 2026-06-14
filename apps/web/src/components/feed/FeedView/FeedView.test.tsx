@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { getFeedViewState } from '../FeedView';
+import { getFeedViewState } from '../feed-view-state';
 
 describe('getFeedViewState', () => {
   it('returns loading while the first feed bootstrap refresh is in progress', () => {

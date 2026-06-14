@@ -4,16 +4,14 @@ import { Button } from '@/components/ui/button';
 import { TooltipButton } from '@/components/ui/tooltip-button';
 import { ViewHeader } from '@/components/shared/ViewHeader';
 import { KanjiWatermark } from '@/components/shared/KanjiWatermark';
-import { FeedHero } from './FeedHero';
-import { FeedListItem } from './FeedListItem';
-import { FeedSidebar } from './FeedSidebar';
-import { FeedReaderModal } from './FeedReaderModal';
-import { FeedLoadingAnimation } from './FeedLoadingAnimation';
-import { useFeedView } from './useFeedView';
+import { FeedHero } from '../FeedHero';
+import { FeedSidebar } from '../FeedSidebar';
+import { FeedReaderModal } from '../FeedReaderModal';
+import { FeedLoadingAnimation } from '../FeedLoadingAnimation';
+import { useFeedView } from './FeedView.hooks';
+import { FeedList, LanguageToggle } from './FeedView.parts';
 
-export { getFeedViewState } from './feed-view-state';
-
-export function FeedView() {
+export default function FeedView() {
   const {
     t,
     categoryFilterOptions,
@@ -23,7 +21,6 @@ export function FeedView() {
     total,
     isLoading,
     error,
-    hasMore,
     categoryFilter,
     languageFilter,
     sourceFilter,
@@ -38,12 +35,14 @@ export function FeedView() {
     isReaderOpen,
     setIsReaderOpen,
     setReaderItem,
-    searchedItems,
     visibleItems,
     heroItem,
     listItems,
     subtitle,
     viewState,
+    hasNewCount,
+    showNoResults,
+    canLoadMore,
     handleOpenInReader,
     handleOpenExternal,
     handleLoadMore,
@@ -121,28 +120,11 @@ export function FeedView() {
             <div className="w-px h-4 bg-border-glass mx-1" />
 
             {/* Language pill toggle — mirrors mock sub-header */}
-            <div
-              className="flex items-center gap-0.5 rounded-lg bg-white/[0.04] border border-white/[0.06] p-0.5"
-              role="group"
-              aria-label={t('language.ariaLabel')}
-            >
-              {languageFilterOptions.map(({ value, label }) => (
-                <button
-                  key={value}
-                  type="button"
-                  onClick={() => setLanguageFilter(value)}
-                  aria-pressed={languageFilter === value}
-                  className={cn(
-                    'px-2.5 h-6 rounded-md text-[11px] font-medium transition-colors duration-150',
-                    languageFilter === value
-                      ? 'bg-primary/20 text-primary'
-                      : 'text-muted-foreground/80 hover:text-foreground'
-                  )}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
+            <LanguageToggle
+              options={languageFilterOptions}
+              active={languageFilter}
+              onSelect={setLanguageFilter}
+            />
 
             <div className="w-px h-4 bg-border-glass mx-1" />
 
@@ -171,7 +153,7 @@ export function FeedView() {
               tooltip={t('actions.refresh')}
             >
               <RefreshCw className={cn('w-4 h-4', isRefreshing && 'animate-spin')} />
-              {lastRefreshNewCount !== null && lastRefreshNewCount > 0 && (
+              {hasNewCount && (
                 <span
                   aria-label={t('newCount', { count: lastRefreshNewCount })}
                   className={cn(
@@ -251,7 +233,7 @@ export function FeedView() {
                         </p>
                       </div>
                     </div>
-                  ) : searchedItems.length === 0 && searchQuery && feedView === 'all' ? (
+                  ) : showNoResults ? (
                     <div className="flex flex-col items-center justify-center py-12 gap-3 text-muted-foreground">
                       <Inbox className="w-8 h-8 opacity-40" />
                       <div className="text-center space-y-1">
@@ -264,20 +246,16 @@ export function FeedView() {
                       </div>
                     </div>
                   ) : (
-                    <div className="flex flex-col gap-2">
-                      {listItems.map(item => (
-                        <FeedListItem
-                          key={item.id}
-                          item={item}
-                          unread={feedView === 'all' && !readIds.has(item.id)}
-                          onOpen={handleOpenInReader}
-                          onOpenExternal={handleOpenExternal}
-                        />
-                      ))}
-                    </div>
+                    <FeedList
+                      items={listItems}
+                      feedView={feedView}
+                      readIds={readIds}
+                      onOpen={handleOpenInReader}
+                      onOpenExternal={handleOpenExternal}
+                    />
                   )}
 
-                  {feedView === 'all' && hasMore && !searchQuery && (
+                  {canLoadMore && (
                     <div className="flex justify-center pt-3 pb-1">
                       <Button
                         variant="outline"

@@ -1,61 +1,15 @@
 import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Rss, ExternalLink } from 'lucide-react';
+import { ExternalLink } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { handleImageError } from '@/lib/image-utils';
-import type { FeedItem } from '@shiroani/shared';
 import { PillTag } from '@/components/ui/pill-tag';
-import { useCategoryLabels } from './feed-constants';
-import { useTimeAgo } from './useTimeAgo';
+import { useFeedListItem } from './FeedListItem.hooks';
+import { FeedThumb } from './FeedListItem.parts';
+import type { IFeedListItemProps } from './FeedListItem.types';
 
-interface FeedListItemProps {
-  item: FeedItem;
-  unread?: boolean;
-  onOpen: (item: FeedItem) => void;
-  onOpenExternal: (item: FeedItem) => void;
-}
-
-function FeedThumb({ src, alt }: { src?: string; alt: string }) {
-  return (
-    <div
-      className={cn(
-        'relative w-[96px] aspect-[16/10] rounded-[6px] overflow-hidden shrink-0',
-        'bg-gradient-to-br from-primary/25 via-primary/10 to-foreground/10'
-      )}
-    >
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0"
-        style={{
-          background: 'radial-gradient(circle at 30% 25%, oklch(1 0 0 / 0.2), transparent 55%)',
-        }}
-      />
-      <Rss className="absolute inset-0 m-auto w-6 h-6 text-foreground/20" />
-      {src && (
-        <img
-          src={src}
-          alt={alt}
-          loading="lazy"
-          decoding="async"
-          draggable={false}
-          onError={handleImageError}
-          className="relative w-full h-full object-cover"
-        />
-      )}
-    </div>
-  );
-}
-
-export const FeedListItem = memo(function FeedListItem({
-  item,
-  unread = false,
-  onOpen,
-  onOpenExternal,
-}: FeedListItemProps) {
+function FeedListItem({ item, unread = false, onOpen, onOpenExternal }: IFeedListItemProps) {
   const { t } = useTranslation('feed');
-  const categoryLabels = useCategoryLabels();
-  const timeAgo = useTimeAgo();
-  const published = item.publishedAt ? timeAgo(item.publishedAt) : timeAgo(item.createdAt);
+  const { categoryLabel, published } = useFeedListItem(item);
 
   return (
     <article
@@ -87,7 +41,7 @@ export const FeedListItem = memo(function FeedListItem({
             {item.sourceName}
           </PillTag>
           <PillTag variant={item.sourceCategory === 'reviews' ? 'gold' : 'muted'}>
-            {categoryLabels[item.sourceCategory]}
+            {categoryLabel}
           </PillTag>
           {item.sourceLanguage === 'pl' && (
             <span className="font-mono text-[9.5px] tracking-[0.1em] uppercase text-muted-foreground/70">
@@ -154,4 +108,6 @@ export const FeedListItem = memo(function FeedListItem({
       </div>
     </article>
   );
-});
+}
+
+export default memo(FeedListItem);

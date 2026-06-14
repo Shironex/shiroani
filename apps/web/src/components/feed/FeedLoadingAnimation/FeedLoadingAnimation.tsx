@@ -1,11 +1,15 @@
 import { useTranslation } from 'react-i18next';
+import { useFeedLoadingAnimation } from './FeedLoadingAnimation.hooks';
+import { LoadingDots, Sparkles, SignalWaves } from './FeedLoadingAnimation.parts';
 
 /**
  * Delightful SVG loading animation with animated RSS signal waves,
  * floating news card silhouettes, and subtle sparkle effects.
  */
-export function FeedLoadingAnimation() {
+export default function FeedLoadingAnimation() {
   const { t } = useTranslation('feed');
+  useFeedLoadingAnimation();
+
   return (
     <div className="flex-1 flex flex-col items-center justify-center py-20 gap-6 select-none">
       <div className="relative w-56 h-56">
@@ -23,34 +27,7 @@ export function FeedLoadingAnimation() {
           </defs>
 
           {/* Signal waves expanding outward from center */}
-          {[0, 1, 2].map(i => (
-            <circle
-              key={`wave-${i}`}
-              cx="100"
-              cy="110"
-              r="20"
-              fill="none"
-              stroke="hsl(var(--primary))"
-              strokeWidth="2"
-              opacity="0"
-            >
-              <animate
-                attributeName="r"
-                from="20"
-                to="80"
-                dur="2.4s"
-                begin={`${i * 0.8}s`}
-                repeatCount="indefinite"
-              />
-              <animate
-                attributeName="opacity"
-                values="0.75;0.32;0"
-                dur="2.4s"
-                begin={`${i * 0.8}s`}
-                repeatCount="indefinite"
-              />
-            </circle>
-          ))}
+          <SignalWaves />
 
           {/* RSS Icon - dot */}
           <circle cx="82" cy="128" r="7" fill="url(#feed-grad)">
@@ -261,47 +238,14 @@ export function FeedLoadingAnimation() {
           </g>
 
           {/* Sparkles */}
-          {[
-            { cx: 155, cy: 35, delay: '0s' },
-            { cx: 35, cy: 85, delay: '1.5s' },
-            { cx: 165, cy: 85, delay: '0.8s' },
-            { cx: 60, cy: 35, delay: '2.1s' },
-          ].map((s, i) => (
-            <circle key={`sparkle-${i}`} cx={s.cx} cy={s.cy} r="1.8" fill="hsl(var(--primary))">
-              <animate
-                attributeName="opacity"
-                values="0;1;0"
-                dur="2s"
-                begin={s.delay}
-                repeatCount="indefinite"
-              />
-              <animate
-                attributeName="r"
-                values="0.8;2.4;0.8"
-                dur="2s"
-                begin={s.delay}
-                repeatCount="indefinite"
-              />
-            </circle>
-          ))}
+          <Sparkles />
         </svg>
       </div>
 
       {/* Loading text with animated dots */}
       <div className="flex items-center gap-1.5 text-sm text-foreground/75">
         <span className="font-medium tracking-tight">{t('loading')}</span>
-        <span className="inline-flex w-6">
-          {[0, 1, 2].map(i => (
-            <span
-              key={i}
-              className="inline-block w-1.5 h-1.5 rounded-full bg-primary/70"
-              style={{
-                animation: 'feed-dot 1.4s infinite',
-                animationDelay: `${i * 0.2}s`,
-              }}
-            />
-          ))}
-        </span>
+        <LoadingDots />
       </div>
     </div>
   );

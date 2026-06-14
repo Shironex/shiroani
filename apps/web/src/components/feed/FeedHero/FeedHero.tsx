@@ -2,28 +2,19 @@ import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { handleImageError } from '@/lib/image-utils';
-import type { FeedItem } from '@shiroani/shared';
 import { PillTag } from '@/components/ui/pill-tag';
 import { KanjiWatermark } from '@/components/shared/KanjiWatermark';
-import { useCategoryLabels } from './feed-constants';
-import { useTimeAgo } from './useTimeAgo';
-
-interface FeedHeroProps {
-  item: FeedItem;
-  onOpen: (item: FeedItem) => void;
-}
+import { useFeedHero } from './FeedHero.hooks';
+import type { IFeedHeroProps } from './FeedHero.types';
 
 /**
  * Large editorial feature card used at the top of the news feed.
  * Shows the newest/most relevant story with a gradient cover, kanji watermark,
  * Shippori-Mincho headline and metadata strip.
  */
-export const FeedHero = memo(function FeedHero({ item, onOpen }: FeedHeroProps) {
+function FeedHero({ item, onOpen }: IFeedHeroProps) {
   const { t } = useTranslation('feed');
-  const categoryLabels = useCategoryLabels();
-  const timeAgo = useTimeAgo();
-
-  const published = item.publishedAt ? timeAgo(item.publishedAt) : timeAgo(item.createdAt);
+  const { categoryLabel, published } = useFeedHero(item);
 
   return (
     <button
@@ -84,9 +75,7 @@ export const FeedHero = memo(function FeedHero({ item, onOpen }: FeedHeroProps) 
       <div className="relative z-[1] flex flex-col gap-2 p-5 sm:p-6 min-h-[180px]">
         <div className="flex flex-wrap items-center gap-1.5">
           <PillTag className="bg-white/20 text-white/95">{t('hero.featured')}</PillTag>
-          <PillTag className="bg-black/35 text-white/95">
-            {categoryLabels[item.sourceCategory]}
-          </PillTag>
+          <PillTag className="bg-black/35 text-white/95">{categoryLabel}</PillTag>
           <PillTag className="text-white/95" style={{ backgroundColor: `${item.sourceColor}80` }}>
             {item.sourceName}
           </PillTag>
@@ -122,4 +111,6 @@ export const FeedHero = memo(function FeedHero({ item, onOpen }: FeedHeroProps) 
       </div>
     </button>
   );
-});
+}
+
+export default memo(FeedHero);
