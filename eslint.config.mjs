@@ -87,11 +87,7 @@ export default defineConfig(
     files: [
       'apps/web/src/components/social/**/*.{ts,tsx}',
       'apps/web/src/components/changelog/**/*.{ts,tsx}',
-      // onboarding migrates incrementally; `steps/*/**` matches migrated step
-      // FOLDERS only (flat `steps/*.tsx` files not yet migrated are excluded).
-      'apps/web/src/components/onboarding/OnboardingWizard/**/*.{ts,tsx}',
-      'apps/web/src/components/onboarding/StepLayout/**/*.{ts,tsx}',
-      'apps/web/src/components/onboarding/steps/*/**/*.{ts,tsx}',
+      'apps/web/src/components/onboarding/**/*.{ts,tsx}',
     ],
     ignores: ['**/*.stories.tsx', '**/*.test.tsx', '**/*.parts.tsx', '**/components/ui/**'],
     plugins: { repo },

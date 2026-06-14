@@ -1,10 +1,10 @@
-import { useCallback } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
-import { Shield, Check, Plus } from 'lucide-react';
-import { StepLayout } from '../StepLayout';
+import { Shield } from 'lucide-react';
 import { SettingsToggleRow } from '@/components/settings/SettingsCard';
 import { IS_ELECTRON } from '@/lib/platform';
-import { useBrowserStore } from '@/stores/useBrowserStore';
+import { StepLayout } from '../../StepLayout';
+import { useAdblockStep } from './AdblockStep.hooks';
+import { BlockedRow } from './AdblockStep.parts';
 
 /**
  * Step 06 · Ad blocking (browser).
@@ -13,18 +13,9 @@ import { useBrowserStore } from '@/stores/useBrowserStore';
  * Mirrors the old FinishStep wiring — the "finish" summary is now its own
  * screen (`SummaryStep`).
  */
-export function AdblockStep() {
+export default function AdblockStep() {
   const { t } = useTranslation('onboarding');
-  const adblockEnabled = useBrowserStore(s => s.adblockEnabled);
-  const setAdblockEnabled = useBrowserStore(s => s.setAdblockEnabled);
-
-  const handleAdblock = useCallback(
-    (value: boolean) => {
-      setAdblockEnabled(value);
-    },
-    [setAdblockEnabled]
-  );
-
+  const { adblockEnabled, setAdblockEnabled } = useAdblockStep();
   const emPrimary = <em className="not-italic text-primary italic" />;
   const bStrong = <b className="font-semibold text-foreground" />;
   const bPrimary = <b className="font-bold text-primary" />;
@@ -60,7 +51,7 @@ export function AdblockStep() {
             title={t('step.adblock.toggle.title')}
             description={t('step.adblock.toggle.description')}
             checked={adblockEnabled}
-            onCheckedChange={handleAdblock}
+            onCheckedChange={setAdblockEnabled}
             disabled={!IS_ELECTRON}
           />
         </div>
@@ -81,16 +72,5 @@ export function AdblockStep() {
         {t('step.adblock.footnote')}
       </p>
     </StepLayout>
-  );
-}
-
-function BlockedRow({ label, variant = 'check' }: { label: string; variant?: 'check' | 'add' }) {
-  return (
-    <li className="flex items-center justify-between border-b border-border-glass/60 py-1.5 text-[oklch(0.72_0.03_300)] last:border-b-0">
-      <span>{label}</span>
-      <span className="font-bold text-primary">
-        {variant === 'check' ? <Check className="h-3 w-3" /> : <Plus className="h-3 w-3" />}
-      </span>
-    </li>
   );
 }
