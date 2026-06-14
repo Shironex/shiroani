@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { withFullHeight } from '../../../../.storybook/decorators';
 import { useAniListAuthStore } from '@/stores/useAniListAuthStore';
 import SocialView from './SocialView';
 
@@ -6,6 +7,7 @@ const meta = {
   title: 'social/SocialView',
   component: SocialView,
   parameters: { layout: 'fullscreen' },
+  decorators: [withFullHeight],
 } satisfies Meta<typeof SocialView>;
 
 export default meta;

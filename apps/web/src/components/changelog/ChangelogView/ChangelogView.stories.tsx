@@ -1,10 +1,12 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { withFullHeight } from '../../../../.storybook/decorators';
 import ChangelogView from './ChangelogView';
 
 const meta = {
   title: 'changelog/ChangelogView',
   component: ChangelogView,
   parameters: { layout: 'fullscreen' },
+  decorators: [withFullHeight],
 } satisfies Meta<typeof ChangelogView>;
 
 export default meta;
