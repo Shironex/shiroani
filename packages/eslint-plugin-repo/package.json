@@ -1,0 +1,40 @@
+{
+  "name": "@shiroani/eslint-plugin-repo",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "scripts": {
+    "build": "tsup src/index.ts --format esm,cjs --dts --clean",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@typescript-eslint/utils": "8.60.0",
+    "micromatch": "^4.0.8"
+  },
+  "devDependencies": {
+    "@types/node": "^25.9.1",
+    "@typescript-eslint/parser": "8.60.0",
+    "@typescript-eslint/rule-tester": "8.60.0",
+    "eslint": "^10.4.0",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.7"
+  },
+  "peerDependencies": {
+    "eslint": "^9.0.0 || ^10.0.0",
+    "typescript": ">=5.0.0"
+  }
+}
