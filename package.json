@@ -18,6 +18,8 @@
     "package:mac": "pnpm build && pnpm --filter @shiroani/desktop package:mac",
     "lint": "eslint .",
     "lint:meta": "tsx tools/lint-meta/cli.ts",
+    "new:component": "tsx tools/codegen/new-component.ts",
+    "new:feature": "tsx tools/codegen/new-feature.ts",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "pnpm build:packages && pnpm -r run test",
