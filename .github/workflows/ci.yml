@@ -76,6 +76,12 @@ jobs:
       - name: Setup
         uses: ./.github/actions/setup
 
+      # eslint.config.mjs imports @shiroani/eslint-plugin-repo from its (gitignored)
+      # dist/. Husky rebuilds it locally pre-commit; CI runs with HUSKY=0, so build
+      # it explicitly before linting or every repo/* rule fails to load.
+      - name: Build eslint plugin
+        run: pnpm --filter @shiroani/eslint-plugin-repo build
+
       - name: Lint
         run: pnpm lint
 
