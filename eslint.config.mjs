@@ -78,6 +78,30 @@ export default defineConfig(
     },
   },
 
+  // ── Track B: frontend component-folder architecture (per-feature rollout) ──
+  // Scoped to migrated features only; this glob widens by one feature per chunk
+  // (collapses to src/components/** once all are migrated). Sidecars
+  // (.stories/.test/.parts) and design-system primitives (components/ui) are
+  // exempt — they legitimately hold state, computation, and free-form structure.
+  {
+    files: ['apps/web/src/components/social/**/*.{ts,tsx}'],
+    ignores: ['**/*.stories.tsx', '**/*.test.tsx', '**/*.parts.tsx', '**/components/ui/**'],
+    plugins: { repo },
+    rules: {
+      'repo/component-folder-structure': ['error', { featuresDir: 'src/components' }],
+      'repo/no-state-in-component-body': 'error',
+      'repo/no-jsx-computation': 'error',
+      'repo/max-hooks-per-file': 'error',
+      'repo/index-must-reexport-default': 'error',
+      'repo/no-cross-feature-imports': [
+        'error',
+        { featuresDir: 'src/components', sharedFeatures: ['shared'] },
+      ],
+      'repo/interface-prefix-i': 'error',
+      'repo/props-must-be-visual': 'error',
+    },
+  },
+
   {
     files: ['**/*.spec.ts', '**/test/**/*.ts'],
     rules: {
