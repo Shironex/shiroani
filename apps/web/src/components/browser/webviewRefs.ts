@@ -36,12 +36,12 @@ export type WebviewElement = HTMLElement & {
 };
 
 /** Shape of the `found-in-page` event's `result` payload (Electron). */
-export interface FoundInPageResult {
+export type FoundInPageResult = {
   requestId: number;
   activeMatchOrdinal: number;
   matches: number;
   finalUpdate: boolean;
-}
+};
 
 const webviewRefs = new Map<string, WebviewElement>();
 

@@ -6,14 +6,14 @@ import { PREDEFINED_SITES } from '@/lib/quick-access-defaults';
 
 export type AddressSuggestionSource = 'history' | 'bookmark' | 'frequent';
 
-export interface AddressSuggestion {
+export type AddressSuggestion = {
   /** Unique id for aria-activedescendant wiring. */
   id: string;
   url: string;
   title: string;
   favicon?: string;
   source: AddressSuggestionSource;
-}
+};
 
 const MAX_SUGGESTIONS = 8;
 
