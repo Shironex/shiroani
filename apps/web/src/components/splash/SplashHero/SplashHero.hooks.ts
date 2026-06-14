@@ -1,19 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { MASCOT_WAVE_URL, MASCOT_SLEEP_URL } from '@/lib/constants';
-import { SpinnerRing } from '@/components/ui/spinner-ring';
-import { cn } from '@/lib/utils';
-
-export type SplashVariant = 'loading' | 'updating' | 'error';
-
-interface SplashHeroProps {
-  variant?: SplashVariant;
-  errorMessage?: string | null;
-  /**
-   * Optional target label shown under the wordmark for the `updating`
-   * variant (e.g. the incoming version string: `aktualizacja · v0.6.0`).
-   */
-  updatingTarget?: string | null;
-}
+import type { ISplashHeroProps, ISplashHeroView, SplashVariant } from './SplashHero.types';
 
 type VariantConfig = {
   tone: 'primary' | 'info' | 'destructive';
@@ -92,7 +79,11 @@ function looksLikeNetworkError(message: string | null | undefined): boolean {
   return NETWORK_REGEXES.some(rx => rx.test(m));
 }
 
-export function SplashHero({ variant = 'loading', errorMessage, updatingTarget }: SplashHeroProps) {
+export function useSplashHero({
+  variant = 'loading',
+  errorMessage,
+  updatingTarget,
+}: ISplashHeroProps): ISplashHeroView {
   const { t } = useTranslation('splash');
   const config = VARIANT_CONFIG[variant];
   const isError = variant === 'error';
@@ -109,43 +100,18 @@ export function SplashHero({ variant = 'loading', errorMessage, updatingTarget }
     return t(`subtitle.${config.defaultSubKey}`);
   })();
 
-  const mascotImg = (
-    <img
-      src={config.mascot}
-      alt={t('mascotAlt')}
-      className={cn(
-        'w-36 h-36 object-contain drop-shadow-lg',
-        config.animateMascot && 'animate-[splash-pulse_2.4s_ease-in-out_infinite]'
-      )}
-      draggable={false}
-    />
-  );
+  const errorText = looksLikeNetworkError(errorMessage) ? t('error.offline') : t('error.generic');
 
-  return (
-    <div className="relative flex flex-col items-center justify-center gap-5 px-8 text-center animate-[splash-fade-up_0.8s_ease-out_both]">
-      {config.showRing ? (
-        <SpinnerRing size={200} tone={config.tone}>
-          {mascotImg}
-        </SpinnerRing>
-      ) : (
-        <div className="w-[200px] h-[200px] grid place-items-center">{mascotImg}</div>
-      )}
-
-      <div className="flex flex-col items-center gap-1.5 animate-[splash-fade-up_0.8s_ease-out_0.2s_both]">
-        <div className="font-serif text-[34px] font-extrabold leading-none tracking-[-0.02em] text-foreground">
-          Shiro
-          <em className={cn('italic', config.wordmarkEmClass)}>Ani</em>
-        </div>
-        <div className={cn('font-mono text-[10.5px] uppercase tracking-[0.28em]', config.subClass)}>
-          {subText}
-        </div>
-      </div>
-
-      {isError && (
-        <p className="max-w-sm text-sm leading-relaxed text-muted-foreground animate-[splash-fade-up_0.6s_ease-out_0.4s_both]">
-          {looksLikeNetworkError(errorMessage) ? t('error.offline') : t('error.generic')}
-        </p>
-      )}
-    </div>
-  );
+  return {
+    isError,
+    mascotSrc: config.mascot,
+    animateMascot: config.animateMascot,
+    showRing: config.showRing,
+    tone: config.tone,
+    wordmarkEmClass: config.wordmarkEmClass,
+    subClass: config.subClass,
+    subText,
+    mascotAlt: t('mascotAlt'),
+    errorText,
+  };
 }

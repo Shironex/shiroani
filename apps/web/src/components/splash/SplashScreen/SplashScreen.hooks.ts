@@ -1,12 +1,10 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { cn } from '@/lib/utils';
-import { IS_ELECTRON } from '@/lib/platform';
-import { KanjiWatermark } from '@/components/shared/KanjiWatermark';
 import { useUpdateStore } from '@/stores/useUpdateStore';
 import { useAppVersion } from '@/hooks/useAppVersion';
-import { SplashHero, type SplashVariant } from './SplashHero';
-import { SplashFooter, type SplashStatusText } from './SplashFooter';
+import type { SplashVariant } from '../SplashHero';
+import type { ISplashStatusText } from '../SplashFooter';
+import type { ISplashScreenProps, ISplashScreenView } from './SplashScreen.types';
 
 /** Minimum time the splash screen stays visible (ms) */
 const MIN_DISPLAY_MS = 3000;
@@ -43,19 +41,11 @@ function randomStartIndex() {
   return Math.floor(Math.random() * LOADING_MESSAGE_KEYS.length);
 }
 
-const VARIANT_KANJI: Record<SplashVariant, string> = {
-  loading: '白',
-  updating: '新',
-  error: '失',
-};
-
-interface SplashScreenProps {
-  ready: boolean;
-  error: string | null;
-  onDismissed?: () => void;
-}
-
-export function SplashScreen({ ready, error, onDismissed }: SplashScreenProps) {
+export function useSplashScreen({
+  ready,
+  error,
+  onDismissed,
+}: ISplashScreenProps): ISplashScreenView {
   const { t } = useTranslation('splash');
   const [minTimeElapsed, setMinTimeElapsed] = useState(false);
   const [showSpinner, setShowSpinner] = useState(false);
@@ -121,9 +111,9 @@ export function SplashScreen({ ready, error, onDismissed }: SplashScreenProps) {
     [messageIndex, t]
   );
 
-  if (!isVisible) return null;
+  const updatingTarget = updateInfo?.version ? `v${updateInfo.version}` : null;
 
-  const statusText: SplashStatusText | null =
+  const statusText: ISplashStatusText | null =
     variant === 'updating'
       ? {
           action: t('status.installing'),
@@ -134,51 +124,19 @@ export function SplashScreen({ ready, error, onDismissed }: SplashScreenProps) {
   const metaRight =
     variant === 'updating' ? t('status.restarting') : version ? `v${version}` : null;
 
-  return (
-    <div
-      className={cn(
-        'fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-background overflow-hidden',
-        'transition-[opacity,transform] duration-600 ease-out',
-        isDismissing && 'opacity-0 scale-[1.02]',
-        IS_ELECTRON && 'rounded-t-[10px]'
-      )}
-    >
-      {/* Dual radial glow — ambient background per splash mock shell. */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0"
-        style={{
-          background: [
-            'radial-gradient(ellipse 55% 40% at 25% 20%, var(--glow-1), transparent 60%)',
-            'radial-gradient(ellipse 50% 55% at 90% 95%, var(--glow-2), transparent 55%)',
-          ].join(','),
-        }}
-      />
-
-      {/* Draggable region so the window can still be moved during splash */}
-      {IS_ELECTRON && <div className="absolute inset-x-0 top-0 h-8 drag" />}
-
-      <KanjiWatermark kanji={VARIANT_KANJI[variant]} position="tr" size={320} opacity={0.03} />
-
-      <SplashHero
-        variant={variant}
-        errorMessage={error}
-        updatingTarget={updateInfo?.version ? `v${updateInfo.version}` : null}
-      />
-
-      <SplashFooter
-        variant={variant}
-        showSpinner={showSpinner}
-        message={message}
-        messageKey={messageIndex}
-        statusText={statusText}
-        progressValue={null}
-        version={version}
-        metaRight={metaRight}
-        error={error}
-        onRetry={() => window.location.reload()}
-        onClose={() => window.close()}
-      />
-    </div>
-  );
+  return {
+    isVisible,
+    isDismissing,
+    variant,
+    error,
+    updatingTarget,
+    showSpinner,
+    message,
+    messageIndex,
+    statusText,
+    metaRight,
+    version,
+    onRetry: () => window.location.reload(),
+    onClose: () => window.close(),
+  };
 }
