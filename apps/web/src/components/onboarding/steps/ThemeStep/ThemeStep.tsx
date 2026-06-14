@@ -1,24 +1,17 @@
-import { useCallback } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 import { Moon, Palette, Sun } from 'lucide-react';
-import { StepLayout } from '../StepLayout';
 import { darkThemes, lightThemes } from '@/lib/theme';
-import { useSettingsStore } from '@/stores/useSettingsStore';
 import { ThemeGrid } from '@/components/shared/theme/ThemeGrid';
+import { StepLayout } from '../../StepLayout';
+import { useThemeStep } from './ThemeStep.hooks';
 
 /**
- * Step 02 · Theme picker.
- *
- * Renders dark + light groups using the shared ThemeGrid primitive. Hover
- * previews the theme live via `setPreviewTheme`; click commits via `setTheme`.
+ * Step 02 · Theme picker. Dark + light groups via the shared ThemeGrid; hover
+ * previews live (`setPreviewTheme`), click commits (`setTheme`).
  */
-export function ThemeStep() {
+export default function ThemeStep() {
   const { t } = useTranslation('onboarding');
-  const theme = useSettingsStore(s => s.theme);
-  const setTheme = useSettingsStore(s => s.setTheme);
-  const setPreviewTheme = useSettingsStore(s => s.setPreviewTheme);
-  const clearPreview = useCallback(() => setPreviewTheme(null), [setPreviewTheme]);
-
+  const { theme, setTheme, setPreviewTheme, clearPreview } = useThemeStep();
   const emPrimary = <em className="not-italic text-primary italic" />;
   const bStrong = <b className="font-semibold text-foreground" />;
   const bPrimary = <b className="font-bold text-primary" />;

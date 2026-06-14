@@ -1,15 +1,14 @@
 import { Trans, useTranslation } from 'react-i18next';
 import { UserRound } from 'lucide-react';
 import { DISPLAY_NAME_MAX_LENGTH } from '@shiroani/shared';
-import { StepLayout } from '../StepLayout';
 import { Input } from '@/components/ui/input';
-import { useSettingsStore } from '@/stores/useSettingsStore';
+import { StepLayout } from '../../StepLayout';
+import { useNameStep } from './NameStep.hooks';
 
-export function NameStep() {
+/** Step 01 · Display name. Persists to the settings store (local-only). */
+export default function NameStep() {
   const { t } = useTranslation('onboarding');
-  const displayName = useSettingsStore(s => s.displayName);
-  const setDisplayName = useSettingsStore(s => s.setDisplayName);
-
+  const { displayName, setDisplayName } = useNameStep();
   const emPrimary = <em className="not-italic text-primary italic" />;
   const bPrimary = <b className="font-bold text-primary" />;
 

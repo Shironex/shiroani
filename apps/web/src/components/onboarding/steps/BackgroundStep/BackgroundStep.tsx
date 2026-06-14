@@ -1,18 +1,16 @@
-import { Trans, useTranslation } from 'react-i18next';
+import { Trans } from 'react-i18next';
 import { Sparkles } from 'lucide-react';
-import { StepLayout } from '../StepLayout';
 import { BackgroundPanel } from '@/components/shared/BackgroundPanel';
+import { StepLayout } from '../../StepLayout';
+import { useBackgroundStep } from './BackgroundStep.hooks';
 
 /**
- * Step 03 · App background.
- *
- * Wraps the shared BackgroundPanel in the onboarding chrome. The panel itself
- * handles the preview, file picker and opacity/blur sliders; it wires into the
- * BackgroundStore which manages the Electron file dialog, disk persistence and
- * applying CSS custom properties to the document.
+ * Step 03 · App background. Wraps the shared BackgroundPanel (preview, file
+ * picker, opacity/blur sliders) in the onboarding chrome; the panel itself owns
+ * the BackgroundStore wiring (Electron file dialog, persistence, CSS vars).
  */
-export function BackgroundStep() {
-  const { t } = useTranslation('onboarding');
+export default function BackgroundStep() {
+  const { stepTitle } = useBackgroundStep();
   const emPrimary = <em className="not-italic text-primary italic" />;
   const bStrong = <b className="font-semibold text-foreground" />;
   const bPrimary = <b className="font-bold text-primary" />;
@@ -30,7 +28,7 @@ export function BackgroundStep() {
         <Trans ns="onboarding" i18nKey="step.background.marker" components={{ 1: bPrimary }} />
       }
       stepIcon={<Sparkles className="h-5 w-5" />}
-      stepTitle={t('step.background.title')}
+      stepTitle={stepTitle}
     >
       <BackgroundPanel variant="onboarding" />
     </StepLayout>
