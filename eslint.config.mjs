@@ -92,6 +92,7 @@ export default defineConfig(
       'apps/web/src/components/feed/**/*.{ts,tsx}',
       'apps/web/src/components/discover/**/*.{ts,tsx}',
       'apps/web/src/components/diary/**/*.{ts,tsx}',
+      'apps/web/src/components/schedule/**/*.{ts,tsx}',
     ],
     ignores: ['**/*.stories.tsx', '**/*.test.tsx', '**/*.parts.tsx', '**/components/ui/**'],
     plugins: { repo },
