@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useDiscoverStore, type DiscoverMedia } from '@/stores/useDiscoverStore';
 import { isEditableTarget } from '@/lib/is-editable-target';
 
-export interface RandomCarousel {
+export interface IRandomCarousel {
   index: number;
   current: DiscoverMedia | undefined;
   peekPrev: DiscoverMedia | null;
@@ -19,7 +19,7 @@ export interface RandomCarousel {
  * - `prev` wraps modulo pool length (cheap browse-back)
  * - binds ArrowLeft/ArrowRight globally, ignoring inputs/textareas
  */
-export function useRandomCarousel(pool: DiscoverMedia[]): RandomCarousel {
+export function useRandomCarousel(pool: DiscoverMedia[]): IRandomCarousel {
   const [index, setIndex] = useState(0);
 
   useEffect(() => {

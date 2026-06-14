@@ -12,7 +12,7 @@ export function getTitle(t: DiscoverMedia['title']): string {
   return t.english || t.romaji || t.native || '?';
 }
 
-export interface ShowcaseMeta {
+export interface IShowcaseMeta {
   cover?: string;
   banner?: string;
   title: string;
@@ -22,7 +22,7 @@ export interface ShowcaseMeta {
   synopsis: string;
 }
 
-export function buildShowcaseMeta(media: DiscoverMedia): ShowcaseMeta {
+export function buildShowcaseMeta(media: DiscoverMedia): IShowcaseMeta {
   const cover = media.coverImage.extraLarge || media.coverImage.large || media.coverImage.medium;
   const banner = media.bannerImage || cover;
   const formatLabel = media.format ? getAnilistFormatLabel(media.format) : null;

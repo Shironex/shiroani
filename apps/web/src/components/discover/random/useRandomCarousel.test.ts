@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import { useRandomCarousel } from '../useRandomCarousel';
+import { useRandomCarousel } from './useRandomCarousel';
 import type { DiscoverMedia } from '@/stores/useDiscoverStore';
 
 const reshuffleSpy = vi.fn();

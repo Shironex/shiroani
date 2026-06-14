@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { getTitle, stripHtml, buildShowcaseMeta } from '../random-utils';
+import { getTitle, stripHtml, buildShowcaseMeta } from './random-utils';
 import type { DiscoverMedia } from '@/stores/useDiscoverStore';
 
 function makeMedia(overrides: Partial<DiscoverMedia> = {}): DiscoverMedia {
