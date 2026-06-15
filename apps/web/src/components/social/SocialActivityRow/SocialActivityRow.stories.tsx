@@ -9,9 +9,26 @@ const author = {
   avatar: 'https://s4.anilist.co/file/anilistcdn/user/avatar/medium/default.png',
 };
 
+/**
+ * A single row in the community activity feed. The `list` variant pairs a poster
+ * thumb with a media title + status line; the `text` variant renders a freeform
+ * post. Both carry the author (avatar + handle + relative time) because the feed
+ * aggregates many followed users. Purely presentational — fully driven by `item`.
+ */
 const meta = {
   title: 'social/SocialActivityRow',
   component: SocialActivityRow,
+  parameters: {
+    // Author/poster images carry alt text and decorative icons are aria-hidden,
+    // so axe passes clean.
+    a11y: { test: 'error' },
+  },
+  argTypes: {
+    item: {
+      description:
+        'The activity to render. Discriminated on `type`: `list` (media update with status/progress) or `text` (freeform post). Optional `user` is the author.',
+    },
+  },
 } satisfies Meta<typeof SocialActivityRow>;
 
 export default meta;

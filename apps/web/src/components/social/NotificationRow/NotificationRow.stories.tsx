@@ -4,9 +4,27 @@ import NotificationRow from './NotificationRow';
 
 const CREATED_AT = 1_717_000_000;
 
+/**
+ * A single notification row in the bell panel. Discriminated on
+ * `notification.type`: `airing`/`related-media` show a media thumb, while
+ * `following`/`activity` show a round user avatar. A type badge + relative time
+ * sit above AniList's own (server-localized) `context` text. Purely
+ * presentational — fully driven by `notification`.
+ */
 const meta = {
   title: 'social/NotificationRow',
   component: NotificationRow,
+  parameters: {
+    // Media/avatar images carry alt text and decorative icons are aria-hidden,
+    // so axe passes clean.
+    a11y: { test: 'error' },
+  },
+  argTypes: {
+    notification: {
+      description:
+        'The notification to render. Discriminated on `type`: `airing`, `following`, `activity`, or `related-media`. `context` is AniList’s display phrasing, rendered raw.',
+    },
+  },
 } satisfies Meta<typeof NotificationRow>;
 
 export default meta;
