@@ -1,4 +1,4 @@
-export interface VariableGroup {
+export interface IVariableGroup {
   /** i18n key for the group label, resolved against `settings:themes.editor.groups.*` */
   labelKey: 'main' | 'cardsMenus' | 'sidebar' | 'borders' | 'statuses' | 'shadows';
   variables: string[];
@@ -8,7 +8,7 @@ export interface VariableGroup {
   colorOverrides?: string[];
 }
 
-export const VARIABLE_GROUPS: VariableGroup[] = [
+export const VARIABLE_GROUPS: IVariableGroup[] = [
   {
     labelKey: 'main',
     variables: [
@@ -82,7 +82,7 @@ export function variableLabel(name: string): string {
 }
 
 /** Check whether a variable should use the color picker (not a shadow string). */
-export function isColorVariable(varName: string, group: VariableGroup): boolean {
+export function isColorVariable(varName: string, group: IVariableGroup): boolean {
   if (!group.isTextOnly) return true;
   if (group.colorOverrides?.includes(varName)) return true;
   return false;

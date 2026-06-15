@@ -5,7 +5,7 @@ export type LogLevelName = 'error' | 'warn' | 'info' | 'debug';
 export type SourceMode = 'buffer' | 'today' | 'archive';
 export type LevelFilter = 'all' | LogLevelName;
 
-export interface LogFileInfo {
+export interface ILogFileInfo {
   name: string;
   size: number;
   lastModified: number;

@@ -10,7 +10,7 @@ import {
 } from '@shiroani/shared';
 import {
   type LevelFilter,
-  type LogFileInfo,
+  type ILogFileInfo,
   type LogLevelName,
   type SourceMode,
   LEVEL_TO_NAME,
@@ -26,11 +26,11 @@ const SEARCH_DEBOUNCE_MS = 150;
 const LEVEL_CHANGE_TOAST_MS = 2000;
 const COPY_RESET_MS = 1500;
 
-interface UseLogSourceOptions {
+interface IUseLogSourceOptions {
   open: boolean;
 }
 
-export interface LogSource {
+export interface ILogSource {
   source: SourceMode;
   handleSourceChange: (next: SourceMode) => void;
 
@@ -41,7 +41,7 @@ export interface LogSource {
   resetSignal: number;
 
   // File-source state
-  fileList: LogFileInfo[];
+  fileList: ILogFileInfo[];
   selectedArchive: string | null;
   fileLoading: boolean;
   fileError: string | null;
@@ -88,7 +88,7 @@ export interface LogSource {
  * file/archive loading, the level + text filter pipeline, runtime log level,
  * pause/pending tracking, expand state, and the copy/export/clear actions.
  */
-export function useLogSource({ open }: UseLogSourceOptions): LogSource {
+export function useLogSource({ open }: IUseLogSourceOptions): ILogSource {
   const { t } = useTranslation('settings');
 
   // Bumped to tell the sticky-tail layer to re-engage tail-following.
@@ -100,7 +100,7 @@ export function useLogSource({ open }: UseLogSourceOptions): LogSource {
   const [bufferEntries, setBufferEntries] = useState<readonly LogEntry[]>(() => getLogBuffer());
   const [fileEntries, setFileEntries] = useState<readonly LogEntry[]>([]);
   const [fileTotalCount, setFileTotalCount] = useState(0);
-  const [fileList, setFileList] = useState<LogFileInfo[]>([]);
+  const [fileList, setFileList] = useState<ILogFileInfo[]>([]);
   const [selectedArchive, setSelectedArchive] = useState<string | null>(null);
   const [fileLoading, setFileLoading] = useState(false);
   const [fileError, setFileError] = useState<string | null>(null);

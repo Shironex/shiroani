@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 const SCROLL_STICKY_THRESHOLD = 20;
 
-export interface StickyTail {
+export interface IStickyTail {
   /** Attach to the scrollable list container. */
   listRef: React.RefObject<HTMLDivElement | null>;
   /** True while the view is following the tail (auto-scrolling to bottom). */
@@ -15,7 +15,7 @@ export interface StickyTail {
   jumpToTail: () => void;
 }
 
-interface UseStickyTailOptions {
+interface IUseStickyTailOptions {
   /**
    * Value that changes whenever the list content grows (e.g. the filtered
    * entries array) — drives the auto-scroll effect.
@@ -41,7 +41,7 @@ export function useStickyTail({
   tailTrigger,
   paused,
   resetSignal,
-}: UseStickyTailOptions): StickyTail {
+}: IUseStickyTailOptions): IStickyTail {
   const listRef = useRef<HTMLDivElement>(null);
   const [autoScroll, setAutoScroll] = useState(true);
   const [showJumpToTail, setShowJumpToTail] = useState(false);
