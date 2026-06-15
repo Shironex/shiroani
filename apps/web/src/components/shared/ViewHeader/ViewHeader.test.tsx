@@ -23,14 +23,40 @@ describe('ViewHeader', () => {
     vi.restoreAllMocks();
   });
 
-  it('renders the title text', () => {
+  it('renders the title text as a heading', () => {
     render(<ViewHeader {...baseProps} />);
-    expect(screen.getByText('Moja lista')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Moja lista' })).toBeInTheDocument();
   });
 
-  it('renders the subtitle when provided', () => {
-    render(<ViewHeader {...baseProps} subtitle="Podtytuł" />);
+  it('renders the subtitle when provided and omits it otherwise', () => {
+    const { rerender } = render(<ViewHeader {...baseProps} subtitle="Podtytuł" />);
     expect(screen.getByText('Podtytuł')).toBeInTheDocument();
+
+    rerender(<ViewHeader {...baseProps} />);
+    expect(screen.queryByText('Podtytuł')).not.toBeInTheDocument();
+  });
+
+  it('renders custom actions in the header', () => {
+    render(<ViewHeader {...baseProps} actions={<button>Sortuj</button>} />);
+    expect(screen.getByRole('button', { name: 'Sortuj' })).toBeInTheDocument();
+  });
+
+  it('renders only the title row when neither search nor filters are configured', () => {
+    render(<ViewHeader icon={Heart} title="Ustawienia" subtitle="Konfiguracja" />);
+    expect(screen.getByRole('heading', { name: 'Ustawienia' })).toBeInTheDocument();
+    // No search box, no filter tablist, no buttons in the title-only variant.
+    expect(screen.queryByRole('searchbox')).not.toBeInTheDocument();
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+    expect(screen.queryByRole('tablist')).not.toBeInTheDocument();
+    expect(screen.queryAllByRole('button')).toHaveLength(0);
+  });
+
+  it('uses the default search placeholder and overrides it when given one', () => {
+    const { rerender } = render(<ViewHeader {...baseProps} />);
+    expect(screen.getByPlaceholderText('Search...')).toBeInTheDocument();
+
+    rerender(<ViewHeader {...baseProps} searchPlaceholder="Szukaj anime" />);
+    expect(screen.getByPlaceholderText('Szukaj anime')).toBeInTheDocument();
   });
 
   it('shows the search input with current value and calls onSearchChange on typing', async () => {
@@ -46,73 +72,68 @@ describe('ViewHeader', () => {
     expect(onSearchChange).toHaveBeenCalled();
   });
 
-  it('shows clear button when searchQuery is non-empty and clicking clears the query', async () => {
+  it('exposes the search input with an accessible name matching the placeholder', () => {
+    render(<ViewHeader {...baseProps} searchPlaceholder="Szukaj" />);
+    expect(screen.getByRole('textbox', { name: 'Szukaj' })).toBeInTheDocument();
+  });
+
+  it('hides the clear button when the query is empty and shows it once non-empty', async () => {
     const onSearchChange = vi.fn();
     const { user, rerender } = render(
       <ViewHeader {...baseProps} searchQuery="" onSearchChange={onSearchChange} />
     );
 
-    const clearButtons = screen.queryAllByRole('button');
-    expect(
-      clearButtons.every(btn => btn.textContent === 'Wszystkie' || btn.textContent === 'Ulubione')
-    ).toBe(true);
+    expect(screen.queryByRole('button', { name: 'Clear search' })).not.toBeInTheDocument();
 
     rerender(<ViewHeader {...baseProps} searchQuery="coś" onSearchChange={onSearchChange} />);
 
-    const allButtons = screen.getAllByRole('button');
-    const clearButton = allButtons.find(
-      btn => btn.textContent !== 'Wszystkie' && btn.textContent !== 'Ulubione'
-    );
-    expect(clearButton).toBeDefined();
-
-    await user.click(clearButton!);
+    const clearButton = screen.getByRole('button', { name: 'Clear search' });
+    await user.click(clearButton);
     expect(onSearchChange).toHaveBeenCalledWith('');
   });
 
-  it('renders filter tabs and calls onFilterChange on click', async () => {
+  it('renders filter tabs in a tablist and calls onFilterChange on click', async () => {
     const onFilterChange = vi.fn();
     const { user } = render(<ViewHeader {...baseProps} onFilterChange={onFilterChange} />);
 
-    expect(screen.getByText('Wszystkie')).toBeInTheDocument();
-    expect(screen.getByText('Ulubione')).toBeInTheDocument();
-
-    await user.click(screen.getByText('Ulubione'));
+    expect(screen.getAllByRole('tab')).toHaveLength(2);
+    await user.click(screen.getByRole('tab', { name: 'Ulubione' }));
     expect(onFilterChange).toHaveBeenCalledWith('fav');
   });
 
-  it('applies active styling to the active filter', () => {
+  it('marks the active filter tab with aria-selected', () => {
     render(<ViewHeader {...baseProps} activeFilter="fav" />);
 
-    const favButton = screen.getByText('Ulubione').closest('button')!;
-    const allButton = screen.getByText('Wszystkie').closest('button')!;
-
-    expect(favButton.className).toContain('bg-primary/15');
-    expect(allButton.className).not.toContain('bg-primary/15');
+    expect(screen.getByRole('tab', { name: 'Ulubione' })).toHaveAttribute('aria-selected', 'true');
+    expect(screen.getByRole('tab', { name: 'Wszystkie' })).toHaveAttribute(
+      'aria-selected',
+      'false'
+    );
   });
 
-  it('renders view mode toggles when onViewModeChange is provided', async () => {
+  it('renders accessible view-mode toggles and fires onViewModeChange', async () => {
     const onViewModeChange = vi.fn();
     const { user } = render(
       <ViewHeader {...baseProps} viewMode="grid" onViewModeChange={onViewModeChange} />
     );
 
-    const allButtons = screen.getAllByRole('button');
-    expect(allButtons.length).toBe(2);
+    const gridButton = screen.getByRole('button', { name: 'Grid view' });
+    const listButton = screen.getByRole('button', { name: 'List view' });
+    expect(gridButton).toBeInTheDocument();
+    expect(listButton).toBeInTheDocument();
 
-    const iconOnlyButtons = allButtons.filter(btn => btn.textContent === '');
-    expect(iconOnlyButtons.length).toBe(2);
-
-    await user.click(iconOnlyButtons[1]);
+    await user.click(listButton);
     expect(onViewModeChange).toHaveBeenCalledWith('list');
 
-    await user.click(iconOnlyButtons[0]);
+    await user.click(gridButton);
     expect(onViewModeChange).toHaveBeenCalledWith('grid');
   });
 
   it('does not render view mode toggles when onViewModeChange is not provided', () => {
     render(<ViewHeader {...baseProps} />);
 
-    expect(screen.queryAllByRole('button')).toHaveLength(0);
+    expect(screen.queryByRole('button', { name: 'Grid view' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'List view' })).not.toBeInTheDocument();
     expect(screen.getAllByRole('tab')).toHaveLength(2);
   });
 });

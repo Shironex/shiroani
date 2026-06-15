@@ -30,7 +30,7 @@ export default function ComingSoonPlaceholder({
         }}
       />
       <div className="relative flex size-14 items-center justify-center rounded-2xl border border-primary/30 bg-primary/10 text-primary">
-        <Icon className="size-6" />
+        <Icon className="size-6" aria-hidden="true" />
       </div>
       <div className="relative flex flex-col gap-2">
         <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.22em] text-primary">

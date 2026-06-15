@@ -171,4 +171,29 @@ describe('NavigationDock', () => {
     await user.click(logoButton);
     expect(setExpanded).toHaveBeenCalledWith(true);
   });
+
+  it('omits hidden views and never hides the always-visible Settings view', () => {
+    useDockStore.setState({ hiddenViews: ['library', 'diary', 'settings'] });
+    render(<NavigationDock hasBg={false} />);
+
+    expect(screen.queryByRole('button', { name: 'Library' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Diary' })).not.toBeInTheDocument();
+    // Settings is always visible regardless of the hidden set.
+    expect(screen.getByRole('button', { name: 'Settings' })).toBeInTheDocument();
+  });
+
+  it('renders visible items in the store-defined order', () => {
+    useDockStore.setState({
+      order: ['settings', 'browser', 'library'],
+      hiddenViews: ['diary', 'schedule', 'feed', 'discover', 'social', 'profile', 'changelog'],
+    });
+    render(<NavigationDock hasBg={false} />);
+
+    const labels = screen
+      .getAllByRole('button')
+      .map(b => b.getAttribute('aria-label'))
+      // Drop the drag handle, which has no nav label of its own.
+      .filter(name => name !== 'Move dock');
+    expect(labels).toEqual(['Settings', 'Browser', 'Library']);
+  });
 });

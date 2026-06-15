@@ -42,7 +42,7 @@ export default function AniListErrorState({ error, onRetry, className }: IAniLis
           </div>
           {onRetry && (
             <Button variant="outline" size="sm" className="gap-1.5 text-xs h-8" onClick={onRetry}>
-              <RefreshCw className="w-3.5 h-3.5" />
+              <RefreshCw className="w-3.5 h-3.5" aria-hidden="true" />
               {t('anilistError.retry')}
             </Button>
           )}

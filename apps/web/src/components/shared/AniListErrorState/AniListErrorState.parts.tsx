@@ -22,7 +22,7 @@ export function ErrorStage() {
           />
           <div className="absolute inset-0 grid place-items-center">
             <div className="size-14 rounded-full bg-destructive/20 border border-destructive/40 grid place-items-center shadow-[0_8px_24px_oklch(0.55_0.18_25_/_0.25)]">
-              <CloudOff className="size-7 text-destructive" />
+              <CloudOff className="size-7 text-destructive" aria-hidden="true" />
             </div>
           </div>
         </div>

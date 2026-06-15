@@ -10,15 +10,17 @@ export default function ProgressBar({
   indeterminate = false,
   className,
   style,
+  'aria-label': ariaLabel,
   ...props
 }: IProgressBarProps) {
-  const { clamped, fillClass, toneVar } = useProgressBar({ value, tone });
+  const { clamped, fillClass, toneVar, resolvedLabel } = useProgressBar({ value, tone, ariaLabel });
 
   return (
     <div
       className={cn('relative w-full overflow-hidden rounded-full bg-foreground/8', className)}
       style={{ height: `${thickness}px`, ...style }}
       role="progressbar"
+      aria-label={resolvedLabel}
       aria-valuenow={indeterminate ? undefined : clamped}
       aria-valuemin={0}
       aria-valuemax={100}

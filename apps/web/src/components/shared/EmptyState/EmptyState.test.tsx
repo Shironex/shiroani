@@ -24,8 +24,30 @@ describe('EmptyState', () => {
     expect(onClick).toHaveBeenCalledTimes(1);
   });
 
+  it('renders an action button without an icon when none is supplied', async () => {
+    const onClick = vi.fn();
+    const { user } = render(
+      <EmptyState
+        icon={Star}
+        title="Brak wyników"
+        subtitle="Spróbuj zmienić filtry"
+        action={{ label: 'Odśwież', onClick }}
+      />
+    );
+    const button = screen.getByRole('button', { name: 'Odśwież' });
+    await user.click(button);
+    expect(onClick).toHaveBeenCalledTimes(1);
+  });
+
   it('omits the action button when no action is provided', () => {
     render(<EmptyState icon={Star} title="Brak wyników" subtitle="Spróbuj zmienić filtry" />);
     expect(screen.queryByRole('button')).not.toBeInTheDocument();
+  });
+
+  it('renders the leading icon as decorative so it is hidden from the a11y tree', () => {
+    const { container } = render(
+      <EmptyState icon={Star} title="Brak wyników" subtitle="Spróbuj zmienić filtry" />
+    );
+    expect(container.querySelector('svg[aria-hidden="true"]')).toBeInTheDocument();
   });
 });

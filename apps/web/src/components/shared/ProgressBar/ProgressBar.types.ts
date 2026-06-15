@@ -23,4 +23,6 @@ export interface IProgressBarView {
   readonly clamped: number;
   readonly fillClass: string;
   readonly toneVar: string;
+  /** Resolved accessible name for the progressbar (caller label or localized default). */
+  readonly resolvedLabel: string;
 }
