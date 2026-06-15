@@ -16,6 +16,8 @@ const meta = {
   title: 'settings/DeleteAllDataDialog',
   component: DeleteAllDataDialog,
   parameters: {
+    // Portals to document.body — render its Docs preview in an iframe so the overlay + scroll-lock stay inside the preview block.
+    docs: { story: { inline: false, iframeHeight: 460 } },
     layout: 'centered',
     // The dialog title, labelled input, and named footer buttons pass axe clean.
     a11y: { test: 'error' },

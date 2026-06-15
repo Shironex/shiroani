@@ -15,6 +15,9 @@ const meta = {
   title: 'browser/AddToLibraryDialog',
   component: AddToLibraryDialog,
   parameters: {
+    // Dialog portals to document.body — render its Docs preview in an iframe so
+    // the overlay (and its scroll-lock) stays inside the preview block.
+    docs: { story: { inline: false, iframeHeight: 620 } },
     // The dialog is titled/described, every field is labelled, and both action
     // buttons are named, so axe passes clean.
     a11y: { test: 'error' },

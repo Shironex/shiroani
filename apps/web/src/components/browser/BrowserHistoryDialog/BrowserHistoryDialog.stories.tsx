@@ -24,6 +24,8 @@ const meta = {
   title: 'browser/BrowserHistoryDialog',
   component: BrowserHistoryDialog,
   parameters: {
+    // Portals to document.body — render its Docs preview in an iframe so the overlay + scroll-lock stay inside the preview block.
+    docs: { story: { inline: false, iframeHeight: 640 } },
     // The dialog is titled/described, the search input labelled, and every
     // row/clear button named, so axe passes clean.
     a11y: { test: 'error' },

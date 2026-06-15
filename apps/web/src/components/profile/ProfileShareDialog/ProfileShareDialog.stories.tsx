@@ -13,6 +13,8 @@ const meta = {
   title: 'profile/ProfileShareDialog',
   component: ProfileShareDialog,
   parameters: {
+    // Portals to document.body — render its Docs preview in an iframe so the overlay + scroll-lock stay inside the preview block.
+    docs: { story: { inline: false, iframeHeight: 600 } },
     layout: 'fullscreen',
     a11y: { test: 'error' },
   },

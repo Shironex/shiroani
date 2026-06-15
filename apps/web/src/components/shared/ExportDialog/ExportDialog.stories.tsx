@@ -13,6 +13,8 @@ const meta = {
   title: 'shared/ExportDialog',
   component: ExportDialog,
   parameters: {
+    // Portals to document.body — render its Docs preview in an iframe so the overlay + scroll-lock stay inside the preview block.
+    docs: { story: { inline: false, iframeHeight: 560 } },
     a11y: { test: 'error' },
   },
   argTypes: {

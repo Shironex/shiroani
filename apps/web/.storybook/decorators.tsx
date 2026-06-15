@@ -1,5 +1,32 @@
 import type { Decorator } from '@storybook/react-vite';
 
+/*
+ * NOTE — portal-to-body components (dialogs, alert-dialogs, modals, sheets) must
+ * render their Docs preview in an iframe so the `position: fixed` overlay (and an
+ * open Radix dialog's scroll-lock) stays inside the preview block instead of
+ * covering the whole Docs page. Set this DIRECTLY in the component's meta:
+ *
+ *   parameters: { docs: { story: { inline: false, iframeHeight: 620 } } }
+ *
+ * It must be an inline object literal, NOT a spread helper (`...fn()` / `...const`):
+ * Storybook statically parses the CSF `parameters` for docs render config and can't
+ * see through a spread, so `inline: false` is silently dropped (verified). Canvas
+ * rendering and play-function tests run in `story` viewMode, unaffected by this.
+ */
+
+/**
+ * Bounded height for the host in a Docs page vs. the standalone Canvas.
+ *
+ * In the Canvas view each story runs in its own iframe, so `100vh` resolves to
+ * the iframe's height — a real bound the view's inner `overflow-y-auto` can
+ * scroll against. On a Docs page the story renders *inline* (no iframe), so
+ * `100vh` would resolve to the whole browser viewport: the inner scroll viewport
+ * never gets a bounded parent and the docs preview just clips it (can't scroll).
+ * Inline docs therefore get a fixed, scrollable preview height instead.
+ */
+const hostHeight = (viewMode: string | undefined) =>
+  viewMode === 'docs' ? 'min(100vh, 600px)' : '100vh';
+
 /**
  * Full-viewport-height flex host for `*View` stories. In the app these views
  * render inside a height-constrained `flex-1` <main>; their own root is
@@ -8,8 +35,8 @@ import type { Decorator } from '@storybook/react-vite';
  * not, so the content clips and can't scroll — pair this decorator with
  * `parameters.layout: 'fullscreen'` to restore the app's height context.
  */
-export const withFullHeight: Decorator = Story => (
-  <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
+export const withFullHeight: Decorator = (Story, context) => (
+  <div style={{ height: hostHeight(context.viewMode), display: 'flex', flexDirection: 'column' }}>
     <Story />
   </div>
 );
@@ -30,10 +57,10 @@ export const withFullHeight: Decorator = Story => (
  * the `@source '../src/**'` scan, so `bg-background`/`text-foreground` utilities
  * would never be generated for it (same reason `withFullHeight` is inline).
  */
-export const withAppSurface: Decorator = Story => (
+export const withAppSurface: Decorator = (Story, context) => (
   <div
     style={{
-      height: '100vh',
+      height: hostHeight(context.viewMode),
       display: 'flex',
       flexDirection: 'column',
       background: 'var(--background)',

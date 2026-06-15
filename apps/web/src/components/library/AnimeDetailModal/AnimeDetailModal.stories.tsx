@@ -27,6 +27,8 @@ const meta = {
   title: 'library/AnimeDetailModal',
   component: AnimeDetailModal,
   parameters: {
+    // Portals to document.body — render its Docs preview in an iframe so the overlay + scroll-lock stay inside the preview block.
+    docs: { story: { inline: false, iframeHeight: 760 } },
     layout: 'fullscreen',
     // The embedded SliderInputField fields label their sliders via
     // aria-labelledby, which the shared Slider primitive now forwards to the

@@ -45,6 +45,8 @@ const meta = {
   title: 'feed/FeedReaderModal',
   component: FeedReaderModal,
   parameters: {
+    // Portals to document.body — render its Docs preview in an iframe so the overlay + scroll-lock stay inside the preview block.
+    docs: { story: { inline: false, iframeHeight: 760 } },
     // Top-bar controls carry accessible names; the dialog has an sr-only title
     // and description. The reader passes axe clean.
     a11y: { test: 'error' },

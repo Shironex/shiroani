@@ -1,2 +1,19 @@
 @import '../src/styles/globals.css';
 @source '../src/**/*.{ts,tsx}';
+
+/*
+ * The app shell locks the window: globals.css sets `body { overflow: hidden }`
+ * (in `@layer base`) so the Electron window never scrolls and inner panels own
+ * scrolling. Storybook's preview imports that same stylesheet, so the docs-page
+ * iframe inherits the lock — and a long autodocs page (description + preview +
+ * args table) can't scroll. Re-enable scrolling for the docs iframe only.
+ *
+ * Scoped via `.sbdocs-wrapper`, which exists solely on Docs pages (`#storybook-docs`
+ * is shown, `#storybook-root` hidden) — so the Canvas keeps the app-faithful
+ * `overflow: hidden`. `!important` is required: the app rule lives in Tailwind's
+ * `base` layer and, due to v4 layer ordering here, a plain scoped rule loses to
+ * it (verified) — `!important` is the minimal override for a global base rule.
+ */
+body:has(.sbdocs-wrapper) {
+  overflow: auto !important;
+}
