@@ -78,27 +78,12 @@ export default defineConfig(
     },
   },
 
-  // ── Track B: frontend component-folder architecture (per-feature rollout) ──
-  // Scoped to migrated features only; this glob widens by one feature per chunk
-  // (collapses to src/components/** once all are migrated). Sidecars
-  // (.stories/.test/.parts) and design-system primitives (components/ui) are
-  // exempt — they legitimately hold state, computation, and free-form structure.
+  // ── Track B: frontend component-folder architecture (all features migrated) ──
+  // The per-feature rollout is complete, so the glob now covers every component.
+  // Sidecars (.stories/.test/.parts) and design-system primitives (components/ui)
+  // are exempt — they legitimately hold state, computation, and free-form structure.
   {
-    files: [
-      'apps/web/src/components/social/**/*.{ts,tsx}',
-      'apps/web/src/components/changelog/**/*.{ts,tsx}',
-      'apps/web/src/components/onboarding/**/*.{ts,tsx}',
-      'apps/web/src/components/splash/**/*.{ts,tsx}',
-      'apps/web/src/components/feed/**/*.{ts,tsx}',
-      'apps/web/src/components/discover/**/*.{ts,tsx}',
-      'apps/web/src/components/diary/**/*.{ts,tsx}',
-      'apps/web/src/components/schedule/**/*.{ts,tsx}',
-      'apps/web/src/components/browser/**/*.{ts,tsx}',
-      'apps/web/src/components/library/**/*.{ts,tsx}',
-      'apps/web/src/components/profile/**/*.{ts,tsx}',
-      'apps/web/src/components/settings/**/*.{ts,tsx}',
-      'apps/web/src/components/shared/**/*.{ts,tsx}',
-    ],
+    files: ['apps/web/src/components/**/*.{ts,tsx}'],
     ignores: ['**/*.stories.tsx', '**/*.test.tsx', '**/*.parts.tsx', '**/components/ui/**'],
     plugins: { repo },
     rules: {
