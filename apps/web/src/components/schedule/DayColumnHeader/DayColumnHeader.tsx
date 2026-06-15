@@ -15,8 +15,14 @@ export default function DayColumnHeader({ day, label, entryCount }: IDayColumnHe
   return (
     <div
       className={cn(
-        'sticky top-0 z-10 shrink-0 px-3 py-3 text-center border-b border-border-glass backdrop-blur-sm',
-        isTodayDay ? 'bg-primary/10' : 'bg-card/20'
+        // No backdrop-blur here: this header repeats ×7 (one per day column) and
+        // is sticky, so a backdrop-filter would promote 7 always-on compositor
+        // layers + backdrop captures — in the poster grid (full-bleed covers) on
+        // a fullscreen Retina viewport that overruns Chromium's raster-tile
+        // budget and the view flickers. An opaque/near-opaque background occludes
+        // the scrolling cards underneath for free. See feedback_gpu_layers.
+        'sticky top-0 z-10 shrink-0 px-3 py-3 text-center border-b border-border-glass',
+        isTodayDay ? 'bg-[color-mix(in_oklch,var(--primary)_14%,var(--card))]' : 'bg-card/85'
       )}
     >
       <span

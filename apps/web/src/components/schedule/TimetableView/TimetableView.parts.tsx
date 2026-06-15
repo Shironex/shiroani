@@ -153,10 +153,14 @@ const PosterCard = memo(function PosterCard({
         </span>
       </div>
 
-      {/* Bell — top-right on hover */}
+      {/* Bell — top-right on hover. Solid scrim instead of backdrop-blur: this
+          renders once per poster card, so a backdrop-filter here multiplies
+          compositor layers across the whole grid and (in fullscreen) blows the
+          raster-tile budget → flicker. A darker opaque chip reads the same over
+          the cover. See feedback_gpu_layers. */}
       <SubscribeBellButton
         anime={anime}
-        className="absolute top-7 right-[6px] w-6 h-6 bg-black/40 backdrop-blur-sm z-[2]"
+        className="absolute top-7 right-[6px] w-6 h-6 bg-black/55 z-[2]"
         iconClassName="w-3 h-3"
       />
 
