@@ -10,8 +10,22 @@ import {
   SUPPORTED_LANGUAGES,
 } from '@shiroani/shared';
 import { TooltipProvider } from '@/components/ui/tooltip';
+import { initializeSocket } from '@/lib/socket';
 import i18n from '@/lib/i18n';
 import './preview.css';
+
+/**
+ * Stories seed Zustand stores directly and never reach the backend, but view
+ * hooks still attach socket listeners on mount (initListeners → getSocket),
+ * which throws if no socket singleton exists. Initialize a dormant socket
+ * (autoConnect is false, so it never opens a connection) so getSocket() resolves
+ * cleanly in both the Storybook UI and the addon-vitest browser run.
+ */
+try {
+  initializeSocket(0);
+} catch {
+  // Already initialized (HMR re-eval / repeated renders) — safe to ignore.
+}
 
 /**
  * Built-in theme tokens are scoped to `:root.<theme>`; dark themes additionally
@@ -57,6 +71,8 @@ const withTooltip: Decorator = Story => (
 );
 
 const preview: Preview = {
+  // Generate a Docs page for every component from its args/argTypes + JSDoc.
+  tags: ['autodocs'],
   initialGlobals: {
     locale: DEFAULT_LANGUAGE,
   },
@@ -84,6 +100,13 @@ const preview: Preview = {
         color: /(background|color)$/i,
         date: /Date$/i,
       },
+    },
+    // Accessibility (axe) runs as part of the Vitest-addon story tests. Default
+    // is 'todo' (violations surface as warnings, non-blocking) so the suite is
+    // green repo-wide while we ratchet feature-by-feature; audited features set
+    // `parameters.a11y.test = 'error'` at the meta level to enforce in CI.
+    a11y: {
+      test: 'todo',
     },
   },
 };
