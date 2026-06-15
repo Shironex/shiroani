@@ -11,48 +11,63 @@ import type { ISortableTabProps, ITabContentProps } from './BrowserTabBar.types'
 // Re-export for SortableContext consumers (kept colocated with the sortable).
 export { horizontalListSortingStrategy };
 
-/** Presentational tab component used for the drag overlay */
+const CHIP_CLASS = cn(
+  'group relative flex items-center gap-2 h-[30px] px-3 text-[11.5px] font-medium',
+  'rounded-t-[9px] border-b-0 shrink-0 min-w-[120px] max-w-[220px]',
+  'transition-colors duration-150'
+);
+
+function chipStateClass(isActive: boolean, isDragOverlay: boolean, isMergeTarget: boolean): string {
+  return cn(
+    isActive
+      ? [
+          'bg-card/90 text-foreground',
+          'border border-border-glass',
+          // Primary-tinted top glow
+          'shadow-[inset_0_1px_0_oklch(from_var(--primary)_l_c_h/0.35)]',
+        ].join(' ')
+      : 'text-muted-foreground/90 border border-transparent hover:bg-foreground/[0.04] hover:text-foreground/90',
+    isDragOverlay && 'shadow-lg ring-1 ring-primary/30 opacity-90',
+    isMergeTarget && 'ring-1 ring-primary/60 bg-primary/[0.08]'
+  );
+}
+
+/** Favicon (or spinner / fallback globe) for a tab chip. */
+function TabFavicon({ tab }: { tab: ITabContentProps['tab'] }) {
+  const [imgError, setImgError] = useState(false);
+  if (tab.isLoading) {
+    return <Loader2 className="w-3 h-3 shrink-0 animate-spin text-primary" />;
+  }
+  if (tab.favicon && !imgError) {
+    return (
+      <img
+        src={tab.favicon}
+        alt=""
+        className="w-3.5 h-3.5 shrink-0 rounded-[3px]"
+        onError={() => setImgError(true)}
+      />
+    );
+  }
+  return <Globe className="w-3 h-3 shrink-0 opacity-70" />;
+}
+
+/**
+ * Presentational tab chip used for the drag overlay. Mirrors the interactive
+ * chip's look (favicon + title + split indicator) without the role="tab" /
+ * close-button affordances, which only the live SortableTab needs.
+ */
 export function TabContent({
   tab,
   isActive,
   isSplit,
-  onClose,
   isDragOverlay = false,
   isMergeTarget = false,
 }: ITabContentProps) {
   const { t } = useTranslation('browser');
-  const [imgError, setImgError] = useState(false);
 
   return (
-    <div
-      className={cn(
-        'group relative flex items-center gap-2 h-[30px] px-3 text-[11.5px] font-medium',
-        'rounded-t-[9px] border-b-0 shrink-0 min-w-[120px] max-w-[220px]',
-        'transition-colors duration-150',
-        isActive
-          ? [
-              'bg-card/90 text-foreground',
-              'border border-border-glass',
-              // Primary-tinted top glow
-              'shadow-[inset_0_1px_0_oklch(from_var(--primary)_l_c_h/0.35)]',
-            ].join(' ')
-          : 'text-muted-foreground/90 border border-transparent hover:bg-foreground/[0.04] hover:text-foreground/90',
-        isDragOverlay && 'shadow-lg ring-1 ring-primary/30 opacity-90',
-        isMergeTarget && 'ring-1 ring-primary/60 bg-primary/[0.08]'
-      )}
-    >
-      {tab.isLoading ? (
-        <Loader2 className="w-3 h-3 shrink-0 animate-spin text-primary" />
-      ) : tab.favicon && !imgError ? (
-        <img
-          src={tab.favicon}
-          alt=""
-          className="w-3.5 h-3.5 shrink-0 rounded-[3px]"
-          onError={() => setImgError(true)}
-        />
-      ) : (
-        <Globe className="w-3 h-3 shrink-0 opacity-70" />
-      )}
+    <div className={cn(CHIP_CLASS, chipStateClass(isActive, isDragOverlay, isMergeTarget))}>
+      <TabFavicon tab={tab} />
       <span className="truncate flex-1">{tab.title || t('tabs.newTab')}</span>
       {isSplit && !isMergeTarget && (
         <Columns2 className="w-3 h-3 shrink-0 text-primary/70" aria-label={t('tabs.split')} />
@@ -63,25 +78,21 @@ export function TabContent({
           className="pointer-events-none absolute inset-y-1 left-1/2 w-px bg-primary/70"
         />
       )}
-      {onClose && (
-        <button
-          onClick={onClose}
-          aria-label={t('tabs.close')}
-          className={cn(
-            'grid size-4 place-items-center rounded-sm shrink-0',
-            'transition-opacity duration-150',
-            'hover:bg-destructive/20 hover:text-destructive',
-            isActive ? 'opacity-80 hover:opacity-100' : 'opacity-0 group-hover:opacity-80'
-          )}
-        >
-          <X className="w-2.5 h-2.5" />
-        </button>
-      )}
     </div>
   );
 }
 
-/** Sortable wrapper for each tab, with an inner merge droppable. */
+/**
+ * Sortable tab chip: a single `role="tab"` element (the only focusable control
+ * in the chip) plus a presentational close affordance.
+ *
+ * A tablist may only contain `tab` children, and a `tab` may not nest another
+ * focusable control — so the visible close icon is a non-focusable
+ * `<span aria-hidden>` driven by click. Keyboard / screen-reader users close
+ * the focused tab with Delete or Backspace, which `aria-keyshortcuts`
+ * advertises; mouse users click the X. The whole chip is also the dnd-kit
+ * sortable + drag activator.
+ */
 export function SortableTab({
   tab,
   isActive,
@@ -93,6 +104,7 @@ export function SortableTab({
   isDraggingThisTab,
   splitEnabled,
 }: ISortableTabProps) {
+  const { t } = useTranslation('browser');
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: tab.id,
   });
@@ -123,9 +135,13 @@ export function SortableTab({
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
         onSelect();
+      } else if (e.key === 'Delete' || e.key === 'Backspace') {
+        // Keyboard-accessible close path — the visible X is presentational.
+        e.preventDefault();
+        onClose(e);
       }
     },
-    [onSelect]
+    [onSelect, onClose]
   );
 
   return (
@@ -134,24 +150,47 @@ export function SortableTab({
       style={style}
       {...attributes}
       {...listeners}
-      className={cn(
-        'relative cursor-pointer transition-all duration-150 flex items-end',
-        isDragging && 'z-10'
-      )}
       role="tab"
       aria-selected={isActive}
+      aria-keyshortcuts="Delete"
       tabIndex={isActive ? 0 : -1}
       onClick={handleClick}
       onKeyDown={handleKeyDown}
+      className={cn(
+        'group relative flex cursor-pointer items-center outline-none',
+        CHIP_CLASS,
+        chipStateClass(isActive, false, isMergeTarget),
+        'pr-1',
+        isDragging && 'z-10'
+      )}
     >
-      <TabContent
-        tab={tab}
-        isActive={isActive}
-        isSplit={isSplit}
-        onClose={onClose}
-        isMergeTarget={isMergeTarget}
-      />
-      {/* Inner 60% merge target — sits above the tab content but below the close button */}
+      <TabFavicon tab={tab} />
+      <span className="truncate flex-1">{tab.title || t('tabs.newTab')}</span>
+      {isSplit && !isMergeTarget && (
+        <Columns2 className="w-3 h-3 shrink-0 text-primary/70" aria-label={t('tabs.split')} />
+      )}
+      {isMergeTarget && (
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-y-1 left-1/2 w-px bg-primary/70"
+        />
+      )}
+      <span
+        role="presentation"
+        aria-hidden="true"
+        data-testid="browser-tab-close"
+        title={t('tabs.close')}
+        onClick={onClose}
+        className={cn(
+          'ml-1 grid size-4 place-items-center rounded-sm shrink-0',
+          'transition-opacity duration-150',
+          'hover:bg-destructive/20 hover:text-destructive',
+          isActive ? 'opacity-80 hover:opacity-100' : 'opacity-0 group-hover:opacity-80'
+        )}
+      >
+        <X className="w-2.5 h-2.5" />
+      </span>
+      {/* Inner 60% merge target — sits above the tab content but below the close affordance */}
       <div
         ref={setMergeRef}
         aria-hidden="true"

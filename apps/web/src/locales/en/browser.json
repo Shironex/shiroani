@@ -34,6 +34,7 @@
   "tabs": {
     "newTab": "New tab",
     "newTabTooltip": "New tab",
+    "listLabel": "Browser tabs",
     "close": "Close tab",
     "split": "Split tab",
     "unsplit": "Unsplit",

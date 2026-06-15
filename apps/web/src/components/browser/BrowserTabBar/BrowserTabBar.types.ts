@@ -1,4 +1,4 @@
-import type { MouseEvent } from 'react';
+import type { KeyboardEvent, MouseEvent } from 'react';
 import type {
   CollisionDetection,
   DragStartEvent,
@@ -36,7 +36,6 @@ export interface ITabContentProps {
   tab: BrowserTab;
   isActive: boolean;
   isSplit?: boolean;
-  onClose?: (e: MouseEvent) => void;
   isDragOverlay?: boolean;
   isMergeTarget?: boolean;
 }
@@ -46,7 +45,8 @@ export interface ISortableTabProps {
   isActive: boolean;
   isSplit: boolean;
   onSelect: () => void;
-  onClose: (e: MouseEvent) => void;
+  /** Fired from the close affordance (click) or the Delete/Backspace shortcut. */
+  onClose: (e: MouseEvent | KeyboardEvent) => void;
   wasDragging: boolean;
   isMergeTarget: boolean;
   isDraggingThisTab: boolean;

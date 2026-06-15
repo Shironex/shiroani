@@ -80,27 +80,32 @@ export default function BrowserTabBar({
         onDragEnd={handleDragEnd}
         onDragCancel={handleDragCancel}
       >
+        {/*
+         * A tablist may only contain `tab` children, so the new-tab button is a
+         * sibling of the list, not a child of it.
+         */}
         <div
           role="tablist"
+          aria-label={t('tabs.listLabel')}
           className="flex items-end gap-[2px] flex-1 min-w-0 overflow-x-auto scrollbar-hide"
         >
           <SortableContext items={tabIds} strategy={horizontalListSortingStrategy}>
             {tabChips}
           </SortableContext>
-
-          {/* New tab button — circle, sits inline next to last tab */}
-          <TooltipButton
-            variant="ghost"
-            size="icon"
-            className="size-7 rounded-full mb-[2px] shrink-0"
-            onClick={onNewTab}
-            data-testid="browser-new-tab"
-            tooltip={t('tabs.newTabTooltip')}
-            tooltipSide="bottom"
-          >
-            <Plus className="w-3.5 h-3.5" />
-          </TooltipButton>
         </div>
+
+        {/* New tab button — circle, sits inline next to last tab */}
+        <TooltipButton
+          variant="ghost"
+          size="icon"
+          className="size-7 rounded-full mb-[2px] shrink-0"
+          onClick={onNewTab}
+          data-testid="browser-new-tab"
+          tooltip={t('tabs.newTabTooltip')}
+          tooltipSide="bottom"
+        >
+          <Plus className="w-3.5 h-3.5" />
+        </TooltipButton>
 
         {/* Drag overlay renders the dragged tab above everything */}
         <DragOverlay dropAnimation={null}>
