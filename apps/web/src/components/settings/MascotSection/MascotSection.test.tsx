@@ -1,21 +1,11 @@
-import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen, waitFor, within } from '@/test/test-utils';
 import i18n from '@/lib/i18n';
 import { useMascotSpriteStore } from '@/stores/useMascotSpriteStore';
 import { MascotSection } from '.';
 
-/**
- * Radix Select calls `hasPointerCapture`/`releasePointerCapture` and scrolls the
- * active option into view; jsdom implements neither. Stub them so the listbox
- * opens and options are clickable under jsdom.
- */
-beforeAll(() => {
-  const proto = window.HTMLElement.prototype;
-  proto.hasPointerCapture ??= () => false;
-  proto.releasePointerCapture ??= () => {};
-  proto.setPointerCapture ??= () => {};
-  proto.scrollIntoView ??= () => {};
-});
+// Radix Select's pointer-capture / scrollIntoView calls are polyfilled globally
+// in src/test/setup.ts, so the listbox opens cleanly under jsdom here.
 
 /**
  * Build a fully-stubbed overlay bridge so the section's mount effect resolves

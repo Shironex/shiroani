@@ -23,6 +23,17 @@ if (typeof globalThis.ResizeObserver === 'undefined') {
   } as unknown as typeof globalThis.ResizeObserver;
 }
 
+// jsdom doesn't implement the Pointer Capture API or scrollIntoView, which Radix
+// UI's Select/Popover/Slider call when opening or focusing. Without these, tests
+// that open a Radix listbox throw. Assign non-destructively so a future jsdom that
+// ships real implementations keeps them.
+if (typeof Element !== 'undefined') {
+  Element.prototype.hasPointerCapture ??= () => false;
+  Element.prototype.setPointerCapture ??= () => {};
+  Element.prototype.releasePointerCapture ??= () => {};
+  Element.prototype.scrollIntoView ??= () => {};
+}
+
 // Mock sonner toast globally
 vi.mock('sonner', () => ({
   toast: Object.assign(vi.fn(), {
