@@ -3,7 +3,6 @@ import { Tv } from 'lucide-react';
 import type { AiringAnime } from '@shiroani/shared';
 import { cn } from '@/lib/utils';
 import { handleImageError } from '@/lib/image-utils';
-import { useActivatable } from '@/hooks/useActivatable';
 import { formatTime, getAnimeTitle, getCoverUrl, type SlotStatus } from '../schedule-utils';
 import { ScheduleDayColumn } from '../ScheduleDayColumn';
 import { SubscribeBellButton } from '../SubscribeBellButton';
@@ -106,9 +105,6 @@ const WeekEventCard = memo(function WeekEventCard({
   const coverUrl = getCoverUrl(anime.media);
   const isLive = status === 'live';
   const isDone = status === 'done';
-  const activatable = useActivatable(onClick ? () => onClick(anime) : undefined, {
-    inactiveRole: 'article',
-  });
 
   const borderColor = isLive
     ? 'border-l-primary'
@@ -129,7 +125,7 @@ const WeekEventCard = memo(function WeekEventCard({
 
   return (
     <div
-      {...activatable}
+      role="article"
       aria-label={title}
       className={cn(
         'group relative rounded-lg border border-l-[3px] pl-2 pr-2.5 py-2 bg-card/40',
@@ -142,6 +138,19 @@ const WeekEventCard = memo(function WeekEventCard({
         membershipTint
       )}
     >
+      {/* Primary "open" affordance — a stretched transparent button covering the
+          card. Keeping it a sibling of the bell (rather than wrapping the card in
+          a role="button") avoids axe's nested-interactive violation; the bell
+          sits at a higher z-index so it stays independently clickable. */}
+      {onClick && (
+        <button
+          type="button"
+          onClick={() => onClick(anime)}
+          aria-label={title}
+          className="absolute inset-0 z-[1] rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
+        />
+      )}
+
       <div className="flex gap-2">
         {/* Cover thumb — 2:3 aspect, helps users scan titles visually */}
         <div
@@ -186,10 +195,10 @@ const WeekEventCard = memo(function WeekEventCard({
         </div>
       </div>
 
-      {/* Bell overlay, top-right */}
+      {/* Bell overlay, top-right — above the stretched open button (z-[1]). */}
       <SubscribeBellButton
         anime={anime}
-        className="absolute top-1 right-1 w-6 h-6"
+        className="absolute top-1 right-1 z-[2] w-6 h-6"
         iconClassName="w-3 h-3"
       />
     </div>

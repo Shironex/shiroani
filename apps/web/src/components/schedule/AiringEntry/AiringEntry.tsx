@@ -6,7 +6,6 @@ import { PillTag } from '@/components/ui/pill-tag';
 import { formatCountdown, formatTime, getAnimeTitle, getCoverUrl } from '../schedule-utils';
 import { formatEpisodeProgress } from '@/lib/anime-utils';
 import { SubscribeBellButton } from '../SubscribeBellButton';
-import { useActivatable } from '@/hooks/useActivatable';
 import type { IAiringEntryProps } from './AiringEntry.types';
 
 const DOW_KEYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'] as const;
@@ -59,12 +58,12 @@ const AiringEntry = memo(function AiringEntry({
       ? 'bg-muted-foreground/40'
       : 'bg-[oklch(0.5_0.15_280)]';
 
-  const activatable = useActivatable(onClick ? () => onClick(anime) : undefined);
+  const ariaLabel = t('entry.ariaLabel', { title, time: formatTime(anime.airingAt) });
 
   return (
     <div
-      {...activatable}
-      aria-label={t('entry.ariaLabel', { title, time: formatTime(anime.airingAt) })}
+      role="article"
+      aria-label={ariaLabel}
       style={style}
       className={cn(
         'group relative flex items-stretch gap-3 rounded-[10px] overflow-hidden',
@@ -74,11 +73,21 @@ const AiringEntry = memo(function AiringEntry({
           : 'bg-card/40 border-border-glass',
         isDone && 'opacity-60',
         onClick && 'cursor-pointer hover:border-border-glass/90 hover:bg-card/60',
-        onClick &&
-          isLive &&
-          'hover:border-primary/60 hover:bg-primary/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
+        onClick && isLive && 'hover:border-primary/60 hover:bg-primary/15'
       )}
     >
+      {/* Primary "open" affordance — a stretched transparent button. Kept a
+          sibling of the bell (not a role="button" wrapping it) so axe's
+          nested-interactive rule passes; the right-action cluster sits above it. */}
+      {onClick && (
+        <button
+          type="button"
+          onClick={() => onClick(anime)}
+          aria-label={ariaLabel}
+          className="absolute inset-0 z-[1] rounded-[10px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
+        />
+      )}
+
       {/* Status mark — 6px stripe */}
       <span aria-hidden="true" className={cn('w-[6px] shrink-0', markClass)} />
 
@@ -119,8 +128,9 @@ const AiringEntry = memo(function AiringEntry({
         </div>
       </div>
 
-      {/* Right actions */}
-      <div className="flex items-center gap-2 pr-3 shrink-0">
+      {/* Right actions — above the stretched open button (z-[1]) so the bell
+          stays independently clickable. */}
+      <div className="relative z-[2] flex items-center gap-2 pr-3 shrink-0">
         {statusLabel && <PillTag variant={statusVariant}>{statusLabel}</PillTag>}
         {isLive && (
           <span

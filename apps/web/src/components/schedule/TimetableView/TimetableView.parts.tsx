@@ -2,7 +2,6 @@ import { memo } from 'react';
 import type { TFunction } from 'i18next';
 import { Film } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useActivatable } from '@/hooks/useActivatable';
 import type { AiringAnime } from '@shiroani/shared';
 import { formatTime, getAnimeTitle, type SlotStatus } from '../schedule-utils';
 import { ScheduleDayColumn } from '../ScheduleDayColumn';
@@ -88,13 +87,10 @@ const PosterCard = memo(function PosterCard({
   const coverUrl = anime.media.coverImage.large || anime.media.coverImage.medium;
   const isLive = status === 'live';
   const isDone = status === 'done';
-  const activatable = useActivatable(onClick ? () => onClick(anime) : undefined, {
-    inactiveRole: 'article',
-  });
 
   return (
     <div
-      {...activatable}
+      role="article"
       aria-label={title}
       className={cn(
         'group relative rounded-[9px] overflow-hidden border border-border-glass',
@@ -102,11 +98,22 @@ const PosterCard = memo(function PosterCard({
         'bg-[linear-gradient(150deg,oklch(0.45_0.14_280),oklch(0.28_0.1_330))]',
         isLive && 'border-primary/60 shadow-[0_0_18px_oklch(from_var(--primary)_l_c_h/0.35)]',
         isDone && 'opacity-55',
-        onClick &&
-          'cursor-pointer hover:border-primary/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
+        onClick && 'cursor-pointer hover:border-primary/50'
       )}
       style={{ aspectRatio: '2 / 2.6' }}
     >
+      {/* Primary "open" affordance — a stretched transparent button covering the
+          poster. Sibling to the bell (not a wrapping role="button") so axe's
+          nested-interactive rule is satisfied; the bell sits above it via z-index. */}
+      {onClick && (
+        <button
+          type="button"
+          onClick={() => onClick(anime)}
+          aria-label={title}
+          className="absolute inset-0 z-[1] rounded-[9px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
+        />
+      )}
+
       {/* Cover image */}
       {coverUrl ? (
         <img
