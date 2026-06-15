@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { ArrowLeft, ExternalLink, Share2, Bookmark } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { handleImageError } from '@/lib/image-utils';
+import { readableTextColor } from '@/lib/color-utils';
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { TooltipButton } from '@/components/ui/tooltip-button';
@@ -92,8 +93,11 @@ function FeedReaderModal({
             )}
           >
             <span
-              className="w-4 h-4 rounded-[3px] grid place-items-center text-white font-serif font-bold text-[10px] shrink-0"
-              style={{ backgroundColor: item.sourceColor }}
+              className="w-4 h-4 rounded-[3px] grid place-items-center font-serif font-bold text-[10px] shrink-0"
+              style={{
+                backgroundColor: item.sourceColor,
+                color: readableTextColor(item.sourceColor),
+              }}
             >
               {item.sourceName.charAt(0).toUpperCase()}
             </span>
@@ -189,8 +193,8 @@ function FeedReaderModal({
               <PillTag
                 variant="muted"
                 style={{
-                  backgroundColor: `${item.sourceColor}26`,
-                  color: item.sourceColor,
+                  backgroundColor: item.sourceColor,
+                  color: readableTextColor(item.sourceColor),
                 }}
               >
                 {item.sourceName}

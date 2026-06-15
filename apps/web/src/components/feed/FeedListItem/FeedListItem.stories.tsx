@@ -42,12 +42,10 @@ const meta = {
     },
   },
   parameters: {
-    // TODO(a11y): the source pill tints its background + text with the source's
-    // own brand color (here Crunchyroll #f47521), which yields a sub-4.5:1
-    // contrast ratio for some brands. The tint scheme is shared across feed
-    // surfaces (and the ui/PillTag primitive) — fixing it is out of scope for a
-    // single row. Left as 'todo' so the data-driven brand contrast doesn't fail.
-    a11y: { test: 'todo' },
+    // The source pill fills with the source's brand color and picks black/white
+    // text by luminance (readableTextColor), so it meets AA for any brand — axe
+    // is enforced as an error.
+    a11y: { test: 'error' },
   },
 } satisfies Meta<typeof FeedListItem>;
 

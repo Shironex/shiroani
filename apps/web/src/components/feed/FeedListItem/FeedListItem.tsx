@@ -2,6 +2,7 @@ import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ExternalLink } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { readableTextColor } from '@/lib/color-utils';
 import { PillTag } from '@/components/ui/pill-tag';
 import { useFeedListItem } from './FeedListItem.hooks';
 import { FeedThumb } from './FeedListItem.parts';
@@ -34,8 +35,8 @@ function FeedListItem({ item, unread = false, onOpen, onOpenExternal }: IFeedLis
           <PillTag
             variant="muted"
             style={{
-              backgroundColor: `${item.sourceColor}26`,
-              color: item.sourceColor,
+              backgroundColor: item.sourceColor,
+              color: readableTextColor(item.sourceColor),
             }}
           >
             {item.sourceName}

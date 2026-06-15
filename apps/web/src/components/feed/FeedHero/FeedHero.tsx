@@ -2,6 +2,7 @@ import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { handleImageError } from '@/lib/image-utils';
+import { readableTextColor } from '@/lib/color-utils';
 import { PillTag } from '@/components/ui/pill-tag';
 import { KanjiWatermark } from '@/components/shared/KanjiWatermark';
 import { useFeedHero } from './FeedHero.hooks';
@@ -76,7 +77,12 @@ function FeedHero({ item, onOpen }: IFeedHeroProps) {
         <div className="flex flex-wrap items-center gap-1.5">
           <PillTag className="bg-white/20 text-white/95">{t('hero.featured')}</PillTag>
           <PillTag className="bg-black/35 text-white/95">{categoryLabel}</PillTag>
-          <PillTag className="text-white/95" style={{ backgroundColor: `${item.sourceColor}80` }}>
+          <PillTag
+            style={{
+              backgroundColor: item.sourceColor,
+              color: readableTextColor(item.sourceColor),
+            }}
+          >
             {item.sourceName}
           </PillTag>
         </div>

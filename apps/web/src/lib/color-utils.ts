@@ -100,6 +100,21 @@ export function isValidHexColor(hex: string): boolean {
   return /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/.test(hex);
 }
 
+/**
+ * Pick a legible text color (black or white) for text placed on a solid hex
+ * background, using the WCAG relative-luminance threshold (~0.179). The result
+ * meets AA contrast against that background in any theme, since the chip carries
+ * its own background. Used for brand-colored source chips in the feed.
+ */
+export function readableTextColor(hex: string): '#000000' | '#ffffff' {
+  const [r, g, b] = hexToRgb(hex);
+  const luminance =
+    0.2126 * srgbToLinear(r / 255) +
+    0.7152 * srgbToLinear(g / 255) +
+    0.0722 * srgbToLinear(b / 255);
+  return luminance > 0.179 ? '#000000' : '#ffffff';
+}
+
 // ─── Internal helpers ───────────────────────────────────────────────────────
 
 /**
