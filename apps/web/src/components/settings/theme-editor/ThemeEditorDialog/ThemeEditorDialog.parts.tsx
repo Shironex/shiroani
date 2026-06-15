@@ -11,7 +11,8 @@ interface ThemeGroupSectionProps {
 export function ThemeGroupSection({ group, variables, onVariableChange }: ThemeGroupSectionProps) {
   return (
     <div>
-      <h4 className="text-xs font-medium text-primary mb-2">{group.label}</h4>
+      {/* h3 follows the dialog's h2 title so the heading order stays sequential. */}
+      <h3 className="text-xs font-medium text-primary mb-2">{group.label}</h3>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2">
         {group.variables.map(varName => (
           <ThemeVariableField

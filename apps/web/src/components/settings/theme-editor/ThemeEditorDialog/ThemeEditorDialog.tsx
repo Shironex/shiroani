@@ -78,10 +78,14 @@ export default function ThemeEditorDialog(props: IThemeEditorDialogProps) {
           {/* ── Header section: name, dark/light, base theme ── */}
           <div className="space-y-3">
             <div>
-              <label className="text-xs font-medium text-foreground mb-1 block">
+              <label
+                htmlFor="theme-editor-name"
+                className="text-xs font-medium text-foreground mb-1 block"
+              >
                 {t('themes.editor.name')}
               </label>
               <Input
+                id="theme-editor-name"
                 value={name}
                 onChange={e => setName(e.target.value)}
                 placeholder={t('themes.editor.namePlaceholder')}
@@ -91,18 +95,26 @@ export default function ThemeEditorDialog(props: IThemeEditorDialogProps) {
 
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
-                <label className="text-xs font-medium text-foreground">
+                <label htmlFor="theme-editor-dark" className="text-xs font-medium text-foreground">
                   {t('themes.editor.dark')}
                 </label>
-                <Switch checked={isDark} onCheckedChange={setIsDark} />
+                <Switch
+                  id="theme-editor-dark"
+                  aria-label={t('themes.editor.dark')}
+                  checked={isDark}
+                  onCheckedChange={setIsDark}
+                />
               </div>
 
               <div className="flex-1">
-                <label className="text-xs font-medium text-foreground mb-1 block">
+                <label
+                  id="theme-editor-base-label"
+                  className="text-xs font-medium text-foreground mb-1 block"
+                >
                   {t('themes.editor.baseTheme')}
                 </label>
                 <Select value={baseTheme} onValueChange={handleBaseThemeChange}>
-                  <SelectTrigger className="h-8 text-xs">
+                  <SelectTrigger aria-labelledby="theme-editor-base-label" className="h-8 text-xs">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="max-h-60">{baseThemeItems}</SelectContent>

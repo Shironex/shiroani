@@ -1,3 +1,4 @@
+import { useId } from 'react';
 import { Clock, Image, ExternalLink, MessageCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
@@ -28,6 +29,12 @@ export default function DiscordTemplateEditor(props: IDiscordTemplateEditorProps
   const { t, i18n } = useTranslation('settings');
   useDiscordTemplateEditor();
 
+  // Wire each visible label to its control so the Select trigger (a Radix
+  // combobox button) and the two text inputs all carry an accessible name.
+  const activityId = useId();
+  const line1Id = useId();
+  const line2Id = useId();
+
   // The dropdown labels and variable descriptions ship as `@@i18n:<key>`
   // sentinels in `@shiroani/shared` so they pick up the active UI language
   // here rather than at module-load time. The keys live in the `settings`
@@ -55,14 +62,14 @@ export default function DiscordTemplateEditor(props: IDiscordTemplateEditorProps
     >
       {/* Activity type selector */}
       <div className="space-y-1.5">
-        <label className="text-xs font-medium text-muted-foreground">
+        <label id={activityId} className="text-xs font-medium text-muted-foreground">
           {t('discord.editor.activityType')}
         </label>
         <Select
           value={selectedActivity}
           onValueChange={v => onActivityChange(v as DiscordActivityType)}
         >
-          <SelectTrigger className="h-8 text-sm">
+          <SelectTrigger aria-labelledby={activityId} className="h-8 text-sm">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>{activityItems}</SelectContent>
@@ -74,10 +81,11 @@ export default function DiscordTemplateEditor(props: IDiscordTemplateEditorProps
       {/* Template inputs */}
       <div className="space-y-3">
         <div className="space-y-1.5">
-          <label className="text-xs font-medium text-muted-foreground">
+          <label htmlFor={line1Id} className="text-xs font-medium text-muted-foreground">
             {t('discord.editor.line1')}
           </label>
           <Input
+            id={line1Id}
             className="h-8 text-sm"
             value={currentTemplate.details}
             onChange={e => onTemplateChange(selectedActivity, 'details', e.target.value)}
@@ -85,10 +93,11 @@ export default function DiscordTemplateEditor(props: IDiscordTemplateEditorProps
           />
         </div>
         <div className="space-y-1.5">
-          <label className="text-xs font-medium text-muted-foreground">
+          <label htmlFor={line2Id} className="text-xs font-medium text-muted-foreground">
             {t('discord.editor.line2')}
           </label>
           <Input
+            id={line2Id}
             className="h-8 text-sm"
             value={currentTemplate.state}
             onChange={e => onTemplateChange(selectedActivity, 'state', e.target.value)}

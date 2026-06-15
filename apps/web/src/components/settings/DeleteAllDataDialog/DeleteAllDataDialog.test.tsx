@@ -67,4 +67,23 @@ describe('DeleteAllDataDialog', () => {
     expect(await screen.findByText(/Please try again/)).toBeInTheDocument();
     await waitFor(() => expect(deleteButton()).toBeEnabled());
   });
+
+  it('closes via onOpenChange when Cancel is clicked, without wiping', async () => {
+    const { user, onOpenChange } = setup();
+    await user.click(screen.getByRole('button', { name: 'Cancel' }));
+    expect(onOpenChange).toHaveBeenCalledWith(false);
+    expect(mocks.wipeAllData).not.toHaveBeenCalled();
+  });
+
+  it('confirms via the Enter key once the keyword matches', async () => {
+    const { user, input } = setup();
+    await user.type(input(), `${KEYWORD}{Enter}`);
+    expect(mocks.wipeAllData).toHaveBeenCalledOnce();
+  });
+
+  it('ignores Enter while the keyword does not match', async () => {
+    const { user, input } = setup();
+    await user.type(input(), 'nope{Enter}');
+    expect(mocks.wipeAllData).not.toHaveBeenCalled();
+  });
 });
