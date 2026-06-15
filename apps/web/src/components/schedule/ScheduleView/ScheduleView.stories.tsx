@@ -99,12 +99,8 @@ export const Loading: Story = {
 
 /** Failed fetch — the error state with a retry CTA. */
 export const LoadError: Story = {
-  parameters: {
-    // TODO(a11y): the shared AniListErrorState renders its title as an <h3> with
-    // no preceding h1/h2, tripping axe's heading-order rule. The fix belongs in
-    // the shared component (components/shared/AniListErrorState), out of scope here.
-    a11y: { test: 'todo' },
-  },
+  // AniListErrorState's title is an <h2>, so heading-order stays clean and this
+  // state inherits the meta's a11y 'error'.
   beforeEach: () => {
     useScheduleStore.setState({
       isLoading: false,

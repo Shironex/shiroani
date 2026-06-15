@@ -42,19 +42,10 @@ const meta = {
   parameters: {
     layout: 'fullscreen',
     // Header (h1), search/filter/sort controls, the timeline and the sidebar all
-    // carry accessible names — every interactive-a11y rule is enforced.
-    //
-    // `heading-order` is the lone disabled rule: in the empty states the page
-    // has the ViewHeader's h1, then the right-hand DiarySidebar's empty-activity
-    // placeholder jumps straight to an h3. That h3 comes from the shared
-    // `shared/ComingSoonPlaceholder` (out of scope here); once entries exist the
-    // timeline's h2 day headers bridge the level and the skip disappears.
-    // TODO(a11y): heading-order disabled for empty states — the h3 is owned by
-    // shared/ComingSoonPlaceholder; the fix belongs there, not in diary.
-    a11y: {
-      test: 'error',
-      config: { rules: [{ id: 'heading-order', enabled: false }] },
-    },
+    // carry accessible names, and the empty-activity placeholder's title is an
+    // <h2> (shared ComingSoonPlaceholder) so heading-order stays clean — every
+    // a11y rule is enforced as an error.
+    a11y: { test: 'error' },
   },
   decorators: [withFullHeight],
   beforeEach: () => {

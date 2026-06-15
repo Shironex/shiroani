@@ -36,7 +36,7 @@ export default function ComingSoonPlaceholder({
         <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.22em] text-primary">
           {finalTag}
         </span>
-        <h3 className="font-serif text-xl font-bold tracking-tight text-foreground">{title}</h3>
+        <h2 className="font-serif text-xl font-bold tracking-tight text-foreground">{title}</h2>
         {description ? (
           <p className="max-w-[44ch] text-sm text-muted-foreground">{description}</p>
         ) : null}

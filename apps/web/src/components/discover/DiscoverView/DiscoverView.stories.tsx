@@ -89,12 +89,8 @@ export const Loading: Story = {
 
 /** Failed fetch — the AniList error state with a retry CTA replaces the grid. */
 export const LoadError: Story = {
-  // The shared AniListErrorState renders its title as an <h3>, which follows the
-  // view's <h1> directly and trips axe's heading-order rule (h1 → h3). The
-  // heading level lives in the shared component (out of this feature's scope),
-  // so the rule is scoped off for this state only.
-  // TODO(a11y): fix heading level in shared AniListErrorState, then drop this.
-  parameters: { a11y: { config: { rules: [{ id: 'heading-order', enabled: false }] } } },
+  // AniListErrorState's title is an <h2>, so it follows the view's <h1> cleanly —
+  // heading-order passes and this state inherits the meta's a11y 'error'.
   beforeEach: () => seedSocketFree({ trending: [], error: 'network down' }),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);

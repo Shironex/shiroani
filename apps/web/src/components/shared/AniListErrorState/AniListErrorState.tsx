@@ -33,9 +33,9 @@ export default function AniListErrorState({ error, onRetry, className }: IAniLis
         <ErrorStage />
         <div className="px-5 py-4 space-y-3 text-center">
           <div className="space-y-1">
-            <h3 className="font-serif font-bold text-[16px] leading-tight tracking-[-0.01em] text-destructive">
+            <h2 className="font-serif font-bold text-[16px] leading-tight tracking-[-0.01em] text-destructive">
               {title}
-            </h3>
+            </h2>
             {body && (
               <p className="text-[12px] text-muted-foreground leading-snug break-words">{body}</p>
             )}
