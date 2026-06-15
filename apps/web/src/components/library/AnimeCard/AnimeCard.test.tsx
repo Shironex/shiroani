@@ -1,4 +1,5 @@
 import { render, screen } from '@/test/test-utils';
+import { useLibraryStore } from '@/stores/useLibraryStore';
 import AnimeCard from './AnimeCard';
 import type { AnimeEntry } from '@shiroani/shared';
 
@@ -31,6 +32,7 @@ describe('AnimeCard', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    useLibraryStore.setState({ selectionMode: false, selectedIds: new Set() });
   });
 
   it('renders anime title', () => {
@@ -95,7 +97,9 @@ describe('AnimeCard', () => {
     const entry = createEntry();
     const { user } = render(<AnimeCard entry={entry} onSelect={onSelect} />);
 
-    await user.click(screen.getByText('Steins;Gate'));
+    // The card's primary affordance is the stretched button carrying the
+    // "{title}, {status}" accessible name.
+    await user.click(screen.getByRole('button', { name: /Steins;Gate/ }));
 
     expect(onSelect).toHaveBeenCalledWith(entry);
   });
@@ -180,5 +184,92 @@ describe('AnimeCard', () => {
     render(<AnimeCard entry={createEntry()} onSelect={onSelect} />);
 
     expect(screen.queryByLabelText('Remove')).not.toBeInTheDocument();
+  });
+
+  it('exposes a button role with the title+status accessible name (non-selection mode)', () => {
+    render(<AnimeCard entry={createEntry({ status: 'watching' })} onSelect={onSelect} />);
+
+    // ariaLabel = "{{title}}, {{status}}"
+    expect(screen.getByRole('button', { name: 'Steins;Gate, Watching' })).toBeInTheDocument();
+  });
+
+  it('calls onSelect when Enter is pressed on the focused card (non-selection mode)', async () => {
+    const entry = createEntry();
+    const { user } = render(<AnimeCard entry={entry} onSelect={onSelect} />);
+
+    const card = screen.getByRole('button', { name: /Steins;Gate/ });
+    card.focus();
+    await user.keyboard('{Enter}');
+
+    expect(onSelect).toHaveBeenCalledWith(entry);
+  });
+
+  it('calls onSelect when Space is pressed on the focused card (non-selection mode)', async () => {
+    const entry = createEntry();
+    const { user } = render(<AnimeCard entry={entry} onSelect={onSelect} />);
+
+    const card = screen.getByRole('button', { name: /Steins;Gate/ });
+    card.focus();
+    await user.keyboard('[Space]');
+
+    expect(onSelect).toHaveBeenCalledWith(entry);
+  });
+
+  describe('selection mode', () => {
+    beforeEach(() => {
+      useLibraryStore.setState({ selectionMode: true, selectedIds: new Set() });
+    });
+
+    it('renders a checkbox role that is unchecked when not selected', () => {
+      render(<AnimeCard entry={createEntry()} onSelect={onSelect} />);
+
+      const checkbox = screen.getByRole('checkbox');
+      expect(checkbox).toHaveAttribute('aria-checked', 'false');
+    });
+
+    it('reflects aria-checked=true when the entry is in selectedIds', () => {
+      const entry = createEntry();
+      useLibraryStore.setState({ selectionMode: true, selectedIds: new Set([entry.id]) });
+      render(<AnimeCard entry={entry} onSelect={onSelect} />);
+
+      expect(screen.getByRole('checkbox')).toHaveAttribute('aria-checked', 'true');
+    });
+
+    it('toggles the entry into the store selection on click (does not call onSelect)', async () => {
+      const entry = createEntry();
+      const { user } = render(<AnimeCard entry={entry} onSelect={onSelect} />);
+
+      await user.click(screen.getByRole('checkbox'));
+
+      expect(useLibraryStore.getState().selectedIds.has(entry.id)).toBe(true);
+      expect(onSelect).not.toHaveBeenCalled();
+    });
+
+    it('toggles selection on keyboard Enter without calling onSelect', async () => {
+      const entry = createEntry();
+      const { user } = render(<AnimeCard entry={entry} onSelect={onSelect} />);
+
+      const card = screen.getByRole('checkbox');
+      card.focus();
+      await user.keyboard('{Enter}');
+
+      expect(useLibraryStore.getState().selectedIds.has(entry.id)).toBe(true);
+      expect(onSelect).not.toHaveBeenCalled();
+    });
+
+    it('does not render the hover action buttons in selection mode', () => {
+      render(
+        <AnimeCard
+          entry={createEntry()}
+          onSelect={onSelect}
+          onContinue={onContinue}
+          onRemove={onRemove}
+        />
+      );
+
+      expect(screen.queryByLabelText('Edit')).not.toBeInTheDocument();
+      expect(screen.queryByLabelText('Continue')).not.toBeInTheDocument();
+      expect(screen.queryByLabelText('Remove')).not.toBeInTheDocument();
+    });
   });
 });

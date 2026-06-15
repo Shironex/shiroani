@@ -33,4 +33,36 @@ describe('LibraryList', () => {
     expect(screen.getByText('Anime #1')).toBeInTheDocument();
     expect(screen.getByText('Anime #2')).toBeInTheDocument();
   });
+
+  it('calls onSelect with the entry when a row is clicked (normal mode)', async () => {
+    const onSelect = vi.fn();
+    const entries = [makeEntry(1), makeEntry(2)];
+    const { user } = render(
+      <LibraryList entries={entries} nextAiringMap={new Map()} onSelect={onSelect} />
+    );
+    // In normal mode each row is a role="button" (LibraryListItem).
+    await user.click(screen.getByRole('button', { name: /Anime #1/ }));
+    expect(onSelect).toHaveBeenCalledTimes(1);
+    expect(onSelect).toHaveBeenCalledWith(entries[0]);
+  });
+
+  it('toggles store selection instead of calling onSelect in selection mode', async () => {
+    useLibraryStore.setState({ selectionMode: true, selectedIds: new Set() });
+    const onSelect = vi.fn();
+    const entries = [makeEntry(1), makeEntry(2)];
+    const { user } = render(
+      <LibraryList entries={entries} nextAiringMap={new Map()} onSelect={onSelect} />
+    );
+    // In selection mode the row is a role="checkbox" and toggles store selection.
+    await user.click(screen.getByRole('checkbox', { name: /Anime #1/ }));
+    expect(onSelect).not.toHaveBeenCalled();
+    expect(useLibraryStore.getState().selectedIds.has(1)).toBe(true);
+  });
+
+  it('renders no entry rows when entries is empty (only the dock-clearance spacer)', () => {
+    render(<LibraryList entries={[]} nextAiringMap={new Map()} onSelect={vi.fn()} />);
+    // No interactive rows render; the trailing spacer row carries no role.
+    expect(screen.queryByRole('button')).not.toBeInTheDocument();
+    expect(screen.queryByText(/Anime #/)).not.toBeInTheDocument();
+  });
 });

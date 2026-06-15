@@ -239,7 +239,11 @@ export default function AnimeDetailModal({ entry, open, onOpenChange }: IAnimeDe
               <div className="space-y-1.5">
                 <FormLabel htmlFor="detail-status">{t('library:detail.statusField')}</FormLabel>
                 <Select value={status} onValueChange={v => setStatus(v as AnimeStatus)}>
-                  <SelectTrigger id="detail-status" className="h-8 text-xs">
+                  <SelectTrigger
+                    id="detail-status"
+                    aria-label={t('library:detail.statusField')}
+                    className="h-8 text-xs"
+                  >
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>{statusItems}</SelectContent>

@@ -87,7 +87,10 @@ export default function BatchActionBar() {
 
         {/* Change status */}
         <Select value="" onValueChange={handleStatusChange}>
-          <SelectTrigger className="w-[150px] h-8 text-xs bg-background/40 border-border-glass">
+          <SelectTrigger
+            aria-label={t('batch.setStatus')}
+            className="w-[150px] h-8 text-xs bg-background/40 border-border-glass"
+          >
             <SelectValue placeholder={t('batch.setStatus')} />
           </SelectTrigger>
           <SelectContent>{statusItems}</SelectContent>
@@ -95,7 +98,10 @@ export default function BatchActionBar() {
 
         {/* Set / clear score */}
         <Select value="" onValueChange={handleScoreChange}>
-          <SelectTrigger className="w-[130px] h-8 text-xs bg-background/40 border-border-glass">
+          <SelectTrigger
+            aria-label={t('batch.setScore')}
+            className="w-[130px] h-8 text-xs bg-background/40 border-border-glass"
+          >
             <Star
               className="w-3.5 h-3.5 text-[oklch(0.8_0.14_70)]"
               strokeWidth={0}

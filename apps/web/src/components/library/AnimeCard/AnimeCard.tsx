@@ -37,22 +37,31 @@ const AnimeCard = memo(function AnimeCard(props: IAnimeCardProps) {
       ? 'accent'
       : 'muted';
 
+  const cardAriaLabel = t('library:card.ariaLabel', { title: entry.title, status: statusLabel });
+
   return (
     <div
-      role={selectionMode ? 'checkbox' : 'button'}
+      // In selection mode the whole tile is the checkbox (no nested interactive
+      // controls, so it can safely carry role/tabIndex). In normal mode the card
+      // nests action buttons, so the primary "open" affordance is a stretched
+      // <button> overlay (below) instead — a role="button" container wrapping
+      // those buttons would be a nested-interactive a11y violation.
+      role={selectionMode ? 'checkbox' : undefined}
       aria-checked={selectionMode ? isSelected : undefined}
-      tabIndex={0}
-      aria-label={t('library:card.ariaLabel', { title: entry.title, status: statusLabel })}
+      aria-label={selectionMode ? cardAriaLabel : undefined}
+      tabIndex={selectionMode ? 0 : undefined}
       className={cn(
         'group relative rounded-[10px] overflow-hidden cursor-pointer',
         'border bg-card/60',
         'transition-transform duration-200 ease-out',
         'hover:-translate-y-0.5 hover:shadow-primary-glow',
-        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:-translate-y-0.5',
+        'focus-within:-translate-y-0.5',
+        selectionMode &&
+          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:-translate-y-0.5',
         isSelected ? 'border-primary ring-2 ring-primary/60' : 'border-border-glass'
       )}
-      onClick={handleActivate}
-      onKeyDown={handleKeyDown}
+      onClick={selectionMode ? handleActivate : undefined}
+      onKeyDown={selectionMode ? handleKeyDown : undefined}
     >
       {/* Cover image — 2:3 aspect per mock */}
       <div className="relative aspect-[2/3] overflow-hidden">
@@ -83,6 +92,24 @@ const AnimeCard = memo(function AnimeCard(props: IAnimeCardProps) {
               'radial-gradient(circle at 30% 20%, oklch(1 0 0 / 0.12), transparent 45%), linear-gradient(180deg, transparent 45%, oklch(0 0 0 / 0.68))',
           }}
         />
+
+        {/* Primary "open" affordance (normal mode only). A stretched, transparent
+            button covering the tile — gives the whole card a single accessible
+            name + native keyboard/click without nesting the action buttons inside
+            an interactive container (which would trip axe's nested-interactive
+            rule). The hover-overlay action buttons sit at a higher z-index, so
+            they remain independently clickable above this layer. */}
+        {!selectionMode && (
+          <button
+            type="button"
+            onClick={handleActivate}
+            aria-label={cardAriaLabel}
+            className={cn(
+              'absolute inset-0 z-[2]',
+              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset rounded-[10px]'
+            )}
+          />
+        )}
 
         {/* Selection checkbox — top-left, shown only in multi-select mode */}
         {selectionMode && (

@@ -35,7 +35,14 @@ export function useLibraryGrid({
     if (typeof ResizeObserver === 'undefined') return;
     const observer = new ResizeObserver(observed => {
       for (const entry of observed) {
-        setContainerWidth(entry.contentRect.width);
+        // Round to an integer and bail on no-op: react-window's scrollbar
+        // gutter can nudge the measured content width by sub-pixel amounts each
+        // pass, and a fractional setState here re-runs the layout → re-measure
+        // → setState cycle indefinitely (a real-browser ResizeObserver drives it
+        // forever; jsdom's no-op mock hides it). Quantizing + the functional
+        // guard makes the observer converge after one settle.
+        const next = Math.round(entry.contentRect.width);
+        setContainerWidth(prev => (prev === next ? prev : next));
       }
     });
     observer.observe(el);

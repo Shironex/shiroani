@@ -93,6 +93,14 @@ export default function LibraryView() {
     </SelectItem>
   ));
 
+  // Accessible name for the sort-field combobox: Radix's SelectValue renders the
+  // chosen label visually but exposes no `aria-label`, so axe flags the trigger
+  // as an unnamed button. Label it with the active sort option's translated text.
+  const activeSortLabel = tDynamic(
+    i18n,
+    SORT_OPTIONS.find(o => o.value === sortBy)?.labelKey ?? 'library:sort.updatedAt'
+  );
+
   return (
     <div className="flex-1 flex flex-col overflow-hidden animate-fade-in relative">
       {/* Header */}
@@ -111,7 +119,10 @@ export default function LibraryView() {
         actions={
           <>
             <Select value={sortBy} onValueChange={handleSortChange}>
-              <SelectTrigger className="min-w-[180px] max-w-full h-8 text-xs bg-background/40 border-border-glass focus:bg-background/60 transition-colors">
+              <SelectTrigger
+                aria-label={activeSortLabel}
+                className="min-w-[180px] max-w-full h-8 text-xs bg-background/40 border-border-glass focus:bg-background/60 transition-colors"
+              >
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>{sortItems}</SelectContent>

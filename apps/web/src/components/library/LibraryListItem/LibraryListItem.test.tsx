@@ -43,4 +43,64 @@ describe('LibraryListItem', () => {
     render(<LibraryListItem entry={createEntry()} onClick={vi.fn()} />);
     expect(screen.getByRole('checkbox')).toBeInTheDocument();
   });
+
+  it('exposes a labelled progress bar', () => {
+    render(
+      <LibraryListItem entry={createEntry({ currentEpisode: 6, episodes: 12 })} onClick={vi.fn()} />
+    );
+    // progressAriaLabel = "Progress: {{percent}}%" → 6/12 = 50%
+    expect(screen.getByLabelText('Progress: 50%')).toBeInTheDocument();
+  });
+
+  it('shows a dash placeholder when score is 0', () => {
+    render(<LibraryListItem entry={createEntry({ score: 0 })} onClick={vi.fn()} />);
+    expect(screen.getByText('-')).toBeInTheDocument();
+  });
+
+  it('shows a dash placeholder when score is undefined', () => {
+    render(<LibraryListItem entry={createEntry({ score: undefined })} onClick={vi.fn()} />);
+    expect(screen.getByText('-')).toBeInTheDocument();
+  });
+
+  describe('selection mode', () => {
+    beforeEach(() => {
+      useLibraryStore.setState({ selectionMode: true, selectedIds: new Set() });
+    });
+
+    it('checkbox aria-checked is false when the row is not selected', () => {
+      render(<LibraryListItem entry={createEntry()} onClick={vi.fn()} />);
+      expect(screen.getByRole('checkbox')).toHaveAttribute('aria-checked', 'false');
+    });
+
+    it('checkbox aria-checked reflects the selected state', () => {
+      const entry = createEntry();
+      useLibraryStore.setState({ selectionMode: true, selectedIds: new Set([entry.id]) });
+      render(<LibraryListItem entry={entry} onClick={vi.fn()} />);
+      expect(screen.getByRole('checkbox')).toHaveAttribute('aria-checked', 'true');
+    });
+
+    it('toggles the row into the store selection on click instead of calling onClick', async () => {
+      const entry = createEntry();
+      const onClick = vi.fn();
+      const { user } = render(<LibraryListItem entry={entry} onClick={onClick} />);
+
+      await user.click(screen.getByRole('checkbox'));
+
+      expect(useLibraryStore.getState().selectedIds.has(entry.id)).toBe(true);
+      expect(onClick).not.toHaveBeenCalled();
+    });
+
+    it('toggles selection on keyboard Space without calling onClick', async () => {
+      const entry = createEntry();
+      const onClick = vi.fn();
+      const { user } = render(<LibraryListItem entry={entry} onClick={onClick} />);
+
+      const row = screen.getByRole('checkbox');
+      row.focus();
+      await user.keyboard('[Space]');
+
+      expect(useLibraryStore.getState().selectedIds.has(entry.id)).toBe(true);
+      expect(onClick).not.toHaveBeenCalled();
+    });
+  });
 });

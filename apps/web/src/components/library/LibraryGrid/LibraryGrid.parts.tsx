@@ -8,6 +8,7 @@ import type { ICellProps } from './LibraryGrid.types';
  * card widths and heights stay uniform across each row.
  */
 export function GridCell({
+  ariaAttributes,
   columnIndex,
   rowIndex,
   style,
@@ -33,11 +34,17 @@ export function GridCell({
     paddingTop: halfGap,
     paddingBottom: halfGap,
   };
+  // Spread react-window's `role="gridcell"` (+ aria-colindex) onto the cell root
+  // so the `role="row"` wrapper contains a valid `gridcell` child rather than the
+  // AnimeCard's button/heading directly (satisfies axe aria-required-children).
+  // Empty cells (row overflow + the trailing dock-clearance row) stay bare
+  // `gridcell`s — keeping the role (not `aria-hidden`) means every `role="row"`
+  // has at least one required gridcell child, which axe requires.
   if (!entry) {
-    return <div style={insetStyle} aria-hidden="true" />;
+    return <div {...ariaAttributes} style={insetStyle} />;
   }
   return (
-    <div style={insetStyle}>
+    <div {...ariaAttributes} style={insetStyle}>
       <AnimeCard
         entry={entry}
         nextAiring={entry.anilistId ? (nextAiringMap.get(entry.anilistId) ?? null) : null}

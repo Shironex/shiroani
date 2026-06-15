@@ -25,9 +25,11 @@ const entries: AnimeEntry[] = [
   makeEntry(6, 'dropped', 0),
 ];
 
+/** Summary panel of library totals, average score, and a status-distribution bar. */
 const meta = {
   title: 'library/LibraryStats',
   component: LibraryStats,
+  parameters: { a11y: { test: 'error' } },
 } satisfies Meta<typeof LibraryStats>;
 
 export default meta;
