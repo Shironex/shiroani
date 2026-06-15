@@ -68,6 +68,7 @@
     "addFailed": "Nie udało się dodać elementu."
   },
   "unknownAnime": "Nieznane anime",
+  "progress": "Postęp",
   "experimental": {
     "label": "Eksperymentalne",
     "tooltip": "Ta integracja jest eksperymentalna — nie jest jeszcze w pełni stabilna i może mieć drobne usterki.",
