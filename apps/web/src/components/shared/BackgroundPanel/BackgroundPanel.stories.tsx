@@ -19,13 +19,9 @@ const meta: Meta<typeof BackgroundPanel> = {
   title: 'shared/BackgroundPanel',
   component: BackgroundPanel,
   parameters: {
-    // TODO(a11y): the shared Radix `Slider` primitive (components/ui/slider.tsx)
-    // puts aria-label/aria-labelledby on the Root, not on the role="slider"
-    // thumb, so axe flags "aria-input-field-name". Fixing it means changing the
-    // shared primitive (consumed by library + settings sliders too), which is
-    // out of this component's scope — left as 'todo' until the primitive
-    // forwards a name to the thumb.
-    a11y: { test: 'todo' },
+    // The opacity/blur/dim sliders carry aria-labels which the shared Slider
+    // primitive forwards to the role="slider" thumb, so axe passes clean.
+    a11y: { test: 'error' },
   },
   argTypes: {
     variant: {

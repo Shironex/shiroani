@@ -28,11 +28,10 @@ const meta = {
   component: AnimeDetailModal,
   parameters: {
     layout: 'fullscreen',
-    // TODO(a11y): the embedded SliderInputField fields render Radix slider thumbs
-    // (role="slider") with no accessible name — axe flags `aria-input-field-name`.
-    // The fix lives in the shared `components/ui/slider.tsx` thumb (out of scope
-    // here); ratchet to 'error' once it forwards a thumb aria-label.
-    a11y: { test: 'todo' },
+    // The embedded SliderInputField fields label their sliders via
+    // aria-labelledby, which the shared Slider primitive now forwards to the
+    // role="slider" thumb, so axe passes clean.
+    a11y: { test: 'error' },
   },
   args: { open: true, onOpenChange: fn() },
   argTypes: {

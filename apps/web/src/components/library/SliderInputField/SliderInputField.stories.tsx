@@ -12,13 +12,9 @@ const meta = {
   title: 'library/SliderInputField',
   component: SliderInputField,
   parameters: {
-    // TODO(a11y): the Radix slider thumb (role="slider") has no accessible name —
-    // axe flags `aria-input-field-name`. The thumb only takes an aria-label when
-    // one is passed to `SliderPrimitive.Thumb`, but the shared `components/ui/
-    // slider.tsx` renders the thumb with no props and is out of scope for this
-    // initiative. Ratchet to 'error' once the shared Slider forwards a thumb
-    // aria-label (or accepts the field label).
-    a11y: { test: 'todo' },
+    // The field passes aria-labelledby to the slider, which the shared Slider
+    // primitive forwards to the role="slider" thumb, so axe passes clean.
+    a11y: { test: 'error' },
   },
   argTypes: {
     label: { description: 'Text shown above the field (also labels the input + slider).' },
