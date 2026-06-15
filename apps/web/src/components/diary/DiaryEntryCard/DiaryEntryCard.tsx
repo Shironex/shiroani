@@ -11,22 +11,31 @@ function DiaryEntryCard({ entry, onSelect, onRemove, onTogglePin }: IDiaryEntryC
 
   return (
     <div
-      onClick={() => onSelect(entry)}
-      onKeyDown={e => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          if (e.key === ' ') e.preventDefault();
-          onSelect(entry);
-        }
-      }}
-      role="button"
-      tabIndex={0}
       className={cn(
-        'group/card relative bg-card/80 border border-border-glass rounded-xl overflow-hidden cursor-pointer',
-        'hover:shadow-primary-glow transition-all duration-200'
+        'group/card relative bg-card/80 border border-border-glass rounded-xl overflow-hidden',
+        'focus-within:shadow-primary-glow hover:shadow-primary-glow transition-all duration-200'
       )}
     >
-      {/* Gradient header */}
-      <div className="relative h-12 paper-grain" style={{ background: gradient }}>
+      {/* Primary "open" affordance — a stretched, transparent button giving the
+          whole card one accessible name + native keyboard/click without nesting
+          the action buttons inside an interactive container (which would trip
+          axe's nested-interactive rule). The hover-action cluster sits above it
+          via a higher z-index. */}
+      <button
+        type="button"
+        onClick={() => onSelect(entry)}
+        aria-label={title}
+        className={cn(
+          'absolute inset-0 z-[1] cursor-pointer rounded-xl',
+          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset'
+        )}
+      />
+      {/* Gradient header — non-interactive parts let clicks fall through to the
+          overlay button; the action cluster re-enables its own pointer events. */}
+      <div
+        className="pointer-events-none relative h-12 paper-grain"
+        style={{ background: gradient }}
+      >
         {/* Anime thumbnail */}
         {entry.animeCoverImage && (
           <img
@@ -45,7 +54,7 @@ function DiaryEntryCard({ entry, onSelect, onRemove, onTogglePin }: IDiaryEntryC
         )}
 
         {/* Action buttons (visible on hover) */}
-        <div className="absolute top-1 right-1 flex items-center gap-0.5 opacity-0 group-hover/card:opacity-100 group-focus-within/card:opacity-100 transition-opacity">
+        <div className="pointer-events-auto absolute top-1 right-1 z-[2] flex items-center gap-0.5 opacity-0 group-hover/card:opacity-100 group-focus-within/card:opacity-100 transition-opacity">
           <button
             onClick={e => {
               e.stopPropagation();
@@ -74,8 +83,9 @@ function DiaryEntryCard({ entry, onSelect, onRemove, onTogglePin }: IDiaryEntryC
         </div>
       </div>
 
-      {/* Card body */}
-      <div className="p-3.5">
+      {/* Card body — pointer-events pass through to the overlay button so a
+          click anywhere on the body activates the card. */}
+      <div className="pointer-events-none p-3.5">
         {/* Anime reference */}
         {entry.animeTitle && (
           <p className="text-2xs text-muted-foreground/60 truncate mb-0.5">{entry.animeTitle}</p>

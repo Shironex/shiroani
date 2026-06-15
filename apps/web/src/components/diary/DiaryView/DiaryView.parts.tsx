@@ -53,10 +53,16 @@ export function HeaderActions({
   onExport,
   onImport,
 }: IHeaderActionsProps) {
+  const activeSortLabel = resolveSortLabel(
+    sortOptions.find(option => option.value === sortBy)?.labelKey ?? 'sort.createdAt'
+  );
   return (
     <>
       <Select value={sortBy} onValueChange={onSortChange}>
-        <SelectTrigger className="min-w-[170px] max-w-full h-8 text-xs bg-background/40 border-border-glass focus:bg-background/60 transition-colors">
+        <SelectTrigger
+          aria-label={activeSortLabel}
+          className="min-w-[170px] max-w-full h-8 text-xs bg-background/40 border-border-glass focus:bg-background/60 transition-colors"
+        >
           <SelectValue />
         </SelectTrigger>
         <SelectContent>

@@ -22,25 +22,58 @@ const handlers = () => ({
 });
 
 describe('DiaryEntryGrid', () => {
-  it('renders entry cards in grid mode', () => {
+  it('renders all entries as cards in grid mode', () => {
     render(
       <DiaryEntryGrid
-        entries={[createEntry({ id: 1, title: 'Wpis A' })]}
+        entries={[createEntry({ id: 1, title: 'Wpis A' }), createEntry({ id: 2, title: 'Wpis B' })]}
         viewMode="grid"
         {...handlers()}
       />
     );
     expect(screen.getByText('Wpis A')).toBeInTheDocument();
+    expect(screen.getByText('Wpis B')).toBeInTheDocument();
   });
 
-  it('renders entry rows in list mode', () => {
+  it('renders all entries as rows in list mode', () => {
     render(
       <DiaryEntryGrid
-        entries={[createEntry({ id: 2, title: 'Wpis B' })]}
+        entries={[createEntry({ id: 1, title: 'Wpis A' }), createEntry({ id: 2, title: 'Wpis B' })]}
         viewMode="list"
         {...handlers()}
       />
     );
+    expect(screen.getByText('Wpis A')).toBeInTheDocument();
     expect(screen.getByText('Wpis B')).toBeInTheDocument();
+  });
+
+  it('falls back to "Untitled" for a title-less row in list mode', () => {
+    render(
+      <DiaryEntryGrid entries={[createEntry({ title: '' })]} viewMode="list" {...handlers()} />
+    );
+    expect(screen.getByText('Untitled')).toBeInTheDocument();
+  });
+
+  it('appends the anime title to the list-row meta when present', () => {
+    render(
+      <DiaryEntryGrid
+        entries={[createEntry({ animeTitle: 'Frieren' })]}
+        viewMode="list"
+        {...handlers()}
+      />
+    );
+    expect(screen.getByText(/Frieren/)).toBeInTheDocument();
+  });
+
+  it('calls onSelect with the entry when a list row is activated', async () => {
+    const entry = createEntry({ title: 'Row click' });
+    const cbs = handlers();
+    const { user } = render(<DiaryEntryGrid entries={[entry]} viewMode="list" {...cbs} />);
+    await user.click(screen.getByRole('button', { name: /Row click/ }));
+    expect(cbs.onSelect).toHaveBeenCalledWith(entry);
+  });
+
+  it('renders nothing for an empty entry set', () => {
+    const { container } = render(<DiaryEntryGrid entries={[]} viewMode="grid" {...handlers()} />);
+    expect(container.querySelector('h3')).not.toBeInTheDocument();
   });
 });

@@ -108,27 +108,32 @@ const DiaryListCard = memo(function DiaryListCard({
 
   return (
     <div
-      role="button"
-      tabIndex={0}
-      onClick={() => onSelect(entry)}
-      onKeyDown={e => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          if (e.key === ' ') e.preventDefault();
-          onSelect(entry);
-        }
-      }}
       className={cn(
-        'group/dl-card relative flex cursor-pointer gap-4 rounded-[12px]',
+        'group/dl-card relative flex gap-4 rounded-[12px]',
         'border border-border-glass bg-card/40 p-4 transition-all duration-200',
         'hover:border-primary/35 hover:bg-card/60 hover:shadow-[0_10px_28px_oklch(0_0_0/0.3)]',
-        'focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/50'
+        'focus-within:border-primary/35 focus-within:bg-card/60'
       )}
     >
+      {/* Primary "open" affordance — a stretched, transparent button so the
+          whole row has one accessible name + native keyboard/click without
+          nesting the pin/remove buttons inside an interactive container (which
+          would trip axe's nested-interactive rule). The action cluster sits
+          above it via a higher z-index. */}
+      <button
+        type="button"
+        onClick={() => onSelect(entry)}
+        aria-label={entry.title || t('untitled')}
+        className={cn(
+          'absolute inset-0 z-[1] cursor-pointer rounded-[12px]',
+          'focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/50'
+        )}
+      />
       {/* Cover thumb — 48x68 aspect 2:3 */}
       <div
         aria-hidden="true"
         className={cn(
-          'relative h-[68px] w-12 shrink-0 overflow-hidden rounded-[6px] border border-white/10',
+          'pointer-events-none relative h-[68px] w-12 shrink-0 overflow-hidden rounded-[6px] border border-white/10',
           'shadow-[0_4px_10px_oklch(0_0_0/0.35)]'
         )}
         style={{ background: gradient }}
@@ -153,8 +158,9 @@ const DiaryListCard = memo(function DiaryListCard({
         )}
       </div>
 
-      {/* Main body */}
-      <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+      {/* Main body — pointer-events pass through to the overlay button; the
+          action cluster re-enables its own pointer events above it. */}
+      <div className="pointer-events-none flex min-w-0 flex-1 flex-col gap-1.5">
         <div className="flex items-start gap-2">
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
@@ -191,7 +197,7 @@ const DiaryListCard = memo(function DiaryListCard({
           <div className="flex shrink-0 flex-col items-end gap-1.5">
             <div
               className={cn(
-                'flex items-center gap-1 opacity-0 transition-opacity',
+                'pointer-events-auto relative z-[2] flex items-center gap-1 opacity-0 transition-opacity',
                 'group-hover/dl-card:opacity-100 group-focus-within/dl-card:opacity-100'
               )}
             >

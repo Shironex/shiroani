@@ -166,7 +166,7 @@ export default function DiaryEditor(props: IDiaryEditorProps) {
         />
 
         {/* Editor body */}
-        <div className="relative flex-1 overflow-y-auto">
+        <div className="relative flex-1 overflow-y-auto bg-background">
           {editor && (
             <BubbleMenu editor={editor}>
               <BubbleMenuBar editor={editor} />

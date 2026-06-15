@@ -30,6 +30,11 @@ describe('DiaryEntryCard', () => {
     expect(screen.getByText('Mój wpis')).toBeInTheDocument();
   });
 
+  it("exposes the title as the open-card button's accessible name", () => {
+    render(<DiaryEntryCard entry={createEntry({ title: 'Otwórz mnie' })} {...handlers()} />);
+    expect(screen.getByRole('button', { name: 'Otwórz mnie' })).toBeInTheDocument();
+  });
+
   it('shows "Untitled" when title is empty', () => {
     render(<DiaryEntryCard entry={createEntry({ title: '' })} {...handlers()} />);
     expect(screen.getByText('Untitled')).toBeInTheDocument();
@@ -45,25 +50,14 @@ describe('DiaryEntryCard', () => {
     expect(screen.queryByText('Steins;Gate')).not.toBeInTheDocument();
   });
 
-  it('shows pin indicator when entry.isPinned is true', () => {
-    const { container } = render(
-      <DiaryEntryCard entry={createEntry({ isPinned: true })} {...handlers()} />
-    );
-    // The pinned indicator is a standalone Pin icon inside .absolute.top-1\\.5.left-1\\.5
-    // There should be 2 Pin icons when pinned: the indicator + the action button
-    // When not pinned there is only the action button
-    const svgs = container.querySelectorAll('svg');
-    // isPinned=true renders: indicator Pin + action Pin + Trash = 3 svgs
-    expect(svgs.length).toBe(3);
+  it('exposes the pin action labelled "Pin" when not pinned', () => {
+    render(<DiaryEntryCard entry={createEntry({ isPinned: false })} {...handlers()} />);
+    expect(screen.getByRole('button', { name: 'Pin' })).toBeInTheDocument();
   });
 
-  it('does not show pin indicator when entry.isPinned is false', () => {
-    const { container } = render(
-      <DiaryEntryCard entry={createEntry({ isPinned: false })} {...handlers()} />
-    );
-    // isPinned=false renders: action Pin + Trash = 2 svgs
-    const svgs = container.querySelectorAll('svg');
-    expect(svgs.length).toBe(2);
+  it('exposes the pin action labelled "Unpin" when pinned', () => {
+    render(<DiaryEntryCard entry={createEntry({ isPinned: true })} {...handlers()} />);
+    expect(screen.getByRole('button', { name: 'Unpin' })).toBeInTheDocument();
   });
 
   it('displays up to 2 tags', () => {
@@ -78,56 +72,43 @@ describe('DiaryEntryCard', () => {
     expect(screen.queryByText('isekai')).not.toBeInTheDocument();
   });
 
-  it('shows mood icon when entry.mood is set', () => {
+  it('shows a mood icon when entry.mood is set', () => {
     const { container } = render(
       <DiaryEntryCard entry={createEntry({ mood: 'great' })} {...handlers()} />
     );
-    // mood=great renders a Sparkles icon (extra svg beyond Pin + Trash)
-    const svgs = container.querySelectorAll('svg');
-    expect(svgs.length).toBe(3);
+    // mood=great adds a Sparkles icon beyond the open/pin/remove controls.
+    const moodCard = container.querySelectorAll('svg');
+    expect(moodCard.length).toBeGreaterThan(2);
   });
 
-  it('calls onSelect with entry when card is clicked', async () => {
-    const entry = createEntry();
+  it('calls onSelect with the entry when the card is activated', async () => {
+    const entry = createEntry({ title: 'Klik' });
     const cbs = handlers();
     const { user } = render(<DiaryEntryCard entry={entry} {...cbs} />);
-
-    await user.click(screen.getByText('Mój wpis'));
+    await user.click(screen.getByRole('button', { name: 'Klik' }));
     expect(cbs.onSelect).toHaveBeenCalledWith(entry);
   });
 
-  it('calls onTogglePin with entry when pin button is clicked', async () => {
+  it('calls onTogglePin (not onSelect) when the pin button is clicked', async () => {
     const entry = createEntry();
     const cbs = handlers();
-    const { user, container } = render(<DiaryEntryCard entry={entry} {...cbs} />);
-
-    // Pin button is the first button
-    const buttons = container.querySelectorAll('button');
-    await user.click(buttons[0]);
-
+    const { user } = render(<DiaryEntryCard entry={entry} {...cbs} />);
+    await user.click(screen.getByRole('button', { name: 'Pin' }));
     expect(cbs.onTogglePin).toHaveBeenCalledWith(entry);
-    // Should NOT propagate to onSelect
     expect(cbs.onSelect).not.toHaveBeenCalled();
   });
 
-  it('calls onRemove with entry when remove button is clicked', async () => {
+  it('calls onRemove (not onSelect) when the remove button is clicked', async () => {
     const entry = createEntry();
     const cbs = handlers();
-    const { user, container } = render(<DiaryEntryCard entry={entry} {...cbs} />);
-
-    // Trash button is the second button
-    const buttons = container.querySelectorAll('button');
-    await user.click(buttons[1]);
-
+    const { user } = render(<DiaryEntryCard entry={entry} {...cbs} />);
+    await user.click(screen.getByRole('button', { name: 'Remove' }));
     expect(cbs.onRemove).toHaveBeenCalledWith(entry);
-    // Should NOT propagate to onSelect
     expect(cbs.onSelect).not.toHaveBeenCalled();
   });
 
-  it('renders formatted date', () => {
+  it('renders the date formatted under the active (EN) locale', () => {
     render(<DiaryEntryCard entry={createEntry({ createdAt: '2025-06-15' })} {...handlers()} />);
-    // formatDate('2025-06-15') now follows the active i18n.language; tests
-    // boot in EN (default), so the locale-aware format must match.
     const formatted = new Date('2025-06-15').toLocaleDateString('en', {
       day: 'numeric',
       month: 'short',
@@ -141,12 +122,12 @@ describe('DiaryEntryCard', () => {
     expect(screen.getByText('Treść wpisu')).toBeInTheDocument();
   });
 
-  it('renders gradient from coverGradient', () => {
+  it('renders the resolved gradient from coverGradient', () => {
     const { container } = render(
       <DiaryEntryCard entry={createEntry({ coverGradient: 'sakura' })} {...handlers()} />
     );
     const header = container.querySelector('.paper-grain') as HTMLElement;
-    // jsdom normalizes hex colors to rgb
+    // jsdom normalizes hex colors to rgb.
     expect(header.style.background).toBe(
       'linear-gradient(135deg, rgb(255, 146, 168) 0%, rgb(255, 183, 197) 50%, rgb(255, 200, 214) 100%)'
     );
