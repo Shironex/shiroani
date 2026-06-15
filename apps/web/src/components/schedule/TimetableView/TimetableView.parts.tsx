@@ -160,8 +160,8 @@ const PosterCard = memo(function PosterCard({
           the cover. See feedback_gpu_layers. */}
       <SubscribeBellButton
         anime={anime}
-        className="absolute top-7 right-[6px] w-6 h-6 bg-black/55 z-[2]"
-        iconClassName="w-3 h-3"
+        className="absolute top-7 right-[6px] w-6 h-6 bg-black/60 z-[2]"
+        iconClassName="w-3 h-3 text-white"
       />
 
       {/* Bottom title block */}
