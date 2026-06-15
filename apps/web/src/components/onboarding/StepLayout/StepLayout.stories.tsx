@@ -15,12 +15,9 @@ const meta = {
   component: StepLayout,
   parameters: {
     layout: 'fullscreen',
-    // TODO(a11y): the only axe finding is color-contrast on the shared
-    // KanjiWatermark (shared/, out of scope) — a decorative aria-hidden glyph
-    // whose intentionally-faint 0.04 opacity reads as low contrast, and which
-    // overflows its clipping container so axe samples it against the page body.
-    // The step stories that compose StepLayout run a11y at 'error'.
-    a11y: { test: 'todo' },
+    // The decorative KanjiWatermark behind the left pane is excluded from the
+    // axe scan globally (data-a11y-decorative), so axe runs clean as an error.
+    a11y: { test: 'error' },
   },
   decorators: [withFullHeight],
   argTypes: {

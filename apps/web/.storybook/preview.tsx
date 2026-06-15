@@ -107,6 +107,13 @@ const preview: Preview = {
     // `parameters.a11y.test = 'error'` at the meta level to enforce in CI.
     a11y: {
       test: 'todo',
+      // Exclude purely decorative glyphs (e.g. KanjiWatermark) from the axe scan.
+      // They are intentionally faint and already `aria-hidden`, so axe's
+      // color-contrast check on them is a false positive. The addon concatenates
+      // this onto its default excludes and keeps the default (story-root) include.
+      context: {
+        exclude: [['[data-a11y-decorative]']],
+      },
     },
   },
 };

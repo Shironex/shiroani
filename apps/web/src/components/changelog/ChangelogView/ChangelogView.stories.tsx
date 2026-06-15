@@ -22,20 +22,9 @@ const meta = {
     layout: 'fullscreen',
     // The headline (h1) + per-release card headings (h2) form a clean heading
     // order, filter chips and jump-nav anchors carry accessible names, and the
-    // jump-nav has an aria-label — so axe is enforced as an error.
-    //
-    // `color-contrast` is the lone disabled rule: the decorative `記録`
-    // KanjiWatermark (rendered only in full mode) is `aria-hidden` and
-    // intentionally faint (opacity 0.035, inheriting `text-foreground`), which
-    // axe flags. That glyph lives in the shared `shared/KanjiWatermark`
-    // component (out of scope here) and its own story already documents this as
-    // an intentional, unfixable design choice. Every other a11y rule stays on.
-    // TODO(a11y): color-contrast disabled for the out-of-scope decorative
-    // KanjiWatermark glyph; fix belongs in shared/KanjiWatermark, not here.
-    a11y: {
-      test: 'error',
-      config: { rules: [{ id: 'color-contrast', enabled: false }] },
-    },
+    // jump-nav has an aria-label. The decorative KanjiWatermark glyph is excluded
+    // from the scan globally (data-a11y-decorative), so axe runs clean as an error.
+    a11y: { test: 'error' },
   },
   argTypes: {
     compact: {

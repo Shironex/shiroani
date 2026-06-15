@@ -23,6 +23,11 @@ export default function KanjiWatermark({
   return (
     <span
       aria-hidden="true"
+      // Decorative glyph: intentionally faint (low opacity) so axe's color-contrast
+      // check is a false positive here. The marker excludes it from the Storybook
+      // a11y scan (see the global a11y.context in .storybook/preview.tsx); it's
+      // already out of the accessibility tree via aria-hidden.
+      data-a11y-decorative=""
       className={cn(
         'pointer-events-none absolute select-none font-serif font-extrabold leading-none tracking-[-0.05em] text-foreground',
         POSITION_CLASSES[position],

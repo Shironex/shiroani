@@ -11,12 +11,10 @@ const meta = {
   title: 'shared/KanjiWatermark',
   component: KanjiWatermark,
   parameters: {
-    // TODO(a11y): axe flags color-contrast on the glyph because the watermark is
-    // intentionally faint (opacity ~0.06) and inherits the `text-foreground` theme
-    // token. The element is `aria-hidden` (decorative — excluded from the a11y tree),
-    // and the low contrast is the design intent, so this can't be safely "fixed"
-    // without altering the visual. Kept at 'todo' (non-blocking warning).
-    a11y: { test: 'todo' },
+    // The glyph carries `data-a11y-decorative`, so it's excluded from the axe scan
+    // (global a11y.context in .storybook/preview.tsx) — its intentionally faint,
+    // aria-hidden text is decorative, not content. Everything else passes clean.
+    a11y: { test: 'error' },
   },
   argTypes: {
     kanji: { description: 'The glyph(s) to render as the watermark.' },
