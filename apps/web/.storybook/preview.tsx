@@ -9,6 +9,7 @@ import {
   DEFAULT_LANGUAGE,
   SUPPORTED_LANGUAGES,
 } from '@shiroani/shared';
+import { TooltipProvider } from '@/components/ui/tooltip';
 import i18n from '@/lib/i18n';
 import './preview.css';
 
@@ -42,6 +43,19 @@ const withI18n: Decorator = (Story, context) => {
   );
 };
 
+/**
+ * Mirror the app root (main.tsx) and the test harness: wrap every story in a
+ * Radix `TooltipProvider` so components that use `<Tooltip>` (heatmaps, icon
+ * buttons, badges, sync indicators) render instead of throwing "`Tooltip` must
+ * be used within `TooltipProvider`". Nesting is safe — components that supply
+ * their own provider (e.g. ActivityHeatmap) still work.
+ */
+const withTooltip: Decorator = Story => (
+  <TooltipProvider delayDuration={300}>
+    <Story />
+  </TooltipProvider>
+);
+
 const preview: Preview = {
   initialGlobals: {
     locale: DEFAULT_LANGUAGE,
@@ -57,6 +71,7 @@ const preview: Preview = {
     },
   },
   decorators: [
+    withTooltip,
     withI18n,
     withThemeByClassName({
       themes,
