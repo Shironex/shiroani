@@ -11,16 +11,38 @@ describe('StepLayout', () => {
         description="A quick tour."
         stepMarker="Step 01 · Setup"
         stepTitle="Get started"
+        stepIcon={<span data-testid="step-icon">★</span>}
         stepHint="Change it later in Settings."
       >
         <div>Form body</div>
       </StepLayout>
     );
 
-    expect(screen.getByRole('heading', { name: 'Make ShiroAni yours' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { level: 1, name: 'Make ShiroAni yours' })
+    ).toBeInTheDocument();
     expect(screen.getByText('Step 01 · Setup')).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Get started' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 2, name: /Get started/ })).toBeInTheDocument();
+    expect(screen.getByTestId('step-icon')).toBeInTheDocument();
     expect(screen.getByText('Change it later in Settings.')).toBeInTheDocument();
     expect(screen.getByText('Form body')).toBeInTheDocument();
+  });
+
+  it('omits the icon and hint when not provided', () => {
+    render(
+      <StepLayout
+        kanji="名"
+        headline="Headline only"
+        description="Body."
+        stepMarker="Marker"
+        stepTitle="Title"
+      >
+        <div>Body card</div>
+      </StepLayout>
+    );
+
+    expect(screen.getByRole('heading', { level: 2, name: 'Title' })).toBeInTheDocument();
+    expect(screen.queryByText('Change it later in Settings.')).not.toBeInTheDocument();
+    expect(screen.getByText('Body card')).toBeInTheDocument();
   });
 });
