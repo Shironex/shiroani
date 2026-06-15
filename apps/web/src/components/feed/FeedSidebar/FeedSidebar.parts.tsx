@@ -28,9 +28,12 @@ export function SourcesCard({
     <div
       className={cn(
         'rounded-[10px] border border-white/[0.07] bg-white/[0.025] p-2.5 px-3 transition-opacity duration-150',
-        isBookmarksView && 'opacity-50 pointer-events-none'
+        isBookmarksView && 'opacity-50'
       )}
-      aria-hidden={isBookmarksView}
+      // `inert` removes the card's buttons from both the tab order and the
+      // accessibility tree while bookmarks view is active, so they aren't
+      // reachable behind the dimmed overlay.
+      inert={isBookmarksView}
     >
       <div className="flex items-center gap-2 mb-2">
         <span className="w-5 h-5 rounded-[5px] grid place-items-center bg-primary/15 text-primary">
@@ -137,9 +140,11 @@ export function TrendingCard({ trending, isBookmarksView }: ITrendingCardProps) 
     <div
       className={cn(
         'rounded-[10px] border border-white/[0.07] bg-white/[0.025] p-2.5 px-3 transition-opacity duration-150',
-        isBookmarksView && 'opacity-50 pointer-events-none'
+        isBookmarksView && 'opacity-50'
       )}
-      aria-hidden={isBookmarksView}
+      // `inert` hides the trending card from the tab order and AT while the
+      // bookmarks view dims it (the trending proxy doesn't compose with filters).
+      inert={isBookmarksView}
     >
       <div className="flex items-center gap-2 mb-2">
         <span className="w-5 h-5 rounded-[5px] grid place-items-center bg-primary/15 text-primary">

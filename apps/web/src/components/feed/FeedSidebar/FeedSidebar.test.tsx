@@ -17,6 +17,19 @@ const sources: FeedSource[] = [
     consecutiveFailures: 0,
     supportsFullContent: false,
   },
+  {
+    id: 2,
+    name: 'Disabled Source',
+    url: 'https://example.com/disabled.xml',
+    siteUrl: 'https://example.com',
+    category: 'news',
+    language: 'en',
+    color: '#888888',
+    enabled: false,
+    pollIntervalMinutes: 30,
+    consecutiveFailures: 0,
+    supportsFullContent: false,
+  },
 ];
 
 const items: FeedItem[] = [
@@ -36,22 +49,63 @@ const items: FeedItem[] = [
   },
 ];
 
+function renderSidebar(overrides: Partial<React.ComponentProps<typeof FeedSidebar>> = {}) {
+  return render(
+    <FeedSidebar
+      sources={sources}
+      items={items}
+      sourceFilter={null}
+      onSetSourceFilter={vi.fn()}
+      totalCount={1}
+      isBookmarksView={false}
+      {...overrides}
+    />
+  );
+}
+
 describe('FeedSidebar', () => {
   it('lists enabled sources and toggles the filter on click', async () => {
     const onSetSourceFilter = vi.fn();
-    const { user } = render(
-      <FeedSidebar
-        sources={sources}
-        items={items}
-        sourceFilter={null}
-        onSetSourceFilter={onSetSourceFilter}
-        totalCount={1}
-        isBookmarksView={false}
-      />
-    );
+    const { user } = renderSidebar({ onSetSourceFilter });
 
     const sourceButton = screen.getByRole('button', { name: /Anime News Network/i });
     await user.click(sourceButton);
     expect(onSetSourceFilter).toHaveBeenCalledWith(1);
+  });
+
+  it('omits disabled sources from the list', () => {
+    renderSidebar();
+    expect(screen.queryByRole('button', { name: /Disabled Source/i })).not.toBeInTheDocument();
+  });
+
+  it('clears the filter when the active source is clicked again', async () => {
+    const onSetSourceFilter = vi.fn();
+    const { user } = renderSidebar({ sourceFilter: 1, onSetSourceFilter });
+
+    const sourceButton = screen.getByRole('button', { name: /Anime News Network/i });
+    expect(sourceButton).toHaveAttribute('aria-pressed', 'true');
+    await user.click(sourceButton);
+    expect(onSetSourceFilter).toHaveBeenCalledWith(null);
+  });
+
+  it('selects "All sources" with a null filter', async () => {
+    const onSetSourceFilter = vi.fn();
+    const { user } = renderSidebar({ sourceFilter: 1, onSetSourceFilter });
+
+    await user.click(screen.getByRole('button', { name: /All sources/i }));
+    expect(onSetSourceFilter).toHaveBeenCalledWith(null);
+  });
+
+  it('renders an activity bar for active sources in the trending card', () => {
+    renderSidebar();
+    // The trending card surfaces a labelled activity progress bar per active source.
+    expect(
+      screen.getByRole('progressbar', { name: 'Anime News Network activity' })
+    ).toBeInTheDocument();
+  });
+
+  it('hides the trending card when no source has loaded items', () => {
+    renderSidebar({ items: [] });
+    expect(screen.queryByText('Most active')).not.toBeInTheDocument();
   });
 });

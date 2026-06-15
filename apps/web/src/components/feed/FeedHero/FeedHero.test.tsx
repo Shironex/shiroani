@@ -34,4 +34,25 @@ describe('FeedHero', () => {
     await user.click(screen.getByRole('button'));
     expect(onOpen).toHaveBeenCalledWith(item);
   });
+
+  it('renders the featured pill, teaser, and a machine-readable time', () => {
+    render(<FeedHero item={item} onOpen={vi.fn()} />);
+    expect(screen.getByText('Featured')).toBeInTheDocument();
+    expect(screen.getByText('The studio confirmed a two-cour run.')).toBeInTheDocument();
+    expect(document.querySelector('time')).toHaveAttribute('dateTime', '2026-06-14T08:00:00.000Z');
+  });
+
+  it('omits the teaser and author when those fields are missing', () => {
+    render(
+      <FeedHero item={{ ...item, description: undefined, author: undefined }} onOpen={vi.fn()} />
+    );
+    expect(screen.queryByText('The studio confirmed a two-cour run.')).not.toBeInTheDocument();
+    expect(screen.queryByText('Editorial Desk')).not.toBeInTheDocument();
+    // The headline still renders.
+    expect(
+      screen.getByRole('heading', {
+        name: 'A sweeping new anime adaptation was announced today',
+      })
+    ).toBeInTheDocument();
+  });
 });

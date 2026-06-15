@@ -6,6 +6,13 @@ describe('FeedLoadingAnimation', () => {
   it('renders the localized loading label', () => {
     render(<FeedLoadingAnimation />);
     // EN default label from the `feed` namespace.
-    expect(screen.getByText(/loading/i)).toBeInTheDocument();
+    expect(screen.getByText('Loading news')).toBeInTheDocument();
+  });
+
+  it('marks the decorative SVG as hidden from assistive tech', () => {
+    const { container } = render(<FeedLoadingAnimation />);
+    const svg = container.querySelector('svg');
+    expect(svg).not.toBeNull();
+    expect(svg).toHaveAttribute('aria-hidden', 'true');
   });
 });

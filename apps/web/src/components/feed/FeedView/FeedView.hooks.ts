@@ -15,7 +15,6 @@ const {
   setCategoryFilter,
   setLanguageFilter,
   setSourceFilter,
-  markAllSeen,
   markAllRead,
 } = useFeedStore.getState();
 
@@ -91,9 +90,10 @@ export function useFeedView(): IFeedViewView {
   }, [lastRefreshNewCount]);
 
   // Entering the Feed view counts as "caught up" — clears the newtab greeting's
-  // unread subscription counter. Fires once per mount.
+  // unread subscription counter. Fires once per mount. Resolved from the store
+  // at call time (rather than the module-level reference) so tests can stub it.
   useEffect(() => {
-    markAllSeen();
+    useFeedStore.getState().markAllSeen();
   }, []);
 
   useEffect(() => {
@@ -111,7 +111,8 @@ export function useFeedView(): IFeedViewView {
     }
 
     hasTriggeredVisibleBootstrap.current = true;
-    fetchItems(false, { bootstrapIfEmpty: true });
+    // Resolved from the store at call time so tests can stub the fetch.
+    useFeedStore.getState().fetchItems(false, { bootstrapIfEmpty: true });
   }, [
     items.length,
     isLoading,

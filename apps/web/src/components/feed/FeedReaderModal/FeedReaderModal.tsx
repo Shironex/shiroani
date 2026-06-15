@@ -50,7 +50,11 @@ function FeedReaderModal({
   if (!item) {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="sr-only" />
+        <DialogContent className="sr-only" aria-describedby={undefined}>
+          {/* The shell carries an accessible name even with no article loaded,
+              so the dialog role is never announced as unnamed. */}
+          <DialogTitle className="sr-only">{t('reader.readerLabel')}</DialogTitle>
+        </DialogContent>
       </Dialog>
     );
   }
