@@ -13,21 +13,25 @@ const media: DiscoverMedia = {
 };
 
 function renderCard(overrides: Partial<Parameters<typeof RandomShowcaseCard>[0]> = {}) {
-  return render(
+  const handlers = {
+    onPrev: vi.fn(),
+    onNext: vi.fn(),
+    onRefetch: vi.fn(),
+    onOpenDetails: vi.fn(),
+    onAddToLibrary: vi.fn(),
+  };
+  const result = render(
     <RandomShowcaseCard
       media={media}
       index={0}
       total={12}
       inLibrary={false}
       isLoading={false}
-      onPrev={vi.fn()}
-      onNext={vi.fn()}
-      onRefetch={vi.fn()}
-      onOpenDetails={vi.fn()}
-      onAddToLibrary={vi.fn()}
+      {...handlers}
       {...overrides}
     />
   );
+  return { ...result, ...handlers };
 }
 
 describe('RandomShowcaseCard', () => {
@@ -36,14 +40,58 @@ describe('RandomShowcaseCard', () => {
 
     expect(screen.getByRole('heading', { name: 'Frieren' })).toBeInTheDocument();
     expect(screen.getByText('Adventure')).toBeInTheDocument();
+    expect(screen.getByText('Fantasy')).toBeInTheDocument();
   });
 
   it('advances to the next pick when shuffle is pressed', async () => {
-    const onNext = vi.fn();
-    const { user } = renderCard({ onNext });
+    const { user, onNext } = renderCard();
 
     await user.click(screen.getByRole('button', { name: /shuffle/i }));
 
     expect(onNext).toHaveBeenCalled();
+  });
+
+  it('opens the detail when the title is clicked', async () => {
+    const { user, onOpenDetails } = renderCard();
+
+    await user.click(screen.getByRole('heading', { name: 'Frieren' }));
+
+    expect(onOpenDetails).toHaveBeenCalled();
+  });
+
+  it('refetches a new pool from the refresh action', async () => {
+    const { user, onRefetch } = renderCard();
+
+    await user.click(screen.getByRole('button', { name: 'Refresh suggestions' }));
+
+    expect(onRefetch).toHaveBeenCalled();
+  });
+
+  it('shows the add-to-library action when not in the library', async () => {
+    const { user, onAddToLibrary } = renderCard();
+
+    await user.click(screen.getByRole('button', { name: 'Add to library' }));
+
+    expect(onAddToLibrary).toHaveBeenCalled();
+  });
+
+  it('hides the add action and shows the in-library tag when already added', () => {
+    renderCard({ inLibrary: true });
+
+    expect(screen.queryByRole('button', { name: 'Add to library' })).not.toBeInTheDocument();
+    expect(screen.getByText('In library')).toBeInTheDocument();
+  });
+
+  it('disables shuffle and refresh while loading', () => {
+    renderCard({ isLoading: true });
+
+    expect(screen.getByRole('button', { name: /shuffle/i })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Refresh suggestions' })).toBeDisabled();
+  });
+
+  it('reports the position within the pool', () => {
+    renderCard({ index: 2, total: 12 });
+
+    expect(screen.getByText('3 / 12')).toBeInTheDocument();
   });
 });

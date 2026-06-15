@@ -17,25 +17,19 @@ function DiscoverCard({ media, inLibrary, onClick, onAddToLibrary }: IDiscoverCa
     subtitle,
     hasScore,
     handleClick,
-    handleKeyDown,
     handleImageError,
     handleAddClick,
   } = useDiscoverCard({ media, inLibrary, onClick, onAddToLibrary });
 
   return (
     <div
-      role="button"
-      tabIndex={0}
-      aria-label={title}
       className={cn(
         'group relative rounded-[10px] overflow-hidden cursor-pointer',
         'border border-border-glass bg-card/60',
         'transition-transform duration-200 ease-out',
         'hover:-translate-y-0.5 hover:shadow-primary-glow',
-        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:-translate-y-0.5'
+        'focus-within:-translate-y-0.5'
       )}
-      onClick={handleClick}
-      onKeyDown={handleKeyDown}
     >
       {/* Cover — 2:3 aspect, matching Library card vocabulary */}
       <div className="relative aspect-[2/3] overflow-hidden">
@@ -66,6 +60,22 @@ function DiscoverCard({ media, inLibrary, onClick, onAddToLibrary }: IDiscoverCa
             background:
               'radial-gradient(circle at 30% 20%, oklch(1 0 0 / 0.12), transparent 45%), linear-gradient(180deg, transparent 45%, oklch(0 0 0 / 0.68))',
           }}
+        />
+
+        {/* Primary "open detail" affordance — a stretched, transparent button
+            covering the tile. Gives the card a single accessible name and native
+            keyboard/click without nesting the add-to-library button inside an
+            interactive container (which would trip axe's nested-interactive
+            rule). The hover-overlay add button sits at a higher z-index so it
+            stays independently clickable above this layer. */}
+        <button
+          type="button"
+          onClick={handleClick}
+          aria-label={title}
+          className={cn(
+            'absolute inset-0 z-[2]',
+            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset rounded-[10px]'
+          )}
         />
 
         {/* Format pill — top-left */}

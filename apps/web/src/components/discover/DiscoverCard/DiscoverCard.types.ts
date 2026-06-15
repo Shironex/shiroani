@@ -1,4 +1,4 @@
-import type { KeyboardEvent, MouseEvent } from 'react';
+import type { MouseEvent } from 'react';
 import type { DiscoverMedia } from '@/stores/useDiscoverStore';
 
 export interface IDiscoverCardProps {
@@ -16,7 +16,6 @@ export interface IDiscoverCardView {
   readonly subtitle: string;
   readonly hasScore: boolean;
   readonly handleClick: () => void;
-  readonly handleKeyDown: (e: KeyboardEvent) => void;
   readonly handleImageError: () => void;
   readonly handleAddClick: (e: MouseEvent) => void;
 }

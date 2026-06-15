@@ -28,22 +28,51 @@ const recommendation: AniListCommunityRecommendation = {
   },
 };
 
+function renderPanel(overrides: Partial<Parameters<typeof RecommendationsPanel>[0]> = {}) {
+  return render(
+    <RecommendationsPanel libraryIds={new Set()} connected onCardClick={vi.fn()} {...overrides} />
+  );
+}
+
 beforeEach(() => {
   seed({});
 });
 
 describe('RecommendationsPanel', () => {
   it('renders the empty state when there are no recommendations', () => {
-    render(<RecommendationsPanel libraryIds={new Set()} connected onCardClick={vi.fn()} />);
+    renderPanel();
 
     expect(screen.getByText(/no recommendations/i)).toBeInTheDocument();
   });
 
+  it('renders the skeleton while the first page loads', () => {
+    seed({ isRecommendationsLoading: true });
+    const { container } = renderPanel();
+
+    expect(container.querySelector('[aria-busy="true"]')).toBeInTheDocument();
+    expect(screen.queryByText(/no recommendations/i)).not.toBeInTheDocument();
+  });
+
+  it('renders the error state with a retry action when the fetch failed', () => {
+    seed({ recommendationsError: 'network down' });
+    renderPanel();
+
+    expect(screen.getByRole('button', { name: /try again/i })).toBeInTheDocument();
+    expect(screen.queryByText(/no recommendations/i)).not.toBeInTheDocument();
+  });
+
   it('renders recommendation cards when the store has data', () => {
     seed({ recommendations: [recommendation] });
-    render(<RecommendationsPanel libraryIds={new Set()} connected onCardClick={vi.fn()} />);
+    renderPanel();
 
     expect(screen.getByRole('button', { name: 'Frieren' })).toBeInTheDocument();
     expect(screen.getByText('+42')).toBeInTheDocument();
+  });
+
+  it('marks a recommended title already in the library', () => {
+    seed({ recommendations: [recommendation] });
+    renderPanel({ libraryIds: new Set([200]) });
+
+    expect(screen.getByRole('button', { name: 'In library' })).toBeInTheDocument();
   });
 });

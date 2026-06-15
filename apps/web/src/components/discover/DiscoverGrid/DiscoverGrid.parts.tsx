@@ -32,6 +32,7 @@ export function columnsForWidth(width: number): number {
 }
 
 export function GridCell({
+  ariaAttributes,
   columnIndex,
   rowIndex,
   style,
@@ -43,15 +44,25 @@ export function GridCell({
   onCardClick,
   onAddToLibrary,
 }: CellComponentProps<ICellProps>) {
+  // Spread react-window's `role="gridcell"` (+ aria-colindex) onto every cell
+  // root so each `role="row"` wrapper contains valid gridcell children rather
+  // than the card's button/heading directly. Empty cells keep the role (not
+  // `aria-hidden`) so the row still has its required gridcell child — both
+  // satisfy axe's aria-required-children rule (same scheme as LibraryGrid).
+  //
   // Trailing row: full-width load-more spinner / dock clearance. Cells are
   // absolutely positioned from the left edge, so widening cell 0 to 100%
   // spans the row; the remaining cells stay empty.
   if (rowIndex >= baseRowCount) {
     if (columnIndex !== 0) {
-      return <div style={style} aria-hidden="true" />;
+      return <div {...ariaAttributes} style={style} />;
     }
     return (
-      <div style={{ ...style, width: '100%' }} className="flex items-start justify-center pt-6">
+      <div
+        {...ariaAttributes}
+        style={{ ...style, width: '100%' }}
+        className="flex items-start justify-center pt-6"
+      >
         {isLoadingMore && <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />}
       </div>
     );
@@ -70,10 +81,10 @@ export function GridCell({
     paddingBottom: halfGap,
   };
   if (!media) {
-    return <div style={insetStyle} aria-hidden="true" />;
+    return <div {...ariaAttributes} style={insetStyle} />;
   }
   return (
-    <div style={insetStyle}>
+    <div {...ariaAttributes} style={insetStyle}>
       <DiscoverCard
         media={media}
         inLibrary={libraryIds.has(media.id)}

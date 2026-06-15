@@ -76,6 +76,7 @@ function RandomShowcaseCard({
         <div
           role="button"
           tabIndex={0}
+          aria-label={meta.title}
           onClick={onOpenDetails}
           onKeyDown={e => {
             if (e.key === 'Enter' || e.key === ' ') {

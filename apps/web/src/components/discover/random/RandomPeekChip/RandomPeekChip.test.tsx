@@ -21,4 +21,23 @@ describe('RandomPeekChip', () => {
     await user.click(screen.getByRole('button'));
     expect(onClick).toHaveBeenCalledTimes(1);
   });
+
+  it('labels the chip by its direction for the previous pick', () => {
+    render(<RandomPeekChip media={media} direction="prev" onClick={vi.fn()} inLibrary={false} />);
+
+    expect(screen.getByRole('button', { name: 'Previous: Frieren' })).toBeInTheDocument();
+  });
+
+  it('labels the chip by its direction for the next pick', () => {
+    render(<RandomPeekChip media={media} direction="next" onClick={vi.fn()} inLibrary={false} />);
+
+    expect(screen.getByRole('button', { name: 'Next: Frieren' })).toBeInTheDocument();
+  });
+
+  it('marks a chip whose title is already in the library', () => {
+    render(<RandomPeekChip media={media} direction="prev" onClick={vi.fn()} inLibrary />);
+
+    // The check glyph sits inside the same title paragraph.
+    expect(screen.getByText('✓')).toBeInTheDocument();
+  });
 });

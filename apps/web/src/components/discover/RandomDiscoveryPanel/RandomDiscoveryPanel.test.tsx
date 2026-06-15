@@ -24,7 +24,27 @@ const pool: DiscoverMedia[] = [
     genres: ['Adventure'],
     averageScore: 92,
   },
+  {
+    id: 2,
+    title: { english: 'Spy x Family', romaji: 'Spy x Family' },
+    coverImage: { extraLarge: 'xl2.jpg', medium: 'med2.jpg' },
+    episodes: 25,
+    genres: ['Comedy'],
+    averageScore: 85,
+  },
 ];
+
+function renderPanel(overrides: Partial<Parameters<typeof RandomDiscoveryPanel>[0]> = {}) {
+  return render(
+    <RandomDiscoveryPanel
+      libraryIds={new Set()}
+      excludedIds={new Set()}
+      onCardClick={vi.fn()}
+      onError={vi.fn()}
+      {...overrides}
+    />
+  );
+}
 
 beforeEach(() => {
   seed({});
@@ -32,29 +52,45 @@ beforeEach(() => {
 
 describe('RandomDiscoveryPanel', () => {
   it('renders the empty state when the pool is empty', () => {
-    render(
-      <RandomDiscoveryPanel
-        libraryIds={new Set()}
-        excludedIds={new Set()}
-        onCardClick={vi.fn()}
-        onError={vi.fn()}
-      />
-    );
+    renderPanel();
 
     expect(screen.getByText(/no suggestions/i)).toBeInTheDocument();
   });
 
+  it('renders the error state with a retry handler', async () => {
+    const onError = vi.fn();
+    seed({ error: 'network down' });
+    const { user } = renderPanel({ onError });
+
+    const retry = screen.getByRole('button', { name: /try again/i });
+    await user.click(retry);
+
+    expect(onError).toHaveBeenCalled();
+  });
+
   it('renders the showcase card when the pool has a pick', () => {
     seed({ randomShuffled: pool });
-    render(
-      <RandomDiscoveryPanel
-        libraryIds={new Set()}
-        excludedIds={new Set()}
-        onCardClick={vi.fn()}
-        onError={vi.fn()}
-      />
-    );
+    renderPanel();
 
     expect(screen.getByRole('heading', { name: 'Frieren' })).toBeInTheDocument();
+  });
+
+  it('opens the detail dialog when the showcase title is clicked', async () => {
+    const onCardClick = vi.fn();
+    seed({ randomShuffled: pool });
+    const { user } = renderPanel({ onCardClick });
+
+    await user.click(screen.getByRole('heading', { name: 'Frieren' }));
+
+    expect(onCardClick).toHaveBeenCalledWith(pool[0]);
+  });
+
+  it('drops excluded ids from the pool before rendering', () => {
+    seed({ randomShuffled: pool });
+    renderPanel({ excludedIds: new Set([1]) });
+
+    // The first pick is excluded, so the remaining pick is shown instead.
+    expect(screen.getByRole('heading', { name: 'Spy x Family' })).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Frieren' })).not.toBeInTheDocument();
   });
 });

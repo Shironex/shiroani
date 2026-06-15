@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import type { KeyboardEvent, MouseEvent } from 'react';
+import type { MouseEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getAnilistFormatLabel, getAnilistStatusLabel } from '@/lib/constants';
 import type { IDiscoverCardProps, IDiscoverCardView } from './DiscoverCard.types';
@@ -17,16 +17,6 @@ export function useDiscoverCard({
   const [imgError, setImgError] = useState(false);
 
   const handleClick = useCallback(() => onClick?.(media), [onClick, media]);
-
-  const handleKeyDown = useCallback(
-    (e: KeyboardEvent) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        onClick?.(media);
-      }
-    },
-    [onClick, media]
-  );
 
   const handleImageError = useCallback(() => setImgError(true), []);
 
@@ -57,7 +47,6 @@ export function useDiscoverCard({
     subtitle,
     hasScore,
     handleClick,
-    handleKeyDown,
     handleImageError,
     handleAddClick,
   };
