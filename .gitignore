@@ -60,3 +60,5 @@ docs/release-v*.md
 docs/discord-v*.md
 shiroani-design
 docs
+.omniscribe
+.playwright-mcp
