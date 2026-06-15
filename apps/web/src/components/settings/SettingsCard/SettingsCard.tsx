@@ -81,14 +81,16 @@ export default function SettingsCard({
         >
           {headerIcon}
           <div className="min-w-0 flex-1 pt-0.5">
-            <h3
+            {/* h2: the view's single h1 lives in the shared ViewHeader, so each
+                settings card is a second-level section under it (no level skip). */}
+            <h2
               className={cn(
                 'font-serif font-bold text-[16px] leading-tight tracking-[-0.01em]',
                 isDestructive ? 'text-destructive' : 'text-foreground'
               )}
             >
               {title}
-            </h3>
+            </h2>
             {subtitle && (
               <p className="mt-0.5 text-[11.5px] text-muted-foreground leading-snug">{subtitle}</p>
             )}

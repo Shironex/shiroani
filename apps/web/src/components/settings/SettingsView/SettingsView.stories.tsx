@@ -14,10 +14,9 @@ const meta = {
   component: SettingsView,
   parameters: {
     layout: 'fullscreen',
-    // TODO(a11y): heading-order skip (shared ViewHeader renders the panel's h1,
-    // SettingsCard renders section h3) — out of scope; the h1 lives in the shared
-    // ViewHeader and an h2 would belong to no element in the composed shell.
-    a11y: { test: 'todo' },
+    // Heading order is clean: the shared ViewHeader renders the panel's single
+    // h1 and each SettingsCard renders a section h2 beneath it (no level skip).
+    a11y: { test: 'error' },
   },
   decorators: [withFullHeight],
 } satisfies Meta<typeof SettingsView>;

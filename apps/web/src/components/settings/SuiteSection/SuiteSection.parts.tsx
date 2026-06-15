@@ -79,6 +79,7 @@ export function SiblingAppCard({ app }: { app: SiblingApp }) {
       {/* Decorative kanji watermark — anchors the Japanese aesthetic and tints with the app accent on hover. */}
       <span
         aria-hidden="true"
+        data-a11y-decorative
         className={cn(
           'pointer-events-none absolute right-[-22px] bottom-[-44px] select-none',
           'font-serif font-extrabold leading-none tracking-[-0.05em]',
@@ -149,7 +150,12 @@ export function SiblingAppCard({ app }: { app: SiblingApp }) {
           >
             {app.romaji}
           </h3>
+          {/* Decorative kanji echo of the romaji name beside it — the <h2>/<h3>
+              romaji is the accessible name, so this brand-accent glyph is hidden
+              from axe's contrast check (it's identity styling, not a label). */}
           <span
+            aria-hidden="true"
+            data-a11y-decorative
             className="font-serif text-[14px] leading-none tracking-tight"
             style={{ color: accentSolid, opacity: 0.85 }}
           >

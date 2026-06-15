@@ -24,12 +24,10 @@ const meta = {
   component: BrowserView,
   parameters: {
     layout: 'fullscreen',
-    // TODO(a11y): the default mount embeds NewTabPage, whose GreetingBanner uses
-    // a nested <header> (banner landmark) — axe flags landmark-banner-is-top-level.
-    // That banner belongs to the browser/newtab sub-feature (its own stories),
-    // not the browser chrome under test here, so it's fixed in NewTabPage's a11y
-    // pass. The chrome itself (tabs, toolbar) is exercised by the play test below.
-    a11y: { test: 'todo' },
+    // The embedded NewTabPage's GreetingBanner is a plain block (not a <header>),
+    // so it adds no banner landmark inside the browser chrome — the whole
+    // composed view passes the axe scan.
+    a11y: { test: 'error' },
   },
   decorators: [withFullHeight],
   beforeEach: () => {

@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { within, userEvent, expect, fn, waitFor } from 'storybook/test';
 import type { DiaryEntry } from '@shiroani/shared';
-import { withFullHeight } from '../../../../.storybook/decorators';
+import { withAppSurface } from '../../../../.storybook/decorators';
 import DiaryEditor from './DiaryEditor';
 
 const entry: DiaryEntry = {
@@ -33,21 +33,12 @@ const meta = {
   parameters: {
     layout: 'fullscreen',
     // Title input, tag controls and pin toggle carry accessible names; the cover
-    // image is decorative (alt=""). Every interactive-a11y rule is enforced.
-    //
-    // `color-contrast` is the lone disabled rule: the Tiptap prose body uses the
-    // correct `--foreground` theme token and the editor body carries the app's
-    // dark `bg-background` surface, but Storybook's canvas paints white behind
-    // the floating ProseMirror content, so axe measures near-white text on
-    // white. This is a theme-token/canvas artifact, not an app contrast bug.
-    // TODO(a11y): color-contrast disabled — Storybook canvas paints white behind
-    // the themed prose surface; the token contrast is correct in-app.
-    a11y: {
-      test: 'error',
-      config: { rules: [{ id: 'color-contrast', enabled: false }] },
-    },
+    // image is decorative (alt=""). Every rule — including color-contrast — is
+    // enforced: the editor body carries the app's dark bg-background surface, so
+    // the themed prose text composites against it correctly under axe.
+    a11y: { test: 'error' },
   },
-  decorators: [withFullHeight],
+  decorators: [withAppSurface],
   args: {
     onClose: fn(),
     onCreate: fn(async () => true),

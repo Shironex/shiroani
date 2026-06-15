@@ -34,14 +34,16 @@ export default function SettingsView() {
 
       {/* ── Body: sidebar + main scroll area ────────────────────────── */}
       <div className="flex-1 flex min-h-0">
-        {/* Sidebar navigation */}
-        <aside
+        {/* Sidebar navigation — a plain div carries role="tablist"; an <aside>'s
+            implicit complementary role can't be overridden to tablist (axe:
+            aria-allowed-role). */}
+        <div
           className="min-w-[220px] max-w-[280px] w-fit shrink-0 border-r border-border-glass overflow-y-auto pt-4 pb-20 px-3"
           role="tablist"
           aria-label={t('nav.ariaSections')}
         >
           {groupSections}
-        </aside>
+        </div>
 
         {/* Main section content */}
         <div className="flex-1 relative overflow-hidden" role="tabpanel" aria-label={currentLabel}>

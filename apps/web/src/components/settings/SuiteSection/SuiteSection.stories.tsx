@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { within, userEvent, expect, fn } from 'storybook/test';
+import { withAppSurface } from '../../../../.storybook/decorators';
 import SuiteSection from './SuiteSection';
 
 /**
@@ -11,11 +12,16 @@ const meta = {
   title: 'settings/SuiteSection',
   component: SuiteSection,
   parameters: {
-    // TODO(a11y): per-app brand-accent text (app romaji, tagline, version) is
-    // rendered in each sibling app's signature oklch accent on a light card —
-    // an intentional brand-identity contrast choice, not a control affordance.
-    a11y: { test: 'todo' },
+    layout: 'fullscreen',
+    // Readable text (romaji headings, taglines, descriptions, CTA) uses theme
+    // tokens / dark-ink-on-accent and meets AA on the app surface. The only
+    // brand-accent glyphs are the decorative kanji watermark + the kanji echo of
+    // the romaji name, both aria-hidden + data-a11y-decorative (excluded from the
+    // scan in preview.tsx). The app-surface decorator supplies the opaque themed
+    // background so axe measures the accents against it, not the bare canvas.
+    a11y: { test: 'error' },
   },
+  decorators: [withAppSurface],
 } satisfies Meta<typeof SuiteSection>;
 
 export default meta;

@@ -41,7 +41,11 @@ export default function GreetingBanner({ showName }: IGreetingBannerProps) {
   const showNameSuffix = showName && displayName;
 
   return (
-    <header className="flex items-center gap-4">
+    // A plain block, not a <header>: GreetingBanner is an in-page greeting
+    // widget embedded in the newtab content (and inside the browser chrome),
+    // not the document's site-wide banner landmark — a nested <header> would
+    // trip axe's landmark-banner-is-top-level when embedded in BrowserView.
+    <div className="flex items-center gap-4">
       <div
         aria-hidden="true"
         className={cn(
@@ -78,6 +82,6 @@ export default function GreetingBanner({ showName }: IGreetingBannerProps) {
           todayCount={todayCount}
         />
       </div>
-    </header>
+    </div>
   );
 }

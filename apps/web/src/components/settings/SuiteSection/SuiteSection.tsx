@@ -3,11 +3,10 @@ import { useTranslation } from 'react-i18next';
 import { SettingsCard } from '@/components/settings/SettingsCard';
 import { useSuiteSection } from './SuiteSection.hooks';
 import { APPS, SiblingAppCard } from './SuiteSection.parts';
-import type { ISuiteSectionProps } from './SuiteSection.types';
 
-export default function SuiteSection(props: ISuiteSectionProps) {
+export default function SuiteSection() {
   const { t } = useTranslation('settings');
-  useSuiteSection(props);
+  useSuiteSection();
 
   const appCards = APPS.map(app => <SiblingAppCard key={app.id} app={app} />);
 
