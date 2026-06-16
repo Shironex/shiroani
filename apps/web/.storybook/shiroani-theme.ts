@@ -20,19 +20,14 @@ const ink = '#f3f0f8'; // oklch(0.96 0.01 300) — primary text
 const inkMuted = '#a7a1b5'; // oklch(0.72 0.03 300) — secondary text
 const line = '#221f29'; // white/8% over surface — borders
 
-/*
- * Logo: an inline SVG wordmark — a five-petal sakura in the brand pink next to
- * a two-tone "ShiroAni". Kept as a readable template string and URL-encoded into
- * a data URI at load, so there is no static asset to copy or serve. (To use the
- * chibi mascot instead, point brandImage at a served PNG — see manager docs.)
- */
-const logo = `<svg xmlns="http://www.w3.org/2000/svg" width="124" height="32" viewBox="0 0 124 32" fill="none"><g transform="translate(16 16)"><g fill="${pink}"><ellipse cx="0" cy="-6.6" rx="4.3" ry="6.8"/><ellipse cx="0" cy="-6.6" rx="4.3" ry="6.8" transform="rotate(72)"/><ellipse cx="0" cy="-6.6" rx="4.3" ry="6.8" transform="rotate(144)"/><ellipse cx="0" cy="-6.6" rx="4.3" ry="6.8" transform="rotate(216)"/><ellipse cx="0" cy="-6.6" rx="4.3" ry="6.8" transform="rotate(288)"/></g><circle r="2.8" fill="#fbd5e4"/></g><text x="38" y="21" font-family="DM Sans,system-ui,sans-serif" font-size="17" font-weight="700" letter-spacing="-0.2"><tspan fill="${ink}">Shiro</tspan><tspan fill="${pink}">Ani</tspan></text></svg>`;
-
 export const shiroaniTheme = create({
   base: 'dark',
 
   brandTitle: 'ShiroAni',
-  brandImage: `data:image/svg+xml,${encodeURIComponent(logo)}`,
+  // The chibi mascot, served at the Storybook root from apps/web/public — by
+  // Vite's publicDir middleware in `storybook dev` and copied into the bundle by
+  // `storybook build`, so it resolves in both dev and the deployed static build.
+  brandImage: '/shiro-chibi.svg',
   brandTarget: '_self',
 
   colorPrimary: pink,
