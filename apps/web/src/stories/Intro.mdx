@@ -1,0 +1,39 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Docs Overview/Intro" />
+
+# ShiroAni Component Library
+
+This is the living component library for **ShiroAni** — the anime-tracking app
+(desktop + web). Every UI piece the app ships is documented here in isolation:
+rendered, interactive, themeable, and tested. Use it to explore what exists
+before building something new, to check a component's props and states, and to
+verify behavior without booting the whole app.
+
+## How to navigate
+
+- **Sidebar** — components are grouped by feature area (`browser`, `library`,
+  `schedule`, `diary`, `feed`, `discover`, `profile`, `settings`, `social`,
+  `shared`, …). This **Docs Overview** section collects the cross-cutting guides.
+- **Docs page** — each component has an auto-generated Docs page: a description,
+  a live preview of every story, and a props table (derived from its TypeScript
+  types + JSDoc).
+- **Stories** — the named variants under each component (`Default`, `Empty`,
+  `Loading`, …). Each opens in the Canvas.
+- **Addon tabs** — under a story you get **Controls** (tweak props live),
+  **Actions** (logged callbacks), **Interactions** (the play-function steps),
+  and **Accessibility** (the axe report).
+
+## Toolbar
+
+- **Theme** — switch among the 17 built-in themes (15 dark + 2 light); the
+  default is **Plum**, the same dark plum surface the app ships with.
+- **Language** — toggle the UI copy between **English** and **Polski**; stories
+  render the real shipped translations, not raw i18n keys.
+
+## Quality bar
+
+There are **179 components** and **470 stories**, and every story is a real
+in-browser test — it must render without error, its play-function interactions
+must pass, and axe runs an accessibility scan on it. See **Testing** and
+**Accessibility** for how that works, and **Theming** for the token system.

@@ -1,0 +1,54 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Docs Overview/Theming" />
+
+# Theming & tokens
+
+ShiroAni is fully themeable, and Storybook renders every story under the real
+theme system so what you see here matches the app.
+
+## The token system
+
+Themes are expressed as **oklch** CSS custom properties. Each theme lives in
+`src/styles/themes/<name>.css` and is surfaced to Tailwind through the `@theme`
+block in `src/styles/globals.css`. A component never hard-codes a color — it
+references a token (`bg-background`, `text-foreground`, `border-border`,
+`bg-primary`, …) that resolves against the active theme.
+
+For the default **Plum** theme, for example:
+
+- `--background: oklch(0.12 0.018 300)` — the deep plum window surface
+- `--foreground: oklch(0.96 0.01 300)` — near-white text
+- `--primary: oklch(0.74 0.15 355)` — the signature plum/pink accent
+
+Working in oklch means lightness, chroma, and hue are independent, so derived
+tokens (hover states, glows) are computed with `oklch(from …)` rather than
+hand-picked.
+
+## The 17 built-in themes
+
+15 dark and 2 light, ordered with **Plum** leading as the default:
+
+- **Dark** — Plum, Noir, Matcha, Iced, Ember, Sakura, Midnight, Abyss, Crimson,
+  Dusk, Cosmic, Void, Sunset, Shirogane, Onyx
+- **Light** — Paper, Haiku
+
+The order, labels, and swatch colors come from `BUILT_IN_THEME_METADATA` in
+`@shiroani/shared` — the single source of truth shared by the app's theme picker
+and Storybook's toolbar.
+
+## How the toolbar switches themes
+
+The **Theme** toolbar uses `withThemeByClassName` (from `@storybook/addon-themes`)
+to toggle a `:root.<theme>` class on the preview — plus the bare `dark` class for
+dark themes, which Tailwind's `dark:` variant keys off. The theme list is derived
+from `DARK_THEMES` / `LIGHT_THEMES` in `@shiroani/shared`, so the toolbar stays in
+sync with the app automatically when a theme is added.
+
+## A note on story surfaces
+
+Many view stories wrap in a `withAppSurface` decorator that paints the opaque
+`--background` / `--foreground` surface. In the app these views sit inside the
+themed shell; isolated in Storybook they'd resolve translucent surfaces against a
+bare canvas, which makes axe report false low-contrast failures. The decorator
+restores the in-app contrast context.

@@ -1,0 +1,50 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Docs Overview/Testing" />
+
+# Testing & stories
+
+Stories aren't just documentation here — they're the test suite. The same story
+that documents a component also verifies it.
+
+## Two Vitest projects
+
+The repo runs two Vitest 4 projects (`apps/web/vitest.config.ts`):
+
+- **`unit`** — the fast jsdom + Testing Library suite for behavior-level tests.
+  Run with `pnpm --filter @shiroani/web test`.
+- **`storybook`** — every story executed as a real-browser test through
+  `@storybook/addon-vitest` + Playwright Chromium. Run with
+  `pnpm --filter @shiroani/web test:storybook`.
+
+## What a story test covers
+
+For each of the **470 stories** across **179 components**, the storybook project:
+
+1. **Render smoke test** — mounts the story in a real browser; any render error
+   fails it.
+2. **Play function** — if the story defines a `play`, its interaction steps run
+   (`userEvent` clicks/typing + `expect` assertions), exactly as in the
+   **Interactions** tab.
+3. **Accessibility** — axe scans the rendered story; whether a violation blocks
+   depends on the feature's `a11y.test` level (see **Accessibility**).
+
+Because the addon auto-applies the preview annotations (decorators, theme, i18n,
+a11y config) since Storybook 10.3, a story behaves identically in the Canvas and
+under the test runner — no separate setup to keep in sync.
+
+## Writing a good story
+
+- Seed state directly (props, or a `beforeEach` that sets a store) — stories
+  never reach the backend.
+- Add a `play` for anything interactive; assert the user-visible outcome.
+- Give the component meta a clear JSDoc description — it becomes the Docs page
+  intro and the props-table context.
+- Once the component passes axe cleanly, set `parameters.a11y.test = 'error'` to
+  lock it in.
+
+## Flake handling
+
+Browser-mode runs can occasionally fail to fetch a dynamically imported module
+under CI load — a transient race, not a real failure. The storybook project sets
+`retry: 2` so a flaky file is retried rather than reddening the whole run.

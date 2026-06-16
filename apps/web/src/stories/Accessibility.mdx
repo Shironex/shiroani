@@ -1,0 +1,37 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Docs Overview/Accessibility" />
+
+# Accessibility
+
+Accessibility is checked automatically on every story. The
+`@storybook/addon-a11y` addon runs [axe](https://github.com/dequelabs/axe-core)
+against the rendered story — visible per story in the **Accessibility** tab — and
+the same scan runs headless as part of the Storybook test suite (see **Testing**).
+
+## The ratchet
+
+Enforcement is rolled out feature-by-feature rather than flipped on all at once:
+
+- **Default — `a11y.test: 'todo'`.** Violations surface as non-blocking warnings.
+  This keeps the suite green repo-wide while features are brought up to standard
+  one at a time.
+- **Audited — `a11y.test: 'error'`.** Once a feature is clean, its stories set
+  `parameters.a11y.test = 'error'` at the meta level, which makes any new
+  violation **fail CI**. This locks in the win — a regression can't slip back.
+
+So the bar only ever moves forward: a component that's been audited stays
+audited, and unaudited ones still get a visible report without blocking everyone.
+
+## Decorative elements
+
+Purely decorative glyphs — e.g. the faint `KanjiWatermark` — are intentionally
+low-contrast and already marked `aria-hidden`. They carry a
+`[data-a11y-decorative]` attribute, which the global a11y config excludes from the
+scan so axe's color-contrast check doesn't flag a false positive. The exclusion is
+concatenated onto axe's defaults, so the normal story-root scan is unaffected.
+
+## Checking a component
+
+Open any story and select the **Accessibility** tab to see violations, passes,
+and incomplete checks, with the offending node highlighted in the canvas.

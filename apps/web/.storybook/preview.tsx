@@ -101,6 +101,13 @@ const preview: Preview = {
     docs: {
       theme: shiroaniTheme,
     },
+    // Float the standalone MDX "Docs Overview" section to the top of the sidebar
+    // (so its Intro is the landing page); everything else stays alphabetical.
+    options: {
+      storySort: {
+        order: ['Docs Overview', ['Intro', 'Theming', 'Accessibility', 'Testing'], '*'],
+      },
+    },
     controls: {
       matchers: {
         color: /(background|color)$/i,
