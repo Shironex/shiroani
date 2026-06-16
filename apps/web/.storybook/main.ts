@@ -16,6 +16,11 @@ const config: StorybookConfig = {
     '@storybook/addon-vitest',
   ],
   core: { disableTelemetry: true },
+  // The brand logo is the square chibi mascot; Storybook otherwise renders
+  // brandImage up to ~100px tall, which dominates the sidebar. Cap it to a
+  // sidebar-appropriate height (inline brand styles need !important to beat).
+  managerHead: head =>
+    `${head}<style>.sidebar-header img, img[alt='ShiroAni'] { max-height: 44px !important; width: auto !important; }</style>`,
 };
 
 export default config;
