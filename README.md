@@ -18,6 +18,9 @@
     <a href="LICENSE">
       <img src="https://img.shields.io/badge/License-Source%20Available-orange" alt="License" />
     </a>
+    <a href="https://storybook.shiroani.app">
+      <img src="https://img.shields.io/badge/Storybook-FF4785?style=flat&logo=storybook&logoColor=white" alt="Storybook" />
+    </a>
   </p>
 
   <p>
