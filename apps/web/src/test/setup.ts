@@ -34,6 +34,14 @@ if (typeof Element !== 'undefined') {
   Element.prototype.scrollIntoView ??= () => {};
 }
 
+// jsdom doesn't implement elementFromPoint. ProseMirror's posAtCoords (reached via
+// Tiptap's placeholder viewport-tracking, added in @tiptap/extensions 3.26) calls it
+// on editor mount, so the diary's Tiptap editor throws without this. Returning null
+// matches the "no element at that point" branch ProseMirror already handles.
+if (typeof Document !== 'undefined') {
+  Document.prototype.elementFromPoint ??= () => null;
+}
+
 // Mock sonner toast globally
 vi.mock('sonner', () => ({
   toast: Object.assign(vi.fn(), {
