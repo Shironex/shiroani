@@ -1,0 +1,38 @@
+FROM node:22-alpine AS base
+RUN corepack enable && corepack prepare pnpm@10.9.0 --activate
+WORKDIR /app
+
+# Install dependencies — only @shiroani/web and the workspace packages it
+# depends on (`...` pulls in @shiroani/shared + @shiroani/changelog).
+FROM base AS deps
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY apps/web/package.json apps/web/
+COPY packages/changelog/package.json packages/changelog/
+COPY packages/shared/package.json packages/shared/
+RUN pnpm install --frozen-lockfile --filter @shiroani/web...
+
+# Build the static Storybook
+FROM base AS build
+# Storybook builds a large bundle (every story + the docs pages); give Node room.
+ENV NODE_OPTIONS=--max-old-space-size=4096
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/apps/web/node_modules ./apps/web/node_modules
+COPY --from=deps /app/packages/changelog/node_modules ./packages/changelog/node_modules
+COPY --from=deps /app/packages/shared/node_modules ./packages/shared/node_modules
+# vite.config resolves @shiroani/shared and @shiroani/changelog to their `src`
+# (see apps/web/vite.config.ts aliases), so the source is enough — no package
+# build step. Copy the rarely-changing packages first for better layer caching.
+COPY tsconfig.base.json ./
+COPY packages/shared/ packages/shared/
+COPY packages/changelog/ packages/changelog/
+COPY apps/web/ apps/web/
+RUN pnpm --filter @shiroani/web run build-storybook
+
+# Serve the static output — Coolify/Traefik handles TLS + routing
+FROM node:22-alpine AS production
+RUN npm install -g serve@14
+COPY --from=build /app/apps/web/storybook-static /app
+# serve reads /app/serve.json for the long-cache rule on hashed assets.
+COPY apps/web/.storybook/serve.json /app/serve.json
+EXPOSE 3000
+CMD ["serve", "/app", "-l", "3000"]
