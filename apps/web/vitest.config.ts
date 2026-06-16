@@ -61,6 +61,11 @@ export default defineConfig({
         },
         test: {
           name: 'storybook',
+          // Browser-mode runs occasionally flake on CI with "Failed to fetch
+          // dynamically imported module" / "failed to find the current suite" —
+          // a transient module-fetch race under load, not a real test failure.
+          // Retry failed story files so a flake doesn't redden the whole run.
+          retry: 2,
           browser: {
             enabled: true,
             provider: playwright(),
