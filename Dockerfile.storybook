@@ -32,7 +32,9 @@ RUN pnpm --filter @shiroani/web run build-storybook
 FROM node:22-alpine AS production
 RUN npm install -g serve@14
 COPY --from=build /app/apps/web/storybook-static /app
-# serve reads /app/serve.json for the long-cache rule on hashed assets.
+# serve reads /app/serve.json: long-cache hashed assets, serve iframe.html
+# directly (cleanUrls off), and rewrite / -> /index.html — with cleanUrls off,
+# serve drops its index fallback, so the root would otherwise show a dir listing.
 COPY apps/web/.storybook/serve.json /app/serve.json
 EXPOSE 3000
 CMD ["serve", "/app", "-l", "3000"]
