@@ -12,6 +12,7 @@ import {
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { initializeSocket } from '@/lib/socket';
 import i18n from '@/lib/i18n';
+import { shiroaniTheme } from './shiroani-theme';
 import './preview.css';
 
 /**
@@ -95,6 +96,11 @@ const preview: Preview = {
     }),
   ],
   parameters: {
+    // Brand the Docs pages with the same ShiroAni plum theme as the manager
+    // chrome (see .storybook/manager.ts) so autodocs match the dark app surface.
+    docs: {
+      theme: shiroaniTheme,
+    },
     controls: {
       matchers: {
         color: /(background|color)$/i,
