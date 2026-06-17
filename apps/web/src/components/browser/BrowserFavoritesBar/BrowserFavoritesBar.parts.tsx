@@ -42,6 +42,9 @@ const CHIP_CLASS = cn(
 /** Favicon for a favorite chip, falling back to a globe like the tab strip. */
 export function FavoriteFavicon({ favicon }: { favicon?: string }) {
   const [imgError, setImgError] = useState(false);
+  // Reset the error flag when the favicon URL changes so an updated or reused
+  // favorite re-attempts loading instead of being stuck on the fallback globe.
+  useEffect(() => setImgError(false), [favicon]);
   if (favicon && !imgError) {
     return (
       <img
