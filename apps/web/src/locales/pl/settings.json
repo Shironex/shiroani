@@ -335,6 +335,8 @@
       "restoreDescription": "Zapamiętuje otwarte karty między sesjami.",
       "splitTitle": "Karty dzielone",
       "splitDescription": "Przeciągnij kartę na drugą, żeby otworzyć je obok siebie.",
+      "favoritesBarTitle": "Pasek ulubionych",
+      "favoritesBarDescription": "Pokazuj pasek ulubionych pod paskiem adresu w przeglądarce.",
       "trackTitle": "Zapisz historię przeglądania",
       "trackDescription": "Lokalna historia. Nigdzie nie jest wysyłana."
     },

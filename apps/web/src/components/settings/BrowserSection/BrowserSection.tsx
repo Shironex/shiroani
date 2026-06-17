@@ -23,6 +23,8 @@ export default function BrowserSection(props: IBrowserSectionProps) {
     setRestoreTabsOnStartup,
     splitTabsEnabled,
     setSplitTabsEnabled,
+    favoritesBarVisible,
+    setFavoritesBarVisible,
     trackFrequentSites,
     setTrackFrequentSites,
     autoTrackProgress,
@@ -170,6 +172,14 @@ export default function BrowserSection(props: IBrowserSectionProps) {
           description={t('browser.tabs.splitDescription')}
           checked={splitTabsEnabled}
           onCheckedChange={setSplitTabsEnabled}
+        />
+
+        <SettingsToggleRow
+          id="browser-favorites-bar-label"
+          title={t('browser.tabs.favoritesBarTitle')}
+          description={t('browser.tabs.favoritesBarDescription')}
+          checked={favoritesBarVisible}
+          onCheckedChange={setFavoritesBarVisible}
         />
 
         <SettingsToggleRow

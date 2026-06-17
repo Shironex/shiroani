@@ -10,8 +10,26 @@
     "reload": "Odśwież",
     "loading": "Ładowanie",
     "home": "Strona główna",
+    "addFavorite": "Dodaj do ulubionych",
+    "removeFavorite": "Usuń z ulubionych",
     "addToLibrary": "Dodaj do biblioteki",
     "history": "Historia"
+  },
+  "favorites": {
+    "barLabel": "Pasek ulubionych",
+    "options": "Opcje: {{title}}",
+    "menu": {
+      "label": "Opcje ulubionego",
+      "openNewTab": "Otwórz w nowej karcie",
+      "rename": "Zmień nazwę",
+      "remove": "Usuń"
+    },
+    "rename": {
+      "title": "Zmień nazwę ulubionego",
+      "description": "Nadaj tej stronie własną nazwę na pasku ulubionych.",
+      "placeholder": "Nazwa",
+      "submit": "Zapisz"
+    }
   },
   "find": {
     "placeholder": "Znajdź na stronie",

@@ -10,8 +10,26 @@
     "reload": "Reload",
     "loading": "Loading",
     "home": "Home",
+    "addFavorite": "Add to favorites",
+    "removeFavorite": "Remove from favorites",
     "addToLibrary": "Add to library",
     "history": "History"
+  },
+  "favorites": {
+    "barLabel": "Favorites bar",
+    "options": "Options: {{title}}",
+    "menu": {
+      "label": "Favorite options",
+      "openNewTab": "Open in new tab",
+      "rename": "Rename",
+      "remove": "Remove"
+    },
+    "rename": {
+      "title": "Rename favorite",
+      "description": "Give this page a custom name on the favorites bar.",
+      "placeholder": "Name",
+      "submit": "Save"
+    }
   },
   "find": {
     "placeholder": "Find in page",

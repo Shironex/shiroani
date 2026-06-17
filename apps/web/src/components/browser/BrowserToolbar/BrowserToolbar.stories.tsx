@@ -7,9 +7,10 @@ import BrowserToolbar from './BrowserToolbar';
 /**
  * Browser URL/navigation row: back / forward / reload icon buttons, the URL
  * input styled as a glass pill (a `role="combobox"` with a lock/globe leading
- * icon), and a trailing add-to-library / home / history cluster. The input owns
- * the smart-suggestions combobox; back/forward are disabled by
- * canGoBack/canGoForward and add-to-library by hasActiveTab.
+ * icon), and a trailing favorite-star / add-to-library / home / history cluster.
+ * The input owns the smart-suggestions combobox; back/forward are disabled by
+ * canGoBack/canGoForward and the star/add-to-library by hasActiveTab. The star
+ * fills (aria-pressed) when the active page is already a favorite.
  *
  * The address-suggestion hook reads `useBrowserStore.history` and the
  * quick-access store; stories seed both empty so the dropdown stays closed and
@@ -28,12 +29,14 @@ const meta = {
     canGoBack: { control: 'boolean', description: 'Enables the Back button.' },
     canGoForward: { control: 'boolean', description: 'Enables the Forward button.' },
     isLoading: { control: 'boolean', description: 'Shows the spinner on the reload button.' },
-    hasActiveTab: { control: 'boolean', description: 'Enables the add-to-library button.' },
+    hasActiveTab: { control: 'boolean', description: 'Enables the star + add-to-library buttons.' },
+    isFavorite: { control: 'boolean', description: 'Fills the star when the page is a favorite.' },
     onNavigate: { description: 'Called with the trimmed target when the user submits a URL.' },
     onGoBack: { description: 'Back button handler.' },
     onGoForward: { description: 'Forward button handler.' },
     onReload: { description: 'Reload button handler.' },
     onGoHome: { description: 'Home button handler.' },
+    onToggleFavorite: { description: 'Favorite-star toggle handler.' },
     onAddToLibrary: { description: 'Add-to-library button handler.' },
     onOpenHistory: { description: 'History button handler.' },
   },
@@ -44,11 +47,13 @@ const meta = {
     canGoForward: false,
     isLoading: false,
     hasActiveTab: true,
+    isFavorite: false,
     onGoBack: fn(),
     onGoForward: fn(),
     onReload: fn(),
     onNavigate: fn(),
     onGoHome: fn(),
+    onToggleFavorite: fn(),
     onAddToLibrary: fn(),
     onOpenHistory: fn(),
   },
@@ -79,6 +84,12 @@ export const Default: Story = {
     await expect(args.onGoHome).toHaveBeenCalledOnce();
     await userEvent.click(canvas.getByRole('button', { name: 'Add to library' }));
     await expect(args.onAddToLibrary).toHaveBeenCalledOnce();
+
+    // Favorite star toggles via its handler and is not yet pressed.
+    const star = canvas.getByRole('button', { name: 'Add to favorites' });
+    await expect(star).toHaveAttribute('aria-pressed', 'false');
+    await userEvent.click(star);
+    await expect(args.onToggleFavorite).toHaveBeenCalledOnce();
   },
 };
 

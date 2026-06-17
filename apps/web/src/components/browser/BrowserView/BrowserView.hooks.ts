@@ -51,6 +51,7 @@ export function useBrowserView(): IBrowserViewView {
   const splitTabsEnabled = useBrowserStore(s => s.splitTabsEnabled);
   const isAddressBarFocused = useBrowserStore(s => s.isAddressBarFocused);
   const isFullScreen = useBrowserStore(s => s.isFullScreen);
+  const favorites = useBrowserStore(useShallow(s => s.favorites));
 
   const [urlInput, setUrlInput] = useState('');
   const [isAddToLibraryOpen, setIsAddToLibraryOpen] = useState(false);
@@ -174,6 +175,19 @@ export function useBrowserView(): IBrowserViewView {
 
   const handlePaneClick = useCallback((paneId: string) => {
     useBrowserStore.getState().focusPane(paneId);
+  }, []);
+
+  // Favorites: the active pane's URL drives the toolbar star's filled state;
+  // toggling captures the live url/title/favicon from the focused leaf.
+  const isCurrentFavorite = activePane ? favorites.some(f => f.url === activePane.url) : false;
+
+  const handleToggleFavorite = useCallback(() => {
+    if (!activePane) return;
+    useBrowserStore.getState().toggleFavorite(activePane.url, activePane.title, activePane.favicon);
+  }, [activePane]);
+
+  const handleOpenFavoriteInNewTab = useCallback((url: string) => {
+    useBrowserStore.getState().openTab(url);
   }, []);
 
   const handleSplitterStart = useCallback(() => setIsResizing(true), []);
@@ -323,6 +337,7 @@ export function useBrowserView(): IBrowserViewView {
     isFullScreen,
     activePane,
     isActivePaneNewTab,
+    isCurrentFavorite,
     urlInput,
     setUrlInput,
     isAddToLibraryOpen,
@@ -338,6 +353,8 @@ export function useBrowserView(): IBrowserViewView {
     getOrCreatePaneContainer,
     handleNewTabNavigate,
     handleGoHome,
+    handleToggleFavorite,
+    handleOpenFavoriteInNewTab,
     handlePaneClick,
     handleSplitterStart,
     handleSplitterEnd,

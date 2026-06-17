@@ -45,6 +45,8 @@ export interface IBrowserViewView {
   readonly isFullScreen: boolean;
   readonly activePane: BrowserLeafNode | null;
   readonly isActivePaneNewTab: boolean;
+  /** Whether the active pane's URL is currently a favorite (drives the star). */
+  readonly isCurrentFavorite: boolean;
   readonly urlInput: string;
   readonly setUrlInput: Dispatch<SetStateAction<string>>;
   readonly isAddToLibraryOpen: boolean;
@@ -60,6 +62,10 @@ export interface IBrowserViewView {
   readonly getOrCreatePaneContainer: (paneId: string) => HTMLDivElement;
   readonly handleNewTabNavigate: (paneId: string, url: string) => void;
   readonly handleGoHome: () => void;
+  /** Toggle the active pane's favorite state (toolbar star). */
+  readonly handleToggleFavorite: () => void;
+  /** Open a favorite's URL in a new tab (favorites bar middle/Ctrl-click). */
+  readonly handleOpenFavoriteInNewTab: (url: string) => void;
   readonly handlePaneClick: (paneId: string) => void;
   readonly handleSplitterStart: () => void;
   readonly handleSplitterEnd: () => void;

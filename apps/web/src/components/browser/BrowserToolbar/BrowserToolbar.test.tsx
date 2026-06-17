@@ -28,11 +28,13 @@ function getDefaultProps() {
     canGoForward: false,
     isLoading: false,
     hasActiveTab: true,
+    isFavorite: false,
     onGoBack: vi.fn(),
     onGoForward: vi.fn(),
     onReload: vi.fn(),
     onNavigate: vi.fn(),
     onGoHome: vi.fn(),
+    onToggleFavorite: vi.fn(),
     onAddToLibrary: vi.fn(),
     onOpenHistory: vi.fn(),
   };
@@ -42,8 +44,10 @@ function getDefaultProps() {
 // 0: Back (Wstecz)
 // 1: Forward (Dalej)
 // 2: Reload (Odśwież)
-// 3: Add to library (Dodaj do biblioteki)
-// 4: Home (Strona główna)
+// 3: Favorite star (Dodaj/Usuń z ulubionych)
+// 4: Add to library (Dodaj do biblioteki)
+// 5: Home (Strona główna)
+// 6: History (Historia)
 
 function getButtons() {
   const buttons = screen.getAllByRole('button');
@@ -51,8 +55,9 @@ function getButtons() {
     back: buttons[0],
     forward: buttons[1],
     reload: buttons[2],
-    addToLibrary: buttons[3],
-    home: buttons[4],
+    favorite: buttons[3],
+    addToLibrary: buttons[4],
+    home: buttons[5],
   };
 }
 
@@ -169,6 +174,27 @@ describe('BrowserToolbar', () => {
       const { user } = render(<BrowserToolbar {...props} />);
       await user.click(getButtons().home);
       expect(props.onGoHome).toHaveBeenCalledOnce();
+    });
+  });
+
+  describe('favorite star button', () => {
+    it('is disabled when hasActiveTab is false', () => {
+      render(<BrowserToolbar {...getDefaultProps()} hasActiveTab={false} />);
+      expect(getButtons().favorite).toBeDisabled();
+    });
+
+    it('calls onToggleFavorite when clicked', async () => {
+      const props = getDefaultProps();
+      const { user } = render(<BrowserToolbar {...props} hasActiveTab={true} />);
+      await user.click(getButtons().favorite);
+      expect(props.onToggleFavorite).toHaveBeenCalledOnce();
+    });
+
+    it('reflects favorite state via aria-pressed', () => {
+      const { rerender } = render(<BrowserToolbar {...getDefaultProps()} isFavorite={false} />);
+      expect(getButtons().favorite).toHaveAttribute('aria-pressed', 'false');
+      rerender(<BrowserToolbar {...getDefaultProps()} isFavorite={true} />);
+      expect(getButtons().favorite).toHaveAttribute('aria-pressed', 'true');
     });
   });
 
