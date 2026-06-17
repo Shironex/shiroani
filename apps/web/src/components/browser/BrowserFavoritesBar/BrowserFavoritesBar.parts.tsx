@@ -235,10 +235,15 @@ export function FavoriteContextMenu({
     document.addEventListener('pointerdown', onPointerDown, true);
     window.addEventListener('resize', onClose);
     window.addEventListener('blur', onClose);
+    // The menu is fixed-positioned at the trigger point; close it on any scroll
+    // (capture catches the favorites bar's own overflow-x scroll too) so it
+    // never floats detached from the chip it belongs to.
+    window.addEventListener('scroll', onClose, true);
     return () => {
       document.removeEventListener('pointerdown', onPointerDown, true);
       window.removeEventListener('resize', onClose);
       window.removeEventListener('blur', onClose);
+      window.removeEventListener('scroll', onClose, true);
       // Only restore if the trigger still exists (a removed chip's kebab won't).
       if (trigger?.isConnected) trigger.focus();
     };
