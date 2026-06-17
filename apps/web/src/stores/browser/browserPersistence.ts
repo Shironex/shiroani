@@ -65,6 +65,7 @@ export function migratePersistedFavorites(raw: unknown): BrowserFavorite[] {
   if (!Array.isArray(raw)) return [];
   const out: BrowserFavorite[] = [];
   const seen = new Set<string>();
+  const seenIds = new Set<string>();
   for (const entry of raw) {
     if (!entry || typeof entry !== 'object') continue;
     const e = entry as Partial<BrowserFavorite>;
@@ -73,8 +74,14 @@ export function migratePersistedFavorites(raw: unknown): BrowserFavorite[] {
     // a corrupt payload with repeats shouldn't resurrect them.
     if (seen.has(e.url)) continue;
     seen.add(e.url);
+    // Guarantee id uniqueness: a missing/blank or already-seen id is replaced
+    // with a fresh uuid so DnD/remove/rename paths that key on `id` can't
+    // collide on a corrupt payload (the favorite itself is still kept).
+    const candidateId = typeof e.id === 'string' && e.id.length > 0 ? e.id : crypto.randomUUID();
+    const id = seenIds.has(candidateId) ? crypto.randomUUID() : candidateId;
+    seenIds.add(id);
     out.push({
-      id: typeof e.id === 'string' && e.id.length > 0 ? e.id : crypto.randomUUID(),
+      id,
       url: e.url,
       title: typeof e.title === 'string' ? e.title : '',
       favicon: typeof e.favicon === 'string' ? e.favicon : undefined,

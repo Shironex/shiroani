@@ -39,6 +39,18 @@ describe('migratePersistedFavorites', () => {
     expect(out[0].title).toBe('first');
   });
 
+  it('regenerates a duplicate id so every favorite keeps a unique id', () => {
+    const out = migratePersistedFavorites([
+      { id: 'dup', url: 'https://a.com', title: 'A' },
+      { id: 'dup', url: 'https://b.com', title: 'B' },
+    ]);
+    // Both favorites survive (distinct URLs) but their ids must not collide.
+    expect(out).toHaveLength(2);
+    expect(out[0].id).toBe('dup');
+    expect(out[1].id).not.toBe('dup');
+    expect(new Set(out.map(f => f.id)).size).toBe(2);
+  });
+
   it('backfills a missing id and createdAt defensively', () => {
     const out = migratePersistedFavorites([{ url: 'https://a.com', title: 'A' }]);
     expect(out).toHaveLength(1);
