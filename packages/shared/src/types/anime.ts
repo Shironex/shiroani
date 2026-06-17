@@ -227,6 +227,22 @@ export type BrowserNode = BrowserLeafNode | BrowserSplitNode;
  */
 export type BrowserTab = Omit<BrowserLeafNode, 'kind'>;
 
+/**
+ * A user-curated favorite shown on the browser's favorites bar (the row of
+ * favicon + title chips under the toolbar). Distinct from `BrowserHistoryEntry`
+ * (chronological, auto-recorded) and `FrequentSite` (auto-aggregated by visits)
+ * — favorites are explicitly added/removed/reordered by the user.
+ */
+export interface BrowserFavorite {
+  /** Stable id so the UI can reorder, rename and delete a single favorite. */
+  id: string;
+  url: string;
+  title: string;
+  favicon?: string;
+  /** Epoch millis the favorite was added. */
+  createdAt: number;
+}
+
 // ============================================
 // Library Payloads
 // ============================================
