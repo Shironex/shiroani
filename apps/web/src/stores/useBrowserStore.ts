@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { maybeDevtools } from '@/stores/utils/maybeDevtools';
 import { arrayMove } from '@dnd-kit/sortable';
 import type {
+  BrowserFavorite,
   BrowserHistoryEntry,
   BrowserLeafNode,
   BrowserNode,
@@ -37,10 +38,13 @@ import {
   updateLeaf,
 } from '@/stores/browser/browserTree';
 import {
+  BROWSER_FAVORITES_KEY,
+  BROWSER_FAVORITES_MAX_ENTRIES,
   BROWSER_HISTORY_KEY,
   BROWSER_HISTORY_MAX_ENTRIES,
   BROWSER_SETTINGS_KEY,
   BROWSER_TABS_KEY,
+  migratePersistedFavorites,
   migratePersistedHistory,
   migratePersistedTabs,
   PERSIST_DEBOUNCE_MS,
@@ -75,6 +79,10 @@ interface BrowserState {
   isFullScreen: boolean;
   /** Chronological browsing history, newest first. Capped + persisted. */
   history: BrowserHistoryEntry[];
+  /** User-curated favorites shown on the bar under the toolbar. Persisted. */
+  favorites: BrowserFavorite[];
+  /** Whether the favorites bar is shown (gated additionally by non-empty). */
+  favoritesBarVisible: boolean;
 }
 
 interface BrowserActions {
@@ -111,6 +119,17 @@ interface BrowserActions {
   recordHistory: (url: string, title: string, favicon?: string) => void;
   removeHistoryEntry: (id: string) => void;
   clearHistory: () => void;
+  // ── Favorites ─────────────────────────────────────────────────
+  /**
+   * Toggle the favorite state for a URL: add it when absent, remove it when
+   * already present. Used by the toolbar star. No-ops for internal surfaces.
+   */
+  toggleFavorite: (url: string, title: string, favicon?: string) => void;
+  addFavorite: (url: string, title: string, favicon?: string) => void;
+  removeFavorite: (id: string) => void;
+  renameFavorite: (id: string, title: string) => void;
+  reorderFavorites: (activeId: string, overId: string) => void;
+  setFavoritesBarVisible: (visible: boolean) => void;
 }
 
 type BrowserStore = BrowserState & BrowserActions;
@@ -121,6 +140,10 @@ let persistTimer: ReturnType<typeof setTimeout> | null = null;
 // Debounced writer for the history slice — coalesces rapid visits into a single
 // disk write, mirroring the quick-access store's frequent-sites persistence.
 const persistHistoryDebounced = createDebouncedPersist(BROWSER_HISTORY_KEY);
+
+// Debounced writer for the favorites slice — coalesces rapid reorder drags into
+// a single disk write.
+const persistFavoritesDebounced = createDebouncedPersist(BROWSER_FAVORITES_KEY);
 
 export const useBrowserStore = create<BrowserStore>()(
   maybeDevtools(
@@ -137,6 +160,8 @@ export const useBrowserStore = create<BrowserStore>()(
       splitTabsEnabled: true,
       isFullScreen: false,
       history: [],
+      favorites: [],
+      favoritesBarVisible: true,
 
       // ── Tab CRUD (all local now) ────────────────────────────────
 
@@ -621,6 +646,10 @@ export const useBrowserStore = create<BrowserStore>()(
             set({ splitTabsEnabled: settings.splitTabsEnabled });
           }
 
+          if (typeof settings.favoritesBarVisible === 'boolean') {
+            set({ favoritesBarVisible: settings.favoritesBarVisible });
+          }
+
           // Restore + push whitelist to main
           if (Array.isArray(settings.adblockWhitelist)) {
             const cleaned = Array.from(
@@ -643,6 +672,13 @@ export const useBrowserStore = create<BrowserStore>()(
         const history = migratePersistedHistory(savedHistory);
         if (history.length > 0) {
           set({ history }, undefined, 'browser/restoreHistory');
+        }
+
+        // Restore favorites (independent of the tab-restore toggle).
+        const savedFavorites = await electronStoreGet<unknown>(BROWSER_FAVORITES_KEY);
+        const favorites = migratePersistedFavorites(savedFavorites);
+        if (favorites.length > 0) {
+          set({ favorites }, undefined, 'browser/restoreFavorites');
         }
 
         // Restore tabs (unless the user disabled session restore)
@@ -724,6 +760,88 @@ export const useBrowserStore = create<BrowserStore>()(
       clearHistory: () => {
         set({ history: [] }, undefined, 'browser/clearHistory');
         persistHistoryDebounced([]);
+      },
+
+      // ── Favorites ─────────────────────────────────────────────
+
+      toggleFavorite: (url, title, favicon) => {
+        if (isNewTabUrl(url) || url === 'about:blank' || !url) return;
+        const existing = get().favorites.find(f => f.url === url);
+        if (existing) {
+          get().removeFavorite(existing.id);
+        } else {
+          get().addFavorite(url, title, favicon);
+        }
+      },
+
+      addFavorite: (url, title, favicon) => {
+        // Skip internal surfaces and silently ignore duplicates — the bar
+        // dedupes by URL, matching how the toolbar star reflects state.
+        if (isNewTabUrl(url) || url === 'about:blank' || !url) return;
+        if (get().favorites.some(f => f.url === url)) return;
+        if (get().favorites.length >= BROWSER_FAVORITES_MAX_ENTRIES) return;
+
+        const entry: BrowserFavorite = {
+          id: crypto.randomUUID(),
+          url,
+          title: title || url,
+          favicon,
+          createdAt: Date.now(),
+        };
+        set(
+          state => ({ favorites: [...state.favorites, entry] }),
+          undefined,
+          'browser/addFavorite'
+        );
+        persistFavoritesDebounced(get().favorites);
+      },
+
+      removeFavorite: (id: string) => {
+        set(
+          state => ({ favorites: state.favorites.filter(f => f.id !== id) }),
+          undefined,
+          'browser/removeFavorite'
+        );
+        persistFavoritesDebounced(get().favorites);
+      },
+
+      renameFavorite: (id: string, title: string) => {
+        const trimmed = title.trim();
+        if (!trimmed) return;
+        set(
+          state => ({
+            favorites: state.favorites.map(f => (f.id === id ? { ...f, title: trimmed } : f)),
+          }),
+          undefined,
+          'browser/renameFavorite'
+        );
+        persistFavoritesDebounced(get().favorites);
+      },
+
+      reorderFavorites: (activeId: string, overId: string) => {
+        const { favorites } = get();
+        const oldIndex = favorites.findIndex(f => f.id === activeId);
+        const newIndex = favorites.findIndex(f => f.id === overId);
+        if (oldIndex === -1 || newIndex === -1 || oldIndex === newIndex) return;
+
+        const reordered = arrayMove(favorites, oldIndex, newIndex);
+        set({ favorites: reordered }, undefined, 'browser/reorderFavorites');
+        persistFavoritesDebounced(get().favorites);
+      },
+
+      setFavoritesBarVisible: async (visible: boolean) => {
+        const previous = get().favoritesBarVisible;
+        set({ favoritesBarVisible: visible }, undefined, 'browser/setFavoritesBarVisible');
+        try {
+          await persistBrowserSettings({ favoritesBarVisible: visible });
+        } catch (err) {
+          logger.warn('useBrowserStore: failed to persist favoritesBarVisible', err);
+          set(
+            { favoritesBarVisible: previous },
+            undefined,
+            'browser/setFavoritesBarVisible:revert'
+          );
+        }
       },
     }),
     { name: 'browser' }

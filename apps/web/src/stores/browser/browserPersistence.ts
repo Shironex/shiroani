@@ -1,4 +1,4 @@
-import type { BrowserHistoryEntry } from '@shiroani/shared';
+import type { BrowserFavorite, BrowserHistoryEntry } from '@shiroani/shared';
 import { electronStoreGet, electronStoreSet } from '@/lib/electron-store';
 
 /**
@@ -14,6 +14,8 @@ export const BROWSER_SETTINGS_KEY = 'browser-settings';
 export const BROWSER_TABS_KEY = 'browser-tabs';
 /** electron-store key for chronological browsing history. */
 export const BROWSER_HISTORY_KEY = 'browser-history';
+/** electron-store key for the user-curated favorites bar. */
+export const BROWSER_FAVORITES_KEY = 'browser-favorites';
 
 /** Debounce window for tab persistence writes. */
 export const PERSIST_DEBOUNCE_MS = 1000;
@@ -23,6 +25,12 @@ export const PERSIST_DEBOUNCE_MS = 1000;
  * the persisted slice; oldest entries are evicted once exceeded.
  */
 export const BROWSER_HISTORY_MAX_ENTRIES = 500;
+
+/**
+ * Upper bound on stored favorites. Capped to keep the persisted slice (and the
+ * single-row bar) bounded; favorites past the cap are dropped on add.
+ */
+export const BROWSER_FAVORITES_MAX_ENTRIES = 100;
 
 /**
  * Validate and normalise a persisted history payload. Defensive — any entry
@@ -48,6 +56,39 @@ export function migratePersistedHistory(raw: unknown): BrowserHistoryEntry[] {
   return out.slice(0, BROWSER_HISTORY_MAX_ENTRIES);
 }
 
+/**
+ * Validate and normalise a persisted favorites payload. Defensive — any entry
+ * with a missing/invalid url is dropped rather than crashing the restore.
+ * Preserves the stored order (favorites are user-ordered) and caps length.
+ */
+export function migratePersistedFavorites(raw: unknown): BrowserFavorite[] {
+  if (!Array.isArray(raw)) return [];
+  const out: BrowserFavorite[] = [];
+  const seen = new Set<string>();
+  for (const entry of raw) {
+    if (!entry || typeof entry !== 'object') continue;
+    const e = entry as Partial<BrowserFavorite>;
+    if (typeof e.url !== 'string' || e.url.length === 0) continue;
+    // Drop duplicate URLs defensively — the in-memory slice dedupes by URL, so
+    // a corrupt payload with repeats shouldn't resurrect them.
+    if (seen.has(e.url)) continue;
+    seen.add(e.url);
+    out.push({
+      id: typeof e.id === 'string' && e.id.length > 0 ? e.id : crypto.randomUUID(),
+      url: e.url,
+      title: typeof e.title === 'string' ? e.title : '',
+      favicon: typeof e.favicon === 'string' ? e.favicon : undefined,
+      createdAt:
+        typeof e.createdAt === 'number' && Number.isFinite(e.createdAt) ? e.createdAt : Date.now(),
+    });
+    // Cap counts unique, valid survivors — deliberately `break` rather than the
+    // history slice's trailing `out.slice(0, MAX)`, so dropped dupes don't eat
+    // into the budget and a corrupt over-long payload can't exceed the cap.
+    if (out.length >= BROWSER_FAVORITES_MAX_ENTRIES) break;
+  }
+  return out;
+}
+
 /** Shape of the browser-settings slice as written to / read from disk. */
 export interface PersistedBrowserSettings {
   adblockEnabled?: boolean;
@@ -55,6 +96,7 @@ export interface PersistedBrowserSettings {
   adblockWhitelist?: string[];
   restoreTabsOnStartup?: boolean;
   splitTabsEnabled?: boolean;
+  favoritesBarVisible?: boolean;
 }
 
 /** Raw browser-settings shape on read, including the legacy `popupBlockMode`. */
@@ -65,6 +107,7 @@ export interface RawBrowserSettings {
   adblockWhitelist?: unknown;
   restoreTabsOnStartup?: boolean;
   splitTabsEnabled?: boolean;
+  favoritesBarVisible?: boolean;
 }
 
 /**

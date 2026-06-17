@@ -63,6 +63,8 @@ describe('useBrowserStore', () => {
       restoreTabsOnStartup: true,
       splitTabsEnabled: true,
       isFullScreen: false,
+      favorites: [],
+      favoritesBarVisible: true,
     });
     electronStoreData.clear();
     uuidCounter = 0;
@@ -611,6 +613,146 @@ describe('useBrowserStore', () => {
 
       const tabs = useBrowserStore.getState().tabs;
       expect(tabs.map(t => expectLeaf(t).url)).toEqual(['https://valid.com', 'https://other.com']);
+    });
+  });
+
+  // ── Favorites ────────────────────────────────────────────────
+
+  describe('favorites', () => {
+    it('addFavorite appends a favorite with url/title/favicon', () => {
+      useBrowserStore.getState().addFavorite('https://a.com', 'Site A', 'https://a.com/fav.ico');
+
+      const { favorites } = useBrowserStore.getState();
+      expect(favorites).toHaveLength(1);
+      expect(favorites[0]).toMatchObject({
+        url: 'https://a.com',
+        title: 'Site A',
+        favicon: 'https://a.com/fav.ico',
+      });
+      expect(typeof favorites[0].id).toBe('string');
+      expect(typeof favorites[0].createdAt).toBe('number');
+    });
+
+    it('addFavorite falls back to the url when the title is empty', () => {
+      useBrowserStore.getState().addFavorite('https://a.com', '');
+      expect(useBrowserStore.getState().favorites[0].title).toBe('https://a.com');
+    });
+
+    it('addFavorite dedupes by exact URL', () => {
+      useBrowserStore.getState().addFavorite('https://a.com', 'A');
+      useBrowserStore.getState().addFavorite('https://a.com', 'A again');
+      expect(useBrowserStore.getState().favorites).toHaveLength(1);
+    });
+
+    it('addFavorite ignores internal surfaces (new tab / about:blank / empty)', () => {
+      useBrowserStore.getState().addFavorite('shiroani://newtab', 'New tab');
+      useBrowserStore.getState().addFavorite('about:blank', 'Blank');
+      useBrowserStore.getState().addFavorite('', 'Empty');
+      expect(useBrowserStore.getState().favorites).toHaveLength(0);
+    });
+
+    it('toggleFavorite adds when absent and removes when present', () => {
+      const store = useBrowserStore.getState();
+      store.toggleFavorite('https://a.com', 'A');
+      expect(useBrowserStore.getState().favorites).toHaveLength(1);
+
+      store.toggleFavorite('https://a.com', 'A');
+      expect(useBrowserStore.getState().favorites).toHaveLength(0);
+    });
+
+    it('removeFavorite removes by id only', () => {
+      const store = useBrowserStore.getState();
+      store.addFavorite('https://a.com', 'A');
+      store.addFavorite('https://b.com', 'B');
+      const idA = useBrowserStore.getState().favorites[0].id;
+
+      store.removeFavorite(idA);
+
+      const { favorites } = useBrowserStore.getState();
+      expect(favorites).toHaveLength(1);
+      expect(favorites[0].url).toBe('https://b.com');
+    });
+
+    it('renameFavorite updates the title and trims whitespace', () => {
+      const store = useBrowserStore.getState();
+      store.addFavorite('https://a.com', 'A');
+      const id = useBrowserStore.getState().favorites[0].id;
+
+      store.renameFavorite(id, '  Renamed  ');
+      expect(useBrowserStore.getState().favorites[0].title).toBe('Renamed');
+    });
+
+    it('renameFavorite is a no-op for blank titles', () => {
+      const store = useBrowserStore.getState();
+      store.addFavorite('https://a.com', 'A');
+      const id = useBrowserStore.getState().favorites[0].id;
+
+      store.renameFavorite(id, '   ');
+      expect(useBrowserStore.getState().favorites[0].title).toBe('A');
+    });
+
+    it('reorderFavorites moves a favorite from one index to another', () => {
+      const store = useBrowserStore.getState();
+      store.addFavorite('https://a.com', 'A');
+      store.addFavorite('https://b.com', 'B');
+      store.addFavorite('https://c.com', 'C');
+      const [a, , c] = useBrowserStore.getState().favorites.map(f => f.id);
+
+      store.reorderFavorites(a, c); // move A to where C is
+
+      expect(useBrowserStore.getState().favorites.map(f => f.url)).toEqual([
+        'https://b.com',
+        'https://c.com',
+        'https://a.com',
+      ]);
+    });
+
+    it('reorderFavorites is a no-op for unknown ids', () => {
+      const store = useBrowserStore.getState();
+      store.addFavorite('https://a.com', 'A');
+      store.addFavorite('https://b.com', 'B');
+
+      store.reorderFavorites('nope', 'also-nope');
+      expect(useBrowserStore.getState().favorites.map(f => f.url)).toEqual([
+        'https://a.com',
+        'https://b.com',
+      ]);
+    });
+
+    it('caps favorites at the max-entries bound', () => {
+      const store = useBrowserStore.getState();
+      for (let i = 0; i < 105; i++) {
+        store.addFavorite(`https://site-${i}.com`, `Site ${i}`);
+      }
+      expect(useBrowserStore.getState().favorites).toHaveLength(100);
+    });
+
+    describe('persistence', () => {
+      beforeEach(() => vi.useFakeTimers());
+      afterEach(() => vi.useRealTimers());
+
+      it('round-trips favorites through restoreTabs', async () => {
+        const store = useBrowserStore.getState();
+        store.addFavorite('https://a.com', 'A', 'https://a.com/f.ico');
+        store.addFavorite('https://b.com', 'B');
+        await vi.runAllTimersAsync();
+
+        useBrowserStore.setState({ favorites: [] });
+        await useBrowserStore.getState().restoreTabs();
+
+        const { favorites } = useBrowserStore.getState();
+        expect(favorites.map(f => f.url)).toEqual(['https://a.com', 'https://b.com']);
+        expect(favorites[0].favicon).toBe('https://a.com/f.ico');
+      });
+
+      it('setFavoritesBarVisible persists into browser-settings', async () => {
+        await useBrowserStore.getState().setFavoritesBarVisible(false);
+        expect(useBrowserStore.getState().favoritesBarVisible).toBe(false);
+        const settings = electronStoreData.get('browser-settings') as {
+          favoritesBarVisible?: boolean;
+        };
+        expect(settings.favoritesBarVisible).toBe(false);
+      });
     });
   });
 });
