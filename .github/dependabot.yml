@@ -3,7 +3,7 @@ updates:
   - package-ecosystem: github-actions
     directory: /
     schedule:
-      interval: daily
+      interval: weekly
     open-pull-requests-limit: 10
     labels:
       - dependencies
@@ -19,7 +19,7 @@ updates:
   - package-ecosystem: npm
     directory: /
     schedule:
-      interval: daily
+      interval: weekly
     open-pull-requests-limit: 15
     labels:
       - dependencies
@@ -47,25 +47,11 @@ updates:
       - dependency-name: 'electron'
         update-types:
           - 'version-update:semver-major'
-      # Web is on React 18; React 19 needs a coordinated upgrade; bump manually
-      - dependency-name: 'react'
-        update-types:
-          - 'version-update:semver-major'
-      - dependency-name: 'react-dom'
-        update-types:
-          - 'version-update:semver-major'
       # TypeScript majors require tsconfig migration (moduleResolution etc.); do manually
       - dependency-name: 'typescript'
         update-types:
           - 'version-update:semver-major'
       # NestJS majors need coordinated migration across server/bot; bump manually
       - dependency-name: '@nestjs/*'
-        update-types:
-          - 'version-update:semver-major'
-      # Prisma 7 is ESM-only and changes the schema generator; bump manually
-      - dependency-name: 'prisma'
-        update-types:
-          - 'version-update:semver-major'
-      - dependency-name: '@prisma/*'
         update-types:
           - 'version-update:semver-major'
