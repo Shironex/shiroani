@@ -13,6 +13,8 @@ export interface IBrowserSectionView {
   readonly setRestoreTabsOnStartup: (value: boolean) => void;
   readonly splitTabsEnabled: boolean;
   readonly setSplitTabsEnabled: (value: boolean) => void;
+  readonly favoritesBarVisible: boolean;
+  readonly setFavoritesBarVisible: (value: boolean) => void;
   readonly trackFrequentSites: boolean;
   readonly setTrackFrequentSites: (value: boolean) => void;
   readonly autoTrackProgress: boolean;

@@ -335,6 +335,8 @@
       "restoreDescription": "Remembers open tabs between sessions.",
       "splitTitle": "Split tabs",
       "splitDescription": "Drag a tab onto another to open them side by side.",
+      "favoritesBarTitle": "Favorites bar",
+      "favoritesBarDescription": "Show the favorites bar under the address bar in the browser.",
       "trackTitle": "Save browsing history",
       "trackDescription": "Local history. Never sent anywhere."
     },

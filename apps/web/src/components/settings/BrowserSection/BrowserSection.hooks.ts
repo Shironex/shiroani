@@ -16,6 +16,8 @@ export function useBrowserSection(_props?: IBrowserSectionProps): IBrowserSectio
   const setRestoreTabsOnStartup = useBrowserStore(state => state.setRestoreTabsOnStartup);
   const splitTabsEnabled = useBrowserStore(state => state.splitTabsEnabled);
   const setSplitTabsEnabled = useBrowserStore(state => state.setSplitTabsEnabled);
+  const favoritesBarVisible = useBrowserStore(state => state.favoritesBarVisible);
+  const setFavoritesBarVisible = useBrowserStore(state => state.setFavoritesBarVisible);
   const trackFrequentSites = useQuickAccessStore(state => state.trackFrequentSites);
   const setTrackFrequentSites = useQuickAccessStore(state => state.setTrackFrequentSites);
   const autoTrackProgress = useSettingsStore(state => state.autoTrackProgress);
@@ -51,6 +53,8 @@ export function useBrowserSection(_props?: IBrowserSectionProps): IBrowserSectio
     setRestoreTabsOnStartup,
     splitTabsEnabled,
     setSplitTabsEnabled,
+    favoritesBarVisible,
+    setFavoritesBarVisible,
     trackFrequentSites,
     setTrackFrequentSites,
     autoTrackProgress,

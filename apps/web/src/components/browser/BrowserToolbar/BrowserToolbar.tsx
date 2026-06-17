@@ -10,6 +10,7 @@ import {
   History,
   Lock,
   Globe2,
+  Star,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
@@ -29,7 +30,7 @@ const LISTBOX_ID = 'browser-address-suggestions';
  * Adblock and popup-blocker toggles now live in Settings → Przeglądarka.
  *
  * Preserves button order expected by BrowserToolbar.test.tsx:
- *   0 back · 1 forward · 2 reload · 3 add-to-library · 4 home
+ *   0 back · 1 forward · 2 reload · 3 favorite-star · 4 add-to-library · 5 home · 6 history
  */
 export default function BrowserToolbar({
   urlInput,
@@ -38,11 +39,13 @@ export default function BrowserToolbar({
   canGoForward,
   isLoading,
   hasActiveTab,
+  isFavorite,
   onGoBack,
   onGoForward,
   onReload,
   onNavigate,
   onGoHome,
+  onToggleFavorite,
   onAddToLibrary,
   onOpenHistory,
   urlInputRef: externalUrlInputRef,
@@ -170,8 +173,26 @@ export default function BrowserToolbar({
         )}
       </div>
 
-      {/* Trailing cluster — add-to-library, home */}
+      {/* Trailing cluster — favorite star, add-to-library, home, history */}
       <div className="flex items-center gap-1 shrink-0">
+        <TooltipButton
+          variant="ghost"
+          size="icon"
+          className={cn(
+            'size-[30px] rounded-[8px]',
+            isFavorite
+              ? 'text-primary hover:text-primary'
+              : 'text-muted-foreground hover:text-primary'
+          )}
+          onClick={onToggleFavorite}
+          disabled={!hasActiveTab}
+          aria-pressed={isFavorite}
+          tooltip={isFavorite ? t('toolbar.removeFavorite') : t('toolbar.addFavorite')}
+          tooltipSide="bottom"
+        >
+          <Star className={cn('w-4 h-4', isFavorite && 'fill-current')} />
+        </TooltipButton>
+
         <TooltipButton
           variant="ghost"
           size="icon"

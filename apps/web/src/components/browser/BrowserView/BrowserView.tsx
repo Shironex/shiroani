@@ -4,6 +4,7 @@ import { Globe } from 'lucide-react';
 import { AddToLibraryDialog } from '@/components/browser/AddToLibraryDialog';
 import { BrowserTabBar } from '@/components/browser/BrowserTabBar';
 import { BrowserToolbar } from '@/components/browser/BrowserToolbar';
+import { BrowserFavoritesBar } from '@/components/browser/BrowserFavoritesBar';
 import { BrowserWebview } from '@/components/browser/BrowserWebview';
 import { FindBar } from '@/components/browser/FindBar';
 import { BrowserHistoryDialog } from '@/components/browser/BrowserHistoryDialog';
@@ -27,6 +28,7 @@ export default function BrowserView() {
     isFullScreen,
     activePane,
     isActivePaneNewTab,
+    isCurrentFavorite,
     urlInput,
     setUrlInput,
     isAddToLibraryOpen,
@@ -42,6 +44,8 @@ export default function BrowserView() {
     getOrCreatePaneContainer,
     handleNewTabNavigate,
     handleGoHome,
+    handleToggleFavorite,
+    handleOpenFavoriteInNewTab,
     handlePaneClick,
     handleSplitterStart,
     handleSplitterEnd,
@@ -109,15 +113,22 @@ export default function BrowserView() {
           canGoForward={activePane?.canGoForward ?? false}
           isLoading={activePane?.isLoading ?? false}
           hasActiveTab={!!activePane}
+          isFavorite={isCurrentFavorite}
           onGoBack={goBack}
           onGoForward={goForward}
           onReload={reload}
           onNavigate={navigate}
           onGoHome={handleGoHome}
+          onToggleFavorite={handleToggleFavorite}
           onAddToLibrary={() => setIsAddToLibraryOpen(true)}
           onOpenHistory={() => setIsHistoryOpen(true)}
           urlInputRef={urlInputRef}
         />
+      )}
+
+      {/* Favorites bar — renders only when visible + non-empty; hidden in fullscreen */}
+      {!isFullScreen && (
+        <BrowserFavoritesBar onNavigate={navigate} onOpenInNewTab={handleOpenFavoriteInNewTab} />
       )}
 
       {/* In-page find bar (Ctrl+F) — mounted only while active */}

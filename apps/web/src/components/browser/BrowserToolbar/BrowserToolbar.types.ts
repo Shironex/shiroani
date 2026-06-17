@@ -8,11 +8,15 @@ export interface IBrowserToolbarProps {
   canGoForward: boolean;
   isLoading: boolean;
   hasActiveTab: boolean;
+  /** Whether the active page is already in the favorites bar (star filled). */
+  isFavorite: boolean;
   onGoBack: () => void;
   onGoForward: () => void;
   onReload: () => void;
   onNavigate: (url: string) => void;
   onGoHome: () => void;
+  /** Toggle the active page's favorite state (the star). */
+  onToggleFavorite: () => void;
   onAddToLibrary: () => void;
   onOpenHistory: () => void;
   urlInputRef?: RefObject<HTMLInputElement | null>;

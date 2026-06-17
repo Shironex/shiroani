@@ -56,6 +56,8 @@ const ALLOWED_STORE_KEYS = new Set([
   'browser-tabs',
   // Browser history (renderer persists visited entries)
   'browser-history',
+  // Browser favorites bar (renderer persists user-curated favorites)
+  'browser-favorites',
   // Quick access sites and frequent visits
   'quick-access-sites',
   'quick-access-frequent',
