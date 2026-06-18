@@ -1,0 +1,154 @@
+{
+  "projectId": "7176d6a1-b9b3-4e0f-bc28-276bbfa842a5",
+  "shape": "storybook",
+  "pkg": "@shiroani/web",
+  "globalName": "ShiroAniDS",
+  "storybookConfigDir": "apps/web/.storybook",
+  "storybookStatic": ".design-sync/sb-reference",
+  "entry": "apps/web/.ds-entry/index.tsx",
+  "tsconfig": "../tsconfig.json",
+  "buildCmd": "node .design-sync/gen-entry.mjs",
+  "provider": { "component": "DesignProvider" },
+  "readmeHeader": ".design-sync/conventions.md",
+  "extraFonts": [
+    "../node_modules/@fontsource-variable/dm-sans/index.css",
+    "../node_modules/@fontsource-variable/jetbrains-mono/index.css",
+    "./fonts-alias.css"
+  ],
+  "overrides": {
+    "NavigationDock": { "cardMode": "single", "primaryStory": "Default" },
+    "SplashScreen": { "cardMode": "single", "primaryStory": "Loading" },
+    "KanjiWatermark": { "cardMode": "column" },
+    "LibraryListItem": { "cardMode": "column" },
+    "ProfileDashboard": { "cardMode": "column" },
+    "RandomShowcaseCard": { "cardMode": "column" },
+    "ScheduleView": { "skip": ["schedule-scheduleview--loading"] },
+    "ProfileExtraStats": { "skip": ["profile-profileextrastats--nothing-to-show"] },
+    "ProfileFavourites": { "skip": ["profile-profilefavourites--empty"] },
+    "ProfileFollow": { "skip": ["profile-profilefollow--not-connected"] },
+    "RecommendationsSection": { "skip": ["library-recommendationssection--empty"] },
+    "AnimeInfoLinks": { "skip": ["schedule-anime-info-animeinfolinks--empty"] },
+    "AnimeInfoPeople": { "skip": ["schedule-anime-info-animeinfopeople--empty"] },
+    "AnimeInfoRecommendations": { "skip": ["schedule-anime-info-animeinforecommendations--empty"] },
+    "ConfirmDialog": {
+      "skip": [
+        "shared-confirmdialog--default",
+        "shared-confirmdialog--default-variant",
+        "shared-confirmdialog--confirms-on-click",
+        "shared-confirmdialog--cancels-on-click"
+      ]
+    },
+    "AddToLibraryDialog": {
+      "skip": [
+        "browser-addtolibrarydialog--default",
+        "browser-addtolibrarydialog--pick-status",
+        "browser-addtolibrarydialog--empty-title"
+      ]
+    },
+    "AnimeDetailModal": {
+      "skip": [
+        "library-animedetailmodal--default",
+        "library-animedetailmodal--delete-confirm",
+        "library-animedetailmodal--change-status"
+      ]
+    },
+    "AnimeInfoDialog": {
+      "skip": ["schedule-animeinfodialog--closed", "schedule-animeinfodialog--open"]
+    },
+    "BrowserHistoryDialog": {
+      "skip": [
+        "browser-browserhistorydialog--with-history",
+        "browser-browserhistorydialog--search",
+        "browser-browserhistorydialog--empty"
+      ]
+    },
+    "DeleteAllDataDialog": {
+      "skip": [
+        "settings-deletealldatadialog--default",
+        "settings-deletealldatadialog--keyword-typed",
+        "settings-deletealldatadialog--export-first",
+        "settings-deletealldatadialog--cancel"
+      ]
+    },
+    "DevLogsDialog": {
+      "skip": [
+        "settings-dev-logs-devlogsdialog--with-entries",
+        "settings-dev-logs-devlogsdialog--search-filters",
+        "settings-dev-logs-devlogsdialog--empty"
+      ]
+    },
+    "ExportDialog": {
+      "skip": ["shared-exportdialog--open", "shared-exportdialog--shows-loading-state"]
+    },
+    "FeedReaderModal": {
+      "skip": [
+        "feed-feedreadermodal--default",
+        "feed-feedreadermodal--toggle-bookmark",
+        "feed-feedreadermodal--open-external",
+        "feed-feedreadermodal--open-related",
+        "feed-feedreadermodal--no-item"
+      ]
+    },
+    "ImportDialog": {
+      "skip": [
+        "shared-importdialog--open",
+        "shared-importdialog--preview",
+        "shared-importdialog--switches-strategy"
+      ]
+    },
+    "ProfileShareDialog": {
+      "skip": ["profile-profilesharedialog--open", "profile-profilesharedialog--closed"]
+    },
+    "ThemeEditorDialog": {
+      "skip": [
+        "settings-theme-editor-themeeditordialog--new-theme",
+        "settings-theme-editor-themeeditordialog--cancel",
+        "settings-theme-editor-themeeditordialog--save"
+      ]
+    },
+    "AiringTodaySection": { "skip": ["browser-newtab-airingtodaysection--default"] },
+    "BrowserWebview": { "skip": ["browser-browserwebview--default"] },
+    "NewTabPage": { "skip": ["browser-newtabpage--default"] },
+    "AnimeDetailExtras": { "skip": ["library-animedetailextras--default"] },
+    "SyncBadge": { "skip": ["library-syncbadge--synced", "library-syncbadge--not-synced"] },
+    "OnboardingWizard": {
+      "skip": [
+        "onboarding-onboardingwizard--default",
+        "onboarding-onboardingwizard--advances-to-next-step",
+        "onboarding-onboardingwizard--finishes-onboarding"
+      ]
+    },
+    "SubscribeBellButton": {
+      "skip": [
+        "schedule-subscribebellbutton--not-subscribed",
+        "schedule-subscribebellbutton--subscribed"
+      ]
+    },
+    "DiscordSection": {
+      "skip": [
+        "settings-discordsection--enabled",
+        "settings-discordsection--disabled",
+        "settings-discordsection--custom-templates"
+      ]
+    },
+    "MascotSection": {
+      "skip": [
+        "settings-mascotsection--default",
+        "settings-mascotsection--nudge-size",
+        "settings-mascotsection--change-visibility",
+        "settings-mascotsection--with-custom-sprite"
+      ]
+    },
+    "BackgroundOverlay": {
+      "skip": ["shared-backgroundoverlay--default", "shared-backgroundoverlay--high-opacity"]
+    },
+    "NotificationBell": {
+      "skip": [
+        "social-notificationbell--with-unread",
+        "social-notificationbell--no-unread",
+        "social-notificationbell--open-panel",
+        "social-notificationbell--empty-panel"
+      ]
+    }
+  }
+}

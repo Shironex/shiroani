@@ -1,0 +1,21 @@
+/* Alias the static family names ("DM Sans", "JetBrains Mono") that the app's
+ * font stacks list as fallbacks to the variable woff2 actually installed
+ * (@fontsource-variable/*). The app ships only the *Variable families; these
+ * @font-face rules let the fallback names resolve too, so the design-sync
+ * FONT_MISSING check (which the compare oracle can't see) clears. */
+@font-face {
+  font-family: 'DM Sans';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 1000;
+  src: url('../node_modules/@fontsource-variable/dm-sans/files/dm-sans-latin-wght-normal.woff2')
+    format('woff2-variations');
+}
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 800;
+  src: url('../node_modules/@fontsource-variable/jetbrains-mono/files/jetbrains-mono-latin-wght-normal.woff2')
+    format('woff2-variations');
+}
