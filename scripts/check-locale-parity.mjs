@@ -60,9 +60,20 @@ function collectNestedLeafKeys(block, prefix) {
   let i = 1; // skip opening '{'
   while (i < block.length - 1) {
     const c = block[i];
-    if (c === '{' || c === '[') { depth++; i++; continue; }
-    if (c === '}' || c === ']') { depth--; i++; continue; }
-    if (depth !== 0) { i++; continue; }
+    if (c === '{' || c === '[') {
+      depth++;
+      i++;
+      continue;
+    }
+    if (c === '}' || c === ']') {
+      depth--;
+      i++;
+      continue;
+    }
+    if (depth !== 0) {
+      i++;
+      continue;
+    }
     // At top level — try to match an identifier key.
     const propRe = /(\w+)\s*:/y;
     propRe.lastIndex = i;
@@ -91,10 +102,14 @@ function collectNestedLeafKeys(block, prefix) {
 
 /** Return the substring of `src` from `startIdx` through the matching `}`. */
 function balancedBraceSlice(src, startIdx) {
-  let depth = 0, i = startIdx;
+  let depth = 0,
+    i = startIdx;
   while (i < src.length) {
     if (src[i] === '{') depth++;
-    else if (src[i] === '}') { depth--; if (depth === 0) break; }
+    else if (src[i] === '}') {
+      depth--;
+      if (depth === 0) break;
+    }
     i++;
   }
   return src.slice(startIdx, i + 1);
@@ -120,12 +135,14 @@ function checkTsInlineDict(filePath, shape, label) {
     };
   }
 
-  const baseKeys = shape === 'flat'
-    ? extractFlatKeys(baseBlock).sort()
-    : collectNestedLeafKeys(baseBlock, '').sort();
-  const otherKeys = shape === 'flat'
-    ? extractFlatKeys(otherBlock).sort()
-    : collectNestedLeafKeys(otherBlock, '').sort();
+  const baseKeys =
+    shape === 'flat'
+      ? extractFlatKeys(baseBlock).sort()
+      : collectNestedLeafKeys(baseBlock, '').sort();
+  const otherKeys =
+    shape === 'flat'
+      ? extractFlatKeys(otherBlock).sort()
+      : collectNestedLeafKeys(otherBlock, '').sort();
 
   const onlyInBase = diffSets(baseKeys, otherKeys);
   const onlyInOther = diffSets(otherKeys, baseKeys);
@@ -251,8 +268,14 @@ for (const file of [...fileSet].sort()) {
   const rawOnlyInBase = diffSets(baseKeys, otherKeys);
   const rawOnlyInOther = diffSets(otherKeys, baseKeys);
 
-  const { real: onlyInBase, cldrSkipped: skippedFromBase } = partitionPluralKeys(rawOnlyInBase, otherPluralCategories);
-  const { real: onlyInOther, cldrSkipped: skippedFromOther } = partitionPluralKeys(rawOnlyInOther, basePluralCategories);
+  const { real: onlyInBase, cldrSkipped: skippedFromBase } = partitionPluralKeys(
+    rawOnlyInBase,
+    otherPluralCategories
+  );
+  const { real: onlyInOther, cldrSkipped: skippedFromOther } = partitionPluralKeys(
+    rawOnlyInOther,
+    basePluralCategories
+  );
   const nsSkipped = skippedFromBase + skippedFromOther;
   totalCldrSkipped += nsSkipped;
 
@@ -276,12 +299,12 @@ const inlineDictChecks = [
   checkTsInlineDict(
     resolve(root, 'apps/landing/src/lib/i18n.ts'),
     'flat',
-    'landing (apps/landing/src/lib/i18n.ts)',
+    'landing (apps/landing/src/lib/i18n.ts)'
   ),
   checkTsInlineDict(
     resolve(root, 'apps/desktop/src/main/i18n-strings.ts'),
     'nested',
-    'desktop-main (apps/desktop/src/main/i18n-strings.ts)',
+    'desktop-main (apps/desktop/src/main/i18n-strings.ts)'
   ),
 ];
 
@@ -306,9 +329,13 @@ for (const result of inlineDictChecks) {
 const overallMissing = totalMissing + totalInlineMissing;
 
 if (overallMissing === 0) {
-  console.log(`OK · all ${fileSet.size} namespaces are key-complete across ${baseLang}/${otherLang}`);
+  console.log(
+    `OK · all ${fileSet.size} namespaces are key-complete across ${baseLang}/${otherLang}`
+  );
   if (totalCldrSkipped > 0) {
-    console.log(`(skipped CLDR-correct asymmetry: ${totalCldrSkipped} plural variant${totalCldrSkipped === 1 ? '' : 's'})`);
+    console.log(
+      `(skipped CLDR-correct asymmetry: ${totalCldrSkipped} plural variant${totalCldrSkipped === 1 ? '' : 's'})`
+    );
   }
   console.log(`OK · landing inline dict is key-complete (${baseLang}/${otherLang})`);
   console.log(`OK · desktop main-process dict is key-complete (${baseLang}/${otherLang})`);

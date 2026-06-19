@@ -108,6 +108,14 @@ export default defineConfig(
     },
   },
   {
-    ignores: ['**/node_modules/**', '**/dist/**', '**/build/**', '**/release/**', '**/*.js', '**/.astro/**', '**/.ds-entry/**'],
+    ignores: [
+      '**/node_modules/**',
+      '**/dist/**',
+      '**/build/**',
+      '**/release/**',
+      '**/*.js',
+      '**/.astro/**',
+      '**/.ds-entry/**',
+    ],
   }
 );

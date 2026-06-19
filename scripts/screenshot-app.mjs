@@ -32,7 +32,10 @@ const OUT_ROOT = resolve(process.cwd(), 'assets/screenshots');
 // Keep in sync with packages/shared/src/i18n/index.ts
 const LANGUAGE_STORAGE_KEY = 'shiroani.language';
 const UI_LANGUAGE_SETTING_KEY = 'app.uiLanguage';
-const LANGUAGES = (process.env.LANGS ?? 'en,pl').split(',').map(s => s.trim()).filter(Boolean);
+const LANGUAGES = (process.env.LANGS ?? 'en,pl')
+  .split(',')
+  .map(s => s.trim())
+  .filter(Boolean);
 
 // Views worth capturing — ordered like the navigation dock, ending on settings.
 // `browser` is intentionally skipped (its content is third-party).
@@ -55,7 +58,9 @@ const page =
   context.pages().find(p => !p.url().startsWith('devtools://'));
 
 if (!page) {
-  console.error('no renderer page found on CDP — is the app running with --remote-debugging-port=9222?');
+  console.error(
+    'no renderer page found on CDP — is the app running with --remote-debugging-port=9222?'
+  );
   process.exit(1);
 }
 

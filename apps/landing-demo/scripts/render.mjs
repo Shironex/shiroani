@@ -17,12 +17,7 @@ import { fileURLToPath } from 'node:url';
 import { mkdir } from 'node:fs/promises';
 import sharp from 'sharp';
 import { bundle } from '@remotion/bundler';
-import {
-  getCompositions,
-  renderMedia,
-  renderStill,
-  selectComposition,
-} from '@remotion/renderer';
+import { getCompositions, renderMedia, renderStill, selectComposition } from '@remotion/renderer';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, '..');
@@ -30,7 +25,7 @@ const publicDir = path.resolve(root, '../../assets');
 const outDir = path.resolve(root, '../landing/public/demo');
 
 const args = new Set(process.argv.slice(2));
-const langArg = [...args].find((a) => a.startsWith('--lang='))?.split('=')[1];
+const langArg = [...args].find(a => a.startsWith('--lang='))?.split('=')[1];
 
 // Explicit allow-list so that --lang=de errors immediately rather than
 // silently rendering Polish content into shiroani-demo.de.mp4.
@@ -51,14 +46,14 @@ async function main() {
   const serveUrl = await bundle({
     entryPoint: path.resolve(root, 'src/index.ts'),
     publicDir,
-    webpackOverride: (c) => c,
+    webpackOverride: c => c,
   });
 
   const compositions = await getCompositions(serveUrl);
 
   for (const lang of LANGS) {
     const compId = COMP_IDS[lang];
-    const composition = compositions.find((c) => c.id === compId);
+    const composition = compositions.find(c => c.id === compId);
     if (!composition) {
       throw new Error(`Composition ${compId} not found`);
     }
@@ -108,7 +103,7 @@ async function main() {
   console.log('[demo-reel] done.');
 }
 
-main().catch((err) => {
+main().catch(err => {
   console.error(err);
   process.exit(1);
 });

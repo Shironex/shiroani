@@ -6,10 +6,7 @@ import { fileURLToPath } from 'node:url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-const layout = readFileSync(
-  resolve(__dirname, '../src/layouts/BaseLayout.astro'),
-  'utf8',
-);
+const layout = readFileSync(resolve(__dirname, '../src/layouts/BaseLayout.astro'), 'utf8');
 
 describe('ChangelogPage SSR/toggle consistency', () => {
   it('language toggle navigates to /en/changelog instead of in-place swap', () => {

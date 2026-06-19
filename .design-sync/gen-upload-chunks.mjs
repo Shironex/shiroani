@@ -17,11 +17,23 @@ function walk(d) {
   }
 }
 walk('');
-const fonts = out.filter((p) => p.startsWith('fonts/') && /\.woff2?$/.test(p));
-const rest = out.filter((p) => !(p.startsWith('fonts/') && /\.woff2?$/.test(p)));
+const fonts = out.filter(p => p.startsWith('fonts/') && /\.woff2?$/.test(p));
+const rest = out.filter(p => !(p.startsWith('fonts/') && /\.woff2?$/.test(p)));
 const chunks = [];
 for (let i = 0; i < rest.length; i += 220) chunks.push(rest.slice(i, i + 220));
 if (fonts.length) chunks.push(fonts);
 fs.mkdirSync('.design-sync/.upload', { recursive: true });
-chunks.forEach((c, i) => fs.writeFileSync('.design-sync/.upload/chunk' + i + '.json', JSON.stringify(c.map((p) => ({ path: p, localPath: p })))));
-console.log('total files:', out.length, '| chunks:', chunks.length, '| sizes:', chunks.map((c) => c.length).join(','));
+chunks.forEach((c, i) =>
+  fs.writeFileSync(
+    '.design-sync/.upload/chunk' + i + '.json',
+    JSON.stringify(c.map(p => ({ path: p, localPath: p })))
+  )
+);
+console.log(
+  'total files:',
+  out.length,
+  '| chunks:',
+  chunks.length,
+  '| sizes:',
+  chunks.map(c => c.length).join(',')
+);
