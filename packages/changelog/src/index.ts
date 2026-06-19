@@ -133,10 +133,79 @@ export function localizeReleases(locale: Locale): ResolvedRelease[] {
 
 export const RELEASES: readonly Release[] = [
   {
+    version: '1.1.0',
+    shortDate: '19.06.2026',
+    type: 'minor',
+    latest: true,
+    pl: {
+      date: '19 czerwca 2026',
+      title: 'Ulubione strony zawsze pod ręką',
+      description:
+        'Wbudowana przeglądarka zyskuje pasek ulubionych, dzięki któremu najczęściej odwiedzane strony są dostępne jednym kliknięciem. Wydanie poprawia też dostępność, stabilność interfejsu i bezpieczeństwo aplikacji.',
+      categories: [
+        {
+          kind: 'feature',
+          label: 'Ulubione w przeglądarce',
+          entries: [
+            'Pasek ulubionych z szybkim dostępem do zapisanych stron',
+            'Dodawanie i usuwanie bieżącej strony przyciskiem z gwiazdką na pasku narzędzi',
+            'Możliwość pokazania lub ukrycia paska ulubionych w ustawieniach',
+            'Przenoszenie, edytowanie i usuwanie ulubionych z wygodnego menu',
+          ],
+        },
+        {
+          kind: 'fix',
+          label: 'Stabilność i dostępność',
+          entries: [
+            'Pewniejsze zapisywanie ulubionych i odporna migracja wcześniejszych danych',
+            'Menu ulubionych zamyka się poprawnie podczas przewijania, a ikony stron odświeżają się bez błędów',
+            'Lepsza obsługa klawiatury, czytników ekranu i kontrastu w całej aplikacji',
+          ],
+        },
+        {
+          kind: 'security',
+          label: 'Bezpieczeństwo',
+          entries: ['Aktualizacja zależności usuwająca znane podatności'],
+        },
+      ],
+    },
+    en: {
+      date: 'June 19, 2026',
+      title: 'Your favorite sites, always within reach',
+      description:
+        'The built-in browser now has a favorites bar, keeping your most-visited sites one click away. This release also improves accessibility, interface stability, and application security.',
+      categories: [
+        {
+          kind: 'feature',
+          label: 'Browser favorites',
+          entries: [
+            'A favorites bar with quick access to saved sites',
+            'Add or remove the current page using the star button in the toolbar',
+            'Show or hide the favorites bar from settings',
+            'Reorder, edit, and remove favorites from a convenient menu',
+          ],
+        },
+        {
+          kind: 'fix',
+          label: 'Stability & accessibility',
+          entries: [
+            'More reliable favorites persistence and a safe migration for existing data',
+            'Favorites menus close correctly while scrolling, and site icons recover cleanly after changes',
+            'Better keyboard, screen-reader, and contrast support throughout the app',
+          ],
+        },
+        {
+          kind: 'security',
+          label: 'Security',
+          entries: ['Dependency updates clearing known vulnerabilities'],
+        },
+      ],
+    },
+  },
+  {
     version: '1.0.0',
     shortDate: '10.06.2026',
     type: 'major',
-    latest: true,
     pl: {
       date: '10 czerwca 2026',
       title: 'ShiroAni 1.0 — pierwsza stabilna wersja',
