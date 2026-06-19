@@ -3,6 +3,12 @@ name: Release Build
 on:
   release:
     types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing release tag to rebuild
+        required: true
+        type: string
 
 permissions:
   contents: write
@@ -21,19 +27,21 @@ jobs:
         include:
           - os: macos-latest
             platform: mac
-          - os: windows-latest
+          - os: windows-2022
             platform: win
 
     runs-on: ${{ matrix.os }}
 
     steps:
       - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.release.tag_name || inputs.tag }}
 
       - name: Extract version and channel from tag
         id: version
         shell: bash
         env:
-          TAG_NAME: ${{ github.event.release.tag_name }}
+          TAG_NAME: ${{ github.event.release.tag_name || inputs.tag }}
         run: |
           VERSION="${TAG_NAME#v}"
           echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
@@ -124,6 +132,7 @@ jobs:
       - name: Upload to GitHub Release
         uses: softprops/action-gh-release@b4309332981a82ec1c5618f44dd2e27cc8bfbfda # v3.0.0
         with:
+          tag_name: ${{ github.event.release.tag_name || inputs.tag }}
           fail_on_unmatched_files: true
           files: |
             artifacts/macos-builds/*.dmg
