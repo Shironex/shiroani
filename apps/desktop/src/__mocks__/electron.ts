@@ -88,6 +88,13 @@ export class BrowserWindow extends EventEmitter {
   static __loadURLImpl: (url: string) => Promise<void> = () => Promise.resolve();
 }
 
+export const Menu = {
+  buildFromTemplate: jest.fn((template: unknown) => ({
+    popup: jest.fn(),
+    template,
+  })),
+};
+
 export const dialog = {
   showOpenDialog: jest.fn(),
   showSaveDialog: jest.fn(),

@@ -2,6 +2,7 @@ import { BrowserWindow, ipcMain } from 'electron';
 import { ADBLOCK_WHITELIST_MAX_ENTRIES } from '@shiroani/shared';
 import { createMainLogger } from '../logging/logger';
 import { BrowserManager } from '../browser/browser-manager';
+import { attachWebviewContextMenu } from '../browser/webview-context-menu';
 import { isExternalUrlAllowed } from '../url-utils';
 import { handle, handleWithFallback } from './with-ipc-handler';
 import {
@@ -171,6 +172,27 @@ export function registerBrowserHandlers(
   // `did-attach-webview` to access each webview's webContents and set up
   // the window open handler from the main process side.
   mainWindow.webContents.on('did-attach-webview', (_event, webContents) => {
+    // Open a URL in a new browser tab, reusing the same channel the window-open
+    // handler uses (the renderer's useBrowserInit listens and calls openTab).
+    // Validates against the external-URL allowlist so a context-menu "open in
+    // new tab" can't smuggle a javascript:/data: link into a fresh tab.
+    const openUrlInNewTab = (url: string) => {
+      if (mainWindow.isDestroyed()) return;
+      let parsed: URL;
+      try {
+        parsed = new URL(url);
+      } catch {
+        return;
+      }
+      if (!isExternalUrlAllowed(parsed.href)) return;
+      mainWindow.webContents.send('browser:new-window-request', parsed.href);
+    };
+
+    // Right-click context menu (copy/paste, link/image actions, navigation,
+    // inspect). The guest renders third-party pages, so this is a native menu
+    // built from the context-menu event params.
+    attachWebviewContextMenu(webContents, openUrlInNewTab);
+
     webContents.setWindowOpenHandler(({ url }) => {
       if (!url) return { action: 'deny' };
 
@@ -239,6 +261,23 @@ export function registerBrowserHandlers(
         }
       }
     });
+  });
+
+  // Mouse side buttons (X1/X2) → back/forward, the desktop-browser convention.
+  // `app-command` is a BrowserWindow-level event (Windows/Linux) that fires for
+  // the focused contents — including webview guests, whose own mouse events
+  // never reach the renderer. We route through the same browser:shortcut channel
+  // the Alt+Arrow path uses, so it navigates the active pane. macOS emits these
+  // buttons as Chromium's built-in guest navigation, so no handler is needed there.
+  mainWindow.on('app-command', (event, command) => {
+    if (mainWindow.isDestroyed()) return;
+    if (command === 'browser-backward') {
+      event.preventDefault();
+      mainWindow.webContents.send('browser:shortcut', { key: 'ArrowLeft', alt: true });
+    } else if (command === 'browser-forward') {
+      event.preventDefault();
+      mainWindow.webContents.send('browser:shortcut', { key: 'ArrowRight', alt: true });
+    }
   });
 }
 
