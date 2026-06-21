@@ -191,7 +191,7 @@ export function registerBrowserHandlers(
     // Right-click context menu (copy/paste, link/image actions, navigation,
     // inspect). The guest renders third-party pages, so this is a native menu
     // built from the context-menu event params.
-    attachWebviewContextMenu(webContents, openUrlInNewTab);
+    attachWebviewContextMenu(webContents, mainWindow, openUrlInNewTab);
 
     webContents.setWindowOpenHandler(({ url }) => {
       if (!url) return { action: 'deny' };

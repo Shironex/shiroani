@@ -1,5 +1,10 @@
-import { BrowserWindow, Menu, clipboard } from 'electron';
-import type { ContextMenuParams, MenuItemConstructorOptions, WebContents } from 'electron';
+import { Menu, clipboard } from 'electron';
+import type {
+  BrowserWindow,
+  ContextMenuParams,
+  MenuItemConstructorOptions,
+  WebContents,
+} from 'electron';
 import { t } from '../i18n-strings';
 
 /**
@@ -158,15 +163,19 @@ export function buildWebviewContextMenuTemplate(
  * Wire the native context menu onto a webview guest's webContents.
  *
  * @param webContents  the guest webContents (from `did-attach-webview`)
+ * @param mainWindow   the embedder window — anchors the popup. Passed in rather
+ *                     than derived via `BrowserWindow.fromWebContents`, which
+ *                     returns null for a guest `<webview>`'s webContents.
  * @param openInNewTab callback to open a URL in a new browser tab — already
  *                     validated against the external-URL allowlist by the caller
  */
 export function attachWebviewContextMenu(
   webContents: WebContents,
+  mainWindow: BrowserWindow,
   openInNewTab: (url: string) => void
 ): void {
   webContents.on('context-menu', (_event, params) => {
-    if (webContents.isDestroyed()) return;
+    if (webContents.isDestroyed() || mainWindow.isDestroyed()) return;
 
     const history = webContents.navigationHistory;
     const template = buildWebviewContextMenuTemplate(
@@ -188,7 +197,6 @@ export function attachWebviewContextMenu(
     );
 
     const menu = Menu.buildFromTemplate(template);
-    const window = BrowserWindow.fromWebContents(webContents) ?? undefined;
-    menu.popup(window ? { window } : undefined);
+    menu.popup({ window: mainWindow });
   });
 }
