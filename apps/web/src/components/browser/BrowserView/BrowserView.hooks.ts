@@ -133,6 +133,23 @@ export function useBrowserView(): IBrowserViewView {
     return () => cleanup?.();
   }, [handleShortcut]);
 
+  // Mouse side buttons (X1/X2) → back/forward, the desktop-browser convention.
+  // This covers clicks over the app chrome; clicks inside a <webview> guest are
+  // handled in the main process (app-command) since they don't reach this window.
+  useEffect(() => {
+    const handleMouseUp = (e: MouseEvent) => {
+      if (e.button === 3) {
+        e.preventDefault();
+        goBack();
+      } else if (e.button === 4) {
+        e.preventDefault();
+        goForward();
+      }
+    };
+    window.addEventListener('mouseup', handleMouseUp);
+    return () => window.removeEventListener('mouseup', handleMouseUp);
+  }, []);
+
   // Sync URL input with active pane URL (show empty for new tab page)
   useEffect(() => {
     if (activePane && !isAddressBarFocused) {

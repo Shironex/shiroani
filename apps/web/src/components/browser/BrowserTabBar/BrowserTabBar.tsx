@@ -87,7 +87,10 @@ export default function BrowserTabBar({
         <div
           role="tablist"
           aria-label={t('tabs.listLabel')}
-          className="flex items-end gap-[2px] flex-1 min-w-0 overflow-x-auto scrollbar-hide"
+          // Sizes to its tabs (not flex-1) so the new-tab button sits right
+          // after the last tab, Chrome-style, instead of being pushed to the
+          // far edge. `min-w-0` lets it shrink and scroll when tabs overflow.
+          className="flex items-end gap-[2px] min-w-0 overflow-x-auto scrollbar-hide"
         >
           <SortableContext items={tabIds} strategy={horizontalListSortingStrategy}>
             {tabChips}

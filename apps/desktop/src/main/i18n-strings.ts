@@ -47,6 +47,20 @@ const strings = {
       show: 'Show ShiroAni',
       quit: 'Quit',
     },
+    browserMenu: {
+      back: 'Back',
+      forward: 'Forward',
+      reload: 'Reload',
+      cut: 'Cut',
+      copy: 'Copy',
+      paste: 'Paste',
+      selectAll: 'Select all',
+      copyLink: 'Copy link address',
+      openLinkInNewTab: 'Open link in new tab',
+      copyImage: 'Copy image',
+      openImageInNewTab: 'Open image in new tab',
+      inspect: 'Inspect element',
+    },
     notification: {
       unknownAnime: 'Unknown anime',
       bodyAiringNow: 'Episode {{episode}} airing now!',
@@ -111,6 +125,20 @@ const strings = {
     tray: {
       show: 'Pokaż ShiroAni',
       quit: 'Zakończ',
+    },
+    browserMenu: {
+      back: 'Wstecz',
+      forward: 'Do przodu',
+      reload: 'Odśwież',
+      cut: 'Wytnij',
+      copy: 'Kopiuj',
+      paste: 'Wklej',
+      selectAll: 'Zaznacz wszystko',
+      copyLink: 'Kopiuj adres linku',
+      openLinkInNewTab: 'Otwórz link w nowej karcie',
+      copyImage: 'Kopiuj obraz',
+      openImageInNewTab: 'Otwórz obraz w nowej karcie',
+      inspect: 'Zbadaj element',
     },
     notification: {
       unknownAnime: 'Nieznane anime',
@@ -180,6 +208,20 @@ const strings = {
  */
 type MainStringsShape = {
   tray: { show: string; quit: string };
+  browserMenu: {
+    back: string;
+    forward: string;
+    reload: string;
+    cut: string;
+    copy: string;
+    paste: string;
+    selectAll: string;
+    copyLink: string;
+    openLinkInNewTab: string;
+    copyImage: string;
+    openImageInNewTab: string;
+    inspect: string;
+  };
   notification: {
     unknownAnime: string;
     bodyAiringNow: string;
