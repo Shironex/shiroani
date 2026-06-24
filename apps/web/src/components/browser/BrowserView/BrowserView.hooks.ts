@@ -135,7 +135,8 @@ export function useBrowserView(): IBrowserViewView {
 
   // Mouse side buttons (X1/X2) → back/forward, the desktop-browser convention.
   // This covers clicks over the app chrome; clicks inside a <webview> guest are
-  // handled in the main process (app-command) since they don't reach this window.
+  // handled by a DOM listener injected into the guest (see did-attach-webview in
+  // the main process), since the guest's mouse events don't reach this window.
   useEffect(() => {
     const handleMouseUp = (e: MouseEvent) => {
       if (e.button === 3) {

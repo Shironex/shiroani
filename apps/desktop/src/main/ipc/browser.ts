@@ -16,6 +16,28 @@ import {
 
 const logger = createMainLogger('IPC:Browser');
 
+// Injected into each <webview> guest (Windows/Linux) so mouse side buttons
+// (X1/X2) navigate the guest's own history. Unlike keyboard shortcuts — which
+// the main process catches via `before-input-event` on the guest webContents —
+// there is no main-process hook for guest mouse side buttons: `app-command`
+// only fires on the BrowserWindow (and not when a guest holds focus), and
+// `before-mouse-event` reports only left/middle/right, never X1/X2. The guest
+// DOM, however, does receive `mouseup` with button 3 (back) / 4 (forward), so
+// we listen there and drive the guest's session history directly — exactly how
+// a normal browser maps these buttons. The embedder's tab state stays in sync
+// via the existing `did-navigate` listeners. Capture phase + a re-entrancy
+// guard make it survive page-level handlers and repeated injection.
+const GUEST_SIDE_BUTTON_NAV_SCRIPT = `
+(function() {
+  if (window.__shiroaniSideButtonNav) return;
+  window.__shiroaniSideButtonNav = true;
+  window.addEventListener('mouseup', function(e) {
+    if (e.button === 3) { e.preventDefault(); history.back(); }
+    else if (e.button === 4) { e.preventDefault(); history.forward(); }
+  }, true);
+})();
+`;
+
 /**
  * Domains that must always be allowed as popups (OAuth, auth flows, etc.).
  */
@@ -261,14 +283,27 @@ export function registerBrowserHandlers(
         }
       }
     });
+
+    // Mouse side buttons (X1/X2) → back/forward while the guest holds focus.
+    // The guest's mouse events never reach the renderer's window and the
+    // BrowserWindow `app-command` event doesn't fire for a focused guest, so we
+    // inject a DOM listener into the guest itself on every document load.
+    // macOS already navigates guests via Chromium's built-in handling, so
+    // injecting there would double-navigate — Windows/Linux only.
+    if (process.platform !== 'darwin') {
+      webContents.on('dom-ready', () => {
+        webContents.executeJavaScript(GUEST_SIDE_BUTTON_NAV_SCRIPT).catch(() => {});
+      });
+    }
   });
 
   // Mouse side buttons (X1/X2) → back/forward, the desktop-browser convention.
-  // `app-command` is a BrowserWindow-level event (Windows/Linux) that fires for
-  // the focused contents — including webview guests, whose own mouse events
-  // never reach the renderer. We route through the same browser:shortcut channel
-  // the Alt+Arrow path uses, so it navigates the active pane. macOS emits these
-  // buttons as Chromium's built-in guest navigation, so no handler is needed there.
+  // `app-command` is a BrowserWindow-level event (Windows/Linux) that fires only
+  // when the host window's own contents have focus — it does NOT fire when a
+  // <webview> guest holds focus (that case is covered by the injected guest
+  // listener in did-attach-webview above). This handler is the host-chrome
+  // fallback, routed through the same browser:shortcut channel as Alt+Arrow.
+  // macOS emits these buttons as Chromium's built-in navigation, so none here.
   mainWindow.on('app-command', (event, command) => {
     if (mainWindow.isDestroyed()) return;
     if (command === 'browser-backward') {
