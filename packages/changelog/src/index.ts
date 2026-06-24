@@ -133,10 +133,77 @@ export function localizeReleases(locale: Locale): ResolvedRelease[] {
 
 export const RELEASES: readonly Release[] = [
   {
+    version: '1.2.0',
+    shortDate: '25.06.2026',
+    type: 'minor',
+    latest: true,
+    pl: {
+      date: '25 czerwca 2026',
+      title: 'Menu po kliknięciu prawym i nawigacja myszką w przeglądarce',
+      description:
+        'Wbudowana przeglądarka dostaje menu pod prawym przyciskiem myszy — z kopiowaniem, wklejaniem i otwieraniem linków — oraz obsługę bocznych przycisków myszy do cofania i przechodzenia dalej. Do tego poprawki interfejsu kart i aktualizacja bezpieczeństwa.',
+      categories: [
+        {
+          kind: 'feature',
+          label: 'Nowości w przeglądarce',
+          entries: [
+            'Menu pod prawym przyciskiem myszy: wstecz, do przodu, odśwież, kopiuj i wklej',
+            'Kopiowanie i otwieranie linków oraz obrazków w nowej karcie prosto z menu',
+            'Boczne przyciski myszy cofają i przechodzą dalej podczas przeglądania',
+          ],
+        },
+        {
+          kind: 'fix',
+          label: 'Poprawki',
+          entries: [
+            'Przycisk nowej karty trzyma się teraz tuż obok ostatniej karty',
+            'Menu pod prawym przyciskiem pojawia się we właściwym miejscu',
+            'Boczne przyciski myszy działają nawet wtedy, gdy aktywna jest otwarta strona',
+          ],
+        },
+        {
+          kind: 'security',
+          label: 'Bezpieczeństwo',
+          entries: ['Aktualizacja zależności usuwająca znane podatności'],
+        },
+      ],
+    },
+    en: {
+      date: 'June 25, 2026',
+      title: 'Right-click menu and mouse navigation in the browser',
+      description:
+        'The built-in browser gains a right-click menu — with copy, paste and link actions — plus mouse side-button support for going back and forward. This release also refines the tab bar and ships a security update.',
+      categories: [
+        {
+          kind: 'feature',
+          label: 'Browser additions',
+          entries: [
+            'A right-click menu: back, forward, reload, copy and paste',
+            'Copy and open links and images in a new tab straight from the menu',
+            'Mouse side-buttons go back and forward while you browse',
+          ],
+        },
+        {
+          kind: 'fix',
+          label: 'Fixes',
+          entries: [
+            'The new-tab button now stays right next to the last tab',
+            'The right-click menu appears in the correct place',
+            'Mouse side-buttons work even when an open page is focused',
+          ],
+        },
+        {
+          kind: 'security',
+          label: 'Security',
+          entries: ['Dependency updates clearing known vulnerabilities'],
+        },
+      ],
+    },
+  },
+  {
     version: '1.1.0',
     shortDate: '19.06.2026',
     type: 'minor',
-    latest: true,
     pl: {
       date: '19 czerwca 2026',
       title: 'Ulubione strony zawsze pod ręką',
