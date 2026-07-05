@@ -15,9 +15,11 @@ onlyBuiltDependencies:
 
 overrides:
   file-type: '>=21.3.1'
-  multer: '>=2.1.1'
+  multer: '^2.2.0'
   'undici@<7': '>=6.23.0'
-  undici: '8.1.0'
+  'undici@^6': '>=6.27.0 <7'
+  'undici@^7': '>=7.28.0 <8'
+  'undici@^8': '>=8.5.0'
   'jsdom>undici': '^7.25.0'
   tar: '>=7.5.16'
   hono: '>=4.12.21 <5'
@@ -45,10 +47,10 @@ overrides:
   # CVE pins
   shell-quote: '>=1.8.4'
   qs: '>=6.15.2'
-  ws: '>=8.20.1'
-  'engine.io': '>=6.6.8'
+  ws: '>=8.21.0'
+  'engine.io': '>=6.6.9'
   tmp: '>=0.2.7'
   'form-data': '>=4.0.6'
-  'js-yaml': '>=4.2.0'
+  'js-yaml@3': '>=3.15.0'
   '@babel/core': '>=7.29.6'
   'brace-expansion@>=5.0.0 <5.0.6': '5.0.6'

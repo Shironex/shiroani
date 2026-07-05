@@ -47,14 +47,6 @@
       "prettier --write"
     ]
   },
-  "pnpm": {
-    "overrides": {
-      "undici@^6": ">=6.27.0 <7",
-      "undici@^7": ">=7.28.0 <8",
-      "undici@^8": ">=8.5.0",
-      "multer": "^2.2.0"
-    }
-  },
   "devDependencies": {
     "@commitlint/cli": "^21.0.1",
     "@commitlint/config-conventional": "^21.0.1",
