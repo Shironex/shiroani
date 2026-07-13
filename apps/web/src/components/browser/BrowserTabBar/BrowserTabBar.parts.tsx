@@ -13,7 +13,7 @@ export { horizontalListSortingStrategy };
 
 const CHIP_CLASS = cn(
   'group relative flex items-center gap-2 h-[30px] px-3 text-[11.5px] font-medium',
-  'rounded-t-[9px] border-b-0 shrink-0 min-w-[120px] max-w-[220px]',
+  'rounded-t-lg border-b-0 shrink-0 min-w-[72px] max-w-[220px]',
   'transition-colors duration-150'
 );
 
@@ -36,19 +36,19 @@ function chipStateClass(isActive: boolean, isDragOverlay: boolean, isMergeTarget
 function TabFavicon({ tab }: { tab: ITabContentProps['tab'] }) {
   const [imgError, setImgError] = useState(false);
   if (tab.isLoading) {
-    return <Loader2 className="w-3 h-3 shrink-0 animate-spin text-primary" />;
+    return <Loader2 className="size-3.5 shrink-0 animate-spin text-primary" />;
   }
   if (tab.favicon && !imgError) {
     return (
       <img
         src={tab.favicon}
         alt=""
-        className="w-3.5 h-3.5 shrink-0 rounded-[3px]"
+        className="size-3.5 shrink-0 rounded-[3px]"
         onError={() => setImgError(true)}
       />
     );
   }
-  return <Globe className="w-3 h-3 shrink-0 opacity-70" />;
+  return <Globe className="size-3.5 shrink-0 opacity-70" />;
 }
 
 /**
@@ -158,6 +158,8 @@ export function SortableTab({
       onKeyDown={handleKeyDown}
       className={cn(
         'group relative flex cursor-pointer items-center outline-none',
+        'focus-visible:ring-2 focus-visible:ring-ring/60 ring-inset',
+        'animate-in fade-in-0 slide-in-from-bottom-1 duration-150',
         CHIP_CLASS,
         chipStateClass(isActive, false, isMergeTarget),
         'pr-1',
@@ -175,6 +177,12 @@ export function SortableTab({
           className="pointer-events-none absolute inset-y-1 left-1/2 w-px bg-primary/70"
         />
       )}
+      {/*
+       * Kept as a native `title` rather than the Tooltip primitive: this span is
+       * role="presentation" / aria-hidden inside a role="tab" (a tab may not nest
+       * a focusable Tooltip trigger), so a Radix tooltip would fight that ARIA
+       * constraint. The native title is the correct affordance here.
+       */}
       <span
         role="presentation"
         aria-hidden="true"

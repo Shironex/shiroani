@@ -55,25 +55,25 @@ export function StreakCard({ current, longest, milestone, achievedMilestone }: I
   return (
     <div
       className={cn(
-        'relative overflow-hidden rounded-[12px] border border-[oklch(0.8_0.14_70/0.3)] p-4',
-        'bg-[linear-gradient(145deg,oklch(0.74_0.15_355/0.18),oklch(0.8_0.14_70/0.12))]'
+        'relative overflow-hidden rounded-xl border border-[oklch(from_var(--gold)_l_c_h/0.3)] p-4',
+        'bg-[linear-gradient(145deg,oklch(from_var(--primary)_l_c_h/0.18),oklch(from_var(--gold)_l_c_h/0.12))]'
       )}
     >
-      <div className="mb-1.5 flex items-center gap-2 font-mono text-[10px] font-semibold uppercase tracking-[0.2em] text-[oklch(0.8_0.14_70)]">
+      <div className="mb-1.5 flex items-center gap-2 font-mono text-[10px] font-semibold uppercase tracking-[0.2em] text-gold">
         <Flame className="w-3.5 h-3.5" aria-hidden="true" />
         {t('sidebar.currentStreak')}
         {achievedMilestone != null && (
           <span
             className={cn(
-              'ml-auto rounded-full border border-[oklch(0.8_0.14_70/0.45)] bg-[oklch(0.8_0.14_70/0.15)]',
-              'px-2 py-[2px] text-[9px] tracking-[0.12em] text-[oklch(0.8_0.14_70)]'
+              'ml-auto rounded-full border border-[oklch(from_var(--gold)_l_c_h/0.45)] bg-gold-bg',
+              'px-2 py-[2px] text-[9px] tracking-[0.12em] text-gold'
             )}
           >
             {t('sidebar.celebration.badge', { count: achievedMilestone })}
           </span>
         )}
       </div>
-      <div className="flex items-baseline gap-2 font-serif text-[38px] font-extrabold leading-none text-[oklch(0.8_0.14_70)]">
+      <div className="flex items-baseline gap-2 font-serif text-[38px] font-extrabold leading-none text-gold">
         {current}
         <small className="font-mono text-[11px] font-medium tracking-[0.12em] text-muted-foreground">
           {t('sidebar.dayInRow', { count: current })}
@@ -86,16 +86,14 @@ export function StreakCard({ current, longest, milestone, achievedMilestone }: I
             key={i}
             className={cn(
               'h-[14px] flex-1 rounded-[2px]',
-              on
-                ? 'bg-[oklch(0.8_0.14_70)] shadow-[0_0_4px_oklch(0.8_0.14_70/0.5)]'
-                : 'bg-foreground/10'
+              on ? 'bg-gold shadow-[0_0_4px_oklch(from_var(--gold)_l_c_h/0.5)]' : 'bg-foreground/10'
             )}
           />
         ))}
       </div>
       <div className="mt-3">
         <ProgressBar value={milestone.progress} thickness={3} glow tone="primary" />
-        <div className="mt-1 flex justify-between font-mono text-[9.5px] uppercase tracking-[0.12em] text-muted-foreground/70">
+        <div className="mt-1 flex justify-between font-mono text-[9.5px] uppercase tracking-[0.12em] text-muted-foreground">
           <span>{t('sidebar.goalLabel', { target: milestone.target })}</span>
           <span>{Math.round(milestone.progress)}%</span>
         </div>
@@ -114,9 +112,7 @@ export function StatTile({
   sub?: string;
 }) {
   return (
-    <div
-      className={cn('rounded-[9px] border border-border-glass bg-foreground/[0.03] px-3 py-2.5')}
-    >
+    <div className={cn('rounded-lg border border-border-glass bg-foreground/[0.03] px-3 py-2.5')}>
       <StatCell label={label} value={value} sub={sub} />
     </div>
   );
@@ -148,6 +144,9 @@ export function ActivityHeatmap({ weeks, maxCount, total }: IActivityHeatmapProp
   return (
     <SidebarSection>
       <SidebarLabel icon={CalendarDays}>{t('sidebar.activity.label52w')}</SidebarLabel>
+      {/* Screen-reader summary — the 91-cell grid itself is decorative
+          (aria-hidden), so expose the totals as a plain sentence. */}
+      <span className="sr-only">{t('sidebar.activity.summary', { count: total })}</span>
       <div
         className="grid gap-[3px]"
         style={{ gridTemplateColumns: 'repeat(13, 1fr)' }}
@@ -180,10 +179,10 @@ export function ActivityHeatmap({ weeks, maxCount, total }: IActivityHeatmapProp
 
 const HEATMAP_LEVELS = [
   'oklch(1 0 0 / 0.05)',
-  'oklch(0.74 0.15 355 / 0.25)',
-  'oklch(0.74 0.15 355 / 0.5)',
-  'oklch(0.74 0.15 355 / 0.8)',
-  'oklch(0.74 0.15 355)',
+  'oklch(from var(--primary) l c h / 0.25)',
+  'oklch(from var(--primary) l c h / 0.5)',
+  'oklch(from var(--primary) l c h / 0.8)',
+  'oklch(from var(--primary) l c h)',
 ] as const;
 
 function bucketLevel(count: number, max: number): 0 | 1 | 2 | 3 | 4 {

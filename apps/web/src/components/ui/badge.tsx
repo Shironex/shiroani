@@ -10,20 +10,32 @@ import { cn } from '@/lib/utils';
  * (e.g. "LIVE", "S1:E04") prefer `PillTag` in @/components/ui/pill-tag.
  */
 const badgeVariants = cva(
-  'inline-flex items-center gap-[5px] rounded-full border px-[10px] py-[4px] text-[11.5px] font-medium leading-none transition-colors focus:outline-hidden focus:ring-2 focus:ring-ring focus:ring-offset-2',
+  'inline-flex items-center gap-[5px] rounded-full border px-[10px] py-[4px] text-[11.5px] font-medium leading-none transition-colors',
   {
     variants: {
       variant: {
-        default: 'border-primary/40 bg-primary/18 text-primary font-semibold hover:bg-primary/25',
-        secondary:
-          'border-border-glass bg-foreground/[0.05] text-muted-foreground hover:bg-foreground/[0.08]',
-        destructive:
-          'border-transparent bg-destructive/20 text-destructive hover:bg-destructive/30',
+        default: 'border-primary/40 bg-primary/18 text-primary font-semibold',
+        secondary: 'border-border-glass bg-foreground/[0.05] text-muted-foreground',
+        destructive: 'border-transparent bg-destructive/20 text-destructive',
         outline: 'border-border text-foreground',
       },
+      // Static badges get no hover affordance. Opt into hover + keyboard-focus
+      // feedback (for clickable/toggleable badges) via `interactive`. Note:
+      // Badge renders a <div>, so interactive consumers must also make it
+      // focusable (e.g. tabIndex={0} + role="button") for the ring to show.
+      interactive: {
+        true: 'cursor-pointer focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring',
+        false: '',
+      },
     },
+    compoundVariants: [
+      { variant: 'default', interactive: true, class: 'hover:bg-primary/25' },
+      { variant: 'secondary', interactive: true, class: 'hover:bg-foreground/[0.08]' },
+      { variant: 'destructive', interactive: true, class: 'hover:bg-destructive/30' },
+    ],
     defaultVariants: {
       variant: 'default',
+      interactive: false,
     },
   }
 );
@@ -31,8 +43,8 @@ const badgeVariants = cva(
 export interface BadgeProps
   extends React.HTMLAttributes<HTMLDivElement>, VariantProps<typeof badgeVariants> {}
 
-function Badge({ className, variant, ...props }: BadgeProps) {
-  return <div className={cn(badgeVariants({ variant, className }))} {...props} />;
+function Badge({ className, variant, interactive, ...props }: BadgeProps) {
+  return <div className={cn(badgeVariants({ variant, interactive, className }))} {...props} />;
 }
 
 export { Badge, badgeVariants };

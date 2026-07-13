@@ -485,7 +485,17 @@
       "title": "Resetuj pozycję",
       "description": "Przywróć maskotkę do domyślnej pozycji (prawy dolny róg)",
       "action": "Resetuj"
+    },
+    "preview": {
+      "min": "MIN",
+      "current": "OBECNY",
+      "max": "MAX"
     }
+  },
+  "colorPicker": {
+    "pickAria": "Wybierz kolor: {{label}}",
+    "hexAria": "Kod heksadecymalny: {{label}}",
+    "invalidHex": "Nieprawidłowy kolor hex"
   },
   "data": {
     "export": {

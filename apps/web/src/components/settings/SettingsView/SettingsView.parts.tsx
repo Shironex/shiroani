@@ -21,7 +21,7 @@ export function SidebarGroup({
 }: SidebarGroupProps) {
   return (
     <div className="mb-1.5">
-      <div className="px-2.5 pt-2 pb-1 font-mono text-[9px] uppercase tracking-[0.2em] text-muted-foreground/80">
+      <div className="px-2.5 pt-2 pb-1 font-mono text-2xs uppercase tracking-[0.18em] text-muted-foreground/80">
         {tDynamic(i18n, `settings:nav.${groupLabelKey}`)}
       </div>
       {items.map(section => {

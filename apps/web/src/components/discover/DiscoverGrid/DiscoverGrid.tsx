@@ -34,7 +34,6 @@ export default function DiscoverGrid(props: IDiscoverGridProps) {
           rowHeight={getRowHeight}
           overscanCount={2}
           onCellsRendered={handleCellsRendered}
-          className="scrollbar-thin"
           style={{ height: '100%' }}
         />
       )}

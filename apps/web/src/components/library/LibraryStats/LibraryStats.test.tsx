@@ -47,12 +47,12 @@ describe('LibraryStats', () => {
     expect(screen.getByText('9.0')).toBeInTheDocument();
   });
 
-  it('shows "-" for the average when there are no scored entries', () => {
+  it('shows "–" for the average when there are no scored entries', () => {
     useLibraryStore.setState({
       entries: [makeEntry(1, 'watching', 0), makeEntry(2, 'plan_to_watch', 0)],
     });
     render(<LibraryStats />);
-    expect(screen.getByText('-')).toBeInTheDocument();
+    expect(screen.getByText('–')).toBeInTheDocument();
   });
 
   it('hides the distribution bar and legend when the store is empty', () => {

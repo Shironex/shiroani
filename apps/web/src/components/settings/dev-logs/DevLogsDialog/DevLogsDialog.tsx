@@ -95,7 +95,7 @@ export default function DevLogsDialog({ open, onOpenChange }: IDevLogsDialogProp
             <button
               type="button"
               onClick={stickyTail.jumpToTail}
-              className="absolute bottom-2 left-1/2 -translate-x-1/2 inline-flex items-center gap-1 rounded-full border border-border-glass bg-background/90 px-3 py-1 text-[11px] text-foreground shadow-md hover:bg-background"
+              className="absolute bottom-2 left-1/2 -translate-x-1/2 inline-flex items-center gap-1 rounded-full border border-border-glass bg-background/90 px-3 py-1 text-[11px] text-foreground shadow-md transition-transform hover:bg-background active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
             >
               <ArrowDown className="w-3 h-3" />
               {t('logs.newEntries')}

@@ -7,7 +7,7 @@ import type { ILogEntryRowProps } from './LogEntryRow.types';
 
 const LEVEL_STYLES: Record<LogLevelName, string> = {
   error: 'bg-destructive/15 text-destructive',
-  warn: 'bg-[oklch(0.8_0.14_70/0.15)] text-[oklch(0.8_0.14_70)]',
+  warn: 'bg-[oklch(from_var(--status-warning)_l_c_h/0.15)] text-status-warning',
   info: 'bg-primary/15 text-primary',
   debug: 'bg-foreground/[0.08] text-muted-foreground',
 };
@@ -31,7 +31,7 @@ export default function LogEntryRow({ entry, expanded, onToggle }: ILogEntryRowP
         >
           {entry.level}
         </span>
-        <span className="shrink-0 text-muted-foreground/60 tabular-nums">
+        <span className="shrink-0 text-muted-foreground/80 tabular-nums">
           {entry.timestamp.split('T')[1]?.slice(0, 12) ?? entry.timestamp}
         </span>
         <span className="shrink-0 text-muted-foreground/80">[{entry.context}]</span>

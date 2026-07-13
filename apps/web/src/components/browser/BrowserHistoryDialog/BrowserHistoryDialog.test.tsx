@@ -90,6 +90,10 @@ describe('BrowserHistoryDialog', () => {
     );
 
     await user.click(screen.getByRole('button', { name: 'Clear all' }));
+
+    const alertDialog = screen.getByRole('alertdialog');
+    await user.click(within(alertDialog).getByRole('button', { name: 'Clear all' }));
+
     expect(clearHistory).toHaveBeenCalledOnce();
   });
 

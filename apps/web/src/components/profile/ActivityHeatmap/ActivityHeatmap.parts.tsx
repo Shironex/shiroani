@@ -18,7 +18,7 @@ const LEGEND_LEVELS = [0, 1, 2, 3, 4] as const;
 export function MonthRow({ data }: { data: IActivityHeatmapView['data'] }) {
   return (
     <div
-      className="grid gap-[3px] pl-7 font-mono text-[9px] uppercase tracking-[0.16em] text-muted-foreground"
+      className="grid gap-[3px] pl-7 font-mono text-2xs uppercase tracking-[0.16em] text-muted-foreground"
       style={{ gridTemplateColumns: `repeat(${data.weeks.length}, 12px)` }}
       aria-hidden="true"
     >
@@ -35,7 +35,7 @@ export function MonthRow({ data }: { data: IActivityHeatmapView['data'] }) {
 export function WeekdayAxis({ weekdays }: { weekdays: string[] }) {
   return (
     <div
-      className="grid grid-rows-7 gap-[3px] font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground/80 pt-px"
+      className="grid grid-rows-7 gap-[3px] font-mono text-2xs uppercase tracking-[0.14em] text-muted-foreground/80 pt-px"
       aria-hidden="true"
     >
       {weekdays.map((label, idx) => (
@@ -70,9 +70,10 @@ export function CellGrid({
                 <div
                   role="gridcell"
                   aria-label={cell.tooltip}
-                  className={`w-3 h-3 rounded-[3px] border ${LEVEL_BG[cell.level]} ${
-                    cell.isFuture ? 'opacity-30' : ''
-                  }`}
+                  tabIndex={0}
+                  className={`w-3 h-3 rounded-xs border outline-none focus-visible:ring-1 focus-visible:ring-ring ${
+                    LEVEL_BG[cell.level]
+                  } ${cell.isFuture ? 'opacity-30' : ''}`}
                 />
               </TooltipTrigger>
               <TooltipContent side="top" className="text-[11px]">
@@ -89,12 +90,12 @@ export function CellGrid({
 /** Less→more intensity legend. */
 export function HeatmapLegend({ lessLabel, moreLabel }: { lessLabel: string; moreLabel: string }) {
   return (
-    <div className="flex items-center gap-2 pl-7 font-mono text-[9.5px] uppercase tracking-[0.16em] text-muted-foreground">
+    <div className="flex items-center gap-2 pl-7 font-mono text-2xs uppercase tracking-[0.16em] text-muted-foreground">
       <span>{lessLabel}</span>
       {LEGEND_LEVELS.map(level => (
         <span
           key={level}
-          className={`w-3 h-3 rounded-[3px] border ${LEVEL_BG[level]}`}
+          className={`w-3 h-3 rounded-xs border ${LEVEL_BG[level]}`}
           aria-hidden="true"
         />
       ))}

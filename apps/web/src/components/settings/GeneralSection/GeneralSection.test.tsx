@@ -90,9 +90,9 @@ describe('GeneralSection — language picker', () => {
     render(<GeneralSection />);
     const enButton = await screen.findByRole('button', { name: 'English' });
     // The active language carries the primary accent border classes.
-    expect(enButton.className).toContain('border-primary/40');
+    expect(enButton.className).toContain('border-primary/35');
     expect(screen.getByRole('button', { name: 'Polski' }).className).not.toContain(
-      'border-primary/40'
+      'border-primary/35'
     );
   });
 });

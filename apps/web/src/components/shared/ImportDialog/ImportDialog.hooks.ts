@@ -121,6 +121,7 @@ export function useImportDialog({
     }
 
     const totalCount = initialItems.length;
+    const importStartedAt = Date.now();
     transition({ step: 'importing', items: [...initialItems], totalCount });
 
     // Listen for progress updates
@@ -147,7 +148,14 @@ export function useImportDialog({
         { timeout: 300000 }
       );
 
-      await new Promise(resolve => setTimeout(resolve, 800));
+      // Minimum-duration pattern: keep the progress UI visible for at least
+      // MIN_IMPORT_DURATION so a near-instant import doesn't flash past, but
+      // never pad beyond it when the import genuinely took longer.
+      const MIN_IMPORT_DURATION = 800;
+      const elapsed = Date.now() - importStartedAt;
+      if (elapsed < MIN_IMPORT_DURATION) {
+        await new Promise(resolve => setTimeout(resolve, MIN_IMPORT_DURATION - elapsed));
+      }
       transition({ step: 'done', result: response });
     } catch (err) {
       transition({

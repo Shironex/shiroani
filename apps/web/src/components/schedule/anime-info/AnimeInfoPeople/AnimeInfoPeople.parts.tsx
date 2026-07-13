@@ -56,9 +56,12 @@ export function RelationsList({ relations }: IRelationsListProps) {
   return (
     <div>
       <h3 className="text-xs font-medium text-muted-foreground mb-2">{t('dialog.related')}</h3>
-      <div className="flex gap-2 overflow-x-auto pb-1">
+      <div className="flex gap-2 overflow-x-auto pb-1 snap-x snap-proximity [mask-image:linear-gradient(to_right,#000_calc(100%_-_32px),transparent_100%)]">
         {relations.slice(0, 8).map(rel => (
-          <div key={`${rel.node.id}-${rel.relationType}`} className="shrink-0 w-24 text-center">
+          <div
+            key={`${rel.node.id}-${rel.relationType}`}
+            className="shrink-0 w-24 snap-start text-center"
+          >
             {rel.node.coverImage?.medium ? (
               <img
                 src={rel.node.coverImage.medium}

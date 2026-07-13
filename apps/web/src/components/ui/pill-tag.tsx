@@ -15,10 +15,10 @@ const pillTagVariants = cva(
       variant: {
         accent: 'bg-primary/15 text-primary',
         muted: 'bg-foreground/5 text-muted-foreground',
-        green: 'bg-[oklch(0.78_0.15_140/0.2)] text-[oklch(0.78_0.15_140)]',
-        gold: 'bg-[oklch(0.8_0.14_70/0.18)] text-[oklch(0.8_0.14_70)]',
-        blue: 'bg-[oklch(0.7_0.15_220/0.2)] text-[oklch(0.7_0.15_220)]',
-        orange: 'bg-[oklch(0.74_0.18_40/0.2)] text-[oklch(0.74_0.18_40)]',
+        green: 'bg-status-success-bg text-status-success',
+        gold: 'bg-(--gold-bg) text-(--gold)',
+        blue: 'bg-status-info-bg text-status-info',
+        orange: 'bg-status-pending-bg text-status-pending',
       },
     },
     defaultVariants: {

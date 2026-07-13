@@ -2,6 +2,7 @@ import { Trans } from 'react-i18next';
 import { Sparkles } from 'lucide-react';
 import { BackgroundPanel } from '@/components/shared/BackgroundPanel';
 import { StepLayout } from '../../StepLayout';
+import { emPrimary, bStrong, bPrimary } from '../../shared-parts';
 import { useBackgroundStep } from './BackgroundStep.hooks';
 
 /**
@@ -11,9 +12,6 @@ import { useBackgroundStep } from './BackgroundStep.hooks';
  */
 export default function BackgroundStep() {
   const { stepTitle } = useBackgroundStep();
-  const emPrimary = <em className="not-italic text-primary italic" />;
-  const bStrong = <b className="font-semibold text-foreground" />;
-  const bPrimary = <b className="font-bold text-primary" />;
 
   return (
     <StepLayout

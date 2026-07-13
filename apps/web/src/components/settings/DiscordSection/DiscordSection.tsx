@@ -1,10 +1,11 @@
 import { useTranslation } from 'react-i18next';
 import { MessageCircle, Check, Info } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
+import { cn } from '@/lib/utils';
 import {
   SettingsCard,
   SettingsInfoCallout,
+  SettingsSectionSkeleton,
   SettingsToggleRow,
 } from '@/components/settings/SettingsCard';
 import { DiscordPreview } from '@/components/settings/DiscordPreview';
@@ -31,7 +32,6 @@ export default function DiscordSection() {
     status,
     updateField,
     updateTemplate,
-    handleSave,
     handleResetTemplate,
     currentTemplate,
     previewDetails,
@@ -39,7 +39,7 @@ export default function DiscordSection() {
     showCustomTemplateColumns,
   } = useDiscordSection();
 
-  if (!settings) return null;
+  if (!settings) return <SettingsSectionSkeleton cards={1} />;
 
   const mainCard = (
     <SettingsCard
@@ -49,7 +49,13 @@ export default function DiscordSection() {
       headerAccessory={
         <div className="flex items-center gap-2">
           {settings.enabled && (
-            <PillTag variant={STATUS_VARIANT[status]} aria-label={t('discord.status.aria')}>
+            <PillTag
+              variant={STATUS_VARIANT[status]}
+              aria-label={t('discord.status.aria')}
+              // Error is a failure state, not just another accent — force the
+              // destructive tint over the mapped variant so it reads as a problem.
+              className={cn(status === 'error' && 'bg-destructive/15 text-destructive')}
+            >
               {t(`discord.status.${status}`)}
             </PillTag>
           )}
@@ -94,12 +100,17 @@ export default function DiscordSection() {
         disabled={!settings.enabled}
       />
 
-      <div>
-        <Button size="sm" onClick={handleSave}>
-          {saved ? <Check className="h-4 w-4" /> : null}
-          {saved ? t('discord.main.saved') : t('discord.main.save')}
-        </Button>
-      </div>
+      {/* Auto-saved on change — a transient confirmation replaces the old
+          explicit Save button so this section matches the rest of settings. */}
+      {saved && (
+        <div
+          role="status"
+          className="flex items-center gap-1.5 text-[12px] font-medium text-status-success"
+        >
+          <Check className="h-3.5 w-3.5" />
+          {t('discord.main.saved')}
+        </div>
+      )}
     </SettingsCard>
   );
 

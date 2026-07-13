@@ -13,7 +13,7 @@ export function SkeletonCards() {
       {SKELETON_CARDS.map(i => (
         <div
           key={i}
-          className="rounded-[10px] overflow-hidden bg-card/60 border border-border-glass"
+          className="rounded-lg overflow-hidden bg-card/60 border border-border-glass"
           style={{ animationDelay: `${i * 50}ms` }}
         >
           <div className="relative aspect-[2/3]">

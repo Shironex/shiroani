@@ -11,8 +11,8 @@ export default function EmptyState({ icon: Icon, title, subtitle, action }: IEmp
         <Icon className="w-8 h-8 text-primary/30" aria-hidden="true" />
       </div>
       <div className="text-center space-y-1.5">
-        <p className="text-sm font-medium text-foreground/70">{title}</p>
-        <p className="text-xs text-muted-foreground/60 max-w-[320px]">{subtitle}</p>
+        <p className="text-sm font-medium text-foreground">{title}</p>
+        <p className="text-xs text-muted-foreground max-w-[320px]">{subtitle}</p>
       </div>
       {action && (
         <Button

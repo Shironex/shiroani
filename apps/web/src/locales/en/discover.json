@@ -2,6 +2,7 @@
   "title": "Discover",
   "subtitle": "Trending, seasonal and random",
   "searchPlaceholder": "Search anime...",
+  "loadingMore": "Loading more...",
   "tabs": {
     "trending": "Trending",
     "popular": "Popular",
@@ -98,8 +99,8 @@
     "alreadyInLibrary": "This anime is already in your library",
     "addedToLibrary": "Added to library",
     "addedToLibraryAndAniList": "Added to library and AniList",
-    "addedLocalOnly": "Added locally — could not sync to AniList",
+    "addedLocalOnly": "Added locally. Could not sync to AniList.",
     "addFailed": "Could not add to library",
-    "rateLimited": "Too many requests — wait a moment and try again"
+    "rateLimited": "Too many requests. Wait a moment and try again."
   }
 }

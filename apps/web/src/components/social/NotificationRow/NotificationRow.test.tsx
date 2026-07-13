@@ -65,7 +65,7 @@ describe('NotificationRow', () => {
     expect(screen.queryByRole('img')).not.toBeInTheDocument();
   });
 
-  it('falls back through the media title chain to "?" when titles are empty', () => {
+  it('falls back through the media title chain to "Untitled" when titles are empty', () => {
     const notification: AniListNotification = {
       type: 'airing',
       id: 5,
@@ -76,7 +76,7 @@ describe('NotificationRow', () => {
     };
     render(<NotificationRow notification={notification} />);
 
-    expect(screen.getByAltText('?')).toBeInTheDocument();
+    expect(screen.getByAltText('Untitled')).toBeInTheDocument();
   });
 
   it('falls back to a placeholder when the media thumb fails to load', () => {

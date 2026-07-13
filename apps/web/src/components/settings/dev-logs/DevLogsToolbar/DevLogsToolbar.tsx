@@ -26,7 +26,7 @@ export default function DevLogsToolbar({ logs }: IDevLogsToolbarProps) {
     <SelectItem key={file.name} value={file.name}>
       <span className="flex items-center gap-2">
         <span className="font-mono">{file.name}</span>
-        <span className="text-muted-foreground/70 text-[11px]">
+        <span className="text-muted-foreground/70 text-[11px] tabular-nums">
           {formatBytes(file.size)} · {formatFileDate(file.lastModified)}
         </span>
       </span>
@@ -148,7 +148,7 @@ export default function DevLogsToolbar({ logs }: IDevLogsToolbarProps) {
               <Play className="w-3.5 h-3.5" />
               {t('logs.resume')}
               {logs.pendingCount > 0 && (
-                <span className="ml-1 rounded-full bg-primary/20 text-primary px-1.5 py-0.5 text-[10px] font-semibold">
+                <span className="ml-1 rounded-full bg-primary/20 text-primary px-1.5 py-0.5 text-[10px] font-semibold tabular-nums">
                   {t('logs.newCount', { count: logs.pendingCount })}
                 </span>
               )}
@@ -183,6 +183,7 @@ export default function DevLogsToolbar({ logs }: IDevLogsToolbarProps) {
           variant="outline"
           onClick={logs.handleClear}
           disabled={!logs.hasAnyEntries}
+          className="text-destructive hover:bg-destructive/10 hover:text-destructive"
         >
           <Trash2 className="w-3.5 h-3.5" />
           {t('logs.clear')}

@@ -91,7 +91,10 @@ export function getDockStyle(
   const style: React.CSSProperties = {
     position: 'fixed',
     zIndex: 40,
-    transition: 'all 300ms cubic-bezier(0.25, 0.1, 0.25, 1)',
+    // Narrowed from `all`: the dock only animates its edge position + centering
+    // transform, never paint/layout properties like color or size.
+    transition:
+      'left 300ms cubic-bezier(0.25, 0.1, 0.25, 1), top 300ms cubic-bezier(0.25, 0.1, 0.25, 1), right 300ms cubic-bezier(0.25, 0.1, 0.25, 1), bottom 300ms cubic-bezier(0.25, 0.1, 0.25, 1), transform 300ms cubic-bezier(0.25, 0.1, 0.25, 1)',
   };
 
   switch (edge) {
@@ -297,6 +300,7 @@ export function DockItem({
         'transition-[color,transform] duration-200 ease-[cubic-bezier(0.34,1.56,0.64,1)]',
         'motion-reduce:transition-none',
         'hover:scale-110 active:scale-95',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-card',
         showLabel && 'gap-1 flex-col',
         showLabel ? (isVertical ? 'w-12 h-14' : 'w-[4.5rem] h-12') : 'size-10',
         isActive ? 'text-primary-foreground' : 'text-muted-foreground hover:text-foreground'
@@ -316,7 +320,7 @@ export function DockItem({
         <span
           className={cn(
             'text-[10px] leading-none font-medium truncate max-w-full tracking-tight',
-            isActive ? 'text-primary-foreground/90' : 'text-muted-foreground/70'
+            isActive ? 'text-primary-foreground' : 'text-muted-foreground'
           )}
         >
           {label}

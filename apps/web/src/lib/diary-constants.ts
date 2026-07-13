@@ -59,12 +59,20 @@ export const DIARY_GRADIENTS: Record<string, { labelKey: string; css: string }> 
   },
 };
 
+/**
+ * Shared fallback diary cover gradient — used everywhere an entry has no
+ * `coverGradient` (or an unknown one). Token-based so it tracks the theme
+ * instead of the hard-coded oklch fallbacks the call sites used to hand-roll.
+ */
+export const DEFAULT_DIARY_GRADIENT =
+  'linear-gradient(135deg, var(--muted) 0%, var(--accent) 100%)';
+
 export const MOOD_ICONS: Record<DiaryMood, { Icon: LucideIcon; color: string }> = {
-  great: { Icon: Sparkles, color: 'text-yellow-400' },
-  good: { Icon: Heart, color: 'text-pink-400' },
+  great: { Icon: Sparkles, color: 'text-gold' },
+  good: { Icon: Heart, color: 'text-primary' },
   neutral: { Icon: Minus, color: 'text-muted-foreground' },
-  bad: { Icon: ThumbsDown, color: 'text-orange-400' },
-  terrible: { Icon: Frown, color: 'text-red-400' },
+  bad: { Icon: ThumbsDown, color: 'text-status-pending' },
+  terrible: { Icon: Frown, color: 'text-status-error' },
 };
 
 export const MOOD_EMOJI: Record<DiaryMood, string> = {
@@ -85,11 +93,11 @@ export const MOOD_OPTIONS: {
   Icon: typeof Sparkles;
   color: string;
 }[] = [
-  { value: 'great', labelKey: 'mood.great', Icon: Sparkles, color: 'text-yellow-400' },
-  { value: 'good', labelKey: 'mood.good', Icon: Heart, color: 'text-pink-400' },
+  { value: 'great', labelKey: 'mood.great', Icon: Sparkles, color: 'text-gold' },
+  { value: 'good', labelKey: 'mood.good', Icon: Heart, color: 'text-primary' },
   { value: 'neutral', labelKey: 'mood.neutral', Icon: Minus, color: 'text-muted-foreground' },
-  { value: 'bad', labelKey: 'mood.bad', Icon: ThumbsDown, color: 'text-orange-400' },
-  { value: 'terrible', labelKey: 'mood.terrible', Icon: Frown, color: 'text-red-400' },
+  { value: 'bad', labelKey: 'mood.bad', Icon: ThumbsDown, color: 'text-status-pending' },
+  { value: 'terrible', labelKey: 'mood.terrible', Icon: Frown, color: 'text-status-error' },
 ];
 
 /**

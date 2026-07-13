@@ -1,7 +1,8 @@
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { RefreshCw, Upload, Download, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Eyebrow } from '@/components/shared/Eyebrow';
 import { useAniListAuthStore } from '@/stores/useAniListAuthStore';
 import { useAniListSyncStore } from '@/stores/useAniListSyncStore';
 import { useMalAuthStore } from '@/stores/useMalAuthStore';
@@ -54,21 +55,30 @@ export function EntrySyncSection({ entryId, provider }: IEntrySyncSectionProps) 
   // entry, or another entry. The other provider's state is intentionally ignored.
   const disabled = fullSyncing || entrySyncingId !== null;
 
+  // Track which direction is in flight so the spinner lands on the button the
+  // user actually pressed (push / pull / auto), not always on auto.
+  const [pendingDirection, setPendingDirection] = useState<SyncEntryDirection | null>(null);
+
   const handleSync = useCallback(
     async (direction: SyncEntryDirection) => {
-      const action = await syncEntry(entryId, direction);
-      // Treat both a thrown rejection and a resolved `action: 'error'` (and a
-      // pre-flight 'error' returned when a sync is already running) as failure —
-      // the thunk maps every failure mode to 'error'.
-      if (action === 'error') {
-        toast.error(t(`sync.${provider}.entry.error`));
-        return;
+      setPendingDirection(direction);
+      try {
+        const action = await syncEntry(entryId, direction);
+        // Treat both a thrown rejection and a resolved `action: 'error'` (and a
+        // pre-flight 'error' returned when a sync is already running) as failure —
+        // the thunk maps every failure mode to 'error'.
+        if (action === 'error') {
+          toast.error(t(`sync.${provider}.entry.error`));
+          return;
+        }
+        if (action === 'skipped') {
+          toast.warning(t(`sync.${provider}.entry.skipped`));
+          return;
+        }
+        toast.success(t(`sync.${provider}.entry.result.${action}`));
+      } finally {
+        setPendingDirection(null);
       }
-      if (action === 'skipped') {
-        toast.warning(t(`sync.${provider}.entry.skipped`));
-        return;
-      }
-      toast.success(t(`sync.${provider}.entry.result.${action}`));
     },
     [syncEntry, entryId, t, provider]
   );
@@ -77,8 +87,8 @@ export function EntrySyncSection({ entryId, provider }: IEntrySyncSectionProps) 
 
   return (
     <div className="space-y-2">
-      <FieldLabel>{t(`sync.${provider}.entry.title`)}</FieldLabel>
-      <p className="text-2xs text-muted-foreground/70">{t(`sync.${provider}.entry.hint`)}</p>
+      <Eyebrow>{t(`sync.${provider}.entry.title`)}</Eyebrow>
+      <p className="text-2xs text-muted-foreground">{t(`sync.${provider}.entry.hint`)}</p>
       <div className="flex flex-wrap items-center gap-2">
         <Button
           variant="outline"
@@ -87,7 +97,7 @@ export function EntrySyncSection({ entryId, provider }: IEntrySyncSectionProps) 
           disabled={disabled}
           onClick={() => void handleSync('auto')}
         >
-          {busy ? (
+          {busy && pendingDirection === 'auto' ? (
             <Loader2 className="w-3.5 h-3.5 animate-spin" />
           ) : (
             <RefreshCw className="w-3.5 h-3.5" />
@@ -101,7 +111,11 @@ export function EntrySyncSection({ entryId, provider }: IEntrySyncSectionProps) 
           disabled={disabled}
           onClick={() => void handleSync('push')}
         >
-          <Upload className="w-3.5 h-3.5" />
+          {busy && pendingDirection === 'push' ? (
+            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+          ) : (
+            <Upload className="w-3.5 h-3.5" />
+          )}
           {t(`sync.${provider}.entry.push`)}
         </Button>
         <Button
@@ -111,30 +125,15 @@ export function EntrySyncSection({ entryId, provider }: IEntrySyncSectionProps) 
           disabled={disabled}
           onClick={() => void handleSync('pull')}
         >
-          <Download className="w-3.5 h-3.5" />
+          {busy && pendingDirection === 'pull' ? (
+            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+          ) : (
+            <Download className="w-3.5 h-3.5" />
+          )}
           {t(`sync.${provider}.entry.pull`)}
         </Button>
       </div>
     </div>
-  );
-}
-
-export function FieldLabel({ children }: { children: React.ReactNode }) {
-  return (
-    <span className="block font-mono text-[10px] uppercase tracking-[0.15em] text-muted-foreground font-medium">
-      {children}
-    </span>
-  );
-}
-
-export function FormLabel({ htmlFor, children }: { htmlFor: string; children: React.ReactNode }) {
-  return (
-    <label
-      htmlFor={htmlFor}
-      className="block font-mono text-[10px] uppercase tracking-[0.15em] text-muted-foreground font-medium"
-    >
-      {children}
-    </label>
   );
 }
 
@@ -144,7 +143,9 @@ export function SheetStat({ label, value }: { label: string; value: React.ReactN
       <span className="font-mono text-[9px] uppercase tracking-[0.18em] text-muted-foreground/80">
         {label}
       </span>
-      <span className="text-[13px] font-bold text-foreground leading-[1.2]">{value}</span>
+      <span className="text-[13px] font-bold text-foreground leading-[1.2] tabular-nums">
+        {value}
+      </span>
     </div>
   );
 }

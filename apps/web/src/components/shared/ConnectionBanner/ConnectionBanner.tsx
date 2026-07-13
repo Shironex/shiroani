@@ -26,7 +26,7 @@ export default function ConnectionBanner() {
           <button
             type="button"
             onClick={retryConnection}
-            className="ml-1 rounded px-1.5 py-0.5 font-medium text-status-warning underline underline-offset-2 transition-opacity hover:opacity-80"
+            className="ml-1 rounded px-1.5 py-0.5 font-medium text-status-warning underline underline-offset-2 transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-status-warning"
           >
             {t('connection.retry')}
           </button>

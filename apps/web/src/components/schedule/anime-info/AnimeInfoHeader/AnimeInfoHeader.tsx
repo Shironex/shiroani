@@ -25,10 +25,7 @@ export default function AnimeInfoHeader({
           className="w-full h-full object-cover blur-md scale-110 opacity-50"
         />
       ) : (
-        <div
-          className="w-full h-full"
-          style={{ backgroundColor: accentColor ?? 'hsl(var(--muted))' }}
-        />
+        <div className="w-full h-full" style={{ backgroundColor: accentColor ?? 'var(--muted)' }} />
       )}
       <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
 

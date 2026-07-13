@@ -3,7 +3,13 @@ import { useTranslation } from 'react-i18next';
 import { Pin, Trash2, Link as LinkIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { PillTag } from '@/components/ui/pill-tag';
-import { DIARY_GRADIENTS, MOOD_EMOJI, MOOD_ICONS } from '@/lib/diary-constants';
+import { FadeInImage } from '@/components/shared/FadeInImage';
+import {
+  DIARY_GRADIENTS,
+  MOOD_EMOJI,
+  MOOD_ICONS,
+  DEFAULT_DIARY_GRADIENT,
+} from '@/lib/diary-constants';
 import type { DiaryEntry } from '@shiroani/shared';
 import type { IDayGroup } from './DiaryTimeline.types';
 
@@ -102,15 +108,15 @@ const DiaryListCard = memo(function DiaryListCard({
   const time = formatTime(entry.createdAt, i18n.language);
 
   const gradient = entry.coverGradient
-    ? (DIARY_GRADIENTS[entry.coverGradient]?.css ??
-      'linear-gradient(150deg, oklch(0.45 0.17 350), oklch(0.28 0.1 30))')
-    : 'linear-gradient(150deg, oklch(0.35 0.02 300), oklch(0.22 0.02 300))';
+    ? (DIARY_GRADIENTS[entry.coverGradient]?.css ?? DEFAULT_DIARY_GRADIENT)
+    : DEFAULT_DIARY_GRADIENT;
 
   return (
     <div
       className={cn(
-        'group/dl-card relative flex gap-4 rounded-[12px]',
-        'border border-border-glass bg-card/40 p-4 transition-all duration-200',
+        'group/dl-card relative flex gap-4 rounded-lg',
+        'border border-border-glass bg-card/40 p-4',
+        'transition-[border-color,background-color,box-shadow] duration-200',
         'hover:border-primary/35 hover:bg-card/60 hover:shadow-[0_10px_28px_oklch(0_0_0/0.3)]',
         'focus-within:border-primary/35 focus-within:bg-card/60'
       )}
@@ -125,7 +131,7 @@ const DiaryListCard = memo(function DiaryListCard({
         onClick={() => onSelect(entry)}
         aria-label={entry.title || t('untitled')}
         className={cn(
-          'absolute inset-0 z-[1] cursor-pointer rounded-[12px]',
+          'absolute inset-0 z-[1] cursor-pointer rounded-lg',
           'focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/50'
         )}
       />
@@ -133,13 +139,13 @@ const DiaryListCard = memo(function DiaryListCard({
       <div
         aria-hidden="true"
         className={cn(
-          'pointer-events-none relative h-[68px] w-12 shrink-0 overflow-hidden rounded-[6px] border border-white/10',
+          'pointer-events-none relative h-[68px] w-12 shrink-0 overflow-hidden rounded-sm border border-white/10',
           'shadow-[0_4px_10px_oklch(0_0_0/0.35)]'
         )}
         style={{ background: gradient }}
       >
         {entry.animeCoverImage ? (
-          <img
+          <FadeInImage
             src={entry.animeCoverImage}
             alt=""
             loading="lazy"
@@ -209,8 +215,9 @@ const DiaryListCard = memo(function DiaryListCard({
                 }}
                 aria-label={entry.isPinned ? t('card.unpin') : t('card.pin')}
                 className={cn(
-                  'rounded-md p-1.5 text-muted-foreground transition-colors',
+                  'rounded-md p-1.5 text-muted-foreground transition-colors active:scale-95',
                   'hover:bg-accent/60 hover:text-foreground',
+                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                   entry.isPinned && 'text-primary'
                 )}
               >
@@ -224,8 +231,9 @@ const DiaryListCard = memo(function DiaryListCard({
                 }}
                 aria-label={t('card.remove')}
                 className={cn(
-                  'rounded-md p-1.5 text-muted-foreground transition-colors',
-                  'hover:bg-destructive/15 hover:text-destructive'
+                  'rounded-md p-1.5 text-muted-foreground transition-colors active:scale-95',
+                  'hover:bg-destructive/15 hover:text-destructive',
+                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
                 )}
               >
                 <Trash2 className="size-3.5" />

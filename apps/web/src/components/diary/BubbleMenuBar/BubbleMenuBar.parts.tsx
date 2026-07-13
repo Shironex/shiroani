@@ -11,7 +11,8 @@ export function BubbleButton({ button }: { button: IBubbleButton }) {
       aria-pressed={active}
       onClick={toggle}
       className={cn(
-        'inline-flex h-7 w-7 items-center justify-center rounded-[6px] transition-colors',
+        'inline-flex h-7 w-7 items-center justify-center rounded-sm transition-colors active:scale-95',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
         active
           ? 'bg-primary/15 text-primary'
           : 'text-muted-foreground hover:bg-foreground/5 hover:text-foreground'

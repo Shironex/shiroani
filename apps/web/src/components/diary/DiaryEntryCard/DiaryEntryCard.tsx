@@ -1,6 +1,7 @@
 import { memo } from 'react';
 import { cn } from '@/lib/utils';
 import { Pin, Trash2 } from 'lucide-react';
+import { FadeInImage } from '@/components/shared/FadeInImage';
 import { useDiaryEntryCard } from './DiaryEntryCard.hooks';
 import { CardTags } from './DiaryEntryCard.parts';
 import type { IDiaryEntryCardProps } from './DiaryEntryCard.types';
@@ -12,8 +13,8 @@ function DiaryEntryCard({ entry, onSelect, onRemove, onTogglePin }: IDiaryEntryC
   return (
     <div
       className={cn(
-        'group/card relative bg-card/80 border border-border-glass rounded-xl overflow-hidden',
-        'focus-within:shadow-primary-glow hover:shadow-primary-glow transition-all duration-200'
+        'group/card relative bg-card/80 border border-border-glass rounded-lg overflow-hidden',
+        'focus-within:shadow-primary-glow hover:shadow-primary-glow transition-shadow duration-200'
       )}
     >
       {/* Primary "open" affordance — a stretched, transparent button giving the
@@ -26,7 +27,7 @@ function DiaryEntryCard({ entry, onSelect, onRemove, onTogglePin }: IDiaryEntryC
         onClick={() => onSelect(entry)}
         aria-label={title}
         className={cn(
-          'absolute inset-0 z-[1] cursor-pointer rounded-xl',
+          'absolute inset-0 z-[1] cursor-pointer rounded-lg',
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset'
         )}
       />
@@ -38,7 +39,7 @@ function DiaryEntryCard({ entry, onSelect, onRemove, onTogglePin }: IDiaryEntryC
       >
         {/* Anime thumbnail */}
         {entry.animeCoverImage && (
-          <img
+          <FadeInImage
             src={entry.animeCoverImage}
             alt=""
             className="absolute bottom-1 right-2 w-5 h-7 rounded object-cover border-2 border-card shadow-sm"
@@ -62,7 +63,8 @@ function DiaryEntryCard({ entry, onSelect, onRemove, onTogglePin }: IDiaryEntryC
             }}
             aria-label={pinLabel}
             className={cn(
-              'p-1.5 rounded-md transition-colors',
+              'p-1.5 rounded-md transition-colors active:scale-95',
+              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
               entry.isPinned
                 ? 'bg-white/20 text-white hover:bg-white/30'
                 : 'bg-black/20 text-white/70 hover:bg-black/30 hover:text-white'
@@ -76,7 +78,11 @@ function DiaryEntryCard({ entry, onSelect, onRemove, onTogglePin }: IDiaryEntryC
               onRemove(entry);
             }}
             aria-label={removeLabel}
-            className="p-1.5 rounded-md bg-black/20 text-white/70 hover:bg-red-500/40 hover:text-white transition-colors"
+            className={cn(
+              'p-1.5 rounded-md bg-black/20 text-white/70 transition-colors active:scale-95',
+              'hover:bg-destructive/40 hover:text-white',
+              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
+            )}
           >
             <Trash2 className="w-3 h-3" />
           </button>
@@ -88,7 +94,7 @@ function DiaryEntryCard({ entry, onSelect, onRemove, onTogglePin }: IDiaryEntryC
       <div className="pointer-events-none p-3.5">
         {/* Anime reference */}
         {entry.animeTitle && (
-          <p className="text-2xs text-muted-foreground/60 truncate mb-0.5">{entry.animeTitle}</p>
+          <p className="text-2xs text-muted-foreground truncate mb-0.5">{entry.animeTitle}</p>
         )}
 
         {/* Title */}
@@ -105,7 +111,7 @@ function DiaryEntryCard({ entry, onSelect, onRemove, onTogglePin }: IDiaryEntryC
 
         {/* Footer */}
         <div className="flex items-center justify-between mt-2.5 pt-2 border-t border-border/30">
-          <span className="text-2xs text-muted-foreground/50">{date}</span>
+          <span className="text-2xs text-muted-foreground">{date}</span>
           <div className="flex items-center gap-1.5">
             {MoodIcon && <MoodIcon className={cn('w-3 h-3', moodColor)} />}
             <CardTags tags={tags} />

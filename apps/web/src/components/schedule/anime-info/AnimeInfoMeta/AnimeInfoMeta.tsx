@@ -43,7 +43,7 @@ export default function AnimeInfoMeta({
               })}
             </span>
             <span className="text-muted-foreground"> {t('dialog.nextEpisode.in')} </span>
-            <span className="font-medium text-primary">
+            <span className="font-medium text-primary tabular-nums">
               {formatTimeUntilAiring(details!.nextAiringEpisode!.timeUntilAiring!)}
             </span>
           </span>

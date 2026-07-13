@@ -7,15 +7,15 @@ export default function StatusPill({ tone, text }: IStatusPillProps) {
 
   const toneClass = {
     green:
-      'bg-[oklch(0.78_0.15_140/0.12)] border-[oklch(0.78_0.15_140/0.3)] text-[oklch(0.78_0.15_140)]',
+      'bg-[oklch(from_var(--status-success)_l_c_h/0.12)] border-[oklch(from_var(--status-success)_l_c_h/0.3)] text-status-success',
     accent: 'bg-primary/12 border-primary/30 text-primary',
     destructive: 'bg-destructive/12 border-destructive/30 text-destructive',
     muted: 'bg-muted/15 border-border-glass text-muted-foreground',
   }[tone];
 
   const dotClass = {
-    green: 'bg-[oklch(0.78_0.15_140)] shadow-[0_0_8px_oklch(0.78_0.15_140/0.6)]',
-    accent: 'bg-primary shadow-[0_0_8px_hsl(var(--primary)/0.6)]',
+    green: 'bg-status-success shadow-[0_0_8px_oklch(from_var(--status-success)_l_c_h/0.6)]',
+    accent: 'bg-primary shadow-[0_0_8px_oklch(from_var(--primary)_l_c_h/0.6)]',
     destructive: 'bg-destructive',
     muted: 'bg-muted-foreground/60',
   }[tone];

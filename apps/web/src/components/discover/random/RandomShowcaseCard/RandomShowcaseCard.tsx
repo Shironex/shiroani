@@ -1,19 +1,11 @@
 import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  Shuffle,
-  ChevronLeft,
-  ChevronRight,
-  RefreshCw,
-  Star,
-  Check,
-  Film,
-  Plus,
-} from 'lucide-react';
+import { Shuffle, ChevronLeft, ChevronRight, RefreshCw, Check, Film, Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { TooltipButton } from '@/components/ui/tooltip-button';
 import { PillTag } from '@/components/ui/pill-tag';
+import { ScoreChip } from '@/components/shared/ScoreChip';
 import { formatRawScore } from '@/lib/anime-utils';
 import { useRandomShowcaseCard } from './RandomShowcaseCard.hooks';
 import { GenreTags } from './RandomShowcaseCard.parts';
@@ -68,27 +60,20 @@ function RandomShowcaseCard({
           type="button"
           onClick={onPrev}
           aria-label={t('random.previous')}
-          className="md:hidden p-2 rounded-full bg-background/60 hover:bg-background/90 transition-colors"
+          className="md:hidden p-2 rounded-full bg-background/60 hover:bg-background/90 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.97]"
         >
           <ChevronLeft className="w-4 h-4" />
         </button>
 
-        <div
-          role="button"
-          tabIndex={0}
+        <button
+          type="button"
           aria-label={meta.title}
           onClick={onOpenDetails}
-          onKeyDown={e => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              e.preventDefault();
-              onOpenDetails();
-            }
-          }}
           className={cn(
-            'group relative aspect-[2/3] w-full max-w-[220px] mx-auto md:max-w-none',
-            'rounded-[12px] overflow-hidden cursor-pointer',
+            'group relative block aspect-[2/3] w-full max-w-[220px] mx-auto md:max-w-none',
+            'rounded-xl overflow-hidden cursor-pointer',
             'border border-border-glass shadow-[0_8px_28px_oklch(0_0_0/0.5)]',
-            'transition-all duration-300',
+            'transition-[transform,box-shadow] duration-300',
             'hover:shadow-primary-glow hover:scale-[1.02]',
             'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
           )}
@@ -118,7 +103,7 @@ function RandomShowcaseCard({
                 onLoad={() => setImgLoaded(true)}
                 onError={() => setImgLoaded(true)}
                 className={cn(
-                  'relative w-full h-full object-cover transition-all duration-500 group-hover:scale-105',
+                  'relative w-full h-full object-cover transition-[transform,opacity] duration-500 group-hover:scale-105',
                   imgLoaded ? 'opacity-100' : 'opacity-0'
                 )}
               />
@@ -143,25 +128,19 @@ function RandomShowcaseCard({
             </div>
           )}
           {hasScore && (
-            <div
-              className={cn(
-                'absolute bottom-2 left-2',
-                'flex items-center gap-[3px] px-[6px] py-[3px] rounded-[3px]',
-                'bg-black/70 text-[10px] font-mono font-bold leading-none',
-                'text-[oklch(0.8_0.14_70)]'
-              )}
-            >
-              <Star className="w-3 h-3 fill-current" strokeWidth={0} />
-              <span className="tabular-nums">{formatRawScore(media.averageScore ?? 0)}</span>
-            </div>
+            <ScoreChip
+              value={formatRawScore(media.averageScore ?? 0)}
+              scrim
+              className="absolute bottom-2 left-2"
+            />
           )}
-        </div>
+        </button>
 
         <button
           type="button"
           onClick={onNext}
           aria-label={t('random.next')}
-          className="md:hidden p-2 rounded-full bg-background/60 hover:bg-background/90 transition-colors"
+          className="md:hidden p-2 rounded-full bg-background/60 hover:bg-background/90 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.97]"
         >
           <ChevronRight className="w-4 h-4" />
         </button>
@@ -182,11 +161,16 @@ function RandomShowcaseCard({
           className={cn(
             'mt-3 font-serif font-extrabold text-foreground',
             'text-[22px] md:text-[26px] leading-[1.15] tracking-[-0.02em]',
-            'line-clamp-2 cursor-pointer hover:text-primary transition-colors'
+            'line-clamp-2'
           )}
-          onClick={onOpenDetails}
         >
-          {meta.title}
+          <button
+            type="button"
+            onClick={onOpenDetails}
+            className="text-left cursor-pointer transition-colors hover:text-primary focus-visible:outline-none focus-visible:text-primary"
+          >
+            {meta.title}
+          </button>
         </h2>
         {showRomaji && (
           <p className="mt-1 font-serif text-[12.5px] text-muted-foreground/80 truncate tracking-[0.02em]">
@@ -254,7 +238,7 @@ function RandomShowcaseCard({
               type="button"
               onClick={onPrev}
               aria-label={t('random.previous')}
-              className="p-1.5 rounded-lg bg-background/40 hover:bg-background/70 border border-border-glass transition-colors"
+              className="p-1.5 rounded-lg bg-background/40 hover:bg-background/70 border border-border-glass transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.97]"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
@@ -262,7 +246,7 @@ function RandomShowcaseCard({
               type="button"
               onClick={onNext}
               aria-label={t('random.next')}
-              className="p-1.5 rounded-lg bg-background/40 hover:bg-background/70 border border-border-glass transition-colors"
+              className="p-1.5 rounded-lg bg-background/40 hover:bg-background/70 border border-border-glass transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.97]"
             >
               <ChevronRight className="w-4 h-4" />
             </button>

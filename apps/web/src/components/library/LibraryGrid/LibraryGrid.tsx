@@ -25,7 +25,6 @@ export default function LibraryGrid(props: ILibraryGridProps) {
           rowCount={rowCount}
           rowHeight={getRowHeight}
           overscanCount={2}
-          className="scrollbar-thin"
           style={{ height: '100%' }}
         />
       )}

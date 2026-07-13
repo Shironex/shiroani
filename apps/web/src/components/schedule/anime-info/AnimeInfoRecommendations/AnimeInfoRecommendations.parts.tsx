@@ -1,7 +1,8 @@
 import { memo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Check, Plus, Star } from 'lucide-react';
+import { Check, Plus } from 'lucide-react';
 import { formatRawScore } from '@/lib/anime-utils';
+import { ScoreChip } from '@/components/shared/ScoreChip';
 import type {
   IRecommendationCardProps,
   IRecommendationsListProps,
@@ -36,7 +37,7 @@ export const RecommendationCard = memo(function RecommendationCard({
           ? t('dialog.recommendationInLibrary', { title })
           : t('dialog.recommendationAdd', { title })
       }
-      className="group/rec relative shrink-0 w-24 text-center focus-visible:outline-none"
+      className="group/rec relative shrink-0 w-24 snap-start text-center focus-visible:outline-none"
     >
       <div className="relative">
         {node.coverImage?.medium ? (
@@ -51,10 +52,11 @@ export const RecommendationCard = memo(function RecommendationCard({
         )}
 
         {node.averageScore != null && node.averageScore > 0 && (
-          <div className="absolute top-1 right-1 flex items-center gap-[2px] px-[5px] py-[2px] rounded-[3px] bg-black/70 text-[9px] font-mono font-bold leading-none text-[oklch(0.8_0.14_70)]">
-            <Star className="w-2.5 h-2.5 fill-current" strokeWidth={0} />
-            <span className="tabular-nums">{formatRawScore(node.averageScore)}</span>
-          </div>
+          <ScoreChip
+            value={formatRawScore(node.averageScore)}
+            scrim
+            className="absolute top-1 right-1"
+          />
         )}
 
         <div className="absolute bottom-1 left-1">
@@ -77,7 +79,7 @@ export const RecommendationCard = memo(function RecommendationCard({
 /** Horizontal scroll row mapping recommendation nodes to cards. */
 export function RecommendationsList({ nodes, inLibraryIds, onAdd }: IRecommendationsListProps) {
   return (
-    <div className="flex gap-2 overflow-x-auto pb-1">
+    <div className="flex gap-2 overflow-x-auto pb-1 snap-x snap-proximity [mask-image:linear-gradient(to_right,#000_calc(100%_-_32px),transparent_100%)]">
       {nodes.map(node => (
         <RecommendationCard
           key={node.id}

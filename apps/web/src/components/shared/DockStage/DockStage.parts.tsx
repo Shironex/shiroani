@@ -29,11 +29,11 @@ export function MiniDock({ edge, items }: { edge: DockEdge; items?: DockStageIte
   return (
     <div
       className={cn(
-        'absolute flex gap-1 rounded-full border border-white/10 p-1 shadow-[0_10px_24px_oklch(0_0_0_/_0.5)] backdrop-blur-md',
-        'transition-all duration-200',
+        'absolute flex gap-1 rounded-full border border-border-glass p-1 shadow-[0_10px_24px_oklch(0_0_0_/_0.5)] backdrop-blur-md',
+        'transition-colors duration-200',
         isVertical ? 'flex-col' : 'flex-row'
       )}
-      style={{ ...positionStyle, background: 'oklch(0.16 0.025 300 / 0.85)' }}
+      style={{ ...positionStyle, background: 'oklch(from var(--card) l c h / 0.85)' }}
     >
       {slots.map(slot => (
         <span

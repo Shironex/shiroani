@@ -11,8 +11,6 @@ import { useAniListAuthStore } from '@/stores/useAniListAuthStore';
 import { useMalAuthStore } from '@/stores/useMalAuthStore';
 import type { ISummaryStepView } from './SummaryStep.types';
 
-const UNKNOWN = '—';
-
 /**
  * Reflects every store the wizard touched into ready-to-render row values.
  * Discord RPC state lives in main-process electron-store (loaded over IPC, not a
@@ -41,7 +39,7 @@ export function useSummaryStep(): ISummaryStepView {
 
   // Discord RPC state lives in main-process electron-store; mirror DiscordStep's
   // load pattern. Stays `null` until the IPC settles or when the API is missing
-  // (web preview / pre-IPC-ready), in which case the row renders "—".
+  // (web preview / pre-IPC-ready), in which case the row renders "Not set".
   const [discordEnabled, setDiscordEnabled] = useState<boolean | null>(null);
   useEffect(() => {
     let cancelled = false;
@@ -52,7 +50,7 @@ export function useSummaryStep(): ISummaryStepView {
         if (s && typeof s.enabled === 'boolean') setDiscordEnabled(s.enabled);
       })
       .catch(() => {
-        // Electron API unavailable — leave as null so the row falls back to "—"
+        // Electron API unavailable — leave as null so the row falls back to "Not set"
       });
     return () => {
       cancelled = true;
@@ -61,7 +59,7 @@ export function useSummaryStep(): ISummaryStepView {
 
   const languageValue = useMemo(() => {
     const lng = i18n.language;
-    if (!isSupportedLanguage(lng)) return UNKNOWN;
+    if (!isSupportedLanguage(lng)) return t('step.summary.value.notSet');
     return t(`step.summary.languages.${lng}`);
   }, [i18n.language, t]);
 
@@ -81,7 +79,7 @@ export function useSummaryStep(): ISummaryStepView {
 
   const discordValue =
     discordEnabled === null
-      ? UNKNOWN
+      ? t('step.summary.value.notSet')
       : discordEnabled
         ? t('step.summary.value.on')
         : t('step.summary.value.off');

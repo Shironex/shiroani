@@ -36,7 +36,11 @@ describe('AboutSection', () => {
     const open = vi.spyOn(window, 'open').mockReturnValue(null);
     const { user } = render(<AboutSection />);
     await user.click(screen.getByRole('button', { name: /github/i }));
-    expect(open).toHaveBeenCalledWith('https://github.com/Shironex/shiroani', '_blank');
+    expect(open).toHaveBeenCalledWith(
+      'https://github.com/Shironex/shiroani',
+      '_blank',
+      'noopener,noreferrer'
+    );
     open.mockRestore();
   });
 });

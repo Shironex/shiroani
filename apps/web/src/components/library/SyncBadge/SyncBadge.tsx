@@ -37,7 +37,7 @@ const SyncBadge = memo(function SyncBadge(props: ISyncBadgeProps) {
       title={tooltipLabel}
       className={cn(
         'inline-flex items-center justify-center',
-        isSynced ? 'text-[oklch(0.7_0.12_230)]' : 'text-muted-foreground/50',
+        isSynced ? 'text-status-info' : 'text-muted-foreground/50',
         props.className
       )}
     >

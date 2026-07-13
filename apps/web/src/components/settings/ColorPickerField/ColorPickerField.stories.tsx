@@ -66,7 +66,7 @@ export const EditsHex: Story = {
   },
   play: async ({ canvasElement, args }) => {
     const canvas = within(canvasElement);
-    const hexInput = canvas.getByRole('textbox', { name: 'Kod heksadecymalny: Primary' });
+    const hexInput = canvas.getByRole('textbox', { name: 'Hex code: Primary' });
     await userEvent.clear(hexInput);
     await userEvent.type(hexInput, '#ff0000');
     // A complete hex value drives onChange with an oklch string.

@@ -25,8 +25,8 @@ export default function SiteCard({ site, onClick, onRemove }: ISiteCardProps) {
         onClick={onClick}
         className={cn(
           'relative flex aspect-[1.7] w-full flex-col justify-between overflow-hidden',
-          'rounded-[10px] border border-border-glass bg-card/50 p-2.5',
-          'transition-all cursor-pointer',
+          'rounded-lg border border-border-glass bg-card/50 p-2.5',
+          'transition-[border-color,background-color,box-shadow] cursor-pointer',
           'hover:border-primary/40 hover:bg-card/70',
           'hover:shadow-[0_4px_14px_-6px_oklch(from_var(--primary)_l_c_h/0.5)]'
         )}
@@ -46,7 +46,7 @@ export default function SiteCard({ site, onClick, onRemove }: ISiteCardProps) {
             className={cn(
               'pointer-events-none absolute -right-3 -bottom-3',
               'h-[84px] w-[84px] object-contain opacity-25',
-              'transition-all duration-200',
+              'transition-[opacity,transform] duration-200',
               'group-hover:opacity-40 group-hover:scale-105'
             )}
           />
@@ -108,7 +108,7 @@ export default function SiteCard({ site, onClick, onRemove }: ISiteCardProps) {
           onRemove();
         }}
         aria-label={t('newTab.quickAccess.removeAria')}
-        className="absolute top-1.5 right-1.5 z-10 grid size-5 place-items-center rounded-full bg-black/50 text-white/80 opacity-0 transition-opacity hover:bg-destructive hover:text-destructive-foreground group-hover:opacity-100 group-focus-within:opacity-100 cursor-pointer"
+        className="absolute top-1.5 right-1.5 z-10 grid size-5 place-items-center rounded-full bg-background/70 text-foreground/80 opacity-0 transition-opacity hover:bg-destructive hover:text-destructive-foreground group-hover:opacity-100 group-focus-within:opacity-100 cursor-pointer"
       >
         <X className="w-3 h-3" />
       </button>

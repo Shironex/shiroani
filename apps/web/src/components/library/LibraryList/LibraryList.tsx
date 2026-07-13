@@ -14,7 +14,6 @@ export default function LibraryList(props: ILibraryListProps) {
       rowCount={rowCount}
       rowHeight={getRowHeight}
       overscanCount={8}
-      className="scrollbar-thin"
       style={{ height: '100%' }}
       rowComponent={LibraryRow}
       rowProps={rowProps}

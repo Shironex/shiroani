@@ -17,7 +17,7 @@ export default function LibraryStats() {
     return (
       <div
         key={status}
-        className="h-full transition-all duration-500 ease-out first:rounded-l-full last:rounded-r-full"
+        className="h-full transition-[width] duration-500 ease-out first:rounded-l-full last:rounded-r-full"
         style={{
           width: `${percent}%`,
           backgroundColor: STATUS_CONFIG[status].cssColor,
@@ -50,10 +50,13 @@ export default function LibraryStats() {
         <span className="text-2xs text-foreground/80 whitespace-nowrap">
           {tDynamic(i18n, `status:${STATUS_LABEL_KEY[status]}`)}
         </span>
-        <span className="text-2xs font-semibold" style={{ color: STATUS_CONFIG[status].cssColor }}>
+        <span
+          className="text-2xs font-semibold tabular-nums"
+          style={{ color: STATUS_CONFIG[status].cssColor }}
+        >
           {count}
         </span>
-        <span className="text-2xs text-muted-foreground/50">{percent}%</span>
+        <span className="text-2xs text-muted-foreground/50 tabular-nums">{percent}%</span>
       </div>
     );
   });
@@ -77,7 +80,7 @@ export default function LibraryStats() {
         <StatCard
           icon={<Star className="w-3.5 h-3.5" />}
           label={t('library:stats.avgScore')}
-          value={stats.avgScore > 0 ? stats.avgScore.toFixed(1) : '-'}
+          value={stats.avgScore > 0 ? stats.avgScore.toFixed(1) : '–'}
           subtitle={
             stats.scoredCount > 0
               ? t('library:stats.fromScored', { count: stats.scoredCount })

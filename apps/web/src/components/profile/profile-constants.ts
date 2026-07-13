@@ -7,13 +7,38 @@ export function formatDays(minutes: number): string {
   return days >= 1 ? `${days.toFixed(1)}` : `${(minutes / 60).toFixed(1)}h`;
 }
 
+/**
+ * Static fallback unit label (Polish — matches the previous behaviour). Kept for
+ * callers that can't use hooks; new code should prefer {@link useDaysLabel}.
+ */
 export function formatDaysLabel(minutes: number): string {
   return minutes / 60 / 24 >= 1 ? 'dni' : 'godzin';
+}
+
+/**
+ * Localized unit label for the "time spent" stat — "days" once the total crosses
+ * one day, otherwise "hours". Translations live in `profile:units.*`. Mirrors the
+ * {@link useStatusLabels} hook so the label follows the active language.
+ */
+export function useDaysLabel(): (minutes: number) => string {
+  const { t } = useTranslation('profile');
+  return (minutes: number) => (minutes / 60 / 24 >= 1 ? t('units.days') : t('units.hours'));
 }
 
 /** Format an already-0-10 mean score for display (e.g. profile statistics). */
 export function formatScoreOutOf10(score: number): string {
   return score > 0 ? score.toFixed(1) : '—';
+}
+
+/**
+ * Locale-aware integer formatter for the profile stat counters. Uses
+ * `Intl.NumberFormat` so grouping follows the active locale (e.g. `1,234` in
+ * en, `1 234` in pl) instead of a hand-rolled comma→space regex that corrupts
+ * comma-decimal locales. The single shared formatter keeps every sibling stat
+ * site (sidebar, dashboard summary, MAL panel) rendering numbers identically.
+ */
+export function formatCount(n: number, locale: string): string {
+  return new Intl.NumberFormat(locale).format(n);
 }
 
 /**

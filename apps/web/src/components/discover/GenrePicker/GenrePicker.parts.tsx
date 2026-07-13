@@ -67,13 +67,13 @@ function GenreChip({ genre, genreLabel, state, disabled, ariaLabel, cycle }: IGe
       className={cn(
         'group inline-flex items-center gap-1 px-2.5 py-[5px] rounded-full',
         'font-mono text-[10px] uppercase tracking-[0.08em] font-semibold',
-        'border transition-all duration-150 select-none',
-        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+        'border transition-colors duration-150 select-none',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.97]',
         disabled && 'opacity-50 pointer-events-none',
         state === 'neutral' &&
           'bg-foreground/[0.04] border-border-glass text-muted-foreground hover:border-primary/40 hover:text-foreground/80',
         state === 'included' &&
-          'bg-primary/15 border-primary/40 text-primary shadow-[0_0_0_1px_hsl(var(--primary)/0.2)]',
+          'bg-primary/15 border-primary/40 text-primary shadow-[0_0_0_1px_oklch(from_var(--primary)_l_c_h/0.2)]',
         state === 'excluded' &&
           'bg-destructive/10 border-destructive/40 text-destructive line-through decoration-destructive/60'
       )}

@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
+import { Eyebrow } from '@/components/shared/Eyebrow';
 import { useStreamingEpisodesSection } from './StreamingEpisodesSection.hooks';
-import { FieldLabel, StreamingEpisodeCard } from './StreamingEpisodesSection.parts';
+import { StreamingEpisodeCard } from './StreamingEpisodesSection.parts';
 import type { IStreamingEpisodesSectionProps } from './StreamingEpisodesSection.types';
 
 /**
@@ -29,8 +30,8 @@ export default function StreamingEpisodesSection({ episodes }: IStreamingEpisode
 
   return (
     <div className="space-y-2">
-      <FieldLabel>{t('streamingEpisodes.title')}</FieldLabel>
-      <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-thin">{cards}</div>
+      <Eyebrow>{t('streamingEpisodes.title')}</Eyebrow>
+      <div className="flex gap-2 overflow-x-auto pb-1 snap-x snap-proximity">{cards}</div>
     </div>
   );
 }

@@ -48,4 +48,6 @@ export interface ISplashFooterView {
   readonly closeLabel: string;
   /** Localized "retry" button label. */
   readonly retryLabel: string;
+  /** Localized static "Loading ShiroAni" label for the sr-only live region. */
+  readonly loadingLabel: string;
 }

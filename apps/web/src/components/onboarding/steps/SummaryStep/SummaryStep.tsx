@@ -11,6 +11,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { StepLayout } from '../../StepLayout';
+import { emPrimary, bStrong, bPrimary } from '../../shared-parts';
 import { useSummaryStep } from './SummaryStep.hooks';
 import { SummaryRow } from './SummaryStep.parts';
 
@@ -36,9 +37,6 @@ export default function SummaryStep() {
     adblockValue,
     adblockHighlight,
   } = useSummaryStep();
-  const emPrimary = <em className="not-italic text-primary italic" />;
-  const bStrong = <b className="font-semibold text-foreground" />;
-  const bPrimary = <b className="font-bold text-primary" />;
 
   return (
     <StepLayout
@@ -62,7 +60,7 @@ export default function SummaryStep() {
         </span>
       }
     >
-      <p className="max-w-[34ch] text-[13px] leading-relaxed text-muted-foreground">
+      <p className="max-w-[34ch] text-xs leading-relaxed text-muted-foreground">
         {t('step.summary.intro')}
       </p>
 

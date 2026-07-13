@@ -19,6 +19,11 @@ export function ChibiPreviewItem({
 }: ChibiPreviewItemProps) {
   return (
     <div className="flex flex-col items-center gap-1.5">
+      {/* The box and image animate size on slider tick. Kept as an explicit
+          width/height transition (not a transform scale) because each of the
+          three anchors reserves its own layout footprint in the flex row and
+          scaling from a shared fixed box would misalign the min/current/max
+          silhouettes — the size change here is genuinely a layout change. */}
       <div
         className={cn(
           'grid place-items-center overflow-hidden rounded-lg transition-[width,height] duration-150 ease-out',
@@ -40,7 +45,7 @@ export function ChibiPreviewItem({
       <div
         className={cn(
           'font-mono text-[9.5px] font-semibold uppercase tracking-[0.14em] tabular-nums',
-          highlighted ? 'text-primary' : 'text-muted-foreground/70'
+          highlighted ? 'text-primary' : 'text-muted-foreground/80'
         )}
       >
         {realSize}px · {label}

@@ -119,7 +119,7 @@ function formatNumber(n: number): string {
   return n >= 1000 ? `${(n / 1000).toFixed(1)}k` : String(n);
 }
 
-const FONT = '"Segoe UI", system-ui, -apple-system, sans-serif';
+const FONT = '"DM Sans", system-ui, sans-serif';
 
 // ── Corner accent strokes ────────────────────────────────────────
 

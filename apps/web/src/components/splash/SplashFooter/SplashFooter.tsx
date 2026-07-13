@@ -1,4 +1,5 @@
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
 import { ProgressBar } from '@/components/shared/ProgressBar';
 import type { SplashVariant } from '../SplashHero';
 import { useSplashFooter } from './SplashFooter.hooks';
@@ -6,7 +7,7 @@ import type { ISplashFooterProps } from './SplashFooter.types';
 
 const DOT_TONE_CLASS: Record<SplashVariant, string> = {
   loading: 'bg-primary shadow-[0_0_8px_oklch(from_var(--primary)_l_c_h/0.7)]',
-  updating: 'bg-[var(--status-info)] shadow-[0_0_8px_oklch(from_var(--status-info)_l_c_h/0.7)]',
+  updating: 'bg-status-info shadow-[0_0_8px_oklch(from_var(--status-info)_l_c_h/0.7)]',
   error: 'bg-destructive shadow-[0_0_8px_oklch(from_var(--destructive)_l_c_h/0.7)]',
 };
 
@@ -33,6 +34,7 @@ export default function SplashFooter({
     metaText,
     closeLabel,
     retryLabel,
+    loadingLabel,
   } = useSplashFooter({ variant, statusText, version, metaRight, error });
 
   return (
@@ -70,20 +72,12 @@ export default function SplashFooter({
       >
         {isError ? (
           <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={onClose}
-              className="rounded-[7px] border border-foreground/10 bg-foreground/5 px-3.5 py-1.5 text-[11.5px] font-semibold text-foreground/85 hover:bg-foreground/10 cursor-pointer"
-            >
+            <Button type="button" variant="outline" size="sm" onClick={onClose}>
               {closeLabel}
-            </button>
-            <button
-              type="button"
-              onClick={onRetry}
-              className="rounded-[7px] bg-primary px-3.5 py-1.5 text-[11.5px] font-semibold text-primary-foreground hover:bg-primary/90 cursor-pointer"
-            >
+            </Button>
+            <Button type="button" size="sm" onClick={onRetry}>
               {retryLabel}
-            </button>
+            </Button>
           </div>
         ) : (
           <>
@@ -109,16 +103,22 @@ export default function SplashFooter({
                   )}
                 </p>
               ) : (
-                <p
-                  key={messageKey}
-                  className="truncate text-sm text-muted-foreground animate-[splash-msg-swap_0.4s_ease-out_both]"
-                >
-                  {message}
-                </p>
+                <>
+                  {/* Whimsy rotates ~40x/min — decorative only, so hide it from
+                      the live region and announce a single stable label below. */}
+                  <p
+                    key={messageKey}
+                    aria-hidden="true"
+                    className="truncate text-sm text-muted-foreground animate-[splash-msg-swap_0.4s_ease-out_both]"
+                  >
+                    {message}
+                  </p>
+                  <span className="sr-only">{loadingLabel}</span>
+                </>
               )}
             </div>
             {metaText && (
-              <span className="shrink-0 font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground/60">
+              <span className="shrink-0 font-mono text-2xs uppercase tracking-[0.16em] text-muted-foreground/60">
                 {metaText}
               </span>
             )}

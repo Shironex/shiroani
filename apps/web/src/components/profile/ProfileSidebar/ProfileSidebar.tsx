@@ -2,9 +2,11 @@ import { useTranslation } from 'react-i18next';
 import { User, RefreshCw, Share2, LogOut } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { formatDays, formatDaysLabel, formatScoreOutOf10 } from '../profile-constants';
+import { FadeInImage } from '@/components/shared/FadeInImage';
+import { formatDays, useDaysLabel, formatScoreOutOf10, formatCount } from '../profile-constants';
+import { SideStat, ConnectedBadge } from '../shared-parts';
 import { useProfileSidebar } from './ProfileSidebar.hooks';
-import { SideStat, SyncStatusWidget, formatCount } from './ProfileSidebar.parts';
+import { SyncStatusWidget } from './ProfileSidebar.parts';
 import type { IProfileSidebarProps } from './ProfileSidebar.types';
 
 /**
@@ -22,6 +24,7 @@ export default function ProfileSidebar({
   onDisconnect,
 }: IProfileSidebarProps) {
   const { t } = useTranslation('profile');
+  const daysLabel = useDaysLabel();
   const { stats, language, memberSince, daysActive, daysActiveLabel } = useProfileSidebar({
     profile,
   });
@@ -31,7 +34,7 @@ export default function ProfileSidebar({
       {/* ── Avatar + handle + badge ─────────────────────────── */}
       <div className="flex flex-col items-center pb-[18px] mb-4 border-b border-border-glass/60 relative">
         {profile.avatar ? (
-          <img
+          <FadeInImage
             src={profile.avatar}
             alt={t('avatarAlt', { name: profile.name })}
             className={cn(
@@ -61,20 +64,7 @@ export default function ProfileSidebar({
         <div className="font-mono text-[10.5px] tracking-[0.12em] text-muted-foreground mt-0.5 truncate max-w-full">
           @{profile.name.toLowerCase()}
         </div>
-        <div
-          className={cn(
-            'mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full',
-            'bg-[oklch(0.45_0.14_220/0.18)] border border-[oklch(0.45_0.14_220/0.35)]',
-            'font-mono text-[9.5px] tracking-[0.1em] uppercase',
-            'text-[oklch(0.7_0.12_220)]'
-          )}
-        >
-          <span
-            aria-hidden="true"
-            className="w-[5px] h-[5px] rounded-full bg-[oklch(0.7_0.12_220)] shadow-[0_0_6px_oklch(0.7_0.12_220)]"
-          />
-          {t('sidebar.connectedBadge')}
-        </div>
+        <ConnectedBadge label={t('sidebar.connectedBadge')} />
         {memberSince && (
           <div className="mt-2 text-[10.5px] text-muted-foreground/70">
             {t('sidebar.memberSince', { date: memberSince })}
@@ -85,7 +75,7 @@ export default function ProfileSidebar({
             className={cn(
               'mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full',
               'bg-primary/15 border border-primary/30',
-              'font-mono text-[9.5px] tracking-[0.1em] uppercase text-primary'
+              'font-mono text-2xs tracking-[0.1em] uppercase text-primary'
             )}
           >
             <span
@@ -98,7 +88,7 @@ export default function ProfileSidebar({
       </div>
 
       {/* ── Summary stat grid (2×2) ─────────────────────────── */}
-      <div className="font-mono text-[9px] uppercase tracking-[0.2em] text-muted-foreground font-semibold mb-2">
+      <div className="font-mono text-2xs uppercase tracking-[0.2em] text-muted-foreground font-semibold mb-2">
         {t('sidebar.summaryHeading')}
       </div>
       <div className="grid grid-cols-2 gap-2 mb-4">
@@ -108,7 +98,7 @@ export default function ProfileSidebar({
           value={formatCount(stats.episodesWatched, language)}
         />
         <SideStat
-          label={formatDaysLabel(stats.minutesWatched)}
+          label={daysLabel(stats.minutesWatched)}
           value={formatDays(stats.minutesWatched)}
         />
         <SideStat
@@ -129,7 +119,7 @@ export default function ProfileSidebar({
           onClick={onRefresh}
           disabled={isLoading}
           className={cn(
-            'h-9 justify-start gap-2 px-3 text-[12px] font-medium',
+            'h-9 justify-start gap-2 px-3 text-xs font-medium',
             'bg-primary/15 border border-primary/30 text-primary',
             'hover:bg-primary/20 hover:text-primary'
           )}
@@ -142,7 +132,7 @@ export default function ProfileSidebar({
           size="sm"
           onClick={onShare}
           className={cn(
-            'h-9 justify-start gap-2 px-3 text-[12px] font-medium',
+            'h-9 justify-start gap-2 px-3 text-xs font-medium',
             'bg-foreground/5 border border-foreground/10 text-foreground/90',
             'hover:bg-foreground/10'
           )}
@@ -155,7 +145,7 @@ export default function ProfileSidebar({
           size="sm"
           onClick={onDisconnect}
           className={cn(
-            'h-9 justify-start gap-2 px-3 text-[12px] font-medium',
+            'h-9 justify-start gap-2 px-3 text-xs font-medium',
             'bg-foreground/5 border border-foreground/10 text-muted-foreground',
             'hover:bg-destructive/15 hover:text-destructive hover:border-destructive/30'
           )}

@@ -1,6 +1,6 @@
 import type { IPanelHeaderProps } from './PanelHeader.types';
 
-export default function PanelHeader({ id, icon: Icon, title, meta }: IPanelHeaderProps) {
+export default function PanelHeader({ id, icon: Icon, title, meta, action }: IPanelHeaderProps) {
   return (
     <div className="mb-3 flex items-center gap-2">
       <span className="grid size-5 place-items-center rounded-md bg-primary/12 text-primary shrink-0">
@@ -17,6 +17,7 @@ export default function PanelHeader({ id, icon: Icon, title, meta }: IPanelHeade
           {meta}
         </span>
       )}
+      {action}
     </div>
   );
 }

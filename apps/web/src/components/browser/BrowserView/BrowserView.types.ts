@@ -77,5 +77,7 @@ export interface IBrowserViewView {
   readonly goBack: () => void;
   readonly goForward: () => void;
   readonly reload: () => void;
+  /** Stop the active pane's in-flight load. */
+  readonly stop: () => void;
   readonly splitTabs: (sourceId: string, targetId: string) => void;
 }

@@ -7,6 +7,7 @@ import {
   unregisterWebview,
   type WebviewElement,
 } from '@/components/browser/webviewRefs';
+import { useWebviewErrorStore } from '@/components/browser/webviewErrors';
 import { updateAnimePresence } from '@/lib/anime-detection';
 
 interface WebviewNavigateEvent extends Event {
@@ -71,6 +72,7 @@ export function useWebviewEvents(webviewRef: RefObject<WebviewElement | null>, p
     if (!el) return;
 
     const { updateTabState } = useBrowserStore.getState();
+    const { setError, clearError } = useWebviewErrorStore.getState();
 
     // Register immediately so other code can access the webview ref before dom-ready
     registerWebview(paneId, el);
@@ -81,6 +83,8 @@ export function useWebviewEvents(webviewRef: RefObject<WebviewElement | null>, p
 
     const onDidNavigate = (e: Event) => {
       const detail = e as WebviewNavigateEvent;
+      // A successful navigation supersedes any prior failed load on this pane.
+      clearError(paneId);
       updateTabState(paneId, {
         url: detail.url,
         canGoBack: el.canGoBack(),
@@ -114,6 +118,8 @@ export function useWebviewEvents(webviewRef: RefObject<WebviewElement | null>, p
     };
 
     const onDidStartLoading = () => {
+      // Fresh navigation start clears any stale error overlay for this pane.
+      clearError(paneId);
       updateTabState(paneId, { isLoading: true });
     };
 
@@ -140,6 +146,9 @@ export function useWebviewEvents(webviewRef: RefObject<WebviewElement | null>, p
     const onDidFailLoad = (e: Event) => {
       const detail = e as WebviewFailLoadEvent;
       if (detail.errorCode === -3) return; // Aborted (harmless redirect)
+      // Surface a themed error overlay in the leaf renderer instead of leaving
+      // Chromium's grey default error page (which ignores the app theme).
+      setError(paneId, detail.errorCode);
       updateTabState(paneId, { isLoading: false });
     };
 
@@ -168,6 +177,7 @@ export function useWebviewEvents(webviewRef: RefObject<WebviewElement | null>, p
     // Cleanup
     return () => {
       unregisterWebview(paneId);
+      clearError(paneId);
       el.removeEventListener('dom-ready', onDomReady);
       el.removeEventListener('did-navigate', onDidNavigate);
       el.removeEventListener('did-navigate-in-page', onDidNavigateInPage);

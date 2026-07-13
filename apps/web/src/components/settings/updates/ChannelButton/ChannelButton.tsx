@@ -1,4 +1,5 @@
 import { cn } from '@/lib/utils';
+import { selectableChip } from '@/components/settings/chip-styles';
 import { useChannelButton } from './ChannelButton.hooks';
 import type { IChannelButtonProps } from './ChannelButton.types';
 
@@ -18,11 +19,11 @@ export default function ChannelButton({
       aria-pressed={active}
       className={cn(
         'inline-flex items-center gap-2 px-3 py-[6px] rounded-lg border text-[12px] font-medium',
-        'transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1',
+        'transition-[color,background-color,border-color,transform] active:scale-[0.98]',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1',
         'disabled:opacity-60 disabled:cursor-not-allowed',
-        active
-          ? 'border-primary/35 bg-primary/18 text-primary font-semibold'
-          : 'border-border-glass bg-background/30 text-muted-foreground hover:bg-accent/40 hover:text-foreground'
+        selectableChip(active),
+        active && 'font-semibold'
       )}
     >
       {children}

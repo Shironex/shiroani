@@ -58,7 +58,7 @@ export default function OnboardingWizard({ onComplete }: IOnboardingWizardProps)
         <div
           key={`${currentId}-chip`}
           className={cn(
-            'flex items-center gap-2 px-10 pt-6 pb-3 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground md:px-16',
+            'flex items-center gap-2 px-10 pt-6 pb-3 font-mono text-xs uppercase tracking-[0.2em] text-muted-foreground md:px-16',
             direction === 'forward'
               ? 'animate-[onb-slide-in-right_0.35s_ease-out_both]'
               : 'animate-[onb-slide-in-left_0.35s_ease-out_both]'
@@ -87,7 +87,8 @@ export default function OnboardingWizard({ onComplete }: IOnboardingWizardProps)
             {isFirst ? (
               <button
                 onClick={onFinish}
-                className="text-[12.5px] text-muted-foreground transition-colors hover:text-foreground"
+                disabled={isExiting}
+                className="rounded-sm text-xs text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50"
               >
                 {t('wizard.skip')}
               </button>
@@ -102,7 +103,7 @@ export default function OnboardingWizard({ onComplete }: IOnboardingWizardProps)
           <ProgressDots steps={steps} step={step} onGoToStep={onGoToStep} />
 
           {isLast ? (
-            <Button size="sm" onClick={onFinish} className="gap-1.5">
+            <Button size="sm" onClick={onFinish} disabled={isExiting} className="gap-1.5">
               <PartyPopper className="h-3.5 w-3.5" />
               {t('wizard.finish')}
             </Button>

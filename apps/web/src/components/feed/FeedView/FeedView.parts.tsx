@@ -16,7 +16,7 @@ export function LanguageToggle({ options, active, onSelect }: ILanguageTogglePro
 
   return (
     <div
-      className="flex items-center gap-0.5 rounded-lg bg-white/[0.04] border border-white/[0.06] p-0.5"
+      className="flex items-center gap-0.5 rounded-lg bg-foreground/[0.03] border border-border-glass p-0.5"
       role="group"
       aria-label={t('language.ariaLabel')}
     >
@@ -28,6 +28,7 @@ export function LanguageToggle({ options, active, onSelect }: ILanguageTogglePro
           aria-pressed={active === value}
           className={cn(
             'px-2.5 h-6 rounded-md text-[11px] font-medium transition-colors duration-150',
+            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset active:scale-[0.98]',
             active === value
               ? 'bg-primary/20 text-primary'
               : 'text-muted-foreground/80 hover:text-foreground'

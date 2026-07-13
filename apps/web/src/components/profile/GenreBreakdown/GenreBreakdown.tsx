@@ -16,7 +16,7 @@ export default function GenreBreakdown({ genres, limit = 5 }: IGenreBreakdownPro
   const { top, max } = useGenreBreakdown({ genres, limit });
 
   if (top.length === 0) {
-    return <p className="text-[12px] text-muted-foreground/70">{t('genres.empty')}</p>;
+    return <p className="text-xs text-muted-foreground/70">{t('genres.empty')}</p>;
   }
 
   return <GenreBars top={top} max={max} />;

@@ -3,6 +3,7 @@ import { BubbleMenu } from '@tiptap/react/menus';
 import { ArrowLeft, Check, Smile } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { Eyebrow } from '@/components/shared/Eyebrow';
 import { EditorToolbar } from '../EditorToolbar';
 import { BubbleMenuBar } from '../BubbleMenuBar';
 import { MoodPickerPills } from '../MoodPickerPills';
@@ -88,9 +89,10 @@ export default function DiaryEditor(props: IDiaryEditorProps) {
             onClick={onClose}
             aria-label={t('editor.back')}
             className={cn(
-              'flex shrink-0 items-center gap-1.5 rounded-[8px] border border-border-glass',
+              'flex shrink-0 items-center gap-1.5 rounded-md border border-border-glass',
               'bg-foreground/[0.03] px-2.5 py-1.5 font-mono text-[10px] uppercase tracking-[0.18em]',
-              'text-muted-foreground transition-colors hover:bg-foreground/[0.06] hover:text-foreground'
+              'text-muted-foreground transition-colors hover:bg-foreground/[0.06] hover:text-foreground',
+              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
             )}
           >
             <ArrowLeft className="w-3.5 h-3.5" />
@@ -99,7 +101,7 @@ export default function DiaryEditor(props: IDiaryEditorProps) {
           </button>
 
           <div className="flex-1 min-w-0">
-            <div className="mb-1 flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+            <Eyebrow className="mb-1 flex items-center gap-2">
               {isEditing ? (
                 <>
                   <span className="text-primary">{t('editor.editingBadge')}</span>
@@ -117,7 +119,7 @@ export default function DiaryEditor(props: IDiaryEditorProps) {
               ) : (
                 <span className="text-primary">{t('editor.newBadge')}</span>
               )}
-            </div>
+            </Eyebrow>
             <input
               id="diary-editor-title"
               value={title}
@@ -157,9 +159,7 @@ export default function DiaryEditor(props: IDiaryEditorProps) {
           rightSlot={
             <div className="flex items-center gap-2 pl-2">
               <Smile className="w-3.5 h-3.5 text-muted-foreground/80" aria-hidden="true" />
-              <span className="font-mono text-[9.5px] uppercase tracking-[0.15em] text-muted-foreground">
-                {t('editor.moodLabel')}
-              </span>
+              <Eyebrow>{t('editor.moodLabel')}</Eyebrow>
               <MoodPickerPills value={mood} onChange={setMood} size="xs" />
             </div>
           }

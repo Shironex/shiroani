@@ -153,7 +153,11 @@
       "more": "więcej",
       "emptyTag": "PUSTO",
       "emptyTitle": "Brak aktywności",
-      "emptyDescription": "Napisz pierwszy wpis, żeby zobaczyć heatmapę."
+      "emptyDescription": "Napisz pierwszy wpis, żeby zobaczyć heatmapę.",
+      "summary_one": "{{count}} wpis w ciągu ostatnich 52 tygodni.",
+      "summary_few": "{{count}} wpisy w ciągu ostatnich 52 tygodni.",
+      "summary_many": "{{count}} wpisów w ciągu ostatnich 52 tygodni.",
+      "summary_other": "{{count}} wpisów w ciągu ostatnich 52 tygodni."
     },
     "topTags": "Popularne tagi",
     "topTagsHint": "Dodaj tagi do wpisów, żeby śledzić tematy.",

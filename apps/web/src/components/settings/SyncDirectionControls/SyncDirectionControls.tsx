@@ -130,7 +130,7 @@ export function PushLibraryButton({ provider, onPush, disabled }: IPushLibraryBu
             id={warningId}
             className="flex items-start gap-2 rounded-lg border border-border-glass bg-foreground/[0.03] px-3 py-2 text-[11.5px] text-muted-foreground"
           >
-            <AlertTriangle className="mt-0.5 size-3.5 flex-shrink-0 text-[oklch(0.78_0.12_75)]" />
+            <AlertTriangle className="mt-0.5 size-3.5 flex-shrink-0 text-status-warning" />
             <span>{tr(`${provider}.sync.push.warning`)}</span>
           </div>
 

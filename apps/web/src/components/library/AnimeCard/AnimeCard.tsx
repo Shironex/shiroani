@@ -1,8 +1,10 @@
 import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Play, Pencil, Trash2, Film, Star, Check } from 'lucide-react';
+import { Play, Pencil, Trash2, Film, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { PillTag } from '@/components/ui/pill-tag';
+import { FadeInImage } from '@/components/shared/FadeInImage';
+import { ScoreChip } from '@/components/shared/ScoreChip';
 import { CountdownBadge } from '@/components/library/CountdownBadge';
 import { SyncBadge } from '@/components/library/SyncBadge';
 import { STATUS_LABEL_KEY } from '@/lib/constants';
@@ -51,7 +53,7 @@ const AnimeCard = memo(function AnimeCard(props: IAnimeCardProps) {
       aria-label={selectionMode ? cardAriaLabel : undefined}
       tabIndex={selectionMode ? 0 : undefined}
       className={cn(
-        'group relative rounded-[10px] overflow-hidden cursor-pointer',
+        'group relative rounded-lg overflow-hidden cursor-pointer',
         'border bg-card/60',
         'transition-transform duration-200 ease-out',
         'hover:-translate-y-0.5 hover:shadow-primary-glow',
@@ -66,12 +68,16 @@ const AnimeCard = memo(function AnimeCard(props: IAnimeCardProps) {
       {/* Cover image — 2:3 aspect per mock */}
       <div className="relative aspect-[2/3] overflow-hidden">
         {entry.coverImage ? (
-          <img
-            src={entry.coverImage}
-            alt={entry.title}
-            className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.03]"
-            loading="lazy"
-          />
+          // Transform sits on a wrapper (not the img) so the hover zoom and
+          // FadeInImage's opacity transition don't collide on `transition-property`.
+          <div className="w-full h-full transition-transform duration-500 ease-out group-hover:scale-[1.03]">
+            <FadeInImage
+              src={entry.coverImage}
+              alt={entry.title}
+              className="w-full h-full object-cover"
+              loading="lazy"
+            />
+          </div>
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-muted via-muted/80 to-muted/60 flex flex-col items-center justify-center gap-2">
             <div className="w-10 h-10 rounded-xl bg-background/30 flex items-center justify-center">
@@ -106,7 +112,7 @@ const AnimeCard = memo(function AnimeCard(props: IAnimeCardProps) {
             aria-label={cardAriaLabel}
             className={cn(
               'absolute inset-0 z-[2]',
-              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset rounded-[10px]'
+              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset rounded-lg'
             )}
           />
         )}
@@ -116,7 +122,7 @@ const AnimeCard = memo(function AnimeCard(props: IAnimeCardProps) {
           <div className="absolute top-2 left-2 z-[4]">
             <div
               className={cn(
-                'w-5 h-5 rounded-[5px] border flex items-center justify-center shadow-sm transition-colors',
+                'w-5 h-5 rounded-sm border flex items-center justify-center shadow-sm transition-colors',
                 isSelected
                   ? 'bg-primary border-primary text-primary-foreground'
                   : 'bg-black/55 border-white/60'
@@ -144,17 +150,7 @@ const AnimeCard = memo(function AnimeCard(props: IAnimeCardProps) {
 
         {/* Score — top-right, small mono chip with star */}
         {hasScore && (
-          <div
-            className={cn(
-              'absolute top-2 right-2 z-[2]',
-              'flex items-center gap-[3px] px-[6px] py-[3px] rounded-[3px]',
-              'bg-black/70 text-[10px] font-mono font-bold leading-none',
-              'text-[oklch(0.8_0.14_70)]'
-            )}
-          >
-            <Star className="w-3 h-3 fill-current" strokeWidth={0} />
-            <span className="tabular-nums">{entry.score}/10</span>
-          </div>
+          <ScoreChip value={`${entry.score}/10`} scrim className="absolute top-2 right-2 z-[2]" />
         )}
 
         {/* Next-airing countdown — bottom-left, above title block */}
@@ -210,7 +206,7 @@ const AnimeCard = memo(function AnimeCard(props: IAnimeCardProps) {
               className={cn(
                 'h-full transition-[width] duration-300',
                 isCompleted
-                  ? 'bg-[oklch(0.78_0.15_140)] shadow-[0_0_6px_oklch(0.78_0.15_140/0.6)]'
+                  ? 'bg-status-success shadow-[0_0_6px_oklch(from_var(--status-success)_l_c_h/0.6)]'
                   : 'bg-primary shadow-[0_0_6px_oklch(from_var(--primary)_l_c_h/0.55)]'
               )}
               style={{ width: `${progressPercent}%` }}
@@ -225,7 +221,7 @@ const AnimeCard = memo(function AnimeCard(props: IAnimeCardProps) {
               'absolute inset-0 z-[3]',
               'bg-gradient-to-t from-background/60 via-background/25 to-background/5',
               'flex items-center justify-center gap-2.5',
-              'transition-opacity duration-250',
+              'transition-opacity duration-200',
               'opacity-0 pointer-events-none',
               'group-hover:opacity-100 group-hover:pointer-events-auto',
               'group-focus-within:opacity-100 group-focus-within:pointer-events-auto'
@@ -242,6 +238,7 @@ const AnimeCard = memo(function AnimeCard(props: IAnimeCardProps) {
                   'w-8 h-8 rounded-full bg-primary text-primary-foreground shadow-md',
                   'flex items-center justify-center',
                   'hover:bg-primary/90 active:scale-95',
+                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                   'transition-colors duration-150'
                 )}
               >
@@ -258,6 +255,7 @@ const AnimeCard = memo(function AnimeCard(props: IAnimeCardProps) {
                 'w-8 h-8 rounded-full bg-accent text-accent-foreground shadow-md',
                 'flex items-center justify-center',
                 'hover:bg-accent/90 active:scale-95',
+                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                 'transition-colors duration-150'
               )}
             >
@@ -274,6 +272,7 @@ const AnimeCard = memo(function AnimeCard(props: IAnimeCardProps) {
                   'w-8 h-8 rounded-full bg-destructive text-destructive-foreground shadow-md',
                   'flex items-center justify-center',
                   'hover:bg-destructive/90 active:scale-95',
+                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                   'transition-colors duration-150'
                 )}
               >

@@ -5,7 +5,7 @@ import { isNewTabUrl, NEW_TAB_URL, type BrowserLeafNode, type BrowserNode } from
 import { findLeafById, useBrowserStore } from '@/stores/useBrowserStore';
 import { collectLeaves } from '@/stores/browser/browserTree';
 import { useBrowserInit } from '@/components/browser/useBrowserInit';
-import { unregisterWebview } from '@/components/browser/webviewRefs';
+import { getWebview, unregisterWebview } from '@/components/browser/webviewRefs';
 import { isEditableTarget } from '@/lib/is-editable-target';
 import type { IBrowserViewView } from './BrowserView.types';
 
@@ -211,6 +211,14 @@ export function useBrowserView(): IBrowserViewView {
   const handleSplitterStart = useCallback(() => setIsResizing(true), []);
   const handleSplitterEnd = useCallback(() => setIsResizing(false), []);
 
+  // Stop the active pane's in-flight load (toolbar reload button turns into a
+  // stop button while loading). Reads the live pane id so it targets whatever
+  // is focused at click time.
+  const stop = useCallback(() => {
+    const { activePaneId: paneId } = useBrowserStore.getState();
+    if (paneId) getWebview(paneId)?.stop();
+  }, []);
+
   // Flat list of every leaf currently in the tree, deduplicated by paneId.
   // Each leaf maps to one persistent webview container in the layer below.
   // Skips new-tab leaves — they show NewTabPage instead.
@@ -384,6 +392,7 @@ export function useBrowserView(): IBrowserViewView {
     goBack,
     goForward,
     reload,
+    stop,
     splitTabs,
   };
 }

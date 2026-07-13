@@ -65,7 +65,7 @@ export default function BrowserFavoritesBar({
       aria-label={t('favorites.barLabel')}
       className={cn(
         'flex items-center gap-0.5 h-[32px] px-2 shrink-0 overflow-x-auto scrollbar-hide',
-        'bg-[oklch(from_var(--card)_l_c_h/0.35)] border-b border-border-glass'
+        'bg-card/35 border-b border-border-glass'
       )}
     >
       <DndContext

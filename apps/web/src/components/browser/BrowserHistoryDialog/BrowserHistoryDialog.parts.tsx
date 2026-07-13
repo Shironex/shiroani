@@ -14,7 +14,7 @@ export const HistoryRow = memo(function HistoryRow({
   const { t } = useTranslation('browser');
   const host = hostFromUrl(entry.url) ?? entry.url;
   return (
-    <li className="group flex items-center gap-2.5 rounded-[8px] px-2 py-1.5 hover:bg-foreground/[0.05]">
+    <li className="group flex items-center gap-2.5 rounded-md px-2 py-1.5 hover:bg-foreground/[0.05]">
       <button
         type="button"
         onClick={() => onOpen(entry.url)}

@@ -67,9 +67,9 @@ describe('DiaryEntryCard', () => {
         {...handlers()}
       />
     );
-    expect(screen.getByText('anime')).toBeInTheDocument();
-    expect(screen.getByText('recenzja')).toBeInTheDocument();
-    expect(screen.queryByText('isekai')).not.toBeInTheDocument();
+    expect(screen.getByText('#anime')).toBeInTheDocument();
+    expect(screen.getByText('#recenzja')).toBeInTheDocument();
+    expect(screen.queryByText('#isekai')).not.toBeInTheDocument();
   });
 
   it('shows a mood icon when entry.mood is set', () => {

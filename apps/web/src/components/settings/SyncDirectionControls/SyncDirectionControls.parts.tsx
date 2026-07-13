@@ -1,5 +1,6 @@
 import { useRef, type KeyboardEvent } from 'react';
 import { cn } from '@/lib/utils';
+import { selectableChip } from '@/components/settings/chip-styles';
 
 export interface RadioOption<T extends string> {
   value: T;
@@ -80,14 +81,13 @@ export function OptionRadioGroup<T extends string>({
             onClick={() => onChange(option.value)}
             onKeyDown={handleKeyDown}
             className={cn(
-              'rounded-lg border transition-colors disabled:pointer-events-none disabled:opacity-50',
+              'rounded-lg border disabled:pointer-events-none disabled:opacity-50',
+              'transition-[color,background-color,border-color,transform] active:scale-[0.98]',
               'focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1',
               orientation === 'horizontal'
                 ? 'px-3 py-[7px] text-center text-[12px] font-medium'
                 : 'px-3 py-2 text-left',
-              active
-                ? 'border-primary/35 bg-primary/18 text-primary'
-                : 'border-border-glass bg-background/30 text-muted-foreground hover:bg-accent/40 hover:text-foreground'
+              selectableChip(active)
             )}
           >
             <span className={cn('block text-[12px]', active ? 'font-semibold' : 'font-medium')}>

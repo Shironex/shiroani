@@ -29,8 +29,8 @@ export default function ThemeSwatch({
       aria-pressed={isActive}
       aria-label={option.label}
       className={cn(
-        'group relative aspect-square w-full overflow-hidden rounded-[10px] border border-border-glass',
-        'transition-[transform,box-shadow,outline] duration-200',
+        'group relative aspect-square w-full overflow-hidden rounded-lg border border-border-glass',
+        'transition-[transform,box-shadow,outline] duration-300',
         'hover:-translate-y-0.5 hover:shadow-lg',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1',
         isActive && 'outline outline-2 outline-offset-2 outline-primary'

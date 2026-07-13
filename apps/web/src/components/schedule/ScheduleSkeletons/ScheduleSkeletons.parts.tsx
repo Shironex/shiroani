@@ -30,7 +30,7 @@ function WeekGridSkeleton({ counts, listClassName, renderCard }: IWeekGridSkelet
         {DAY_KEYS.map((dayKey, colIdx) => (
           <div key={dayKey} className="flex flex-col min-h-0">
             {/* Day header */}
-            <div className="sticky top-0 z-10 shrink-0 px-3 py-3 text-center border-b border-border-glass bg-card/20 backdrop-blur-sm">
+            <div className="sticky top-0 z-10 shrink-0 px-3 py-3 text-center border-b border-border-glass bg-card/85">
               <Skeleton className="h-2.5 w-8 mx-auto rounded" />
               <Skeleton className="h-6 w-8 mx-auto mt-1.5 rounded" />
               <Skeleton className="h-2 w-6 mx-auto mt-1.5 rounded" />
@@ -69,7 +69,7 @@ export function DailyViewSkeleton() {
             <div
               key={i}
               className={cn(
-                'flex items-stretch gap-3 rounded-[10px] overflow-hidden',
+                'flex items-stretch gap-3 rounded-lg overflow-hidden',
                 'bg-card/40 border border-border-glass'
               )}
               style={{ animationDelay: `${i * 100}ms`, height: '54px' }}
@@ -135,7 +135,7 @@ export function TimetableViewSkeleton() {
       renderCard={(colIdx, entryIdx) => (
         <Skeleton
           key={entryIdx}
-          className="w-full rounded-[9px]"
+          className="w-full rounded-md"
           style={{
             aspectRatio: '2 / 2.6',
             animationDelay: `${colIdx * 100 + entryIdx * 70}ms`,

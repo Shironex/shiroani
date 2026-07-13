@@ -10,6 +10,10 @@ export default function DiscordPreview(props: IDiscordPreviewProps) {
 
   const showAnilistButton = showButton && isWatching;
 
+  // The hard-coded hex values here (#2b2d31 surface, #5865f2 blurple, #1e1f22
+  // tile, #4e5058 button) are intentional — this is a faithful mock of the
+  // Discord presence card, so it must use Discord's brand palette rather than
+  // the app's theme tokens.
   return (
     <div className="bg-[#2b2d31] rounded-lg p-3 text-white/90 font-sans">
       <p className="text-2xs font-semibold text-white/60 uppercase mb-2">
@@ -20,7 +24,7 @@ export default function DiscordPreview(props: IDiscordPreviewProps) {
         {showLargeImage && (
           <div className="w-[60px] h-[60px] rounded-lg bg-[#1e1f22] shrink-0 flex items-center justify-center overflow-hidden">
             {isWatching ? (
-              <div className="w-full h-full bg-gradient-to-br from-purple-500/30 to-blue-500/30 flex items-center justify-center">
+              <div className="w-full h-full bg-gradient-to-br from-[#5865f2]/40 to-[#5865f2]/10 flex items-center justify-center">
                 <span className="text-lg">🎬</span>
               </div>
             ) : (

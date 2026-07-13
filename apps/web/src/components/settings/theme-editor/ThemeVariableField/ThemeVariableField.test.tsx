@@ -20,9 +20,7 @@ describe('ThemeVariableField', () => {
       />
     );
     expect(screen.getByText('Primary')).toBeInTheDocument();
-    expect(
-      screen.getByRole('textbox', { name: /Kod heksadecymalny: Primary/ })
-    ).toBeInTheDocument();
+    expect(screen.getByRole('textbox', { name: /Hex code: Primary/ })).toBeInTheDocument();
   });
 
   it('renders a mono text input for a shadow (text-only) variable', () => {

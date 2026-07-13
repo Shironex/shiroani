@@ -80,6 +80,7 @@ export function TagChips({ tags, disabled, onRemove }: ITagChipsProps) {
             'font-mono text-[10px] uppercase tracking-[0.08em] font-semibold',
             'border border-primary/40 bg-primary/15 text-primary',
             'transition-colors hover:bg-destructive/10 hover:border-destructive/40 hover:text-destructive',
+            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.97]',
             'disabled:opacity-50'
           )}
         >

@@ -45,7 +45,7 @@ export function StatCard({
         'relative flex items-center gap-3 p-3 rounded-xl overflow-hidden',
         'bg-background/40 border border-border-glass',
         'backdrop-blur-sm',
-        'transition-all duration-200',
+        'transition-colors duration-200',
         'hover:bg-background/60 hover:border-border-glass/80',
         'group'
       )}

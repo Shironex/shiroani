@@ -31,8 +31,10 @@ export function useInAppStatsPanel(): IInAppStatsPanelView {
   const daysLabel = t('appPanel.days', { count: days });
   const sessionsLabel = t('appPanel.sessions', { count: totals.sessionCount });
 
-  const handleReset = useCallback(() => {
-    void reset();
+  const handleReset = useCallback(async () => {
+    // Await the reset so the confirm dialog stays up (busy) until the store has
+    // actually cleared, rather than closing optimistically mid-flight.
+    await reset();
     setResetOpen(false);
   }, [reset]);
 

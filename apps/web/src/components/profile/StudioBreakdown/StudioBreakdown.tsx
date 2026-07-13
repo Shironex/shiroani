@@ -13,7 +13,7 @@ export default function StudioBreakdown({ studios, limit = 4 }: IStudioBreakdown
   const { top } = useStudioBreakdown({ studios, limit });
 
   if (top.length === 0) {
-    return <p className="text-[12px] text-muted-foreground/70">{t('studios.empty')}</p>;
+    return <p className="text-xs text-muted-foreground/70">{t('studios.empty')}</p>;
   }
 
   return <StudioRows top={top} />;

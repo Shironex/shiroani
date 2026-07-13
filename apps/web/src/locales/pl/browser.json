@@ -9,6 +9,7 @@
     "forward": "Dalej",
     "reload": "Odśwież",
     "loading": "Ładowanie",
+    "stop": "Zatrzymaj",
     "home": "Strona główna",
     "addFavorite": "Dodaj do ulubionych",
     "removeFavorite": "Usuń z ulubionych",
@@ -47,7 +48,17 @@
     "empty": "Brak historii",
     "noResults": "Brak wyników",
     "removeEntry": "Usuń wpis",
-    "clearAll": "Wyczyść wszystko"
+    "clearAll": "Wyczyść wszystko",
+    "clearConfirm": {
+      "title": "Wyczyścić całą historię?",
+      "description": "To trwale usunie wszystkie strony z historii przeglądania. Tej operacji nie można cofnąć.",
+      "confirm": "Wyczyść wszystko"
+    }
+  },
+  "error": {
+    "title": "Nie udało się załadować strony",
+    "body": "Sprawdź połączenie i spróbuj ponownie.",
+    "retry": "Spróbuj ponownie"
   },
   "tabs": {
     "newTab": "Nowa karta",
@@ -61,7 +72,8 @@
       "pane": "Panel przeglądarki"
     },
     "empty": {
-      "cta": "Kliknij +, żeby otworzyć nową kartę"
+      "cta": "Kliknij +, żeby otworzyć nową kartę",
+      "action": "Nowa karta"
     }
   },
   "addDialog": {
@@ -108,14 +120,14 @@
         "todaySchedule_few": "Dzisiaj w harmonogramie <1>{{count}} odcinki</1>.",
         "todaySchedule_many": "Dzisiaj w harmonogramie <1>{{count}} odcinków</1>.",
         "todaySchedule_other": "Dzisiaj w harmonogramie <1>{{count}} odcinków</1>.",
-        "episodesWaiting_one": "Czeka na Ciebie <1>{{count}} odcinek</1>",
-        "episodesWaiting_few": "Czekają na Ciebie <1>{{count}} odcinki</1>",
-        "episodesWaiting_many": "Czekają na Ciebie <1>{{count}} odcinków</1>",
-        "episodesWaiting_other": "Czekają na Ciebie <1>{{count}} odcinków</1>",
-        "feedUnread_one": "<1>{{count}} nowość</1> w subskrypcjach",
-        "feedUnread_few": "<1>{{count}} nowości</1> w subskrypcjach",
-        "feedUnread_many": "<1>{{count}} nowości</1> w subskrypcjach",
-        "feedUnread_other": "<1>{{count}} nowości</1> w subskrypcjach"
+        "episodesWaiting_one": "Czeka na Ciebie <1>{{count}} odcinek</1>.",
+        "episodesWaiting_few": "Czekają na Ciebie <1>{{count}} odcinki</1>.",
+        "episodesWaiting_many": "Czekają na Ciebie <1>{{count}} odcinków</1>.",
+        "episodesWaiting_other": "Czekają na Ciebie <1>{{count}} odcinków</1>.",
+        "feedUnread_one": "<1>{{count}} nowość</1> w subskrypcjach.",
+        "feedUnread_few": "<1>{{count}} nowości</1> w subskrypcjach.",
+        "feedUnread_many": "<1>{{count}} nowości</1> w subskrypcjach.",
+        "feedUnread_other": "<1>{{count}} nowości</1> w subskrypcjach."
       }
     },
     "quickStats": {

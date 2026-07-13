@@ -52,7 +52,7 @@ export default function BatchActionBar() {
     return (
       <div
         className={cn(
-          'flex-shrink-0 px-7 py-2.5 border-t border-border-glass bg-background/60 flex items-center gap-2',
+          'flex-shrink-0 px-7 py-2.5 border-t border-border-glass bg-background/60 flex items-center gap-2 animate-slide-up',
           dockClearanceClass
         )}
       >
@@ -75,7 +75,7 @@ export default function BatchActionBar() {
     <>
       <div
         className={cn(
-          'flex-shrink-0 px-7 py-2.5 border-t border-border-glass bg-background/60 flex items-center gap-2 flex-wrap',
+          'flex-shrink-0 px-7 py-2.5 border-t border-border-glass bg-background/60 flex items-center gap-2 flex-wrap animate-slide-up',
           dockClearanceClass
         )}
       >
@@ -102,11 +102,7 @@ export default function BatchActionBar() {
             aria-label={t('batch.setScore')}
             className="w-[130px] h-8 text-xs bg-background/40 border-border-glass"
           >
-            <Star
-              className="w-3.5 h-3.5 text-[oklch(0.8_0.14_70)]"
-              strokeWidth={0}
-              fill="currentColor"
-            />
+            <Star className="w-3.5 h-3.5 text-gold" strokeWidth={0} fill="currentColor" />
             <SelectValue placeholder={t('batch.setScore')} />
           </SelectTrigger>
           <SelectContent>{scoreItems}</SelectContent>

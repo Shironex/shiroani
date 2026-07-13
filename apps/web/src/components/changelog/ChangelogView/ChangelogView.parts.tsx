@@ -28,9 +28,9 @@ export function Header({
 
   return (
     <header className={cn('relative', compact ? 'pt-6 pb-6' : 'pt-14 pb-10')}>
-      <div className="inline-flex items-center gap-2.5 rounded-full border border-primary/30 bg-primary/10 px-3 py-1.5 font-mono text-[11px] font-semibold uppercase tracking-[0.2em] text-primary">
+      <div className="inline-flex items-center gap-2.5 rounded-full border border-primary/30 bg-primary/10 px-3 py-1.5 font-mono text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
         <span
-          className="size-1.5 rounded-full bg-primary animate-pulse"
+          className="size-1.5 rounded-full bg-primary"
           style={{
             boxShadow: '0 0 8px oklch(from var(--primary) l c h / 0.6)',
           }}
@@ -52,7 +52,7 @@ export function Header({
 
       {/* Filter chips */}
       <div className="mt-8 flex flex-wrap items-center gap-2 border-t border-border-glass pt-5">
-        <b className="mr-2 font-mono text-[10.5px] font-medium uppercase tracking-[0.2em] text-muted-foreground">
+        <b className="mr-2 font-mono text-[10.5px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
           {t('filter.label')}
         </b>
         {filters.map(chip => {
@@ -61,16 +61,21 @@ export function Header({
             <button
               key={chip.value}
               type="button"
+              aria-pressed={active}
               onClick={() => onFilterChange(chip.value)}
               className={cn(
-                'inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 font-mono text-xs tracking-[0.06em] transition-colors',
+                'inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 font-mono text-xs tracking-[0.06em]',
+                'transition-[color,background-color,border-color,transform] active:scale-[0.98]',
+                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1',
                 active
                   ? 'border-primary bg-primary text-primary-foreground'
                   : 'border-border-glass bg-card/40 text-muted-foreground hover:text-foreground hover:border-border'
               )}
             >
               {chip.label}
-              <span className={cn('opacity-60', active && 'opacity-80')}>{chip.count}</span>
+              <span className={cn('tabular-nums opacity-60', active && 'opacity-80')}>
+                {chip.count}
+              </span>
             </button>
           );
         })}
@@ -82,14 +87,14 @@ export function Header({
           aria-label={t('jump.ariaLabel')}
           className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs"
         >
-          <span className="font-mono text-[10.5px] uppercase tracking-[0.2em] text-muted-foreground/70">
+          <span className="font-mono text-[10.5px] uppercase tracking-[0.18em] text-muted-foreground/70">
             {t('jump.label')}
           </span>
           {jumpTargets.map(r => (
             <a
               key={r.version}
               href={`#v${r.version}`}
-              className="font-mono text-muted-foreground hover:text-primary transition-colors"
+              className="rounded font-mono text-muted-foreground tabular-nums transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
             >
               v{r.version}
             </a>
@@ -119,7 +124,7 @@ export function ReleaseCard({ release }: { release: ChangelogRelease }) {
           v{release.version}
         </span>
         {release.latest && (
-          <span className="rounded-[4px] bg-primary px-2 py-[3px] font-mono text-[9.5px] font-bold uppercase tracking-[0.18em] text-primary-foreground">
+          <span className="rounded-[4px] bg-primary px-2 py-[3px] font-mono text-2xs font-bold uppercase tracking-[0.18em] text-primary-foreground">
             {t('release.latest')}
           </span>
         )}

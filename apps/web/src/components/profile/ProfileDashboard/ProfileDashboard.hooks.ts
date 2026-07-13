@@ -6,12 +6,14 @@ import type {
   IStatusRing,
 } from './ProfileDashboard.types';
 
+// Status rings map to the semantic status palette (info/success/warning/error);
+// PAUSED has no status token, so it borrows the categorical chart-5 hue.
 const RING_DEFS: Array<{ name: string; color: string }> = [
-  { name: 'COMPLETED', color: 'oklch(0.74 0.15 355)' },
-  { name: 'CURRENT', color: 'oklch(0.7 0.15 220)' },
-  { name: 'PLANNING', color: 'oklch(0.8 0.14 70)' },
-  { name: 'PAUSED', color: 'oklch(0.6 0.05 298)' },
-  { name: 'DROPPED', color: 'oklch(0.65 0.18 25)' },
+  { name: 'COMPLETED', color: 'var(--status-success)' },
+  { name: 'CURRENT', color: 'var(--status-info)' },
+  { name: 'PLANNING', color: 'var(--status-warning)' },
+  { name: 'PAUSED', color: 'var(--chart-5)' },
+  { name: 'DROPPED', color: 'var(--status-error)' },
 ];
 
 export function useProfileDashboard({

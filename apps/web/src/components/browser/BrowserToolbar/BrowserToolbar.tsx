@@ -5,7 +5,7 @@ import {
   ArrowRight,
   RotateCw,
   Home,
-  Loader2,
+  X,
   BookmarkPlus,
   History,
   Lock,
@@ -34,6 +34,7 @@ const LISTBOX_ID = 'browser-address-suggestions';
  */
 export default function BrowserToolbar({
   urlInput,
+  committedUrl,
   onUrlInputChange,
   canGoBack,
   canGoForward,
@@ -43,6 +44,7 @@ export default function BrowserToolbar({
   onGoBack,
   onGoForward,
   onReload,
+  onStop,
   onNavigate,
   onGoHome,
   onToggleFavorite,
@@ -64,13 +66,13 @@ export default function BrowserToolbar({
     handleUrlFocus,
     handleUrlBlur,
     handleSuggestionSelect,
-  } = useBrowserToolbar(urlInput, onUrlInputChange, onNavigate, externalUrlInputRef);
+  } = useBrowserToolbar(urlInput, committedUrl, onUrlInputChange, onNavigate, externalUrlInputRef);
 
   return (
     <div
       className={cn(
         'flex items-center h-[48px] px-3 gap-2 shrink-0',
-        'bg-[oklch(from_var(--card)_l_c_h/0.5)] border-b border-border-glass'
+        'bg-card/50 border-b border-border-glass'
       )}
     >
       {/* Nav button cluster */}
@@ -114,15 +116,11 @@ export default function BrowserToolbar({
             'size-[30px] rounded-full',
             'bg-foreground/[0.03] border border-border-glass'
           )}
-          onClick={onReload}
-          tooltip={isLoading ? t('toolbar.loading') : t('toolbar.reload')}
+          onClick={isLoading ? onStop : onReload}
+          tooltip={isLoading ? t('toolbar.stop') : t('toolbar.reload')}
           tooltipSide="bottom"
         >
-          {isLoading ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
-          ) : (
-            <RotateCw className="w-3.5 h-3.5" />
-          )}
+          {isLoading ? <X className="w-4 h-4" /> : <RotateCw className="w-3.5 h-3.5" />}
         </TooltipButton>
       </div>
 
@@ -132,7 +130,8 @@ export default function BrowserToolbar({
           className={cn(
             'h-9 flex items-center gap-2 rounded-full px-3',
             'bg-foreground/[0.05] border border-border-glass',
-            'focus-within:border-primary/50 focus-within:bg-foreground/[0.07] transition-colors'
+            'focus-within:border-primary/50 focus-within:bg-foreground/[0.07]',
+            'focus-within:ring-2 focus-within:ring-ring/20 transition-colors'
           )}
         >
           {isSecure ? (
@@ -179,7 +178,7 @@ export default function BrowserToolbar({
           variant="ghost"
           size="icon"
           className={cn(
-            'size-[30px] rounded-[8px]',
+            'size-[30px] rounded-md',
             isFavorite
               ? 'text-primary hover:text-primary'
               : 'text-muted-foreground hover:text-primary'
@@ -196,7 +195,7 @@ export default function BrowserToolbar({
         <TooltipButton
           variant="ghost"
           size="icon"
-          className="size-[30px] rounded-[8px] text-muted-foreground hover:text-primary"
+          className="size-[30px] rounded-md text-muted-foreground hover:text-primary"
           onClick={onAddToLibrary}
           disabled={!hasActiveTab}
           tooltip={t('toolbar.addToLibrary')}
@@ -208,7 +207,7 @@ export default function BrowserToolbar({
         <TooltipButton
           variant="ghost"
           size="icon"
-          className="size-[30px] rounded-[8px] text-muted-foreground hover:text-foreground"
+          className="size-[30px] rounded-md text-muted-foreground hover:text-foreground"
           onClick={onGoHome}
           tooltip={t('toolbar.home')}
           tooltipSide="bottom"
@@ -219,7 +218,7 @@ export default function BrowserToolbar({
         <TooltipButton
           variant="ghost"
           size="icon"
-          className="size-[30px] rounded-[8px] text-muted-foreground hover:text-foreground"
+          className="size-[30px] rounded-md text-muted-foreground hover:text-foreground"
           onClick={onOpenHistory}
           tooltip={t('toolbar.history')}
           tooltipSide="bottom"

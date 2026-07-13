@@ -1,4 +1,4 @@
-import type { KeyboardEvent, MouseEvent } from 'react';
+import type { KeyboardEvent, MouseEvent, RefObject } from 'react';
 import type {
   CollisionDetection,
   DragStartEvent,
@@ -30,6 +30,8 @@ export interface IBrowserTabBarView {
   readonly handleDragOver: (event: DragOverEvent) => void;
   readonly handleDragEnd: (event: DragEndEvent) => void;
   readonly handleDragCancel: () => void;
+  readonly listRef: RefObject<HTMLDivElement | null>;
+  readonly isOverflowing: boolean;
 }
 
 export interface ITabContentProps {

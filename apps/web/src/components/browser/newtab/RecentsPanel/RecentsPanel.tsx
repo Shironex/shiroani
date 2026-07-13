@@ -17,7 +17,7 @@ export default function RecentsPanel({ frequentSites, onNavigate }: IRecentsPane
   return (
     <section
       aria-labelledby="newtab-recent"
-      className="relative rounded-[14px] border border-border-glass bg-foreground/[0.025] p-4 overflow-hidden min-w-0"
+      className="relative rounded-[calc(var(--radius)+4px)] border border-border-glass bg-foreground/[0.025] p-4 overflow-hidden min-w-0"
     >
       <PanelHeader
         id="newtab-recent"

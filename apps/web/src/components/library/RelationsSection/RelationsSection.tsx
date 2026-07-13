@@ -3,9 +3,10 @@ import { Film } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PillTag } from '@/components/ui/pill-tag';
+import { Eyebrow } from '@/components/shared/Eyebrow';
+import { FadeInImage } from '@/components/shared/FadeInImage';
 import { tDynamic } from '@/lib/i18n';
 import { useRelationsSection } from './RelationsSection.hooks';
-import { FieldLabel } from './RelationsSection.parts';
 import type { IRelationsSectionProps } from './RelationsSection.types';
 
 /**
@@ -25,7 +26,7 @@ export default function RelationsSection(props: IRelationsSectionProps) {
   if (isLoading && !detail) {
     return (
       <div className="space-y-2">
-        <FieldLabel>{t('relations.title')}</FieldLabel>
+        <Eyebrow>{t('relations.title')}</Eyebrow>
         <div className="grid grid-cols-2 gap-2">
           <Skeleton className="h-16 w-full rounded-md" />
           <Skeleton className="h-16 w-full rounded-md" />
@@ -40,7 +41,7 @@ export default function RelationsSection(props: IRelationsSectionProps) {
     if (!detail && !failed) return null;
     return (
       <div className="space-y-1.5">
-        <FieldLabel>{t('relations.title')}</FieldLabel>
+        <Eyebrow>{t('relations.title')}</Eyebrow>
         <p className="text-2xs text-muted-foreground/70">{t('relations.empty')}</p>
       </div>
     );
@@ -74,7 +75,7 @@ export default function RelationsSection(props: IRelationsSectionProps) {
         )}
       >
         {cover ? (
-          <img
+          <FadeInImage
             src={cover}
             alt={title}
             className="w-9 h-12 rounded object-cover shrink-0 border border-border-glass"
@@ -99,7 +100,7 @@ export default function RelationsSection(props: IRelationsSectionProps) {
 
   return (
     <div className="space-y-2">
-      <FieldLabel>{t('relations.title')}</FieldLabel>
+      <Eyebrow>{t('relations.title')}</Eyebrow>
       <div className="grid grid-cols-2 gap-2">{relationCards}</div>
     </div>
   );

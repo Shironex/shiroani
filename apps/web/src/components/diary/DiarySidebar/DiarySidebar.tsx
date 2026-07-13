@@ -80,7 +80,7 @@ export default function DiarySidebar({ entries }: IDiarySidebarProps) {
           type="button"
           onClick={retryFailedDetails}
           className={cn(
-            'flex w-full items-center justify-center gap-2 rounded-[9px] border border-border-glass',
+            'flex w-full items-center justify-center gap-2 rounded-lg border border-border-glass',
             'bg-foreground/[0.03] px-3 py-2 text-[11px] text-muted-foreground',
             'transition-colors hover:bg-foreground/[0.06] hover:text-foreground',
             'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'

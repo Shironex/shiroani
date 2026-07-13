@@ -5,6 +5,7 @@ import type { IBrowserToolbarView } from './BrowserToolbar.types';
 
 export function useBrowserToolbar(
   urlInput: string,
+  committedUrl: string,
   onUrlInputChange: (value: string) => void,
   onNavigate: (url: string) => void,
   externalUrlInputRef: RefObject<HTMLInputElement | null> | undefined
@@ -104,14 +105,10 @@ export function useBrowserToolbar(
     [commitNavigation]
   );
 
-  const isSecure = useMemo(() => {
-    const val = urlInput.trim();
-    if (!val) return false;
-    if (val.startsWith('https://')) return true;
-    // Protocol-less bare hostnames default to https on submit, treat as secure preview
-    if (!val.includes('://') && !val.startsWith('http://')) return true;
-    return false;
-  }, [urlInput]);
+  // Secure-lock reflects the *committed* pane URL, not the typed draft: show the
+  // neutral globe until navigation to an https:// page has actually landed, so a
+  // half-typed "https://…" never falsely implies a verified secure connection.
+  const isSecure = useMemo(() => committedUrl.trim().startsWith('https://'), [committedUrl]);
 
   return {
     urlInputRef,

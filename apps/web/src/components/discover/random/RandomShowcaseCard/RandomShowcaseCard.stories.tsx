@@ -70,7 +70,11 @@ export const Default: Story = {
     await userEvent.click(canvas.getByRole('button', { name: /shuffle/i }));
     await expect(args.onNext).toHaveBeenCalled();
 
-    await userEvent.click(canvas.getByRole('heading', { name: 'Frieren: Beyond Journey’s End' }));
+    // The title text now lives inside a real <button> nested in the heading —
+    // the poster is also a button with the same accessible name, so scope to
+    // the heading before querying for its button.
+    const heading = canvas.getByRole('heading', { name: 'Frieren: Beyond Journey’s End' });
+    await userEvent.click(within(heading).getByRole('button'));
     await expect(args.onOpenDetails).toHaveBeenCalled();
 
     await userEvent.click(canvas.getByRole('button', { name: 'Add to library' }));

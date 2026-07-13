@@ -1,6 +1,7 @@
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
-import { Globe } from 'lucide-react';
+import { Globe, Plus } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { AddToLibraryDialog } from '@/components/browser/AddToLibraryDialog';
 import { BrowserTabBar } from '@/components/browser/BrowserTabBar';
 import { BrowserToolbar } from '@/components/browser/BrowserToolbar';
@@ -57,6 +58,7 @@ export default function BrowserView() {
     goBack,
     goForward,
     reload,
+    stop,
     splitTabs,
   } = useBrowserView();
 
@@ -80,6 +82,7 @@ export default function BrowserView() {
   ));
 
   const showFindBar = !isFullScreen && isFindOpen;
+  const showLoadingBar = !isFullScreen && !!activePane?.isLoading;
 
   const webviewPortals = liveLeaves.map(leaf =>
     createPortal(
@@ -108,6 +111,7 @@ export default function BrowserView() {
       {!isFullScreen && (
         <BrowserToolbar
           urlInput={urlInput}
+          committedUrl={activePane?.url ?? ''}
           onUrlInputChange={setUrlInput}
           canGoBack={activePane?.canGoBack ?? false}
           canGoForward={activePane?.canGoForward ?? false}
@@ -117,6 +121,7 @@ export default function BrowserView() {
           onGoBack={goBack}
           onGoForward={goForward}
           onReload={reload}
+          onStop={stop}
           onNavigate={navigate}
           onGoHome={handleGoHome}
           onToggleFavorite={handleToggleFavorite}
@@ -138,10 +143,24 @@ export default function BrowserView() {
       <div
         className={`flex-1 relative overflow-hidden ${isActivePaneNewTab ? '' : 'bg-background'}`}
       >
+        {/* Indeterminate page-load bar under the toolbar while the active pane
+            loads — reuses the shared progress-slide keyframe. */}
+        {showLoadingBar && (
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-x-0 top-0 z-20 h-0.5 overflow-hidden"
+          >
+            <div className="h-full w-1/3 bg-primary [animation:progress-slide_1.2s_ease-in-out_infinite]" />
+          </div>
+        )}
         {tabs.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-muted-foreground gap-4">
             <Globe className="w-16 h-16 opacity-20" />
             <p className="text-sm">{t('tabs.empty.cta')}</p>
+            <Button variant="outline" size="sm" onClick={() => openTab()}>
+              <Plus className="w-4 h-4" />
+              {t('tabs.empty.action')}
+            </Button>
           </div>
         ) : (
           <>

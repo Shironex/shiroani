@@ -1,9 +1,18 @@
 import { memo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Users, UserPlus, UserMinus, UserRound, ChevronDown, RefreshCw } from 'lucide-react';
+import {
+  Users,
+  UserPlus,
+  UserMinus,
+  UserRound,
+  ChevronDown,
+  RefreshCw,
+  Loader2,
+} from 'lucide-react';
 import type { AniListUser } from '@shiroani/shared';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { FadeInImage } from '@/components/shared/FadeInImage';
 
 const SKELETON_ROWS = [0, 1, 2];
 
@@ -19,7 +28,7 @@ export function FollowError({ onRetry }: { onRetry: () => void }) {
         'border border-destructive/25 bg-destructive/[0.06]'
       )}
     >
-      <p className="text-[12px] text-muted-foreground leading-snug break-words max-w-[44ch]">
+      <p className="text-xs text-muted-foreground leading-snug break-words max-w-[44ch]">
         {t('social.error')}
       </p>
       <Button variant="outline" size="sm" className="gap-1.5 text-xs h-8" onClick={onRetry}>
@@ -68,13 +77,14 @@ export function FollowGroup({
         disabled={isLoading || count === 0}
         className={cn(
           'w-full flex items-center gap-2.5 px-3.5 py-2.5 text-left transition-colors',
+          'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring active:scale-[0.98]',
           'hover:bg-foreground/5 disabled:cursor-default disabled:hover:bg-transparent'
         )}
       >
         <span className="grid place-items-center w-[18px] h-[18px] shrink-0 rounded-md bg-primary/15 text-primary">
           <Users className="w-3 h-3" aria-hidden="true" />
         </span>
-        <span className="text-[12px] font-medium text-foreground/90 flex-1 min-w-0 truncate">
+        <span className="text-xs font-medium text-foreground/90 flex-1 min-w-0 truncate">
           {label}
         </span>
         <span className="font-mono text-[11px] tabular-nums text-muted-foreground shrink-0">
@@ -141,12 +151,12 @@ const UserRow = memo(function UserRow({ user, pending, onToggle }: UserRowProps)
           href={user.siteUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-[12px] font-medium text-foreground/90 flex-1 min-w-0 truncate hover:text-primary hover:underline"
+          className="text-xs font-medium text-foreground/90 flex-1 min-w-0 truncate hover:text-primary hover:underline"
         >
           {user.name}
         </a>
       ) : (
-        <span className="text-[12px] font-medium text-foreground/90 flex-1 min-w-0 truncate">
+        <span className="text-xs font-medium text-foreground/90 flex-1 min-w-0 truncate">
           {user.name}
         </span>
       )}
@@ -167,7 +177,9 @@ const UserRow = memo(function UserRow({ user, pending, onToggle }: UserRowProps)
             : 'bg-primary/15 border border-primary/30 text-primary hover:bg-primary/20 hover:text-primary'
         )}
       >
-        {isFollowing ? (
+        {pending ? (
+          <Loader2 className="w-3 h-3 animate-spin" aria-hidden="true" />
+        ) : isFollowing ? (
           <UserMinus className="w-3 h-3" aria-hidden="true" />
         ) : (
           <UserPlus className="w-3 h-3" aria-hidden="true" />
@@ -189,7 +201,7 @@ function Avatar({ src, name }: { src?: string; name: string }) {
   return (
     <div className="w-7 h-7 shrink-0 rounded-full overflow-hidden border border-border/20 bg-muted/30">
       {showImage ? (
-        <img
+        <FadeInImage
           src={src}
           alt=""
           className="w-full h-full object-cover"

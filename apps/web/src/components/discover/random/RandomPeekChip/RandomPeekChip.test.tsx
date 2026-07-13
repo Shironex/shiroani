@@ -35,9 +35,11 @@ describe('RandomPeekChip', () => {
   });
 
   it('marks a chip whose title is already in the library', () => {
-    render(<RandomPeekChip media={media} direction="prev" onClick={vi.fn()} inLibrary />);
+    const { container } = render(
+      <RandomPeekChip media={media} direction="prev" onClick={vi.fn()} inLibrary />
+    );
 
-    // The check glyph sits inside the same title paragraph.
-    expect(screen.getByText('✓')).toBeInTheDocument();
+    // The check mark is now a lucide Check icon inside the same title paragraph.
+    expect(container.querySelector('svg.lucide-check')).toBeInTheDocument();
   });
 });

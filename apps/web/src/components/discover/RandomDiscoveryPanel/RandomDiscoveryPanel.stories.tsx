@@ -57,10 +57,13 @@ export const Default: Story = {
   },
   play: async ({ args, canvasElement }) => {
     const canvas = within(canvasElement);
-    await expect(canvas.getByRole('heading', { name: 'Pick 1' })).toBeInTheDocument();
+    const heading = canvas.getByRole('heading', { name: 'Pick 1' });
+    await expect(heading).toBeInTheDocument();
 
-    // Clicking the showcase title opens the detail with the current pick.
-    await userEvent.click(canvas.getByRole('heading', { name: 'Pick 1' }));
+    // The title text now lives inside a real <button> nested in the heading —
+    // the poster is also a button with the same accessible name, so scope to
+    // the heading before querying for its button.
+    await userEvent.click(within(heading).getByRole('button'));
     await expect(args.onCardClick).toHaveBeenCalledWith(pool[0]);
   },
 };

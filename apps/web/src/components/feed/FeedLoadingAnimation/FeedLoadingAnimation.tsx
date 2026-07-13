@@ -8,7 +8,7 @@ import { LoadingDots, Sparkles, SignalWaves } from './FeedLoadingAnimation.parts
  */
 export default function FeedLoadingAnimation() {
   const { t } = useTranslation('feed');
-  useFeedLoadingAnimation();
+  const { reducedMotion } = useFeedLoadingAnimation();
 
   return (
     <div className="flex-1 flex flex-col items-center justify-center py-20 gap-6 select-none">
@@ -17,21 +17,23 @@ export default function FeedLoadingAnimation() {
         <svg viewBox="0 0 200 200" className="w-full h-full" aria-hidden="true">
           <defs>
             <linearGradient id="feed-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.95" />
-              <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0.45" />
+              <stop offset="0%" stopColor="var(--primary)" stopOpacity="0.95" />
+              <stop offset="100%" stopColor="var(--primary)" stopOpacity="0.45" />
             </linearGradient>
             <linearGradient id="card-grad" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.22" />
-              <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0.08" />
+              <stop offset="0%" stopColor="var(--primary)" stopOpacity="0.22" />
+              <stop offset="100%" stopColor="var(--primary)" stopOpacity="0.08" />
             </linearGradient>
           </defs>
 
           {/* Signal waves expanding outward from center */}
-          <SignalWaves />
+          <SignalWaves reducedMotion={reducedMotion} />
 
           {/* RSS Icon - dot */}
           <circle cx="82" cy="128" r="7" fill="url(#feed-grad)">
-            <animate attributeName="r" values="7;8.2;7" dur="2s" repeatCount="indefinite" />
+            {!reducedMotion && (
+              <animate attributeName="r" values="7;8.2;7" dur="2s" repeatCount="indefinite" />
+            )}
           </circle>
 
           {/* RSS Icon - inner arc */}
@@ -42,13 +44,15 @@ export default function FeedLoadingAnimation() {
             strokeWidth="5.5"
             strokeLinecap="round"
           >
-            <animate
-              attributeName="stroke-opacity"
-              values="0.55;1;0.55"
-              dur="2s"
-              begin="0.3s"
-              repeatCount="indefinite"
-            />
+            {!reducedMotion && (
+              <animate
+                attributeName="stroke-opacity"
+                values="0.55;1;0.55"
+                dur="2s"
+                begin="0.3s"
+                repeatCount="indefinite"
+              />
+            )}
           </path>
 
           {/* RSS Icon - outer arc */}
@@ -59,24 +63,28 @@ export default function FeedLoadingAnimation() {
             strokeWidth="5.5"
             strokeLinecap="round"
           >
-            <animate
-              attributeName="stroke-opacity"
-              values="0.45;0.92;0.45"
-              dur="2s"
-              begin="0.6s"
-              repeatCount="indefinite"
-            />
+            {!reducedMotion && (
+              <animate
+                attributeName="stroke-opacity"
+                values="0.45;0.92;0.45"
+                dur="2s"
+                begin="0.6s"
+                repeatCount="indefinite"
+              />
+            )}
           </path>
 
           {/* Floating card 1 - top right */}
           <g>
-            <animateTransform
-              attributeName="transform"
-              type="translate"
-              values="0,0; 3,-8; 0,0"
-              dur="4s"
-              repeatCount="indefinite"
-            />
+            {!reducedMotion && (
+              <animateTransform
+                attributeName="transform"
+                type="translate"
+                values="0,0; 3,-8; 0,0"
+                dur="4s"
+                repeatCount="indefinite"
+              />
+            )}
             <rect
               x="138"
               y="42"
@@ -84,7 +92,7 @@ export default function FeedLoadingAnimation() {
               height="26"
               rx="4"
               fill="url(#card-grad)"
-              stroke="hsl(var(--primary))"
+              stroke="var(--primary)"
               strokeWidth="0.75"
               strokeOpacity="0.35"
             />
@@ -94,7 +102,7 @@ export default function FeedLoadingAnimation() {
               width="16"
               height="2"
               rx="1"
-              fill="hsl(var(--primary))"
+              fill="var(--primary)"
               fillOpacity="0.22"
             />
             <rect
@@ -103,7 +111,7 @@ export default function FeedLoadingAnimation() {
               width="28"
               height="2"
               rx="1"
-              fill="hsl(var(--primary))"
+              fill="var(--primary)"
               fillOpacity="0.18"
             />
             <rect
@@ -112,27 +120,31 @@ export default function FeedLoadingAnimation() {
               width="22"
               height="2"
               rx="1"
-              fill="hsl(var(--primary))"
+              fill="var(--primary)"
               fillOpacity="0.14"
             />
-            <animate
-              attributeName="opacity"
-              values="0;0.92;0.92;0"
-              dur="4s"
-              repeatCount="indefinite"
-            />
+            {!reducedMotion && (
+              <animate
+                attributeName="opacity"
+                values="0;0.92;0.92;0"
+                dur="4s"
+                repeatCount="indefinite"
+              />
+            )}
           </g>
 
           {/* Floating card 2 - top left */}
           <g>
-            <animateTransform
-              attributeName="transform"
-              type="translate"
-              values="0,0; -4,-6; 0,0"
-              dur="5s"
-              begin="1.2s"
-              repeatCount="indefinite"
-            />
+            {!reducedMotion && (
+              <animateTransform
+                attributeName="transform"
+                type="translate"
+                values="0,0; -4,-6; 0,0"
+                dur="5s"
+                begin="1.2s"
+                repeatCount="indefinite"
+              />
+            )}
             <rect
               x="22"
               y="50"
@@ -140,7 +152,7 @@ export default function FeedLoadingAnimation() {
               height="28"
               rx="4"
               fill="url(#card-grad)"
-              stroke="hsl(var(--primary))"
+              stroke="var(--primary)"
               strokeWidth="0.75"
               strokeOpacity="0.35"
             />
@@ -150,7 +162,7 @@ export default function FeedLoadingAnimation() {
               width="12"
               height="8"
               rx="2"
-              fill="hsl(var(--primary))"
+              fill="var(--primary)"
               fillOpacity="0.2"
             />
             <rect
@@ -159,7 +171,7 @@ export default function FeedLoadingAnimation() {
               width="32"
               height="2"
               rx="1"
-              fill="hsl(var(--primary))"
+              fill="var(--primary)"
               fillOpacity="0.18"
             />
             <rect
@@ -168,28 +180,32 @@ export default function FeedLoadingAnimation() {
               width="24"
               height="2"
               rx="1"
-              fill="hsl(var(--primary))"
+              fill="var(--primary)"
               fillOpacity="0.14"
             />
-            <animate
-              attributeName="opacity"
-              values="0;0.84;0.84;0"
-              dur="5s"
-              begin="1.2s"
-              repeatCount="indefinite"
-            />
+            {!reducedMotion && (
+              <animate
+                attributeName="opacity"
+                values="0;0.84;0.84;0"
+                dur="5s"
+                begin="1.2s"
+                repeatCount="indefinite"
+              />
+            )}
           </g>
 
           {/* Floating card 3 - right middle */}
           <g>
-            <animateTransform
-              attributeName="transform"
-              type="translate"
-              values="0,0; 5,-10; 0,0"
-              dur="4.5s"
-              begin="0.6s"
-              repeatCount="indefinite"
-            />
+            {!reducedMotion && (
+              <animateTransform
+                attributeName="transform"
+                type="translate"
+                values="0,0; 5,-10; 0,0"
+                dur="4.5s"
+                begin="0.6s"
+                repeatCount="indefinite"
+              />
+            )}
             <rect
               x="148"
               y="110"
@@ -197,7 +213,7 @@ export default function FeedLoadingAnimation() {
               height="24"
               rx="4"
               fill="url(#card-grad)"
-              stroke="hsl(var(--primary))"
+              stroke="var(--primary)"
               strokeWidth="0.75"
               strokeOpacity="0.35"
             />
@@ -207,7 +223,7 @@ export default function FeedLoadingAnimation() {
               width="10"
               height="6"
               rx="1.5"
-              fill="hsl(var(--primary))"
+              fill="var(--primary)"
               fillOpacity="0.2"
             />
             <rect
@@ -216,7 +232,7 @@ export default function FeedLoadingAnimation() {
               width="24"
               height="2"
               rx="1"
-              fill="hsl(var(--primary))"
+              fill="var(--primary)"
               fillOpacity="0.18"
             />
             <rect
@@ -225,27 +241,29 @@ export default function FeedLoadingAnimation() {
               width="18"
               height="1.5"
               rx="0.75"
-              fill="hsl(var(--primary))"
+              fill="var(--primary)"
               fillOpacity="0.14"
             />
-            <animate
-              attributeName="opacity"
-              values="0;0.8;0.8;0"
-              dur="4.5s"
-              begin="0.6s"
-              repeatCount="indefinite"
-            />
+            {!reducedMotion && (
+              <animate
+                attributeName="opacity"
+                values="0;0.8;0.8;0"
+                dur="4.5s"
+                begin="0.6s"
+                repeatCount="indefinite"
+              />
+            )}
           </g>
 
           {/* Sparkles */}
-          <Sparkles />
+          <Sparkles reducedMotion={reducedMotion} />
         </svg>
       </div>
 
       {/* Loading text with animated dots */}
       <div className="flex items-center gap-1.5 text-sm text-foreground/75">
         <span className="font-medium tracking-tight">{t('loading')}</span>
-        <LoadingDots />
+        <LoadingDots reducedMotion={reducedMotion} />
       </div>
     </div>
   );

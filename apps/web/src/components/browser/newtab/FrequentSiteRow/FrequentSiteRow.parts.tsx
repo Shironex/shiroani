@@ -5,7 +5,7 @@ import { History } from 'lucide-react';
 export function EmptyRecents() {
   const { t } = useTranslation('browser');
   return (
-    <div className="flex flex-col items-center justify-center gap-2 rounded-[10px] border border-dashed border-border-glass bg-foreground/[0.02] px-4 py-6 text-center">
+    <div className="flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-border-glass bg-foreground/[0.02] px-4 py-6 text-center">
       <span className="grid size-8 place-items-center rounded-md bg-primary/10 text-primary">
         <History className="w-3.5 h-3.5" />
       </span>

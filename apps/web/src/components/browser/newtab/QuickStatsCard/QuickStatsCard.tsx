@@ -1,6 +1,7 @@
 import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Sparkles, Tv, Library, Flame } from 'lucide-react';
+import { PanelHeader } from '../PanelHeader';
 import { useQuickStatsCard } from './QuickStatsCard.hooks';
 import { StatTile } from './QuickStatsCard.parts';
 
@@ -27,19 +28,9 @@ function QuickStatsCard() {
   return (
     <section
       aria-labelledby="newtab-quickstats"
-      className="relative rounded-[14px] border border-border-glass bg-foreground/[0.025] p-4 overflow-hidden"
+      className="relative rounded-[calc(var(--radius)+4px)] border border-border-glass bg-foreground/[0.025] p-4 overflow-hidden"
     >
-      <div className="mb-3 flex items-center gap-2">
-        <span className="grid size-5 place-items-center rounded-md bg-primary/12 text-primary shrink-0">
-          <Sparkles className="w-3 h-3" />
-        </span>
-        <h2
-          id="newtab-quickstats"
-          className="flex-1 font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground"
-        >
-          {t('newTab.quickStats.title')}
-        </h2>
-      </div>
+      <PanelHeader id="newtab-quickstats" icon={Sparkles} title={t('newTab.quickStats.title')} />
 
       <div className="grid grid-cols-3 gap-2.5">
         <StatTile icon={Tv} label={t('newTab.quickStats.episodes')} value={episodesWatched} />

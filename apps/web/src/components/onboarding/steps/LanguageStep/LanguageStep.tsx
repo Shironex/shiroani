@@ -1,6 +1,7 @@
 import { Trans, useTranslation } from 'react-i18next';
 import { Languages } from 'lucide-react';
 import { StepLayout } from '../../StepLayout';
+import { emPrimary, bStrong, bPrimary } from '../../shared-parts';
 import { useLanguageStep } from './LanguageStep.hooks';
 import { LanguageOptions } from './LanguageStep.parts';
 
@@ -8,9 +9,6 @@ import { LanguageOptions } from './LanguageStep.parts';
 export default function LanguageStep() {
   const { t } = useTranslation('onboarding');
   const { active, onSelect } = useLanguageStep();
-  const emPrimary = <em className="not-italic text-primary italic" />;
-  const bStrong = <b className="font-semibold text-foreground" />;
-  const bPrimary = <b className="font-bold text-primary" />;
 
   return (
     <StepLayout
@@ -30,7 +28,7 @@ export default function LanguageStep() {
     >
       <LanguageOptions active={active} onSelect={onSelect} />
 
-      <p className="mt-auto font-mono text-[10.5px] uppercase tracking-[0.18em] text-muted-foreground">
+      <p className="mt-auto font-mono text-2xs normal-case text-muted-foreground">
         {t('step.language.footnote')}
       </p>
     </StepLayout>

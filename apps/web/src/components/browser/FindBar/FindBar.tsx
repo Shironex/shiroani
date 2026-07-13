@@ -32,14 +32,14 @@ export default function FindBar({ activePaneId, onClose }: IFindBarProps) {
       role="search"
       className={cn(
         'flex items-center h-[42px] px-3 gap-2 shrink-0',
-        'bg-[oklch(from_var(--card)_l_c_h/0.6)] border-b border-border-glass'
+        'bg-card/60 border-b border-border-glass'
       )}
     >
       <div
         className={cn(
           'flex-1 min-w-0 max-w-md h-8 flex items-center gap-2 rounded-full px-3',
           'bg-foreground/[0.05] border border-border-glass',
-          'focus-within:border-primary/50 transition-colors'
+          'focus-within:border-primary/50 focus-within:ring-2 focus-within:ring-ring/20 transition-colors'
         )}
       >
         <Input

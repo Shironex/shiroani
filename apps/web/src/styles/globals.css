@@ -68,6 +68,17 @@
   --color-status-pending: var(--status-pending);
   --color-status-pending-bg: var(--status-pending-bg);
 
+  /* Gold accent (score/streak highlight) — themes may override */
+  --color-gold: var(--gold);
+  --color-gold-bg: var(--gold-bg);
+
+  /* Categorical data-viz series (profile charts) — themes may override */
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
   --radius-lg: var(--radius);
   --radius-md: calc(var(--radius) - 2px);
   --radius-sm: calc(var(--radius) - 4px);
@@ -449,6 +460,21 @@
   --status-pending: oklch(0.7 0.17 55);
   --status-pending-bg: oklch(0.7 0.17 55 / 0.2);
 
+  /* Gold accent — score/streak highlight, shared across themes (themes may override) */
+  --gold: oklch(0.8 0.14 70);
+  --gold-bg: oklch(0.8 0.14 70 / 0.15);
+
+  /*
+   * Categorical data-viz palette (profile charts). --chart-1 tracks the brand
+   * --primary; --chart-2..5 are harmonious oklch defaults spread across hue so a
+   * 5-series chart stays legible on any theme. Themes may override individually.
+   */
+  --chart-1: var(--primary);
+  --chart-2: oklch(0.7 0.15 230);
+  --chart-3: oklch(0.72 0.16 160);
+  --chart-4: oklch(0.78 0.15 70);
+  --chart-5: oklch(0.68 0.18 300);
+
   /* Shadows default to dark-theme depths; light themes override in their files */
   --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.3);
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.3);
@@ -528,6 +554,16 @@
   ::selection {
     background-color: var(--primary);
     color: var(--primary-foreground);
+  }
+
+  /*
+   * Tailwind v4 preflight drops the legacy `cursor: pointer` on buttons. Restore
+   * it globally so hand-rolled buttons across the app get a pointer cursor (the
+   * Button primitive also sets it via cva, this covers everything else).
+   */
+  button:not(:disabled),
+  [role='button']:not([aria-disabled='true']) {
+    cursor: pointer;
   }
 }
 

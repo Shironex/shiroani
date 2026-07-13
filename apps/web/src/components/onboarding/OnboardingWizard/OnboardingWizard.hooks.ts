@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { isEditableTarget } from '@/lib/is-editable-target';
 import { useOnboardingStore } from '@/stores/useOnboardingStore';
@@ -47,6 +47,11 @@ export function useOnboardingWizard(onComplete: () => void): IOnboardingWizardVi
   const [isExiting, setIsExiting] = useState(false);
   const setCompleted = useOnboardingStore(s => s.setCompleted);
 
+  // Guard against double-completion (Enter double-fire, rapid clicks) and keep
+  // the exit timer id so we can clear it if the wizard unmounts mid-exit.
+  const isExitingRef = useRef(false);
+  const exitTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   const current = STEPS[step];
   const isFirst = step === 0;
   const isLast = step === TOTAL_SLOTS - 1;
@@ -76,12 +81,22 @@ export function useOnboardingWizard(onComplete: () => void): IOnboardingWizardVi
   }, [step]);
 
   const finish = useCallback(() => {
+    // Re-entry guard: ignore repeat calls once the exit animation has started.
+    if (isExitingRef.current) return;
+    isExitingRef.current = true;
     setIsExiting(true);
-    setTimeout(() => {
+    exitTimerRef.current = setTimeout(() => {
       setCompleted();
       onComplete();
     }, 500);
   }, [setCompleted, onComplete]);
+
+  // Clear the pending exit timer if the wizard unmounts before it fires.
+  useEffect(() => {
+    return () => {
+      if (exitTimerRef.current) clearTimeout(exitTimerRef.current);
+    };
+  }, []);
 
   const goToStep = useCallback(
     (index: number) => {
@@ -96,6 +111,18 @@ export function useOnboardingWizard(onComplete: () => void): IOnboardingWizardVi
     const handler = (e: KeyboardEvent) => {
       // Don't hijack keys while typing in inputs / textareas.
       if (isEditableTarget(e.target)) return;
+
+      // Skip when the event originates from a focused interactive control — the
+      // browser already fires its native activation (e.g. Enter on a Button),
+      // so hijacking here would double-fire next()/finish().
+      if (
+        e.target instanceof HTMLElement &&
+        e.target.closest(
+          'button, [role="switch"], [role="radio"], [role="tab"], a, input, textarea, select'
+        )
+      ) {
+        return;
+      }
 
       if (e.key === 'ArrowRight' || e.key === 'Enter') {
         if (isLast) finish();

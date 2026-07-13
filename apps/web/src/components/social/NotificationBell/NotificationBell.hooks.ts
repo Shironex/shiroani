@@ -63,12 +63,23 @@ export function useNotificationBell(): INotificationBellView {
         handleClose();
       }
     };
+    // Focus containment: mirror the click-away for keyboard users — if focus
+    // leaves the bell + panel subtree (e.g. Tab past the last row), close the
+    // panel. Don't refocus the bell here so focus can continue where it landed.
+    const onFocusOut = (e: FocusEvent) => {
+      const next = e.relatedTarget as Node | null;
+      if (next && containerRef.current && !containerRef.current.contains(next)) {
+        setOpen(false);
+      }
+    };
 
     document.addEventListener('mousedown', onPointerDown);
     document.addEventListener('keydown', onKeyDown);
+    document.addEventListener('focusout', onFocusOut);
     return () => {
       document.removeEventListener('mousedown', onPointerDown);
       document.removeEventListener('keydown', onKeyDown);
+      document.removeEventListener('focusout', onFocusOut);
     };
   }, [open, handleClose]);
 

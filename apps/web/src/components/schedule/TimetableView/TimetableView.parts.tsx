@@ -2,6 +2,8 @@ import { memo } from 'react';
 import type { TFunction } from 'i18next';
 import { Film } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { handleImageError } from '@/lib/image-utils';
+import { FadeInImage } from '@/components/shared/FadeInImage';
 import type { AiringAnime } from '@shiroani/shared';
 import { formatTime, getAnimeTitle, type SlotStatus } from '../schedule-utils';
 import { ScheduleDayColumn } from '../ScheduleDayColumn';
@@ -32,7 +34,7 @@ export function PosterGrid({
   t,
 }: IPosterGridProps) {
   return (
-    <div className="flex-1 overflow-x-auto overflow-y-hidden">
+    <div className="flex-1 overflow-x-auto overflow-y-hidden [mask-image:linear-gradient(to_right,#000_calc(100%_-_40px),transparent_100%)]">
       <div className="grid h-full min-w-[1100px] grid-cols-7 divide-x divide-border-glass">
         {weekDays.map((day, idx) => {
           const dayEntries = weekData.get(day) ?? [];
@@ -93,9 +95,10 @@ const PosterCard = memo(function PosterCard({
       role="article"
       aria-label={title}
       className={cn(
-        'group relative rounded-[9px] overflow-hidden border border-border-glass',
+        'group relative rounded-md overflow-hidden border border-border-glass',
         'transition-colors duration-200',
-        'bg-[linear-gradient(150deg,oklch(0.45_0.14_280),oklch(0.28_0.1_330))]',
+        // Fallback cover wash derived from the brand token (was a frozen violet).
+        'bg-[linear-gradient(150deg,oklch(from_var(--primary)_0.45_c_calc(h-20)),oklch(from_var(--primary)_0.28_c_calc(h+30)))]',
         isLive && 'border-primary/60 shadow-[0_0_18px_oklch(from_var(--primary)_l_c_h/0.35)]',
         isDone && 'opacity-55',
         onClick && 'cursor-pointer hover:border-primary/50'
@@ -110,17 +113,18 @@ const PosterCard = memo(function PosterCard({
           type="button"
           onClick={() => onClick(anime)}
           aria-label={title}
-          className="absolute inset-0 z-[1] rounded-[9px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
+          className="absolute inset-0 z-[1] rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
         />
       )}
 
       {/* Cover image */}
       {coverUrl ? (
-        <img
+        <FadeInImage
           src={coverUrl}
           alt=""
           className="absolute inset-0 w-full h-full object-cover"
           loading="lazy"
+          onError={handleImageError}
         />
       ) : (
         <div className="absolute inset-0 flex items-center justify-center">
@@ -139,7 +143,7 @@ const PosterCard = memo(function PosterCard({
       />
 
       {/* Top row — time + episode chips */}
-      <div className="absolute inset-x-[6px] top-[6px] flex items-center justify-between z-[2]">
+      <div className="pointer-events-none absolute inset-x-[6px] top-[6px] flex items-center justify-between z-[2]">
         <span
           className={cn(
             'inline-flex font-mono text-[10px] font-bold tracking-[0.05em] px-[5px] py-[2px] rounded',

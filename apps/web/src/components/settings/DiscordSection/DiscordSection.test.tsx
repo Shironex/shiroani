@@ -48,10 +48,11 @@ describe('DiscordSection', () => {
     vi.restoreAllMocks();
   });
 
-  it('renders nothing until settings hydrate from the bridge', () => {
-    // Without electronAPI, the section hydrates no settings and returns null.
+  it('renders a loading skeleton until settings hydrate from the bridge', () => {
+    // Without electronAPI, the section never hydrates settings and shows the
+    // shared loading skeleton (instead of blanking the panel to null).
     const { container } = render(<DiscordSection />);
-    expect(container).toBeEmptyDOMElement();
+    expect(container.querySelector('.animate-pulse')).toBeInTheDocument();
   });
 
   it('shows the connection status pill when enabled', async () => {
@@ -137,16 +138,17 @@ describe('DiscordSection', () => {
     expect(screen.queryByRole('heading', { name: 'Status templates' })).not.toBeInTheDocument();
   });
 
-  it('clicking Save persists the settings and shows the saved state', async () => {
+  it('auto-saves on change and flashes the saved indicator', async () => {
     const { updateSettings } = setBridge({ settings: makeSettings({ enabled: true }) });
     const { user } = render(<DiscordSection />);
-    const saveButton = await screen.findByRole('button', { name: 'Save' });
-    await user.click(saveButton);
+    // Changing any field persists immediately — no explicit Save button.
+    const detail = await screen.findByRole('switch', { name: 'Show anime titles' });
+    await user.click(detail);
 
     expect(updateSettings).toHaveBeenCalledWith(
-      expect.objectContaining({ enabled: true, useCustomTemplates: false })
+      expect.objectContaining({ showAnimeDetails: false, useCustomTemplates: false })
     );
-    expect(await screen.findByRole('button', { name: 'Saved' })).toBeInTheDocument();
+    expect(await screen.findByText('Saved')).toBeInTheDocument();
   });
 
   it('reset restores the active template field to its default copy', async () => {

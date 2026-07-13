@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { SettingsCard } from '@/components/settings/SettingsCard';
+import { SettingsCard, SettingsFieldLabel } from '@/components/settings/SettingsCard';
 import { tDynamic } from '@/lib/i18n';
 import type { DiscordActivityType } from '@shiroani/shared';
 import {
@@ -62,9 +62,7 @@ export default function DiscordTemplateEditor(props: IDiscordTemplateEditorProps
     >
       {/* Activity type selector */}
       <div className="space-y-1.5">
-        <label id={activityId} className="text-xs font-medium text-muted-foreground">
-          {t('discord.editor.activityType')}
-        </label>
+        <SettingsFieldLabel id={activityId}>{t('discord.editor.activityType')}</SettingsFieldLabel>
         <Select
           value={selectedActivity}
           onValueChange={v => onActivityChange(v as DiscordActivityType)}
@@ -81,9 +79,7 @@ export default function DiscordTemplateEditor(props: IDiscordTemplateEditorProps
       {/* Template inputs */}
       <div className="space-y-3">
         <div className="space-y-1.5">
-          <label htmlFor={line1Id} className="text-xs font-medium text-muted-foreground">
-            {t('discord.editor.line1')}
-          </label>
+          <SettingsFieldLabel htmlFor={line1Id}>{t('discord.editor.line1')}</SettingsFieldLabel>
           <Input
             id={line1Id}
             className="h-8 text-sm"
@@ -93,9 +89,7 @@ export default function DiscordTemplateEditor(props: IDiscordTemplateEditorProps
           />
         </div>
         <div className="space-y-1.5">
-          <label htmlFor={line2Id} className="text-xs font-medium text-muted-foreground">
-            {t('discord.editor.line2')}
-          </label>
+          <SettingsFieldLabel htmlFor={line2Id}>{t('discord.editor.line2')}</SettingsFieldLabel>
           <Input
             id={line2Id}
             className="h-8 text-sm"

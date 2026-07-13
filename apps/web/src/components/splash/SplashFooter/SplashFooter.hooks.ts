@@ -35,5 +35,6 @@ export function useSplashFooter({
     metaText,
     closeLabel: t('error.close'),
     retryLabel: t('error.retry'),
+    loadingLabel: t('loading'),
   };
 }

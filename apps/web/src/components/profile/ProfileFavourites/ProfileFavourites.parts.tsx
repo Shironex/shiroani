@@ -1,6 +1,7 @@
 import { memo, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Film, UserRound } from 'lucide-react';
+import { FadeInImage } from '@/components/shared/FadeInImage';
 import type {
   UserProfile,
   UserProfileFavouritePerson,
@@ -21,7 +22,7 @@ export const FavouriteCard = memo(function FavouriteCard({
     <div className="w-[90px] shrink-0">
       <div className="aspect-[3/4] rounded-lg overflow-hidden border border-border/20 relative">
         {fav.coverImage && !imgError ? (
-          <img
+          <FadeInImage
             src={fav.coverImage}
             alt={title}
             className="w-full h-full object-cover"
@@ -34,7 +35,7 @@ export const FavouriteCard = memo(function FavouriteCard({
           </div>
         )}
         <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-1.5 pt-4">
-          <p className="text-[10px] font-medium text-white leading-tight line-clamp-2">{title}</p>
+          <p className="text-2xs font-medium text-white leading-tight line-clamp-2">{title}</p>
         </div>
       </div>
     </div>
@@ -57,7 +58,7 @@ export const FavouritePersonCard = memo(function FavouritePersonCard({
     <div className="w-[90px] shrink-0">
       <div className="aspect-[3/4] rounded-lg overflow-hidden border border-border/20 relative">
         {person.image && !imgError ? (
-          <img
+          <FadeInImage
             src={person.image}
             alt={person.name}
             className="w-full h-full object-cover"
@@ -70,7 +71,7 @@ export const FavouritePersonCard = memo(function FavouritePersonCard({
           </div>
         )}
         <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-1.5 pt-4">
-          <p className="text-[10px] font-medium text-white leading-tight line-clamp-2">
+          <p className="text-2xs font-medium text-white leading-tight line-clamp-2">
             {person.name}
           </p>
         </div>
@@ -85,7 +86,7 @@ export const FavouritePersonCard = memo(function FavouritePersonCard({
  */
 export function FavouriteStudioPill({ studio }: { studio: UserProfileFavouriteStudio }) {
   return (
-    <span className="shrink-0 inline-flex items-center px-3 py-1.5 rounded-lg bg-foreground/5 border border-border-glass text-[12px] font-medium text-foreground/90">
+    <span className="shrink-0 inline-flex items-center px-3 py-1.5 rounded-lg bg-foreground/5 border border-border-glass text-xs font-medium text-foreground/90">
       {studio.name}
     </span>
   );

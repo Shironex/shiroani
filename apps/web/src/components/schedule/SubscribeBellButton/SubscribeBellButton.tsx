@@ -23,6 +23,7 @@ function SubscribeBellButton({
       size="icon"
       className={cn(
         'opacity-0 group-hover:opacity-100 transition-opacity',
+        'focus-visible:opacity-100 group-focus-within:opacity-100',
         isSubscribed && 'opacity-100',
         className
       )}

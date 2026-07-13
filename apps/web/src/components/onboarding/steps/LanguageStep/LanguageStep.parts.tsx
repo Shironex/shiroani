@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useRef, type KeyboardEvent, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Check } from 'lucide-react';
 import { SUPPORTED_LANGUAGES, type SupportedLanguage } from '@shiroani/shared';
@@ -46,6 +46,21 @@ interface ILanguageOptionsProps {
 /** The radiogroup of supported languages (flag + label + active check). */
 export function LanguageOptions({ active, onSelect }: ILanguageOptionsProps) {
   const { t } = useTranslation('onboarding');
+  const buttonsRef = useRef<(HTMLButtonElement | null)[]>([]);
+
+  // Arrow-key roving between radios: move focus to the sibling and select it,
+  // wrapping at both ends. Horizontal + vertical arrows both work so the group
+  // is navigable regardless of the responsive 1/2-column layout.
+  const handleKeyDown = (e: KeyboardEvent<HTMLButtonElement>, index: number) => {
+    const count = SUPPORTED_LANGUAGES.length;
+    let nextIndex: number;
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (index + 1) % count;
+    else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = (index - 1 + count) % count;
+    else return;
+    e.preventDefault();
+    buttonsRef.current[nextIndex]?.focus();
+    void onSelect(SUPPORTED_LANGUAGES[nextIndex].code);
+  };
 
   return (
     <div
@@ -53,34 +68,39 @@ export function LanguageOptions({ active, onSelect }: ILanguageOptionsProps) {
       aria-label={t('step.language.groupAria')}
       className="grid grid-cols-1 gap-2.5 sm:grid-cols-2"
     >
-      {SUPPORTED_LANGUAGES.map(lang => {
+      {SUPPORTED_LANGUAGES.map((lang, index) => {
         const isActive = active === lang.code;
         return (
           <button
             key={lang.code}
+            ref={el => {
+              buttonsRef.current[index] = el;
+            }}
             type="button"
             role="radio"
             aria-checked={isActive}
+            tabIndex={isActive ? 0 : -1}
             onClick={() => {
               void onSelect(lang.code);
             }}
+            onKeyDown={e => handleKeyDown(e, index)}
             className={cn(
-              'relative flex items-center gap-3.5 overflow-hidden rounded-xl border p-3.5 text-left transition-colors',
-              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50',
+              'relative flex items-center gap-3.5 overflow-hidden rounded-lg border p-3.5 text-left transition-colors active:scale-[0.98]',
+              'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring',
               isActive
-                ? 'border-primary/40 bg-primary/10'
+                ? 'border-primary/40 bg-primary/10 hover:bg-primary/15'
                 : 'border-border-glass bg-foreground/[0.02] hover:bg-foreground/[0.04]'
             )}
           >
             <span
               aria-hidden="true"
-              className="h-[26px] w-9 flex-shrink-0 overflow-hidden rounded-[4px] ring-1 ring-foreground/10"
+              className="h-[26px] w-9 flex-shrink-0 overflow-hidden rounded-sm ring-1 ring-foreground/10"
             >
               {FLAG_GLYPHS[lang.code]}
             </span>
             <div className="min-w-0 flex-1">
               <b className="block text-sm font-semibold text-foreground">{lang.label}</b>
-              <small className="text-[11.5px] text-muted-foreground">
+              <small className="text-xs text-muted-foreground">
                 {t(`step.language.${lang.code}.description`)}
               </small>
             </div>

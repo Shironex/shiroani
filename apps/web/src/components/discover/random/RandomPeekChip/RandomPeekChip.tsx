@@ -1,4 +1,5 @@
 import { memo } from 'react';
+import { Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useRandomPeekChip } from './RandomPeekChip.hooks';
 import type { IRandomPeekChipProps } from './RandomPeekChip.types';
@@ -11,8 +12,9 @@ function RandomPeekChip({ media, direction, onClick, inLibrary }: IRandomPeekChi
       type="button"
       onClick={onClick}
       className={cn(
-        'group flex items-center gap-2 max-w-[45%] min-w-0 p-1.5 rounded-[10px]',
+        'group flex items-center gap-2 max-w-[45%] min-w-0 p-1.5 rounded-lg',
         'bg-card/40 hover:bg-card/70 border border-border-glass transition-colors',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.98]',
         direction === 'next' && 'flex-row-reverse'
       )}
       aria-label={ariaLabel}
@@ -33,7 +35,9 @@ function RandomPeekChip({ media, direction, onClick, inLibrary }: IRandomPeekChi
         </p>
         <p className="text-[11px] font-medium text-foreground/80 truncate leading-tight mt-[2px]">
           {title}
-          {inLibrary && <span className="ml-1 text-status-success">✓</span>}
+          {inLibrary && (
+            <Check className="inline-block w-3 h-3 ml-1 align-[-1px] text-status-success" />
+          )}
         </p>
       </div>
     </button>

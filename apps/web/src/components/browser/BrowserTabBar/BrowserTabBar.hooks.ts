@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import {
   PointerSensor,
   closestCenter,
@@ -143,6 +143,20 @@ export function useBrowserTabBar(
     return makeSplitAwareCollisionDetection(mergeIds);
   }, [tabs]);
 
+  // Fade the strip's edges when the tabs overflow their scroll container, so a
+  // clipped tab reads as "there's more" instead of being hard-cut at the edge.
+  const listRef = useRef<HTMLDivElement>(null);
+  const [isOverflowing, setIsOverflowing] = useState(false);
+  useLayoutEffect(() => {
+    const el = listRef.current;
+    if (!el) return;
+    const check = () => setIsOverflowing(el.scrollWidth > el.clientWidth + 1);
+    check();
+    const ro = new ResizeObserver(check);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [tabs]);
+
   return {
     sensors,
     activeDragId,
@@ -154,5 +168,7 @@ export function useBrowserTabBar(
     handleDragOver,
     handleDragEnd,
     handleDragCancel,
+    listRef,
+    isOverflowing,
   };
 }

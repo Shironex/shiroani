@@ -3,6 +3,7 @@ import { Tv } from 'lucide-react';
 import type { AiringAnime } from '@shiroani/shared';
 import { cn } from '@/lib/utils';
 import { handleImageError } from '@/lib/image-utils';
+import { FadeInImage } from '@/components/shared/FadeInImage';
 import { formatTime, getAnimeTitle, getCoverUrl, type SlotStatus } from '../schedule-utils';
 import { ScheduleDayColumn } from '../ScheduleDayColumn';
 import { SubscribeBellButton } from '../SubscribeBellButton';
@@ -110,7 +111,7 @@ const WeekEventCard = memo(function WeekEventCard({
     ? 'border-l-primary'
     : isDone
       ? 'border-l-muted-foreground/30'
-      : 'border-l-[oklch(0.5_0.15_280)]';
+      : 'border-l-status-info';
 
   // Top edge + subtle wash encodes library / subscription membership.
   // Library wins when both are true. Kept as a separate axis from the
@@ -120,7 +121,7 @@ const WeekEventCard = memo(function WeekEventCard({
     membership === 'library'
       ? 'border-t-[3px] border-t-primary bg-primary/[0.06]'
       : membership === 'subscribed'
-        ? 'border-t-[3px] border-t-[oklch(0.8_0.14_70)] bg-[oklch(0.8_0.14_70/0.06)]'
+        ? 'border-t-[3px] border-t-gold bg-[oklch(from_var(--gold)_l_c_h/0.06)]'
         : '';
 
   return (
@@ -158,7 +159,7 @@ const WeekEventCard = memo(function WeekEventCard({
           className="w-9 h-[54px] rounded-[4px] overflow-hidden flex-shrink-0 bg-muted/30 border border-border-glass relative"
         >
           {coverUrl ? (
-            <img
+            <FadeInImage
               src={coverUrl}
               alt=""
               loading="lazy"

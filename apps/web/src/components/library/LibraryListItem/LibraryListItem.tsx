@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Star, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { PillTag } from '@/components/ui/pill-tag';
+import { FadeInImage } from '@/components/shared/FadeInImage';
 import { ProgressBar } from '@/components/shared/ProgressBar';
 import { CountdownBadge } from '@/components/library/CountdownBadge';
 import { SyncBadge } from '@/components/library/SyncBadge';
@@ -50,7 +51,7 @@ const LibraryListItem = memo(function LibraryListItem(props: ILibraryListItemPro
         }
       }}
       className={cn(
-        'grid items-center gap-3 px-3.5 py-2.5 rounded-[8px] cursor-pointer',
+        'grid items-center gap-3 px-3.5 py-2.5 rounded-md cursor-pointer',
         selectionMode
           ? 'grid-cols-[20px_44px_minmax(0,1fr)_auto_minmax(140px,1fr)_auto]'
           : 'grid-cols-[44px_minmax(0,1fr)_auto_minmax(140px,1fr)_auto]',
@@ -65,7 +66,7 @@ const LibraryListItem = memo(function LibraryListItem(props: ILibraryListItemPro
       {selectionMode && (
         <div
           className={cn(
-            'w-5 h-5 rounded-[5px] border flex items-center justify-center shrink-0 transition-colors',
+            'w-5 h-5 rounded-sm border flex items-center justify-center shrink-0 transition-colors',
             isSelected
               ? 'bg-primary border-primary text-primary-foreground'
               : 'bg-background/40 border-border-glass'
@@ -77,7 +78,7 @@ const LibraryListItem = memo(function LibraryListItem(props: ILibraryListItemPro
 
       {/* Thumbnail */}
       {entry.coverImage ? (
-        <img
+        <FadeInImage
           src={entry.coverImage}
           alt={entry.title}
           className="w-11 h-14 rounded-md object-cover shrink-0 border border-border-glass"
@@ -126,13 +127,13 @@ const LibraryListItem = memo(function LibraryListItem(props: ILibraryListItemPro
       <div className="shrink-0 w-14 flex items-center justify-end gap-1">
         {hasScore ? (
           <>
-            <Star className="w-3 h-3 fill-current text-[oklch(0.8_0.14_70)]" strokeWidth={0} />
-            <span className="text-[11.5px] font-mono font-bold tabular-nums text-[oklch(0.8_0.14_70)]">
+            <Star className="w-3 h-3 fill-current text-gold" strokeWidth={0} />
+            <span className="text-[11.5px] font-mono font-bold tabular-nums text-gold">
               {entry.score}
             </span>
           </>
         ) : (
-          <span className="text-[11.5px] font-mono text-muted-foreground/40">-</span>
+          <span className="text-[11.5px] font-mono text-muted-foreground">–</span>
         )}
       </div>
     </div>

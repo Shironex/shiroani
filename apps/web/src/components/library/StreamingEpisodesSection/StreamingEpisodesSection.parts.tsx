@@ -2,15 +2,8 @@ import { memo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ExternalLink, Play } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { FadeInImage } from '@/components/shared/FadeInImage';
 import type { AnimeDetailStreamingEpisode } from '@shiroani/shared';
-
-export function FieldLabel({ children }: { children: React.ReactNode }) {
-  return (
-    <span className="block font-mono text-[10px] uppercase tracking-[0.15em] text-muted-foreground font-medium">
-      {children}
-    </span>
-  );
-}
 
 export const StreamingEpisodeCard = memo(function StreamingEpisodeCard({
   episode,
@@ -29,7 +22,7 @@ export const StreamingEpisodeCard = memo(function StreamingEpisodeCard({
       onClick={handleClick}
       aria-label={t('streamingEpisodes.watchAria', { title: episode.title, site: episode.site })}
       className={cn(
-        'group/ep relative shrink-0 w-40 text-left',
+        'group/ep relative shrink-0 w-40 text-left snap-start',
         'rounded-md overflow-hidden border border-border-glass bg-background/40',
         'transition-colors hover:border-primary/40',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
@@ -37,7 +30,7 @@ export const StreamingEpisodeCard = memo(function StreamingEpisodeCard({
     >
       <div className="relative aspect-video overflow-hidden bg-muted/50">
         {episode.thumbnail && (
-          <img
+          <FadeInImage
             src={episode.thumbnail}
             alt=""
             className="w-full h-full object-cover"

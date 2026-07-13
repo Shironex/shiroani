@@ -30,7 +30,6 @@ export function GreetingSubtitle({
             components={{ 1: boldStrong }}
           />
         )}
-        .
       </p>
     );
   }

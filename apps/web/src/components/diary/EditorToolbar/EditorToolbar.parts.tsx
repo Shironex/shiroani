@@ -1,4 +1,5 @@
 import { cn } from '@/lib/utils';
+import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 
 interface IToolbarButtonProps {
   onClick: () => void;
@@ -15,17 +16,17 @@ export function ToolbarButton({
   children,
   title,
 }: IToolbarButtonProps) {
-  return (
+  const button = (
     <button
       type="button"
       onClick={onClick}
       disabled={disabled}
-      title={title}
       aria-label={title}
       aria-pressed={isActive}
       className={cn(
-        'inline-flex h-7 min-w-7 items-center justify-center rounded-[5px] px-1.5 font-mono text-[11px]',
-        'transition-colors',
+        'inline-flex h-7 min-w-7 items-center justify-center rounded-sm px-1.5 font-mono text-[11px]',
+        'transition-colors active:scale-95',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
         isActive
           ? 'bg-primary/15 text-primary'
           : 'text-muted-foreground hover:bg-foreground/5 hover:text-foreground',
@@ -34,6 +35,15 @@ export function ToolbarButton({
     >
       {children}
     </button>
+  );
+
+  if (!title) return button;
+
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>{button}</TooltipTrigger>
+      <TooltipContent>{title}</TooltipContent>
+    </Tooltip>
   );
 }
 

@@ -1,3 +1,4 @@
+import { Globe } from 'lucide-react';
 import { useFrequentSiteRow } from './FrequentSiteRow.hooks';
 import type { IFrequentSiteRowProps } from './FrequentSiteRow.types';
 
@@ -18,7 +19,7 @@ export default function FrequentSiteRow({ site, onClick }: IFrequentSiteRowProps
           onError={() => setImgError(true)}
         />
       ) : (
-        <div className="size-4 rounded-sm bg-muted shrink-0" />
+        <Globe className="size-4 shrink-0 text-muted-foreground/70" />
       )}
       <div className="min-w-0 flex-1">
         <div className="truncate text-[11.5px] font-medium text-foreground/90 leading-tight">

@@ -30,8 +30,8 @@ const VARIANT_CONFIG: Record<SplashVariant, VariantConfig> = {
     mascot: MASCOT_SLEEP_URL,
     animateMascot: false,
     showRing: true,
-    wordmarkEmClass: 'text-[var(--status-info)]',
-    subClass: 'text-[color:oklch(from_var(--status-info)_l_c_h/0.85)]',
+    wordmarkEmClass: 'text-status-info',
+    subClass: 'text-status-info/85',
     defaultSubKey: 'updating',
   },
   error: {

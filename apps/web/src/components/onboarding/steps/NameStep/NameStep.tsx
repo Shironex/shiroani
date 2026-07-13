@@ -2,15 +2,15 @@ import { Trans, useTranslation } from 'react-i18next';
 import { UserRound } from 'lucide-react';
 import { DISPLAY_NAME_MAX_LENGTH } from '@shiroani/shared';
 import { Input } from '@/components/ui/input';
+import { Eyebrow } from '@/components/shared/Eyebrow';
 import { StepLayout } from '../../StepLayout';
+import { emPrimary, bPrimary } from '../../shared-parts';
 import { useNameStep } from './NameStep.hooks';
 
 /** Step 01 · Display name. Persists to the settings store (local-only). */
 export default function NameStep() {
   const { t } = useTranslation('onboarding');
   const { displayName, setDisplayName } = useNameStep();
-  const emPrimary = <em className="not-italic text-primary italic" />;
-  const bPrimary = <b className="font-bold text-primary" />;
 
   return (
     <StepLayout
@@ -25,16 +25,17 @@ export default function NameStep() {
       stepHint={t('step.name.hint')}
     >
       <div className="flex flex-col gap-2">
+        <Eyebrow htmlFor="onb-display-name">{t('step.name.ariaLabel')}</Eyebrow>
         <Input
+          id="onb-display-name"
           value={displayName}
           onChange={e => setDisplayName(e.target.value)}
           placeholder={t('step.name.placeholder')}
           maxLength={DISPLAY_NAME_MAX_LENGTH}
-          aria-label={t('step.name.ariaLabel')}
-          className="h-10 text-[14px]"
+          className="h-10 text-sm"
           autoFocus
         />
-        <div className="flex items-center justify-between font-mono text-[10.5px] uppercase tracking-[0.16em] text-muted-foreground/70">
+        <div className="flex items-center justify-between font-mono text-2xs uppercase tracking-[0.16em] text-muted-foreground">
           <span>{t('step.name.maxChars', { count: DISPLAY_NAME_MAX_LENGTH })}</span>
           <span>
             {displayName.length} / {DISPLAY_NAME_MAX_LENGTH}
@@ -42,7 +43,7 @@ export default function NameStep() {
         </div>
       </div>
 
-      <p className="mt-auto font-mono text-[10.5px] uppercase tracking-[0.18em] text-muted-foreground">
+      <p className="mt-auto font-mono text-2xs normal-case text-muted-foreground">
         {t('step.name.footnote')}
       </p>
     </StepLayout>

@@ -1,14 +1,48 @@
 import { type JSX } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Globe, Columns2 } from 'lucide-react';
+import { Globe, Columns2, WifiOff, RotateCw } from 'lucide-react';
 import { isNewTabUrl, type BrowserLeafNode, type BrowserSplitNode } from '@shiroani/shared';
 import { NewTabPage } from '@/components/browser/NewTabPage';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
 import { TooltipButton } from '@/components/ui/tooltip-button';
+import { Button } from '@/components/ui/button';
 import { useBrowserStore } from '@/stores/useBrowserStore';
+import { getWebview } from '@/components/browser/webviewRefs';
+import { useWebviewErrorStore } from '@/components/browser/webviewErrors';
 import { cn } from '@/lib/utils';
 import { PANE_SLOT_ATTR, unsplitTab } from './BrowserView.hooks';
 import type { IPaneRendererProps } from './BrowserView.types';
+
+/**
+ * Themed overlay shown over a pane whose last load failed, replacing Chromium's
+ * off-theme grey error page. Subscribes per-pane so only the failed leaf shows
+ * it; retry clears the flag and reloads (a fresh `did-start-loading` also clears
+ * it). Style-matched to the empty-tabs state.
+ */
+export function WebviewErrorOverlay({ paneId }: { paneId: string }) {
+  const { t } = useTranslation('browser');
+  const hasError = useWebviewErrorStore(state => paneId in state.errors);
+  if (!hasError) return null;
+
+  const handleRetry = () => {
+    useWebviewErrorStore.getState().clearError(paneId);
+    getWebview(paneId)?.reload();
+  };
+
+  return (
+    <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-4 bg-background px-6 text-center">
+      <WifiOff className="size-14 text-muted-foreground opacity-20" />
+      <div className="space-y-1">
+        <p className="text-sm font-semibold text-foreground">{t('error.title')}</p>
+        <p className="max-w-[32ch] text-xs text-muted-foreground">{t('error.body')}</p>
+      </div>
+      <Button variant="outline" size="sm" onClick={handleRetry}>
+        <RotateCw className="size-3.5" />
+        {t('error.retry')}
+      </Button>
+    </div>
+  );
+}
 
 export function PaneChrome({
   leaf,
@@ -22,7 +56,7 @@ export function PaneChrome({
     <div
       className={cn(
         'flex items-center gap-2 h-[22px] px-2 shrink-0',
-        'bg-[oklch(from_var(--card)_l_c_h/0.55)] border-b border-border-glass',
+        'bg-card/60 border-b border-border-glass',
         'text-[11px] text-muted-foreground'
       )}
     >
@@ -74,8 +108,12 @@ export function renderNode(props: IPaneRendererProps): JSX.Element {
             // sending one half home/new-tab doesn't cover the other half.
             <NewTabPage onNavigate={url => onNewTabNavigate(node.id, url)} />
           ) : (
-            // Measurement target only — the webview overlay reads this rect.
-            <div {...{ [PANE_SLOT_ATTR]: node.id }} className="absolute inset-0" />
+            <>
+              {/* Measurement target only — the webview overlay reads this rect. */}
+              <div {...{ [PANE_SLOT_ATTR]: node.id }} className="absolute inset-0" />
+              {/* Themed load-error overlay, painted above the floating webview. */}
+              <WebviewErrorOverlay paneId={node.id} />
+            </>
           )}
         </div>
       </div>

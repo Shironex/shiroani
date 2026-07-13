@@ -1,23 +1,22 @@
 import { cn } from '@/lib/utils';
 import type { IStatTileProps } from './QuickStatsCard.types';
 
+// Single source of truth for the accent color a tone contributes; both the icon
+// and the value read from it so gold/accent never drift between the two.
+const TONE_CLASS = {
+  accent: 'text-primary',
+  gold: 'text-gold',
+} as const;
+
 export function StatTile({ icon: Icon, label, value, tone }: IStatTileProps) {
+  const toneClass = tone ? TONE_CLASS[tone] : undefined;
   return (
-    <div className="rounded-[10px] border border-border-glass bg-foreground/[0.04] px-3 py-3">
-      <Icon
-        className={cn(
-          'w-3.5 h-3.5 mb-2',
-          tone === 'accent' && 'text-primary',
-          tone === 'gold' && 'text-[oklch(0.8_0.14_70)]',
-          !tone && 'text-muted-foreground'
-        )}
-      />
+    <div className="rounded-lg border border-border-glass bg-foreground/[0.04] px-3 py-3">
+      <Icon className={cn('w-3.5 h-3.5 mb-2', toneClass ?? 'text-muted-foreground')} />
       <div
         className={cn(
           'font-sans font-extrabold text-[20px] leading-[1.1] tracking-[-0.02em] tabular-nums',
-          tone === 'accent' && 'text-primary',
-          tone === 'gold' && 'text-[oklch(0.8_0.14_70)]',
-          !tone && 'text-foreground'
+          toneClass ?? 'text-foreground'
         )}
       >
         {value}

@@ -1,9 +1,11 @@
 import { Trans, useTranslation } from 'react-i18next';
 import { Bell, X, BellRing, Info } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
+import { Input } from '@/components/ui/input';
 import {
   SettingsCard,
   SettingsInfoCallout,
+  SettingsSectionSkeleton,
   SettingsSelectRow,
   SettingsToggleRow,
 } from '@/components/settings/SettingsCard';
@@ -24,7 +26,7 @@ export default function NotificationsSection(props: INotificationsSectionProps) 
     leadTimeOptions,
   } = useNotificationsSection(props);
 
-  if (!loaded) return null;
+  if (!loaded) return <SettingsSectionSkeleton cards={2} />;
 
   const showWindowsInfo = IS_WINDOWS && data.enabled;
   const showQuietHourInputs = data.quietHoursEnabled && data.enabled;
@@ -48,7 +50,7 @@ export default function NotificationsSection(props: INotificationsSectionProps) 
         <div className="flex-1 min-w-0">
           <p className="text-sm font-medium truncate">{sub.title}</p>
           {showRomaji && (
-            <p className="text-2xs text-muted-foreground/70 truncate">{sub.titleRomaji}</p>
+            <p className="text-2xs text-muted-foreground/80 truncate">{sub.titleRomaji}</p>
           )}
         </div>
         <Switch
@@ -110,24 +112,24 @@ export default function NotificationsSection(props: INotificationsSectionProps) 
               <label htmlFor="quiet-start" className="text-[11.5px] text-muted-foreground">
                 {t('notifications.quietHours.from')}
               </label>
-              <input
+              <Input
                 id="quiet-start"
                 type="time"
                 value={data.quietHoursStart}
                 onChange={e => updateAndSave({ quietHoursStart: e.target.value })}
-                className="h-8 px-2 text-xs rounded-md border border-border-glass bg-background/40 focus:bg-background/60 transition-colors outline-none"
+                className="h-8 w-auto text-xs"
               />
             </div>
             <div className="flex items-center gap-1.5">
               <label htmlFor="quiet-end" className="text-[11.5px] text-muted-foreground">
                 {t('notifications.quietHours.to')}
               </label>
-              <input
+              <Input
                 id="quiet-end"
                 type="time"
                 value={data.quietHoursEnd}
                 onChange={e => updateAndSave({ quietHoursEnd: e.target.value })}
-                className="h-8 px-2 text-xs rounded-md border border-border-glass bg-background/40 focus:bg-background/60 transition-colors outline-none"
+                className="h-8 w-auto text-xs"
               />
             </div>
           </div>

@@ -14,21 +14,27 @@ export default function FilterTabBar<T extends string = string>({
   ariaLabel,
   className,
 }: IFilterTabBarProps<T>) {
-  useFilterTabBar();
+  const { registerTab, handleKeyDown } = useFilterTabBar<T>({ tabs, active, onChange });
 
-  const tabButtons = tabs.map(tab => {
+  const tabButtons = tabs.map((tab, index) => {
     const isActive = active === tab.value;
     const Icon = tab.Icon;
     return (
       <button
         key={tab.value}
+        ref={registerTab(index)}
         role="tab"
         aria-selected={isActive}
+        // Roving tabindex: only the selected tab is in the tab order; arrows
+        // move between the rest.
+        tabIndex={isActive ? 0 : -1}
         onClick={() => onChange(tab.value)}
+        onKeyDown={handleKeyDown}
         title={tab.tooltip}
         className={cn(
           'relative px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap',
-          'transition-all duration-200',
+          'transition-colors duration-150',
+          'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring',
           Icon && 'inline-flex items-center gap-1.5',
           isActive
             ? 'bg-primary/15 text-primary'

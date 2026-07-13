@@ -9,6 +9,7 @@
     "forward": "Forward",
     "reload": "Reload",
     "loading": "Loading",
+    "stop": "Stop",
     "home": "Home",
     "addFavorite": "Add to favorites",
     "removeFavorite": "Remove from favorites",
@@ -47,7 +48,17 @@
     "empty": "No history yet",
     "noResults": "No results",
     "removeEntry": "Remove entry",
-    "clearAll": "Clear all"
+    "clearAll": "Clear all",
+    "clearConfirm": {
+      "title": "Clear all history?",
+      "description": "This permanently removes every page from your browsing history. This can't be undone.",
+      "confirm": "Clear all"
+    }
+  },
+  "error": {
+    "title": "This page didn't load",
+    "body": "Check your connection and try again.",
+    "retry": "Try again"
   },
   "tabs": {
     "newTab": "New tab",
@@ -61,7 +72,8 @@
       "pane": "Browser pane"
     },
     "empty": {
-      "cta": "Click + to open a new tab"
+      "cta": "Click + to open a new tab",
+      "action": "New tab"
     }
   },
   "addDialog": {
@@ -106,10 +118,10 @@
         "default": "Happy watching.",
         "todaySchedule_one": "<1>{{count}} episode</1> on today's schedule.",
         "todaySchedule_other": "<1>{{count}} episodes</1> on today's schedule.",
-        "episodesWaiting_one": "<1>{{count}} episode</1> waiting for you",
-        "episodesWaiting_other": "<1>{{count}} episodes</1> waiting for you",
-        "feedUnread_one": "<1>{{count}} update</1> in your feeds",
-        "feedUnread_other": "<1>{{count}} updates</1> in your feeds"
+        "episodesWaiting_one": "<1>{{count}} episode</1> waiting for you.",
+        "episodesWaiting_other": "<1>{{count}} episodes</1> waiting for you.",
+        "feedUnread_one": "<1>{{count}} update</1> in your feeds.",
+        "feedUnread_other": "<1>{{count}} updates</1> in your feeds."
       }
     },
     "quickStats": {

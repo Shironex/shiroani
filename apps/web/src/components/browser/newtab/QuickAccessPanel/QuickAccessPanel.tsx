@@ -39,7 +39,7 @@ export default function QuickAccessPanel({
   return (
     <section
       aria-labelledby="newtab-quick-access"
-      className="relative rounded-[14px] border border-border-glass bg-foreground/[0.025] p-4 overflow-hidden min-w-0"
+      className="relative rounded-[calc(var(--radius)+4px)] border border-border-glass bg-foreground/[0.025] p-4 overflow-hidden min-w-0"
     >
       <PanelHeader
         id="newtab-quick-access"
@@ -56,7 +56,7 @@ export default function QuickAccessPanel({
           aria-label={t('newTab.quickAccess.addAria')}
           className={cn(
             'group relative flex aspect-[1.7] flex-col items-center justify-center gap-1.5',
-            'rounded-[10px] border border-dashed border-border-glass bg-foreground/[0.02]',
+            'rounded-lg border border-dashed border-border-glass bg-foreground/[0.02]',
             'text-muted-foreground transition-colors',
             'hover:border-primary/40 hover:bg-primary/[0.06] hover:text-primary cursor-pointer'
           )}

@@ -2,6 +2,7 @@ import { Trans, useTranslation } from 'react-i18next';
 import { Library } from 'lucide-react';
 import { ExperimentalBadge } from '@/components/ui/experimental-badge';
 import { StepLayout } from '../../StepLayout';
+import { emPrimary, bStrong, bPrimary } from '../../shared-parts';
 import { useAniListStep } from './AniListStep.hooks';
 import { AniListAccountCard } from './AniListStep.parts';
 
@@ -18,9 +19,6 @@ export default function AniListStep() {
   const { t } = useTranslation('onboarding');
   const { t: tCommon } = useTranslation('common');
   const { connected, viewer, loading, errorMessage, connect } = useAniListStep();
-  const emPrimary = <em className="not-italic text-primary italic" />;
-  const bStrong = <b className="font-semibold text-foreground" />;
-  const bPrimary = <b className="font-bold text-primary" />;
 
   return (
     <StepLayout
@@ -51,7 +49,7 @@ export default function AniListStep() {
         connect={connect}
       />
 
-      <p className="font-mono text-[10.5px] uppercase tracking-[0.18em] text-muted-foreground">
+      <p className="mt-auto font-mono text-2xs normal-case text-muted-foreground">
         {t('step.anilist.footnote')}
       </p>
     </StepLayout>

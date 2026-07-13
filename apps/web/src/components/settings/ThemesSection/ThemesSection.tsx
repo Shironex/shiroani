@@ -9,6 +9,7 @@ import { ThemeGrid } from '@/components/shared/theme/ThemeGrid';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import { IS_MAC } from '@/lib/platform';
 import { cn } from '@/lib/utils';
+import { selectableChip } from '@/components/settings/chip-styles';
 import { UI_FONT_SCALE_PRESETS, type Theme } from '@shiroani/shared';
 import { useThemesSection } from './ThemesSection.hooks';
 import { CustomThemeSwatchWrapper } from './ThemesSection.parts';
@@ -65,11 +66,11 @@ export default function ThemesSection(props: IThemesSectionProps) {
         aria-pressed={isActive}
         onClick={() => setUIFontScale(scale)}
         className={cn(
-          'rounded-lg border px-3 py-[6px] text-[12px] font-medium transition-colors',
+          'rounded-lg border px-3 py-[6px] text-[12px] font-medium',
+          'transition-[color,background-color,border-color,transform] active:scale-[0.98]',
           'focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1',
-          isActive
-            ? 'border-primary/35 bg-primary/18 text-primary font-semibold'
-            : 'border-border-glass bg-background/30 text-muted-foreground hover:bg-accent/40 hover:text-foreground'
+          selectableChip(isActive),
+          isActive && 'font-semibold'
         )}
       >
         {percentLabel}%
@@ -130,11 +131,9 @@ export default function ThemesSection(props: IThemesSectionProps) {
           onClick={() => setTheme(SYSTEM_THEME)}
           aria-pressed={theme === SYSTEM_THEME}
           className={cn(
-            'flex w-full items-center gap-3 rounded-[10px] border px-3 py-2.5 text-left transition-colors',
+            'flex w-full items-center gap-3 rounded-lg border px-3 py-2.5 text-left transition-colors',
             'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-            theme === SYSTEM_THEME
-              ? 'border-primary/35 bg-primary/12'
-              : 'border-border-glass bg-background/30 hover:bg-accent/40'
+            selectableChip(theme === SYSTEM_THEME)
           )}
         >
           <span
@@ -160,10 +159,10 @@ export default function ThemesSection(props: IThemesSectionProps) {
         {customThemeOptions.length > 0 && (
           <div className="space-y-2.5">
             <div className="flex items-center gap-2.5 text-muted-foreground">
-              <span className="flex items-center gap-1.5 font-mono text-[9.5px] font-semibold uppercase tracking-[0.18em]">
+              <span className="flex items-center gap-1.5 font-mono text-2xs font-semibold uppercase tracking-[0.18em]">
                 <Palette className="h-3 w-3" />
                 {t('themes.custom.label')}
-                <span className="tabular-nums text-muted-foreground/60">
+                <span className="tabular-nums text-muted-foreground/80">
                   · {customThemeOptions.length}
                 </span>
               </span>
@@ -175,7 +174,7 @@ export default function ThemesSection(props: IThemesSectionProps) {
                 onClick={handleCreateNew}
                 aria-label={t('themes.custom.newAria')}
                 className={cn(
-                  'relative aspect-square w-full rounded-[10px] border border-dashed border-border-glass',
+                  'relative aspect-square w-full rounded-lg border border-dashed border-border-glass',
                   'grid place-items-center text-muted-foreground',
                   'transition-colors hover:bg-accent/30 hover:text-foreground',
                   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1'

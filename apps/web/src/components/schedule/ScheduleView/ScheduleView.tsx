@@ -154,7 +154,7 @@ export default function ScheduleView() {
         </div>
         <div className="flex items-center gap-4 font-mono text-[10.5px] text-muted-foreground/80">
           <LegendSwatch className="bg-primary" label={t('legend.live')} />
-          <LegendSwatch className="bg-[oklch(0.5_0.15_280)]" label={t('legend.upcoming')} />
+          <LegendSwatch className="bg-status-info" label={t('legend.upcoming')} />
           <LegendSwatch className="bg-muted-foreground/30" label={t('legend.watched')} />
         </div>
       </div>

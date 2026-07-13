@@ -61,7 +61,7 @@ export default meta;
 
 type Story = StoryObj<typeof DiscordSection>;
 
-/** Connected, default layout — toggle enable off then back on, then Save. */
+/** Connected, default layout — toggling a setting auto-saves and flashes "Saved". */
 export const Enabled: Story = {
   beforeEach: () => {
     const { restore } = stubDiscordBridge({ status: 'connected' });
@@ -74,9 +74,10 @@ export const Enabled: Story = {
     const enable = canvas.getByRole('switch', { name: 'Enable Discord Rich Presence' });
     await expect(enable).toBeChecked();
 
-    // Clicking Save flips the button into its saved state.
-    await userEvent.click(canvas.getByRole('button', { name: 'Save' }));
-    await waitFor(() => expect(canvas.getByRole('button', { name: 'Saved' })).toBeInTheDocument());
+    // Toggling a field persists over IPC and flashes the transient "Saved" indicator
+    // — there's no explicit Save button, this section auto-saves like the rest of settings.
+    await userEvent.click(canvas.getByRole('switch', { name: 'Show anime titles' }));
+    await waitFor(() => expect(canvas.getByRole('status')).toHaveTextContent('Saved'));
   },
 };
 

@@ -13,7 +13,7 @@ export default function BubbleMenuBar({ editor }: IBubbleMenuBarProps) {
   return (
     <div
       className={cn(
-        'flex items-center gap-0.5 rounded-[10px] border border-border-glass bg-popover/95',
+        'flex items-center gap-0.5 rounded-lg border border-border-glass bg-popover/95',
         'p-1 shadow-[0_10px_28px_oklch(0_0_0/0.35)] backdrop-blur-sm'
       )}
     >

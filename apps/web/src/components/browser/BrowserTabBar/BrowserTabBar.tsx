@@ -39,6 +39,8 @@ export default function BrowserTabBar({
     handleDragOver,
     handleDragEnd,
     handleDragCancel,
+    listRef,
+    isOverflowing,
   } = useBrowserTabBar(tabs, onReorderTabs, onSplitTabs);
 
   const tabIds = tabs.map(t => t.id);
@@ -68,7 +70,7 @@ export default function BrowserTabBar({
     <div
       className={cn(
         'flex items-end gap-[2px] h-[38px] px-2 pt-2 shrink-0',
-        'bg-[oklch(from_var(--card)_l_c_h/0.6)] border-b border-border-glass'
+        'bg-card/60 border-b border-border-glass'
       )}
     >
       <DndContext
@@ -85,12 +87,17 @@ export default function BrowserTabBar({
          * sibling of the list, not a child of it.
          */}
         <div
+          ref={listRef}
           role="tablist"
           aria-label={t('tabs.listLabel')}
           // Sizes to its tabs (not flex-1) so the new-tab button sits right
           // after the last tab, Chrome-style, instead of being pushed to the
           // far edge. `min-w-0` lets it shrink and scroll when tabs overflow.
-          className="flex items-end gap-[2px] min-w-0 overflow-x-auto scrollbar-hide"
+          className={cn(
+            'flex items-end gap-[2px] min-w-0 overflow-x-auto scrollbar-hide',
+            isOverflowing &&
+              '[mask-image:linear-gradient(to_right,transparent,black_16px,black_calc(100%_-_16px),transparent)]'
+          )}
         >
           <SortableContext items={tabIds} strategy={horizontalListSortingStrategy}>
             {tabChips}

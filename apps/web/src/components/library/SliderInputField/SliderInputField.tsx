@@ -1,5 +1,6 @@
 import { Input } from '@/components/ui/input';
 import { Slider } from '@/components/ui/slider';
+import { Eyebrow } from '@/components/shared/Eyebrow';
 import { useSliderInputField } from './SliderInputField.hooks';
 import type { ISliderInputFieldProps } from './SliderInputField.types';
 
@@ -17,9 +18,7 @@ export default function SliderInputField({
   return (
     <div className="space-y-1.5">
       <div className="flex items-center justify-between">
-        <label id={labelId} className="text-xs font-medium text-muted-foreground">
-          {label}
-        </label>
+        <Eyebrow id={labelId}>{label}</Eyebrow>
         <Input
           type="number"
           min={min}
