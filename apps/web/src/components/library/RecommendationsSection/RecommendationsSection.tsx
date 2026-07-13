@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
+import { Eyebrow } from '@/components/shared/Eyebrow';
 import { useRecommendationsSection } from './RecommendationsSection.hooks';
-import { FieldLabel, RecommendationCard } from './RecommendationsSection.parts';
+import { RecommendationCard } from './RecommendationsSection.parts';
 import type { IRecommendationsSectionProps } from './RecommendationsSection.types';
 
 /**
@@ -29,8 +30,8 @@ export default function RecommendationsSection(props: IRecommendationsSectionPro
 
   return (
     <div className="space-y-2">
-      <FieldLabel>{t('recommendations.title')}</FieldLabel>
-      <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-thin">{cards}</div>
+      <Eyebrow>{t('recommendations.title')}</Eyebrow>
+      <div className="flex gap-2 overflow-x-auto pb-1 snap-x snap-proximity">{cards}</div>
     </div>
   );
 }

@@ -4,8 +4,11 @@ import { ExternalLink, Save, Trash2, Link2, X, Film } from 'lucide-react';
 import { Dialog, DialogPortal, DialogOverlay } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { PillTag } from '@/components/ui/pill-tag';
 import { ProgressBar } from '@/components/shared/ProgressBar';
+import { FadeInImage } from '@/components/shared/FadeInImage';
+import { Eyebrow } from '@/components/shared/Eyebrow';
 import {
   Select,
   SelectContent,
@@ -22,7 +25,7 @@ import { SliderInputField } from '@/components/library/SliderInputField';
 import { RelationsSection } from '@/components/library/RelationsSection';
 import { AnimeDetailExtras } from '@/components/library/AnimeDetailExtras';
 import { useAnimeDetailModal } from './AnimeDetailModal.hooks';
-import { EntrySyncSection, FormLabel, SheetStat, SheetDivider } from './AnimeDetailModal.parts';
+import { EntrySyncSection, SheetStat, SheetDivider } from './AnimeDetailModal.parts';
 import type { IAnimeDetailModalProps } from './AnimeDetailModal.types';
 
 const STATUS_PILL_VARIANT: Record<AnimeStatus, 'accent' | 'green' | 'gold' | 'blue' | 'muted'> = {
@@ -81,7 +84,7 @@ export default function AnimeDetailModal({ entry, open, onOpenChange }: IAnimeDe
           className={cn(
             'fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2',
             'w-[min(92vw,860px)] h-[min(92vh,560px)]',
-            'rounded-[16px] overflow-hidden',
+            'rounded-2xl overflow-hidden',
             'bg-popover border border-border-glass',
             'shadow-[0_40px_100px_oklch(0_0_0/0.5)]',
             'flex flex-row',
@@ -115,13 +118,13 @@ export default function AnimeDetailModal({ entry, open, onOpenChange }: IAnimeDe
             {/* Poster */}
             <div
               className={cn(
-                'relative z-[1] w-[150px] aspect-[2/3] rounded-[10px] overflow-hidden',
+                'relative z-[1] w-[150px] aspect-[2/3] rounded-lg overflow-hidden',
                 'border border-border-glass shadow-[0_8px_28px_oklch(0_0_0/0.5)]',
                 'flex-shrink-0'
               )}
             >
               {entry.coverImage ? (
-                <img
+                <FadeInImage
                   src={entry.coverImage}
                   alt={entry.title}
                   className="w-full h-full object-cover"
@@ -148,11 +151,11 @@ export default function AnimeDetailModal({ entry, open, onOpenChange }: IAnimeDe
                 value={
                   score > 0 ? (
                     <>
-                      <span className="text-[oklch(0.8_0.14_70)]">{score.toFixed(1)}</span>
+                      <span className="text-gold">{score.toFixed(1)}</span>
                       <span className="text-muted-foreground/60 font-normal"> / 10</span>
                     </>
                   ) : (
-                    <span className="text-muted-foreground/60">-</span>
+                    <span className="text-muted-foreground/60">–</span>
                   )
                 }
               />
@@ -199,7 +202,7 @@ export default function AnimeDetailModal({ entry, open, onOpenChange }: IAnimeDe
                   'absolute top-4 right-4 w-7 h-7 rounded-full grid place-items-center',
                   'bg-foreground/5 border border-border-glass text-muted-foreground',
                   'hover:bg-foreground/10 hover:text-foreground transition-colors',
-                  'focus:outline-none focus:ring-2 focus:ring-ring'
+                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
                 )}
                 aria-label={t('library:detail.close')}
               >
@@ -219,7 +222,10 @@ export default function AnimeDetailModal({ entry, open, onOpenChange }: IAnimeDe
                 {entry.malId && <PillTag variant="blue">{t('library:detail.mal')}</PillTag>}
               </div>
 
-              <h2 className="font-sans text-[22px] font-extrabold leading-[1.15] tracking-[-0.025em] text-foreground pr-10">
+              <h2
+                title={entry.title}
+                className="font-sans text-[22px] font-extrabold leading-[1.15] tracking-[-0.025em] text-foreground pr-10 line-clamp-2"
+              >
                 {entry.title}
               </h2>
               {altTitle && (
@@ -230,14 +236,14 @@ export default function AnimeDetailModal({ entry, open, onOpenChange }: IAnimeDe
             </div>
 
             {/* Scrolling content */}
-            <div className={cn('flex-1 overflow-y-auto px-6 py-5 space-y-5', 'scrollbar-thin')}>
+            <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
               {entry.notes && (
                 <p className="text-[13px] leading-[1.65] text-foreground/80">{entry.notes}</p>
               )}
 
               {/* Status select */}
               <div className="space-y-1.5">
-                <FormLabel htmlFor="detail-status">{t('library:detail.statusField')}</FormLabel>
+                <Eyebrow htmlFor="detail-status">{t('library:detail.statusField')}</Eyebrow>
                 <Select value={status} onValueChange={v => setStatus(v as AnimeStatus)}>
                   <SelectTrigger
                     id="detail-status"
@@ -283,26 +289,20 @@ export default function AnimeDetailModal({ entry, open, onOpenChange }: IAnimeDe
 
               {/* Notes */}
               <div className="space-y-1.5">
-                <FormLabel htmlFor="detail-notes">{t('library:detail.notes')}</FormLabel>
-                <textarea
+                <Eyebrow htmlFor="detail-notes">{t('library:detail.notes')}</Eyebrow>
+                <Textarea
                   id="detail-notes"
                   value={notes}
                   onChange={e => setNotes(e.target.value)}
                   placeholder={t('library:detail.notesPlaceholder')}
                   rows={3}
-                  className={cn(
-                    'flex w-full rounded-md border border-input bg-background/40 px-3 py-2',
-                    'text-sm placeholder:text-muted-foreground',
-                    'focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring',
-                    'resize-none'
-                  )}
                 />
               </div>
 
               {/* Resume URL */}
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
-                  <FormLabel htmlFor="detail-resume-url">{t('library:detail.resumeUrl')}</FormLabel>
+                  <Eyebrow htmlFor="detail-resume-url">{t('library:detail.resumeUrl')}</Eyebrow>
                   <Button
                     variant="ghost"
                     size="sm"
@@ -324,8 +324,8 @@ export default function AnimeDetailModal({ entry, open, onOpenChange }: IAnimeDe
 
               {/* AniList ID */}
               <div className="space-y-1.5">
-                <FormLabel htmlFor="detail-anilist-id">{t('library:detail.anilistId')}</FormLabel>
-                <p className="text-2xs text-muted-foreground/70">
+                <Eyebrow htmlFor="detail-anilist-id">{t('library:detail.anilistId')}</Eyebrow>
+                <p className="text-2xs text-muted-foreground">
                   {t('library:detail.anilistIdHint')}
                 </p>
                 <Input

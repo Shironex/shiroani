@@ -37,8 +37,10 @@ function formatDayHeader(dateStr: string, t: TFunction<'diary'>, locale: string)
   const weekday = new Intl.DateTimeFormat(locale, { weekday: 'long' }).format(d);
 
   if (prefix) {
+    // Relative prefix ("Today"/"Yesterday") already conveys the day, so the
+    // weekday third segment is redundant — cap the header at two segments.
     const dm = new Intl.DateTimeFormat(locale, { day: '2-digit', month: '2-digit' }).format(d);
-    return `${prefix} · ${dm} · ${weekday}`;
+    return `${prefix} · ${dm}`;
   }
   const dayMonth = new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'long' }).format(d);
   return `${dayMonth} · ${weekday}`;

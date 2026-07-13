@@ -174,7 +174,7 @@ export default function LibraryView() {
               variant={selectionMode ? 'secondary' : 'ghost'}
               size="icon"
               className={cn(
-                'size-8 shrink-0 transition-all duration-200',
+                'size-8 shrink-0 transition-colors duration-200',
                 selectionMode && 'bg-primary/10 text-primary hover:bg-primary/15'
               )}
               disabled={entries.length === 0}
@@ -197,7 +197,7 @@ export default function LibraryView() {
               variant={showStats ? 'secondary' : 'ghost'}
               size="icon"
               className={cn(
-                'size-8 shrink-0 transition-all duration-200',
+                'size-8 shrink-0 transition-colors duration-200',
                 showStats && 'bg-primary/10 text-primary hover:bg-primary/15'
               )}
               onClick={() => setShowStats(v => !v)}

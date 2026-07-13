@@ -2,19 +2,12 @@ import { memo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Check, Film, Plus, Star } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { FadeInImage } from '@/components/shared/FadeInImage';
 import { formatRawScore } from '@/lib/anime-utils';
 import { useLibraryStore } from '@/stores/useLibraryStore';
 import type { IRecommendationCardProps } from './RecommendationsSection.types';
 
 const { openDetail } = useLibraryStore.getState();
-
-export function FieldLabel({ children }: { children: React.ReactNode }) {
-  return (
-    <span className="block font-mono text-[10px] uppercase tracking-[0.15em] text-muted-foreground font-medium">
-      {children}
-    </span>
-  );
-}
 
 export const RecommendationCard = memo(function RecommendationCard({
   node,
@@ -52,7 +45,7 @@ export const RecommendationCard = memo(function RecommendationCard({
           : t('recommendations.addToLibrary', { title })
       }
       className={cn(
-        'group/rec relative shrink-0 w-24 text-left',
+        'group/rec relative shrink-0 w-24 text-left snap-start',
         'rounded-md overflow-hidden border border-border-glass bg-background/40',
         'transition-colors hover:border-primary/40',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
@@ -60,7 +53,12 @@ export const RecommendationCard = memo(function RecommendationCard({
     >
       <div className="relative aspect-[2/3] overflow-hidden">
         {cover ? (
-          <img src={cover} alt={title} className="w-full h-full object-cover" loading="lazy" />
+          <FadeInImage
+            src={cover}
+            alt={title}
+            className="w-full h-full object-cover"
+            loading="lazy"
+          />
         ) : (
           <div className="w-full h-full bg-muted/50 flex items-center justify-center">
             <Film className="w-5 h-5 text-muted-foreground/40" />
@@ -69,7 +67,7 @@ export const RecommendationCard = memo(function RecommendationCard({
 
         {/* Score chip — top-right */}
         {node.averageScore != null && node.averageScore > 0 && (
-          <div className="absolute top-1 right-1 z-[2] flex items-center gap-[2px] px-[5px] py-[2px] rounded-[3px] bg-black/70 text-[9px] font-mono font-bold leading-none text-[oklch(0.8_0.14_70)]">
+          <div className="absolute top-1 right-1 z-[2] flex items-center gap-[2px] px-[5px] py-[2px] rounded-[3px] bg-black/70 text-[9px] font-mono font-bold leading-none text-gold">
             <Star className="w-2.5 h-2.5 fill-current" strokeWidth={0} />
             <span className="tabular-nums">{formatRawScore(node.averageScore)}</span>
           </div>

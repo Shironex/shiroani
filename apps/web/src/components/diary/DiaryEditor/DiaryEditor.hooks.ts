@@ -5,7 +5,7 @@ import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
 import { cn } from '@/lib/utils';
 import type { DiaryMood, DiaryGradient } from '@shiroani/shared';
-import { DIARY_GRADIENTS } from '@/lib/diary-constants';
+import { DIARY_GRADIENTS, DEFAULT_DIARY_GRADIENT } from '@/lib/diary-constants';
 import { isEditableTarget } from '@/lib/is-editable-target';
 import type { IDiaryEditorProps, IDiaryEditorView } from './DiaryEditor.types';
 
@@ -130,9 +130,7 @@ export function useDiaryEditor({
   // "save disabled" state never appears without a prior heads-up.
   const isNearLimit = !isOverLimit && textLength >= MAX_CONTENT_LENGTH * 0.9;
 
-  const gradientCss = coverGradient
-    ? DIARY_GRADIENTS[coverGradient]?.css
-    : 'linear-gradient(150deg, oklch(0.42 0.12 280), oklch(0.28 0.1 330))';
+  const gradientCss = coverGradient ? DIARY_GRADIENTS[coverGradient]?.css : DEFAULT_DIARY_GRADIENT;
 
   // Esc closes the editor — matches Radix Dialog's old behaviour so existing
   // muscle memory still works now that we're inline instead of modal.

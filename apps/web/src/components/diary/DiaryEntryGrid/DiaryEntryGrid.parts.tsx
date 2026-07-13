@@ -2,6 +2,7 @@ import type { TFunction } from 'i18next';
 import { cn } from '@/lib/utils';
 import { Pin } from 'lucide-react';
 import type { DiaryEntry } from '@shiroani/shared';
+import { PillTag } from '@/components/ui/pill-tag';
 import { DIARY_GRADIENTS, MOOD_ICONS, formatDate } from '@/lib/diary-constants';
 import { DiaryEntryCard } from '../DiaryEntryCard';
 
@@ -56,9 +57,10 @@ export function ListView({ entries, onSelect, t }: IListProps) {
             role="button"
             tabIndex={0}
             className={cn(
-              'flex items-center gap-3 p-2.5 rounded-xl cursor-pointer',
-              'hover:bg-accent/40 transition-all duration-150',
+              'flex items-center gap-3 p-2.5 rounded-lg cursor-pointer',
+              'hover:bg-accent/40 transition-colors duration-150',
               'border border-transparent hover:border-border-glass',
+              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:bg-foreground/5',
               'group/list-item'
             )}
           >
@@ -88,12 +90,9 @@ export function ListView({ entries, onSelect, t }: IListProps) {
             <div className="flex items-center gap-2 shrink-0">
               {MoodInfo && <MoodInfo.Icon className={cn('w-3.5 h-3.5', MoodInfo.color)} />}
               {entry.tags?.slice(0, 1).map(tag => (
-                <span
-                  key={tag}
-                  className="px-1.5 py-0.5 rounded-full text-2xs bg-primary/10 text-primary/70"
-                >
-                  {tag}
-                </span>
+                <PillTag key={tag} variant="muted">
+                  #{tag}
+                </PillTag>
               ))}
             </div>
           </div>

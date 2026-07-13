@@ -8,6 +8,8 @@ export interface IAnimeDetailExtrasProps {
 }
 
 export interface IAnimeDetailExtrasView {
+  /** True while the detail is being fetched and nothing is cached yet. */
+  readonly isLoading: boolean;
   readonly recommendations: AnimeDetailRecommendation[];
   readonly streamingEpisodes: AnimeDetailStreamingEpisode[];
   readonly siteUrl: string | undefined;

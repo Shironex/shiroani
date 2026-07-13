@@ -7,5 +7,9 @@ export default function CountdownBadge({ airingAt, episode }: ICountdownBadgePro
 
   if (label === null) return null;
 
-  return <Badge className="text-2xs bg-primary/80 text-primary-foreground border-0">{label}</Badge>;
+  return (
+    <Badge className="text-2xs tabular-nums bg-primary/80 text-primary-foreground border-0">
+      {label}
+    </Badge>
+  );
 }

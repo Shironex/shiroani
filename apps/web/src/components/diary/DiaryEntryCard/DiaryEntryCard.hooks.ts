@@ -1,9 +1,12 @@
 import { useTranslation } from 'react-i18next';
 import type { DiaryEntry } from '@shiroani/shared';
-import { DIARY_GRADIENTS, MOOD_ICONS, formatDate } from '@/lib/diary-constants';
+import {
+  DIARY_GRADIENTS,
+  MOOD_ICONS,
+  DEFAULT_DIARY_GRADIENT,
+  formatDate,
+} from '@/lib/diary-constants';
 import type { IDiaryEntryCardView } from './DiaryEntryCard.types';
-
-const DEFAULT_GRADIENT = 'linear-gradient(135deg, var(--muted) 0%, var(--accent) 100%)';
 
 interface ITipTapNode {
   text?: string;
@@ -28,8 +31,8 @@ function extractPreview(contentJson: string): string {
 export function useDiaryEntryCard(entry: DiaryEntry): IDiaryEntryCardView {
   const { t } = useTranslation('diary');
   const gradient = entry.coverGradient
-    ? (DIARY_GRADIENTS[entry.coverGradient]?.css ?? DEFAULT_GRADIENT)
-    : DEFAULT_GRADIENT;
+    ? (DIARY_GRADIENTS[entry.coverGradient]?.css ?? DEFAULT_DIARY_GRADIENT)
+    : DEFAULT_DIARY_GRADIENT;
   const preview = extractPreview(entry.contentJson);
   const moodInfo = entry.mood ? MOOD_ICONS[entry.mood] : null;
 

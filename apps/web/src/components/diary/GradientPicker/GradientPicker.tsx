@@ -1,4 +1,5 @@
 import { cn } from '@/lib/utils';
+import { Eyebrow } from '@/components/shared/Eyebrow';
 import { useGradientPicker } from './GradientPicker.hooks';
 import { SwatchList } from './GradientPicker.parts';
 import type { IGradientPickerProps } from './GradientPicker.types';
@@ -23,9 +24,7 @@ export default function GradientPicker({
         className
       )}
     >
-      <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-        {eyebrow}
-      </span>
+      <Eyebrow>{eyebrow}</Eyebrow>
       <SwatchList
         swatches={swatches}
         value={value}
