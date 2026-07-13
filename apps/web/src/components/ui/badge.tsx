@@ -19,10 +19,12 @@ const badgeVariants = cva(
         destructive: 'border-transparent bg-destructive/20 text-destructive',
         outline: 'border-border text-foreground',
       },
-      // Static badges get no hover affordance. Opt into hover feedback (for
-      // clickable/toggleable badges) via `interactive`.
+      // Static badges get no hover affordance. Opt into hover + keyboard-focus
+      // feedback (for clickable/toggleable badges) via `interactive`. Note:
+      // Badge renders a <div>, so interactive consumers must also make it
+      // focusable (e.g. tabIndex={0} + role="button") for the ring to show.
       interactive: {
-        true: 'cursor-pointer',
+        true: 'cursor-pointer focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring',
         false: '',
       },
     },
