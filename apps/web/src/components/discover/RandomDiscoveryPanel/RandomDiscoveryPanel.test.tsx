@@ -1,5 +1,5 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
-import { render, screen } from '@/test/test-utils';
+import { render, screen, within } from '@/test/test-utils';
 import type { DiscoverMedia } from '@/stores/useDiscoverStore';
 import { useDiscoverStore } from '@/stores/useDiscoverStore';
 import RandomDiscoveryPanel from './RandomDiscoveryPanel';
@@ -80,7 +80,9 @@ describe('RandomDiscoveryPanel', () => {
     seed({ randomShuffled: pool });
     const { user } = renderPanel({ onCardClick });
 
-    await user.click(screen.getByRole('heading', { name: 'Frieren' }));
+    // The title text now lives inside a real <button> nested in the heading.
+    const heading = screen.getByRole('heading', { name: 'Frieren' });
+    await user.click(within(heading).getByRole('button'));
 
     expect(onCardClick).toHaveBeenCalledWith(pool[0]);
   });

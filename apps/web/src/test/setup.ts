@@ -14,6 +14,25 @@ import { vi } from 'vitest';
 // fall back to that default.
 import '@/lib/i18n';
 
+// jsdom doesn't implement window.matchMedia. Several hooks (SplashScreen's and
+// FeedLoadingAnimation's reduced-motion checks) call it directly without a
+// feature-detection guard, so tests crash on mount without this stub. Default
+// to "no preference" (matches: false) so animated variants render as before;
+// individual tests can override with vi.stubGlobal/vi.spyOn for the
+// reduced-motion branch.
+if (typeof window !== 'undefined' && typeof window.matchMedia !== 'function') {
+  window.matchMedia = vi.fn().mockImplementation((query: string) => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addListener: vi.fn(),
+    removeListener: vi.fn(),
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    dispatchEvent: vi.fn(),
+  }));
+}
+
 // Polyfill ResizeObserver for jsdom (used by Radix UI dialogs, popovers, etc.)
 if (typeof globalThis.ResizeObserver === 'undefined') {
   globalThis.ResizeObserver = class ResizeObserver {

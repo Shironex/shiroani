@@ -52,9 +52,9 @@ describe('SplashScreen', () => {
     it('dismisses and fires onDismissed after the min-display + exit window', () => {
       const onDismissed = vi.fn();
       render(<SplashScreen ready error={null} onDismissed={onDismissed} />);
-      // Min display (3000ms) elapses → dismissing begins.
+      // Min display (1400ms) elapses → dismissing begins.
       act(() => {
-        vi.advanceTimersByTime(3000);
+        vi.advanceTimersByTime(1400);
       });
       expect(onDismissed).not.toHaveBeenCalled();
       // Exit animation (600ms) completes → overlay unmounts + callback fires.

@@ -26,15 +26,15 @@ describe('MascotPreview', () => {
   it('labels each chibi with its real px size and anchor name', () => {
     render(<MascotPreview current={128} min={48} max={256} label="Preview" />);
     expect(screen.getByText(/48px · MIN/)).toBeInTheDocument();
-    expect(screen.getByText(/128px · OBECNY/)).toBeInTheDocument();
+    expect(screen.getByText(/128px · CURRENT/)).toBeInTheDocument();
     expect(screen.getByText(/256px · MAX/)).toBeInTheDocument();
   });
 
   it('reflects the current slider value in the middle chibi caption', () => {
     const { rerender } = render(<MascotPreview current={96} min={48} max={256} label="Preview" />);
-    expect(screen.getByText(/96px · OBECNY/)).toBeInTheDocument();
+    expect(screen.getByText(/96px · CURRENT/)).toBeInTheDocument();
     rerender(<MascotPreview current={200} min={48} max={256} label="Preview" />);
-    expect(screen.getByText(/200px · OBECNY/)).toBeInTheDocument();
+    expect(screen.getByText(/200px · CURRENT/)).toBeInTheDocument();
   });
 
   it('falls back to the app logo with contain fit when no custom sprite is set', () => {

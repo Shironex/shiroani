@@ -54,12 +54,12 @@ describe('LibraryListItem', () => {
 
   it('shows a dash placeholder when score is 0', () => {
     render(<LibraryListItem entry={createEntry({ score: 0 })} onClick={vi.fn()} />);
-    expect(screen.getByText('-')).toBeInTheDocument();
+    expect(screen.getByText('–')).toBeInTheDocument();
   });
 
   it('shows a dash placeholder when score is undefined', () => {
     render(<LibraryListItem entry={createEntry({ score: undefined })} onClick={vi.fn()} />);
-    expect(screen.getByText('-')).toBeInTheDocument();
+    expect(screen.getByText('–')).toBeInTheDocument();
   });
 
   describe('selection mode', () => {

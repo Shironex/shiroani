@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { render, screen } from '@/test/test-utils';
+import { render, screen, within } from '@/test/test-utils';
 import type { DiscoverMedia } from '@/stores/useDiscoverStore';
 import RandomShowcaseCard from './RandomShowcaseCard';
 
@@ -54,7 +54,9 @@ describe('RandomShowcaseCard', () => {
   it('opens the detail when the title is clicked', async () => {
     const { user, onOpenDetails } = renderCard();
 
-    await user.click(screen.getByRole('heading', { name: 'Frieren' }));
+    // The title text now lives inside a real <button> nested in the heading.
+    const heading = screen.getByRole('heading', { name: 'Frieren' });
+    await user.click(within(heading).getByRole('button'));
 
     expect(onOpenDetails).toHaveBeenCalled();
   });

@@ -53,7 +53,7 @@ describe('SocialActivityRow', () => {
     expect(screen.queryByText(/·/)).not.toBeInTheDocument();
   });
 
-  it('falls back through the title chain (romaji, then native, then "?")', () => {
+  it('falls back through the title chain (romaji, then native, then "Untitled")', () => {
     const romaji: AniListActivity = {
       type: 'list',
       id: 4,
@@ -72,7 +72,7 @@ describe('SocialActivityRow', () => {
       media: { id: 2, title: {} },
     };
     rerender(<SocialActivityRow item={empty} />);
-    expect(screen.getByText('?')).toBeInTheDocument();
+    expect(screen.getByText('Untitled')).toBeInTheDocument();
   });
 
   it('renders a list activity without an author (placeholder avatar, no handle)', () => {
