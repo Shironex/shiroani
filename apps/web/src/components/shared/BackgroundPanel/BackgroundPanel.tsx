@@ -76,7 +76,7 @@ export default function BackgroundPanel({
         className="relative grid aspect-[16/9] place-items-center"
         style={{
           background:
-            'radial-gradient(ellipse 50% 45% at 30% 30%, oklch(from var(--primary) l c h / 0.5), transparent 60%), radial-gradient(ellipse 50% 40% at 75% 70%, oklch(from var(--primary) calc(l - 0.34) c calc(h - 75) / 0.6), transparent 60%), linear-gradient(135deg, oklch(from var(--background) calc(l + 0.13) calc(c + 0.06) h), oklch(from var(--background) calc(l + 0.06) calc(c + 0.04) calc(h - 20)))',
+            'radial-gradient(ellipse 50% 45% at 30% 30%, oklch(from var(--primary) l c h / 0.5), transparent 60%), radial-gradient(ellipse 50% 40% at 75% 70%, oklch(from var(--primary) calc(l * 0.54) c calc(h - 75) / 0.6), transparent 60%), linear-gradient(135deg, oklch(from var(--background) calc(l * 2.1) calc(c + 0.06) h), oklch(from var(--background) calc(l * 1.5) calc(c + 0.04) calc(h - 20)))',
         }}
       >
         <span className="font-serif text-base font-bold text-white/95 drop-shadow-lg">
@@ -101,7 +101,7 @@ export default function BackgroundPanel({
           className="w-full h-full"
           style={{
             background:
-              'radial-gradient(ellipse 50% 45% at 30% 30%, oklch(from var(--primary) l c h / 0.65), transparent 60%), radial-gradient(ellipse 50% 40% at 75% 70%, oklch(from var(--primary) calc(l - 0.34) c calc(h - 75) / 0.75), transparent 60%), linear-gradient(135deg, oklch(from var(--background) calc(l + 0.13) calc(c + 0.06) h), oklch(from var(--background) calc(l + 0.06) calc(c + 0.04) calc(h - 20)))',
+              'radial-gradient(ellipse 50% 45% at 30% 30%, oklch(from var(--primary) l c h / 0.65), transparent 60%), radial-gradient(ellipse 50% 40% at 75% 70%, oklch(from var(--primary) calc(l * 0.54) c calc(h - 75) / 0.75), transparent 60%), linear-gradient(135deg, oklch(from var(--background) calc(l * 2.1) calc(c + 0.06) h), oklch(from var(--background) calc(l * 1.5) calc(c + 0.04) calc(h - 20)))',
           }}
         />
       )}

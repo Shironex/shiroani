@@ -41,7 +41,7 @@ export const Default: Story = {
   args: { current: 128, min: 48, max: 256, label: 'Preview' },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    await expect(canvas.getByText(/128px · OBECNY/)).toBeInTheDocument();
+    await expect(canvas.getByText(/128px · CURRENT/)).toBeInTheDocument();
     await expect(canvas.getByText(/48px · MIN/)).toBeInTheDocument();
     await expect(canvas.getByText(/256px · MAX/)).toBeInTheDocument();
   },

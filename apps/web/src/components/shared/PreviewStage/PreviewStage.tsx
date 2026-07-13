@@ -10,9 +10,12 @@ import type { IPreviewStageProps } from './PreviewStage.types';
  * red glow used by the AniList error state) without re-declaring the rest.
  */
 // Derived from theme tokens so the preview chrome tracks every theme instead of
-// hardcoding the Plum defaults.
+// hardcoding the Plum defaults. Lightness is scaled multiplicatively (unit-safe
+// if a custom theme declares `l` as a percentage — number+percentage in calc()
+// invalidates the whole gradient); *1.13/*0.87 ≈ the old ±0.02 at the ~0.12–0.16
+// background lightness of the built-in dark themes.
 const BASE_GRADIENT =
-  'linear-gradient(135deg, oklch(from var(--background) calc(l + 0.02) c h), oklch(from var(--background) calc(l - 0.02) c h))';
+  'linear-gradient(135deg, oklch(from var(--background) calc(l * 1.13) c h), oklch(from var(--background) calc(l * 0.87) c h))';
 const DEFAULT_GLOW =
   'radial-gradient(circle at 70% 30%, oklch(from var(--primary) l c h / 0.25), transparent 60%)';
 const GRID_OVERLAY =

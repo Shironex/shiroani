@@ -37,7 +37,7 @@ export const ColorVariable: Story = {
     const canvas = within(canvasElement);
     await expect(canvas.getByText('Primary')).toBeInTheDocument();
     // Typing a valid hex into the hex field commits an oklch value via onChange.
-    const hex = canvas.getByRole('textbox', { name: /Kod heksadecymalny: Primary/ });
+    const hex = canvas.getByRole('textbox', { name: /Hex code: Primary/ });
     await userEvent.clear(hex);
     await userEvent.type(hex, '#ff0000');
     await waitFor(() => expect(args.onChange).toHaveBeenCalled());
