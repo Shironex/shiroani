@@ -10,10 +10,12 @@ export default function ColorPickerField(props: IColorPickerFieldProps) {
   const { colorInputRef, hexValue, localHex, handleHexChange, handleColorPickerChange } =
     useColorPickerField(props);
 
-  // A typed hex that parses to a different colour than the current value (and is
-  // long enough to be a complete attempt) is invalid — surfaced on the input
-  // border, via aria-invalid, and as a short alert line below.
-  const invalid = localHex !== hexValue && localHex.length >= 4;
+  // Flag the typed hex only when it cannot become valid with more typing — i.e.
+  // it is not a prefix of any parseable form (#rgb / #rrggbb / #rrggbbaa).
+  // In-progress values like "#ff00" stay quiet; a wrong character (or a missing
+  // "#") is surfaced immediately on the input border, via aria-invalid, and as a
+  // short alert line below.
+  const invalid = localHex !== '' && !/^#[0-9a-fA-F]{0,8}$/.test(localHex);
   const errorId = `${variableName}-hex-error`;
 
   return (
