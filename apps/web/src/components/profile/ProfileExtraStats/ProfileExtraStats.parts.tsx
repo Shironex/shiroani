@@ -1,14 +1,7 @@
 import { type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
+import { CountBars, type ICountBarRow } from '../shared-parts';
 import type { IProfileExtraStatsView } from './ProfileExtraStats.types';
-
-const BAR_COLOURS = [
-  'oklch(0.74 0.15 355)',
-  'oklch(0.7 0.15 280)',
-  'oklch(0.7 0.15 30)',
-  'oklch(0.78 0.15 140)',
-  'oklch(0.7 0.15 220)',
-];
 
 interface CountItem {
   key: string;
@@ -39,32 +32,14 @@ function CountBreakdown({
   );
   const max = Math.max(...top.map(i => i.count), 1);
 
-  return (
-    <div className="flex flex-col gap-2">
-      {top.map((item, i) => {
-        const pct = Math.round((item.count / max) * 100);
-        const color = BAR_COLOURS[i % BAR_COLOURS.length];
-        return (
-          <div key={item.key}>
-            <div className="flex justify-between items-baseline mb-1">
-              <span className="text-[11.5px] font-medium text-foreground/90 truncate">
-                {item.label}
-              </span>
-              <span className="font-mono text-[10px] text-muted-foreground tabular-nums">
-                {item.count}
-              </span>
-            </div>
-            <div className="h-[5px] rounded-[3px] bg-foreground/7 overflow-hidden">
-              <div
-                className="h-full rounded-[3px] transition-[width] duration-700 ease-out"
-                style={{ width: `${pct}%`, backgroundColor: color }}
-              />
-            </div>
-          </div>
-        );
-      })}
-    </div>
-  );
+  const rows: ICountBarRow[] = top.map(item => ({
+    key: item.key,
+    label: item.label,
+    valueLabel: String(item.count),
+    pct: Math.round((item.count / max) * 100),
+  }));
+
+  return <CountBars rows={rows} />;
 }
 
 interface ExtraStatsGridProps extends IProfileExtraStatsView {

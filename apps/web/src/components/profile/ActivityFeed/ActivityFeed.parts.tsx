@@ -4,6 +4,7 @@ import { Activity, Film, RefreshCw } from 'lucide-react';
 import type { AniListActivity } from '@shiroani/shared';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { FadeInImage } from '@/components/shared/FadeInImage';
 import { formatRelativeTime } from '@/lib/relative-time';
 
 const SKELETON_ROWS = [0, 1, 2];
@@ -28,10 +29,10 @@ const ActivityRow = memo(function ActivityRow({ item }: ActivityRowProps) {
           <Activity className="w-3 h-3" aria-hidden="true" />
         </div>
         <div className="min-w-0 flex-1">
-          <p className="text-[12px] text-foreground/90 leading-snug whitespace-pre-wrap break-words">
+          <p className="text-xs text-foreground/90 leading-snug whitespace-pre-wrap break-words">
             {item.text}
           </p>
-          <span className="font-mono text-[10px] text-muted-foreground/70 tabular-nums">
+          <span className="font-mono text-2xs text-muted-foreground/70 tabular-nums">
             {relative}
           </span>
         </div>
@@ -46,10 +47,10 @@ const ActivityRow = memo(function ActivityRow({ item }: ActivityRowProps) {
     <div className="flex items-center gap-3 py-1.5 px-2.5 rounded-lg bg-foreground/3 border border-border-glass/60">
       <PosterThumb src={item.media.coverImage} alt={title} />
       <div className="min-w-0 flex-1">
-        <p className="text-[12px] font-medium text-foreground/90 leading-tight truncate">{title}</p>
+        <p className="text-xs font-medium text-foreground/90 leading-tight truncate">{title}</p>
         {line && <p className="text-[11px] text-muted-foreground leading-tight truncate">{line}</p>}
       </div>
-      <span className="font-mono text-[10px] text-muted-foreground/70 tabular-nums shrink-0">
+      <span className="font-mono text-2xs text-muted-foreground/70 tabular-nums shrink-0">
         {relative}
       </span>
     </div>
@@ -68,7 +69,7 @@ function PosterThumb({ src, alt }: { src?: string; alt: string }) {
   return (
     <div className="w-10 h-14 shrink-0 rounded-md overflow-hidden border border-border/20 bg-muted/30">
       {showImage ? (
-        <img
+        <FadeInImage
           src={src}
           alt={alt}
           className="w-full h-full object-cover"
@@ -127,7 +128,7 @@ export function ActivityError({ message, onRetry }: { message: string; onRetry: 
         'border border-destructive/25 bg-destructive/[0.06]'
       )}
     >
-      <p className="text-[12px] text-muted-foreground leading-snug break-words max-w-[44ch]">
+      <p className="text-xs text-muted-foreground leading-snug break-words max-w-[44ch]">
         {message}
       </p>
       <Button variant="outline" size="sm" className="gap-1.5 text-xs h-8" onClick={onRetry}>
@@ -149,7 +150,7 @@ export function ActivityEmpty({ message }: { message: string }) {
       <div className="grid place-items-center w-9 h-9 rounded-xl border border-border-glass bg-foreground/5 text-muted-foreground/60">
         <Activity className="w-4 h-4" aria-hidden="true" />
       </div>
-      <p className="text-[12px] text-muted-foreground/70 leading-snug max-w-[40ch]">{message}</p>
+      <p className="text-xs text-muted-foreground/70 leading-snug max-w-[40ch]">{message}</p>
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { createLogger } from '@shiroani/shared';
 import { IS_ELECTRON } from '@/lib/platform';
@@ -17,6 +17,16 @@ export function useProfileShareDialog({
   const [copyState, setCopyState] = useState<'idle' | 'copying' | 'done'>('idle');
   const [saveState, setSaveState] = useState<'idle' | 'saving' | 'done'>('idle');
   const [error, setError] = useState<string | null>(null);
+
+  // "Done" reset timers — cleared on unmount so we never setState after unmount.
+  const copyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => {
+    return () => {
+      if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    };
+  }, []);
 
   // Render the card when dialog opens
   useEffect(() => {
@@ -68,7 +78,8 @@ export function useProfileShareDialog({
       }
 
       setCopyState('done');
-      setTimeout(() => setCopyState('idle'), 2000);
+      if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
+      copyTimerRef.current = setTimeout(() => setCopyState('idle'), 2000);
     } catch (err) {
       logger.warn('Share-card clipboard copy failed', err);
       setError(t('share.errors.clipboard'));
@@ -104,7 +115,8 @@ export function useProfileShareDialog({
       }
 
       setSaveState('done');
-      setTimeout(() => setSaveState('idle'), 2000);
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+      saveTimerRef.current = setTimeout(() => setSaveState('idle'), 2000);
     } catch (err) {
       logger.warn('Share-card PNG save failed', err);
       setError(t('share.errors.save'));

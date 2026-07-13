@@ -72,7 +72,7 @@ export default function ProgressRing({
         )}
       </div>
       {label && (
-        <span className="font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground">
+        <span className="font-mono text-2xs uppercase tracking-[0.14em] text-muted-foreground">
           {label}
         </span>
       )}

@@ -12,7 +12,7 @@ export default function ProfileSetup() {
     <div className="flex-1 flex items-center justify-center p-8">
       <div className="w-full max-w-sm space-y-6 text-center">
         <div className="space-y-2">
-          <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto">
+          <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center mx-auto">
             <User className="w-7 h-7 text-primary" />
           </div>
           <h2 className="text-lg font-semibold text-foreground">{t('setup.title')}</h2>
@@ -22,12 +22,18 @@ export default function ProfileSetup() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-3">
+          <label htmlFor="profile-setup-username" className="sr-only">
+            {t('setup.placeholder')}
+          </label>
           <Input
+            id="profile-setup-username"
             value={input}
             onChange={e => setInput(e.target.value)}
             placeholder={t('setup.placeholder')}
             className="h-10 text-sm bg-background/60 border-border-glass text-center"
             autoFocus
+            aria-invalid={Boolean(error)}
+            aria-describedby={error ? 'profile-setup-error' : undefined}
           />
           <Button
             type="submit"
@@ -38,7 +44,11 @@ export default function ProfileSetup() {
           </Button>
         </form>
 
-        {error && <p className="text-xs text-destructive">{error}</p>}
+        {error && (
+          <p id="profile-setup-error" role="alert" className="text-xs text-destructive">
+            {error}
+          </p>
+        )}
       </div>
     </div>
   );

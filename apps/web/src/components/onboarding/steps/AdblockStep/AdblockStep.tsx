@@ -3,6 +3,7 @@ import { Shield } from 'lucide-react';
 import { SettingsToggleRow } from '@/components/settings/SettingsCard';
 import { IS_ELECTRON } from '@/lib/platform';
 import { StepLayout } from '../../StepLayout';
+import { emPrimary, bStrong, bPrimary } from '../../shared-parts';
 import { useAdblockStep } from './AdblockStep.hooks';
 import { BlockedRow } from './AdblockStep.parts';
 
@@ -16,9 +17,6 @@ import { BlockedRow } from './AdblockStep.parts';
 export default function AdblockStep() {
   const { t } = useTranslation('onboarding');
   const { adblockEnabled, setAdblockEnabled } = useAdblockStep();
-  const emPrimary = <em className="not-italic text-primary italic" />;
-  const bStrong = <b className="font-semibold text-foreground" />;
-  const bPrimary = <b className="font-bold text-primary" />;
 
   return (
     <StepLayout
@@ -35,8 +33,10 @@ export default function AdblockStep() {
       stepIcon={<Shield className="h-5 w-5" />}
       stepTitle={t('step.adblock.title')}
     >
-      <div className="flex flex-col gap-3 rounded-2xl border border-border-glass bg-foreground/[0.02] p-4">
-        {!IS_ELECTRON && <p className="text-xs text-amber-500">{t('step.adblock.desktopOnly')}</p>}
+      <div className="flex flex-col gap-3 rounded-xl border border-border-glass bg-foreground/[0.02] p-4">
+        {!IS_ELECTRON && (
+          <p className="text-xs text-status-warning">{t('step.adblock.desktopOnly')}</p>
+        )}
 
         <div className="flex items-start gap-3 border-b border-border-glass pb-3">
           <span
@@ -57,7 +57,7 @@ export default function AdblockStep() {
         </div>
 
         <ul
-          className="flex flex-col font-mono text-[10.5px]"
+          className="flex flex-col font-mono text-2xs"
           aria-label={t('step.adblock.blockedListAria')}
         >
           <BlockedRow label={t('step.adblock.blocked.ads')} />
@@ -68,7 +68,7 @@ export default function AdblockStep() {
         </ul>
       </div>
 
-      <p className="font-mono text-[10.5px] uppercase tracking-[0.18em] text-muted-foreground">
+      <p className="mt-auto font-mono text-2xs normal-case text-muted-foreground">
         {t('step.adblock.footnote')}
       </p>
     </StepLayout>

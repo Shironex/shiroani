@@ -1,4 +1,5 @@
 import { memo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useSocialActivityRow } from './SocialActivityRow.hooks';
 import { AuthorLine, PosterThumb, mediaTitle } from './SocialActivityRow.parts';
 import type { ISocialActivityRowProps } from './SocialActivityRow.types';
@@ -10,6 +11,7 @@ import type { ISocialActivityRowProps } from './SocialActivityRow.types';
  * hover-scale / backdrop-blur — these rows scroll.
  */
 function SocialActivityRow({ item }: ISocialActivityRowProps) {
+  const { t } = useTranslation('social');
   const { relative } = useSocialActivityRow(item.createdAt);
 
   if (item.type === 'text') {
@@ -17,7 +19,7 @@ function SocialActivityRow({ item }: ISocialActivityRowProps) {
       <div className="flex items-start gap-3 py-2 px-2.5 rounded-lg bg-foreground/3 border border-border-glass/60">
         <div className="min-w-0 flex-1">
           <AuthorLine user={item.user} relative={relative} />
-          <p className="mt-0.5 text-[12px] text-foreground/90 leading-snug whitespace-pre-wrap break-words">
+          <p className="mt-0.5 text-xs text-foreground/90 leading-snug whitespace-pre-wrap break-words">
             {item.text}
           </p>
         </div>
@@ -25,7 +27,7 @@ function SocialActivityRow({ item }: ISocialActivityRowProps) {
     );
   }
 
-  const title = mediaTitle(item.media.title);
+  const title = mediaTitle(item.media.title, t('untitled'));
   const line = [item.status, item.progress].filter(Boolean).join(' · ');
 
   return (
@@ -33,7 +35,7 @@ function SocialActivityRow({ item }: ISocialActivityRowProps) {
       <PosterThumb src={item.media.coverImage} alt={title} />
       <div className="min-w-0 flex-1">
         <AuthorLine user={item.user} relative={relative} />
-        <p className="mt-0.5 text-[12px] font-medium text-foreground/90 leading-tight truncate">
+        <p className="mt-0.5 text-xs font-medium text-foreground/90 leading-tight truncate">
           {title}
         </p>
         {line && <p className="text-[11px] text-muted-foreground leading-tight truncate">{line}</p>}

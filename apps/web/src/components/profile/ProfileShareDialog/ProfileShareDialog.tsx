@@ -42,7 +42,7 @@ export default function ProfileShareDialog({
 
         {/* Preview area */}
         <div className="px-6 pb-4">
-          <div className="rounded-lg overflow-hidden border border-border/30 bg-[#0f0f14]">
+          <div className="rounded-lg overflow-hidden border border-border/30 bg-card">
             {isRendering ? (
               <div className="flex items-center justify-center h-[220px]">
                 <Loader2 className="w-6 h-6 animate-spin text-primary/50" />
@@ -74,7 +74,7 @@ export default function ProfileShareDialog({
               disabled={isRendering || copyState === 'copying'}
             >
               {copyState === 'done' ? (
-                <Check className="w-3.5 h-3.5 text-green-400" />
+                <Check className="w-3.5 h-3.5 text-status-success" />
               ) : copyState === 'copying' ? (
                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
               ) : (

@@ -1,17 +1,8 @@
 import { useTranslation, Trans } from 'react-i18next';
 import type { UserProfile } from '@shiroani/shared';
 import { ProgressRing } from '../ProgressRing';
-import { useStatusLabels, formatDays, formatDaysLabel } from '../profile-constants';
+import { useStatusLabels, formatDays, useDaysLabel, formatCount } from '../profile-constants';
 import type { IStatusRing, ITopYear } from './ProfileDashboard.types';
-
-export function SectionHead({ children }: { children: React.ReactNode }) {
-  return (
-    <h3 className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground font-semibold flex items-center gap-2.5 mb-3">
-      <span>{children}</span>
-      <span aria-hidden="true" className="flex-1 h-px bg-border-glass" />
-    </h3>
-  );
-}
 
 interface LibraryBreakdownProps {
   statusRings: IStatusRing[];
@@ -27,6 +18,7 @@ interface LibraryBreakdownProps {
 export function LibraryBreakdown({ statusRings, stats, topYear }: LibraryBreakdownProps) {
   const { t, i18n } = useTranslation('profile');
   const STATUS_LABELS = useStatusLabels();
+  const daysLabel = useDaysLabel();
 
   return (
     <div className="flex gap-5 items-center flex-wrap">
@@ -39,13 +31,13 @@ export function LibraryBreakdown({ statusRings, stats, topYear }: LibraryBreakdo
           valueLabel={`${Math.round(ring.pct)}%`}
         />
       ))}
-      <div className="flex-1 min-w-[220px] px-3.5 text-[12px] text-foreground/75 leading-[1.6] space-y-1">
+      <div className="flex-1 min-w-[220px] px-3.5 text-xs text-foreground/75 leading-[1.6] space-y-1">
         <div>
           <Trans
             i18nKey="dashboard.summary.watched"
             t={t}
             values={{
-              episodes: stats.episodesWatched.toLocaleString(i18n.language).replace(/,/g, ' '),
+              episodes: formatCount(stats.episodesWatched, i18n.language),
             }}
             components={{ 1: <b className="text-foreground font-bold tabular-nums" /> }}
           />
@@ -56,10 +48,10 @@ export function LibraryBreakdown({ statusRings, stats, topYear }: LibraryBreakdo
             t={t}
             values={{
               value: formatDays(stats.minutesWatched),
-              unit: formatDaysLabel(stats.minutesWatched),
+              unit: daysLabel(stats.minutesWatched),
             }}
             components={{
-              1: <b className="text-[oklch(0.8_0.14_70)] font-bold tabular-nums" />,
+              1: <b className="text-gold font-bold tabular-nums" />,
             }}
           />
         </div>

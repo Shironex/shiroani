@@ -1,27 +1,31 @@
 import { useTranslation } from 'react-i18next';
-import { User, ExternalLink, RefreshCw, RotateCw, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { User, ExternalLink } from 'lucide-react';
 import type { MalUserStats } from '@shiroani/shared';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { FadeInImage } from '@/components/shared/FadeInImage';
 import { useMalSyncStore } from '@/stores/useMalSyncStore';
 import { useNavigateToBrowser } from '@/hooks/useNavigateToBrowser';
-import { tDynamic } from '@/lib/i18n';
 import { ProgressRing } from '../ProgressRing';
+import { SectionHead, SideStat, StatCard, ConnectedBadge, SyncStatusWidget } from '../shared-parts';
+import { formatCount } from '../profile-constants';
 import type { IMalStatusRow, MalStatusKey } from './MalStatsPanel.types';
 
 const MAL_PROFILE_BASE = 'https://myanimelist.net/profile/';
 
 /**
- * Ring/segment colour per status, reusing the AniList dashboard's palette so the
- * two profile tabs read as one design (completed pink, watching blue, planning
- * gold, paused purple, dropped red).
+ * Ring/segment colour per status, mapped to the semantic status palette so the
+ * two profile tabs read as one design (completed→success, watching→info,
+ * planning→warning, dropped→error). On-hold has no status token, so it borrows
+ * the categorical chart-5 hue.
  */
 const STATUS_COLOR: Record<MalStatusKey, string> = {
-  watching: 'oklch(0.7 0.15 220)',
-  completed: 'oklch(0.74 0.15 355)',
-  onHold: 'oklch(0.6 0.05 298)',
-  dropped: 'oklch(0.65 0.18 25)',
-  planToWatch: 'oklch(0.8 0.14 70)',
+  watching: 'var(--status-info)',
+  completed: 'var(--status-success)',
+  onHold: 'var(--chart-5)',
+  dropped: 'var(--status-error)',
+  planToWatch: 'var(--status-warning)',
 };
 
 /**
@@ -60,7 +64,7 @@ export function MalSidebar({ profile, locale }: { profile: MalUserStats; locale:
   const { t } = useTranslation(['profile', 'common']);
   const navigateToBrowser = useNavigateToBrowser();
   const { viewer } = profile;
-  const numberFmt = (n: number) => n.toLocaleString(locale);
+  const numberFmt = (n: number) => formatCount(n, locale);
   const meanScore =
     profile.mean_score > 0
       ? profile.mean_score.toLocaleString(locale, { maximumFractionDigits: 2 })
@@ -72,7 +76,7 @@ export function MalSidebar({ profile, locale }: { profile: MalUserStats; locale:
       {/* Avatar + handle + connected badge */}
       <div className="flex flex-col items-center pb-[18px] mb-4 border-b border-border-glass/60">
         {viewer.avatar ? (
-          <img
+          <FadeInImage
             src={viewer.avatar}
             alt=""
             className={cn(
@@ -97,23 +101,11 @@ export function MalSidebar({ profile, locale }: { profile: MalUserStats; locale:
         <div className="font-sans font-extrabold text-[16px] tracking-[-0.01em] text-foreground truncate max-w-full">
           {viewer.name}
         </div>
-        <div
-          className={cn(
-            'mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full',
-            'bg-[oklch(0.45_0.14_220/0.18)] border border-[oklch(0.45_0.14_220/0.35)]',
-            'font-mono text-[9.5px] tracking-[0.1em] uppercase text-[oklch(0.7_0.12_220)]'
-          )}
-        >
-          <span
-            aria-hidden="true"
-            className="w-[5px] h-[5px] rounded-full bg-[oklch(0.7_0.12_220)] shadow-[0_0_6px_oklch(0.7_0.12_220)]"
-          />
-          {t('malPanel.sidebar.connectedBadge')}
-        </div>
+        <ConnectedBadge label={t('malPanel.sidebar.connectedBadge')} />
       </div>
 
       {/* Summary stat grid (2×2) */}
-      <div className="font-mono text-[9px] uppercase tracking-[0.2em] text-muted-foreground font-semibold mb-2">
+      <div className="font-mono text-2xs uppercase tracking-[0.2em] text-muted-foreground font-semibold mb-2">
         {t('sidebar.summaryHeading')}
       </div>
       <div className="grid grid-cols-2 gap-2 mb-4">
@@ -136,7 +128,7 @@ export function MalSidebar({ profile, locale }: { profile: MalUserStats; locale:
           size="sm"
           onClick={() => navigateToBrowser(profileUrl)}
           className={cn(
-            'w-full h-9 justify-start gap-2 px-3 text-[12px] font-medium',
+            'w-full h-9 justify-start gap-2 px-3 text-xs font-medium',
             'bg-foreground/5 border border-foreground/10 text-foreground/90 hover:bg-foreground/10'
           )}
         >
@@ -153,7 +145,7 @@ export function MalSidebar({ profile, locale }: { profile: MalUserStats; locale:
 /** Headline stat grid — status-focused, mirroring AniList's ProfileStatGrid. */
 export function MalHeadlineStats({ profile, locale }: { profile: MalUserStats; locale: string }) {
   const { t } = useTranslation('profile');
-  const numberFmt = (n: number) => n.toLocaleString(locale);
+  const numberFmt = (n: number) => formatCount(n, locale);
   const meanScore =
     profile.mean_score > 0
       ? profile.mean_score.toLocaleString(locale, { maximumFractionDigits: 2 })
@@ -193,7 +185,7 @@ export function MalBreakdownSection({
   locale: string;
 }) {
   const { t } = useTranslation('profile');
-  const numberFmt = (n: number) => n.toLocaleString(locale);
+  const numberFmt = (n: number) => formatCount(n, locale);
   const statuses = buildStatusRows(profile);
   // Guard the ring denominator: a brand-new account with an empty list has
   // num_items === 0, which would make every proportion NaN.
@@ -251,15 +243,20 @@ export function MalTimeSection({ profile, locale }: { profile: MalUserStats; loc
           aria-label={t('malPanel.time.barAria')}
         >
           {timeRows.map(s => (
-            <div
-              key={s.key}
-              className="h-full"
-              style={{
-                width: `${(s.days / totalDays) * 100}%`,
-                backgroundColor: STATUS_COLOR[s.key],
-              }}
-              title={`${t(STATUS_LABEL_KEY[s.key])} · ${formatDays(s.days, locale)}`}
-            />
+            <Tooltip key={s.key}>
+              <TooltipTrigger asChild>
+                <div
+                  className="h-full"
+                  style={{
+                    width: `${(s.days / totalDays) * 100}%`,
+                    backgroundColor: STATUS_COLOR[s.key],
+                  }}
+                />
+              </TooltipTrigger>
+              <TooltipContent side="top" className="text-[11px]">
+                {`${t(STATUS_LABEL_KEY[s.key])} · ${formatDays(s.days, locale)}`}
+              </TooltipContent>
+            </Tooltip>
           ))}
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -288,153 +285,30 @@ export function MalTimeSection({ profile, locale }: { profile: MalUserStats; loc
  * would be a hazard since sync mutates the live MAL account.
  */
 function MalSyncStatusWidget() {
-  const { t, i18n } = useTranslation(['profile', 'common']);
+  const { t } = useTranslation('profile');
   const syncing = useMalSyncStore(s => s.syncing);
   const progress = useMalSyncStore(s => s.progress);
   const error = useMalSyncStore(s => s.error);
   const lastSyncedAt = useMalSyncStore(s => s.lastSyncedAt);
 
-  const pct =
-    progress && progress.total > 0
-      ? Math.min(100, Math.round((progress.current / progress.total) * 100))
-      : null;
-
-  let icon: React.ReactNode;
-  let line: string;
-  let tone: 'syncing' | 'error' | 'ok' | 'idle';
-
-  if (syncing) {
-    tone = 'syncing';
-    icon = <RotateCw className="w-3 h-3 animate-spin" aria-hidden="true" />;
-    line = progress
-      ? t('sync.progress', { current: progress.current, total: progress.total })
-      : t('sync.running');
-  } else if (error) {
-    tone = 'error';
-    icon = <AlertCircle className="w-3 h-3" aria-hidden="true" />;
-    line = tDynamic(i18n, error);
-  } else if (lastSyncedAt) {
-    tone = 'ok';
-    icon = <CheckCircle2 className="w-3 h-3" aria-hidden="true" />;
-    line = t('sync.lastSynced', {
-      time: new Date(lastSyncedAt).toLocaleTimeString(i18n.language, {
-        hour: '2-digit',
-        minute: '2-digit',
-      }),
-    });
-  } else {
-    tone = 'idle';
-    icon = <RefreshCw className="w-3 h-3" aria-hidden="true" />;
-    line = t('sync.idle');
-  }
-
   return (
-    <div
-      className={cn(
-        'mb-4 px-3 py-2.5 rounded-lg border',
-        tone === 'error'
-          ? 'bg-destructive/[0.06] border-destructive/25'
-          : 'bg-foreground/3 border-border-glass'
-      )}
-      aria-live={syncing ? 'off' : 'polite'}
-    >
-      <div className="font-mono text-[8.5px] uppercase tracking-[0.2em] text-muted-foreground mb-1.5">
-        {t('malPanel.sidebar.syncHeading')}
-      </div>
-      <div
-        className={cn(
-          'flex items-center gap-1.5 text-[11.5px] leading-snug',
-          tone === 'error' && 'text-destructive',
-          tone === 'syncing' && 'text-primary',
-          tone === 'ok' && 'text-foreground/80',
-          tone === 'idle' && 'text-muted-foreground'
-        )}
-      >
-        <span className="shrink-0">{icon}</span>
-        <span className="min-w-0 truncate">{line}</span>
-      </div>
-      {syncing && (
-        <div className="mt-2 h-1 rounded-full bg-foreground/7 overflow-hidden">
-          <div
-            className={cn(
-              'h-full rounded-full bg-primary transition-[width] duration-500 ease-out',
-              pct === null && 'animate-pulse'
-            )}
-            style={{ width: pct === null ? '100%' : `${pct}%` }}
-          />
-        </div>
-      )}
-    </div>
+    <SyncStatusWidget
+      heading={t('malPanel.sidebar.syncHeading')}
+      syncing={syncing}
+      progress={progress}
+      error={error}
+      lastSyncedAt={lastSyncedAt}
+    />
   );
 }
 
 // ── Small presentational cards ───────────────────────────────────────────
 
-export function SectionHead({ children }: { children: React.ReactNode }) {
-  return (
-    <h3 className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground font-semibold flex items-center gap-2.5 mb-3">
-      <span>{children}</span>
-      <span aria-hidden="true" className="flex-1 h-px bg-border-glass" />
-    </h3>
-  );
-}
-
-/** Compact 2-col summary stat in the sidebar (mirrors ProfileSidebar's SideStat). */
-function SideStat({ label, value, sub }: { label: string; value: string; sub?: string }) {
-  return (
-    <div className="px-2.5 py-2 rounded-lg bg-foreground/3 border border-border-glass">
-      <div className="font-mono text-[8.5px] uppercase tracking-[0.14em] text-muted-foreground mb-0.5">
-        {label}
-      </div>
-      <div className="font-extrabold text-[18px] tracking-[-0.02em] text-foreground leading-none tabular-nums">
-        {value}
-        {sub && (
-          <span className="ml-1 font-mono text-[10px] font-medium text-muted-foreground">
-            {sub}
-          </span>
-        )}
-      </div>
-    </div>
-  );
-}
-
-/** Big 4-up headline stat card (mirrors ProfileStatGrid's StatCard). */
-function StatCard({
-  label,
-  value,
-  sub,
-  tone,
-}: {
-  label: string;
-  value: string;
-  sub?: string;
-  tone?: 'accent' | 'gold';
-}) {
-  return (
-    <div className="px-4 py-3.5 rounded-xl bg-foreground/[0.025] border border-border-glass">
-      <div className="font-mono text-[9px] uppercase tracking-[0.2em] text-muted-foreground mb-1.5">
-        {label}
-      </div>
-      <div
-        className={cn(
-          'font-sans font-extrabold text-[28px] tracking-[-0.03em] leading-none tabular-nums',
-          tone === 'accent' && 'text-primary',
-          tone === 'gold' && 'text-[oklch(0.8_0.14_70)]',
-          !tone && 'text-foreground'
-        )}
-      >
-        {value}
-      </div>
-      {sub && <div className="text-[11.5px] text-muted-foreground/80 mt-1">{sub}</div>}
-    </div>
-  );
-}
-
 /** Label/value row in the breakdown summary column (episodes · rewatched · days). */
 function SummaryRow({ label, value, tone }: { label: string; value: string; tone?: 'accent' }) {
   return (
     <div className="flex items-baseline justify-between gap-3 border-b border-border-glass/60 pb-2 last:border-0 last:pb-0">
-      <span className="font-mono text-[9px] uppercase tracking-[0.18em] text-muted-foreground">
+      <span className="font-mono text-2xs uppercase tracking-[0.18em] text-muted-foreground">
         {label}
       </span>
       <span
@@ -459,7 +333,7 @@ function TimeCard({ color, label, value }: { color: string; label: string; value
           className="size-2 rounded-full flex-shrink-0"
           style={{ backgroundColor: color }}
         />
-        <span className="font-mono text-[9px] uppercase tracking-[0.18em] text-muted-foreground truncate">
+        <span className="font-mono text-2xs uppercase tracking-[0.18em] text-muted-foreground truncate">
           {label}
         </span>
       </div>

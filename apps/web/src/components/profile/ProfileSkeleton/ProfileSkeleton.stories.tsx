@@ -4,10 +4,11 @@ import { withFullHeight } from '../../../../.storybook/decorators';
 import ProfileSkeleton from './ProfileSkeleton';
 
 /**
- * Loading placeholder for the Profile view — a banner, avatar + name lines, a
- * four-tile stat row and descending breakdown bars, all as pulsing skeleton
- * blocks. Wrapped in an `aria-busy` region so assistive tech announces the
- * loading state. Presentational; takes no props.
+ * Loading placeholder for the Profile view — a 280px sidebar rail (round avatar +
+ * name lines + summary tiles + actions) beside a main column (four-tile stat row,
+ * status rings and breakdown bars), all as pulsing skeleton blocks. Mirrors the
+ * loaded dashboard layout so the swap-in doesn't reflow. Wrapped in an
+ * `aria-busy` region so assistive tech announces the loading state.
  */
 const meta = {
   title: 'profile/ProfileSkeleton',

@@ -37,6 +37,8 @@ export default function SplashScreen({ ready, error, onDismissed }: ISplashScree
         'fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-background overflow-hidden',
         'transition-[opacity,transform] duration-600 ease-out',
         isDismissing && 'opacity-0 scale-[1.02]',
+        // Deliberate off-scale radius: matches the Electron frameless window
+        // chrome's top corners, not a design-token surface.
         IS_ELECTRON && 'rounded-t-[10px]'
       )}
     >

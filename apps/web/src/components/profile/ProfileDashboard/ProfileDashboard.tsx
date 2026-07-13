@@ -8,7 +8,8 @@ import { ProfileFollow } from '../ProfileFollow';
 import { ProfileExtraStats } from '../ProfileExtraStats';
 import { ProfileFavourites } from '../ProfileFavourites';
 import { useProfileDashboard } from './ProfileDashboard.hooks';
-import { LibraryBreakdown, SectionHead } from './ProfileDashboard.parts';
+import { LibraryBreakdown } from './ProfileDashboard.parts';
+import { SectionHead } from '../shared-parts';
 import type { IProfileDashboardProps } from './ProfileDashboard.types';
 
 /**

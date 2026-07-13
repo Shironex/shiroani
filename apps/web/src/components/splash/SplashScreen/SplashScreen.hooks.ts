@@ -7,7 +7,7 @@ import type { ISplashStatusText } from '../SplashFooter';
 import type { ISplashScreenProps, ISplashScreenView } from './SplashScreen.types';
 
 /** Minimum time the splash screen stays visible (ms) */
-const MIN_DISPLAY_MS = 3000;
+const MIN_DISPLAY_MS = 1400;
 /** Duration of the fade-out exit animation (ms) */
 const EXIT_ANIMATION_MS = 600;
 /** Delay before showing the footer status + progress (ms) */
@@ -81,6 +81,12 @@ export function useSplashScreen({
 
   useEffect(() => {
     if (variant !== 'loading') return;
+    // Respect reduced-motion: pin the first message instead of swapping prose.
+    if (
+      typeof window !== 'undefined' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    )
+      return;
     let interval: ReturnType<typeof setInterval> | null = null;
     const start = setTimeout(() => {
       interval = setInterval(

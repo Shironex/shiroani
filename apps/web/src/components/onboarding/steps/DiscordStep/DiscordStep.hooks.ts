@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { IDiscordStepView } from './DiscordStep.types';
 
 /**
@@ -10,6 +10,14 @@ export function useDiscordStep(): IDiscordStepView {
   const [enabled, setEnabled] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const savedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Clear the "saved" reset timer if the step unmounts before it fires.
+  useEffect(() => {
+    return () => {
+      if (savedTimerRef.current) clearTimeout(savedTimerRef.current);
+    };
+  }, []);
 
   useEffect(() => {
     window.electronAPI?.discordRpc
@@ -31,7 +39,8 @@ export function useDiscordStep(): IDiscordStepView {
         await window.electronAPI?.discordRpc?.updateSettings({ ...current, enabled: value });
       }
       setSaved(true);
-      setTimeout(() => setSaved(false), 1500);
+      if (savedTimerRef.current) clearTimeout(savedTimerRef.current);
+      savedTimerRef.current = setTimeout(() => setSaved(false), 1500);
     } catch {
       // Electron API unavailable or failed — degrade silently
     } finally {

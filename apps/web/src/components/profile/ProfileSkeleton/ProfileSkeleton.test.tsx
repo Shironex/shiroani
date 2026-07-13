@@ -8,11 +8,13 @@ describe('ProfileSkeleton', () => {
     expect(container.querySelector('[aria-busy="true"]')).toBeInTheDocument();
   });
 
-  it('renders the four stat tiles and six breakdown bars', () => {
+  it('mirrors the real dashboard layout (280px round-avatar rail + tiles)', () => {
     const { container } = render(<ProfileSkeleton />);
-    // Each Skeleton primitive is an animate-pulse block.
-    const blocks = container.querySelectorAll('.animate-pulse');
-    // 1 banner + 1 avatar + 2 name lines + 4 stat tiles + 6 bars = 14.
-    expect(blocks.length).toBe(14);
+    // Round avatar in the sidebar rail (vs. the old square banner avatar).
+    expect(container.querySelector('.rounded-full')).toBeInTheDocument();
+    // Fixed 280px sidebar rail matching the loaded sidebar width.
+    expect(container.querySelector('.w-\\[280px\\]')).toBeInTheDocument();
+    // Several pulsing skeleton blocks stand in for the stat tiles + bars.
+    expect(container.querySelectorAll('.animate-pulse').length).toBeGreaterThan(10);
   });
 });

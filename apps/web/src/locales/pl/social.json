@@ -9,8 +9,9 @@
   },
   "feed": {
     "loadingAria": "Ładowanie kanału społeczności",
-    "empty": "Brak aktywności — aktualizacje obserwowanych osób pojawią się tutaj.",
+    "empty": "Brak aktywności. Aktualizacje obserwowanych osób pojawią się tutaj.",
     "notConnected": "Połącz konto AniList, aby zobaczyć aktywność obserwowanych osób.",
+    "connectCta": "Połącz AniList",
     "error": "Nie udało się załadować kanału społeczności.",
     "retry": "Spróbuj ponownie"
   },
@@ -20,10 +21,11 @@
     "title": "Powiadomienia",
     "close": "Zamknij",
     "loadingAria": "Ładowanie powiadomień",
-    "empty": "Wszystko na bieżąco — brak powiadomień.",
+    "empty": "Wszystko na bieżąco. Brak powiadomień.",
     "notConnected": "Połącz konto AniList, aby zobaczyć powiadomienia.",
     "error": "Nie udało się załadować powiadomień.",
     "retry": "Spróbuj ponownie"
   },
-  "avatarAlt": "Awatar użytkownika {{name}}"
+  "avatarAlt": "Awatar użytkownika {{name}}",
+  "untitled": "Bez tytułu"
 }

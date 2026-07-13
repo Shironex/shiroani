@@ -4,6 +4,7 @@ import { SettingsToggleRow } from '@/components/settings/SettingsCard';
 import { DockStage } from '@/components/shared/DockStage';
 import { DockEdgePicker } from '@/components/shared/DockEdgePicker';
 import { StepLayout } from '../../StepLayout';
+import { emPrimary, bPrimary } from '../../shared-parts';
 import { useDockStep } from './DockStep.hooks';
 
 /**
@@ -23,8 +24,6 @@ export default function DockStep() {
     draggable,
     setDraggable,
   } = useDockStep();
-  const emPrimary = <em className="not-italic text-primary italic" />;
-  const bPrimary = <b className="font-bold text-primary" />;
 
   return (
     <StepLayout
@@ -37,7 +36,7 @@ export default function DockStep() {
       stepIcon={<LayoutGrid className="h-5 w-5" />}
       stepTitle={t('step.dock.title')}
     >
-      <div className="space-y-3 rounded-2xl border border-border-glass bg-foreground/[0.02] p-4">
+      <div className="space-y-3 rounded-xl border border-border-glass bg-foreground/[0.02] p-4">
         <DockStage edge={edge} items={dockItems} />
         <DockEdgePicker
           value={edge}

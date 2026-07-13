@@ -22,11 +22,11 @@ export default function InAppStatsPanel() {
       {/* ── Hero block ─────────────────────────────────────── */}
       <section
         className={cn(
-          'relative px-6 py-6 rounded-2xl border border-border-glass overflow-hidden',
+          'relative px-6 py-6 rounded-xl border border-border-glass overflow-hidden',
           'bg-gradient-to-br from-primary/[0.08] via-foreground/[0.02] to-foreground/[0.04]'
         )}
       >
-        <div className="font-mono text-[9.5px] uppercase tracking-[0.22em] text-muted-foreground mb-3 flex items-center gap-2">
+        <div className="font-mono text-2xs uppercase tracking-[0.22em] text-muted-foreground mb-3 flex items-center gap-2">
           <Sparkles className="w-3 h-3 text-primary" />
           <span>{t('appPanel.heroTag')}</span>
         </div>
@@ -93,7 +93,7 @@ export default function InAppStatsPanel() {
           size="sm"
           onClick={() => setResetOpen(true)}
           className={cn(
-            'h-9 gap-2 px-3 text-[12px] font-medium',
+            'h-9 gap-2 px-3 text-xs font-medium',
             'text-muted-foreground hover:bg-destructive/15 hover:text-destructive'
           )}
         >

@@ -9,8 +9,9 @@
   },
   "feed": {
     "loadingAria": "Loading community feed",
-    "empty": "No activity yet — updates from people you follow will show up here.",
+    "empty": "No activity yet. Updates from people you follow will show up here.",
     "notConnected": "Connect an AniList account to see activity from people you follow.",
+    "connectCta": "Connect AniList",
     "error": "Couldn't load the community feed.",
     "retry": "Try again"
   },
@@ -20,10 +21,11 @@
     "title": "Notifications",
     "close": "Close",
     "loadingAria": "Loading notifications",
-    "empty": "You're all caught up — no notifications yet.",
+    "empty": "You're all caught up. No notifications yet.",
     "notConnected": "Connect an AniList account to see notifications.",
     "error": "Couldn't load notifications.",
     "retry": "Try again"
   },
-  "avatarAlt": "Avatar of {{name}}"
+  "avatarAlt": "Avatar of {{name}}",
+  "untitled": "Untitled"
 }

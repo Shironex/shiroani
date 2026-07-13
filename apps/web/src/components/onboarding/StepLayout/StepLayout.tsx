@@ -36,13 +36,13 @@ export default function StepLayout({
           <h1 className="mt-6 font-serif text-[38px] font-bold leading-[0.98] tracking-[-0.03em] text-foreground md:text-[46px]">
             {headline}
           </h1>
-          <p className="mt-4 text-[14.5px] leading-relaxed text-muted-foreground">{description}</p>
+          <p className="mt-4 text-sm leading-relaxed text-muted-foreground">{description}</p>
         </div>
       </div>
 
       {/* Right pane — interactive */}
       <div className={rightPaneClass}>
-        <div className="border-b border-border-glass pb-3 font-mono text-[10.5px] uppercase tracking-[0.2em] text-muted-foreground">
+        <div className="border-b border-border-glass pb-3 font-mono text-2xs uppercase tracking-[0.2em] text-muted-foreground">
           {stepMarker}
         </div>
         <h2 className="flex items-center gap-2.5 font-serif text-xl font-bold tracking-[-0.01em] text-foreground">
@@ -50,9 +50,7 @@ export default function StepLayout({
           {stepTitle}
         </h2>
         {stepHint && (
-          <p className="-mt-1 mb-1 text-[12.5px] leading-relaxed text-muted-foreground">
-            {stepHint}
-          </p>
+          <p className="-mt-1 mb-1 text-xs leading-relaxed text-muted-foreground">{stepHint}</p>
         )}
         <div className="flex min-h-0 flex-col gap-3">{children}</div>
       </div>

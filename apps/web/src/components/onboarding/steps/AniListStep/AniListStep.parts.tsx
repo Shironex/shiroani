@@ -26,8 +26,10 @@ export function AniListAccountCard({
   const { t } = useTranslation('onboarding');
 
   return (
-    <div className="flex flex-col gap-3 rounded-2xl border border-border-glass bg-foreground/[0.02] p-4">
-      {!IS_ELECTRON && <p className="text-xs text-amber-500">{t('step.anilist.desktopOnly')}</p>}
+    <div className="flex flex-col gap-3 rounded-xl border border-border-glass bg-foreground/[0.02] p-4">
+      {!IS_ELECTRON && (
+        <p className="text-xs text-status-warning">{t('step.anilist.desktopOnly')}</p>
+      )}
 
       {connected && viewer ? (
         <div className="flex items-center gap-3">
@@ -44,11 +46,14 @@ export function AniListAccountCard({
             </div>
           )}
           <div className="min-w-0 flex-1">
-            <p className="flex items-center gap-1.5 truncate text-[14px] font-semibold text-foreground">
-              <Check className="size-3.5 flex-shrink-0 text-[oklch(0.78_0.15_140)]" />
+            <p
+              role="status"
+              className="flex items-center gap-1.5 truncate text-sm font-semibold text-foreground"
+            >
+              <Check className="size-3.5 flex-shrink-0 text-status-success" />
               {t('step.anilist.connectedAs', { name: viewer.name })}
             </p>
-            <p className="mt-0.5 truncate text-[11.5px] text-muted-foreground">
+            <p className="mt-0.5 truncate text-xs text-muted-foreground">
               {t('step.anilist.connectedHint')}
             </p>
           </div>
@@ -58,7 +63,7 @@ export function AniListAccountCard({
           type="button"
           onClick={() => void connect()}
           disabled={loading || !IS_ELECTRON}
-          className="inline-flex items-center justify-center gap-2 self-start rounded-xl border border-primary/35 bg-primary/15 px-4 py-2.5 text-[13px] font-semibold text-primary transition-colors hover:bg-primary/25 disabled:cursor-not-allowed disabled:opacity-50"
+          className="inline-flex items-center justify-center gap-2 self-start rounded-lg border border-primary/35 bg-primary/15 px-4 py-2.5 text-xs font-semibold text-primary transition-colors hover:bg-primary/25 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
         >
           {loading && <Loader2 className="size-4 animate-spin" />}
           {loading ? t('step.anilist.connecting') : t('step.anilist.connect')}
@@ -68,9 +73,13 @@ export function AniListAccountCard({
       {/* In web preview `fetchStatus` sets the `desktopOnly` sentinel error; the
           amber notice above already covers that case, so only surface real
           (Electron) errors here to avoid a duplicate message. */}
-      {IS_ELECTRON && errorMessage && <p className="text-xs text-destructive">{errorMessage}</p>}
+      {IS_ELECTRON && errorMessage && (
+        <p role="alert" className="text-xs text-destructive">
+          {errorMessage}
+        </p>
+      )}
 
-      <ul className="flex flex-col gap-1.5 border-t border-border-glass pt-3 font-mono text-[10.5px] text-[oklch(0.72_0.03_300)]">
+      <ul className="flex flex-col gap-1.5 border-t border-border-glass pt-3 font-mono text-2xs text-muted-foreground">
         <li className="flex items-center gap-2">
           <Check className="h-3 w-3 flex-shrink-0 text-primary" />
           {t('step.anilist.benefit.library')}

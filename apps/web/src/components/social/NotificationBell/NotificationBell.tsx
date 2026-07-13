@@ -27,7 +27,7 @@ export default function NotificationBell() {
         className={cn(
           'relative grid place-items-center w-6 h-6 rounded-md',
           'text-muted-foreground hover:text-foreground hover:bg-foreground/5',
-          'transition-colors duration-150',
+          'transition duration-150 active:scale-[0.96]',
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
           open && 'text-foreground bg-foreground/5'
         )}

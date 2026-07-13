@@ -1,4 +1,8 @@
 {
+  "units": {
+    "days": "days",
+    "hours": "hours"
+  },
   "view": {
     "title": "My profile",
     "watermarkAria": "Profile",

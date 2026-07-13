@@ -121,7 +121,7 @@ export function ProfileHeaderActions(view: HeaderView) {
           size="sm"
           onClick={() => navigateToBrowser(profile.siteUrl as string)}
           className={cn(
-            'h-8 px-3 text-[12px] font-medium gap-1.5',
+            'h-8 px-3 text-xs font-medium gap-1.5',
             'bg-foreground/5 border border-foreground/10 hover:bg-foreground/10'
           )}
         >
@@ -288,6 +288,7 @@ function TabButton({ active, onClick, children, id, controls, ref }: TabButtonPr
       onClick={onClick}
       className={cn(
         'h-7 px-3 rounded-md text-[11.5px] font-medium tracking-[-0.01em] transition-colors',
+        'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring active:scale-[0.98]',
         active
           ? 'bg-primary/20 text-primary'
           : 'text-muted-foreground hover:text-foreground hover:bg-foreground/5'

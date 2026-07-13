@@ -12,7 +12,7 @@ export function BlockedRow({
   variant?: 'check' | 'add';
 }) {
   return (
-    <li className="flex items-center justify-between border-b border-border-glass/60 py-1.5 text-[oklch(0.72_0.03_300)] last:border-b-0">
+    <li className="flex items-center justify-between border-b border-border-glass/60 py-1.5 text-muted-foreground last:border-b-0">
       <span>{label}</span>
       <span className="font-bold text-primary">
         {variant === 'check' ? <Check className="h-3 w-3" /> : <Plus className="h-3 w-3" />}

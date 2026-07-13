@@ -191,7 +191,8 @@
       "value": {
         "on": "ON",
         "off": "OFF",
-        "notConnected": "Niepołączono"
+        "notConnected": "Niepołączono",
+        "notSet": "Nie ustawiono"
       }
     }
   }

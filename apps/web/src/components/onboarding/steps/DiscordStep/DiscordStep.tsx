@@ -3,6 +3,7 @@ import { Check, MessageCircle } from 'lucide-react';
 import { SettingsToggleRow } from '@/components/settings/SettingsCard';
 import { IS_ELECTRON } from '@/lib/platform';
 import { StepLayout } from '../../StepLayout';
+import { emPrimary, bPrimary } from '../../shared-parts';
 import { useDiscordStep } from './DiscordStep.hooks';
 import { DiscordPreviewCard } from './DiscordStep.parts';
 
@@ -16,8 +17,6 @@ import { DiscordPreviewCard } from './DiscordStep.parts';
 export default function DiscordStep() {
   const { t } = useTranslation('onboarding');
   const { enabled, saving, saved, onToggle } = useDiscordStep();
-  const emPrimary = <em className="not-italic text-primary italic" />;
-  const bPrimary = <b className="font-bold text-primary" />;
 
   return (
     <StepLayout
@@ -32,8 +31,10 @@ export default function DiscordStep() {
       stepIcon={<MessageCircle className="h-5 w-5" />}
       stepTitle={t('step.discord.title')}
     >
-      <div className="flex flex-col gap-3 rounded-2xl border border-border-glass bg-foreground/[0.02] p-4">
-        {!IS_ELECTRON && <p className="text-xs text-amber-500">{t('step.discord.desktopOnly')}</p>}
+      <div className="flex flex-col gap-3 rounded-xl border border-border-glass bg-foreground/[0.02] p-4">
+        {!IS_ELECTRON && (
+          <p className="text-xs text-status-warning">{t('step.discord.desktopOnly')}</p>
+        )}
 
         <div className="border-b border-border-glass pb-3">
           <SettingsToggleRow
@@ -49,14 +50,17 @@ export default function DiscordStep() {
         <DiscordPreviewCard enabled={enabled} />
 
         {saved && (
-          <p className="flex items-center gap-1 font-mono text-[10.5px] text-primary animate-fade-in">
+          <p
+            role="status"
+            className="flex items-center gap-1 font-mono text-2xs text-primary animate-fade-in"
+          >
             <Check className="h-3 w-3" />
             {t('step.discord.saved')}
           </p>
         )}
       </div>
 
-      <p className="font-mono text-[10.5px] uppercase tracking-[0.18em] text-muted-foreground">
+      <p className="mt-auto font-mono text-2xs normal-case text-muted-foreground">
         {t('step.discord.footnote')}
       </p>
     </StepLayout>

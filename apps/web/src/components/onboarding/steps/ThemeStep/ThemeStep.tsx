@@ -3,6 +3,7 @@ import { Moon, Palette, Sun } from 'lucide-react';
 import { darkThemes, lightThemes } from '@/lib/theme';
 import { ThemeGrid } from '@/components/shared/theme/ThemeGrid';
 import { StepLayout } from '../../StepLayout';
+import { emPrimary, bStrong, bPrimary } from '../../shared-parts';
 import { useThemeStep } from './ThemeStep.hooks';
 
 /**
@@ -12,9 +13,6 @@ import { useThemeStep } from './ThemeStep.hooks';
 export default function ThemeStep() {
   const { t } = useTranslation('onboarding');
   const { theme, setTheme, setPreviewTheme, clearPreview } = useThemeStep();
-  const emPrimary = <em className="not-italic text-primary italic" />;
-  const bStrong = <b className="font-semibold text-foreground" />;
-  const bPrimary = <b className="font-bold text-primary" />;
 
   return (
     <StepLayout

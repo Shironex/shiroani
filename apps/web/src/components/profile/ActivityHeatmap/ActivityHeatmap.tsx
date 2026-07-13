@@ -4,6 +4,13 @@ import { CellGrid, HeatmapLegend, MonthRow, WeekdayAxis } from './ActivityHeatma
 import type { IActivityHeatmapProps } from './ActivityHeatmap.types';
 
 /**
+ * Faster tooltip open delay than the app-wide 300ms (see main.tsx): the heatmap
+ * is a dense grid the user scrubs across cell-by-cell, so a snappier reveal
+ * keeps the per-cell value legible while sweeping the mouse.
+ */
+const HEATMAP_TOOLTIP_DELAY = 120;
+
+/**
  * GitHub-contributions-style heatmap of the last `weeks` of activity.
  *
  * Performance notes:
@@ -25,7 +32,7 @@ export default function ActivityHeatmap({
   });
 
   return (
-    <TooltipProvider delayDuration={120}>
+    <TooltipProvider delayDuration={HEATMAP_TOOLTIP_DELAY}>
       <div className="flex flex-col gap-2">
         <MonthRow data={data} />
 
