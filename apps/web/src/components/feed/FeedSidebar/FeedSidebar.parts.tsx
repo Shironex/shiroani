@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { Rss, Flame } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { readableTextColor } from '@/lib/color-utils';
 import { ProgressBar } from '@/components/shared/ProgressBar';
 import type { IFeedSidebarSourceRow, IFeedSidebarTrend } from './FeedSidebar.types';
 
@@ -27,7 +28,7 @@ export function SourcesCard({
   return (
     <div
       className={cn(
-        'rounded-[10px] border border-white/[0.07] bg-white/[0.025] p-2.5 px-3 transition-opacity duration-150',
+        'rounded-lg border border-border-glass bg-foreground/[0.03] p-2.5 px-3 transition-opacity duration-150',
         isBookmarksView && 'opacity-50'
       )}
       // `inert` removes the card's buttons from both the tab order and the
@@ -36,7 +37,7 @@ export function SourcesCard({
       inert={isBookmarksView}
     >
       <div className="flex items-center gap-2 mb-2">
-        <span className="w-5 h-5 rounded-[5px] grid place-items-center bg-primary/15 text-primary">
+        <span className="w-5 h-5 rounded-sm grid place-items-center bg-primary/15 text-primary">
           <Rss className="w-3 h-3" />
         </span>
         <h4 className="font-mono text-[9.5px] tracking-[0.22em] uppercase text-muted-foreground font-semibold">
@@ -56,8 +57,9 @@ export function SourcesCard({
             aria-pressed={sourceFilter === null}
             className={cn(
               'group w-full flex items-center gap-2.5 py-1.5 text-[11.5px]',
-              'border-b border-white/[0.04] last:border-b-0',
-              'transition-colors duration-150 cursor-pointer',
+              'border-b border-border-glass last:border-b-0',
+              'transition-colors duration-150 cursor-pointer rounded-sm',
+              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset',
               sourceFilter === null
                 ? 'text-foreground'
                 : 'text-muted-foreground/90 hover:text-foreground'
@@ -95,14 +97,15 @@ export function SourcesCard({
                 aria-pressed={isActive}
                 className={cn(
                   'group w-full flex items-center gap-2.5 py-1.5 text-[11.5px]',
-                  'border-b border-white/[0.04] last:border-b-0',
-                  'transition-colors duration-150 cursor-pointer',
+                  'border-b border-border-glass last:border-b-0',
+                  'transition-colors duration-150 cursor-pointer rounded-sm',
+                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset',
                   isActive ? 'text-foreground' : 'text-muted-foreground/90 hover:text-foreground'
                 )}
               >
                 <span
-                  className="w-[18px] h-[18px] rounded-[4px] grid place-items-center text-white font-serif font-bold text-[10px] shrink-0"
-                  style={{ backgroundColor: source.color }}
+                  className="w-[18px] h-[18px] rounded-[4px] grid place-items-center font-serif font-bold text-[10px] shrink-0"
+                  style={{ backgroundColor: source.color, color: readableTextColor(source.color) }}
                 >
                   {initial}
                 </span>
@@ -139,7 +142,7 @@ export function TrendingCard({ trending, isBookmarksView }: ITrendingCardProps) 
   return (
     <div
       className={cn(
-        'rounded-[10px] border border-white/[0.07] bg-white/[0.025] p-2.5 px-3 transition-opacity duration-150',
+        'rounded-lg border border-border-glass bg-foreground/[0.03] p-2.5 px-3 transition-opacity duration-150',
         isBookmarksView && 'opacity-50'
       )}
       // `inert` hides the trending card from the tab order and AT while the
@@ -147,7 +150,7 @@ export function TrendingCard({ trending, isBookmarksView }: ITrendingCardProps) 
       inert={isBookmarksView}
     >
       <div className="flex items-center gap-2 mb-2">
-        <span className="w-5 h-5 rounded-[5px] grid place-items-center bg-primary/15 text-primary">
+        <span className="w-5 h-5 rounded-sm grid place-items-center bg-primary/15 text-primary">
           <Flame className="w-3 h-3" />
         </span>
         <h4 className="font-mono text-[9.5px] tracking-[0.22em] uppercase text-muted-foreground font-semibold">
@@ -162,7 +165,7 @@ export function TrendingCard({ trending, isBookmarksView }: ITrendingCardProps) 
         {trending.map((trend, idx) => (
           <li
             key={trend.source.id}
-            className="flex items-center gap-2 py-1 border-b border-white/[0.04] last:border-b-0"
+            className="flex items-center gap-2 py-1 border-b border-border-glass last:border-b-0"
           >
             <span className="w-5 font-serif font-extrabold text-[15px] text-primary leading-none shrink-0">
               {idx + 1}

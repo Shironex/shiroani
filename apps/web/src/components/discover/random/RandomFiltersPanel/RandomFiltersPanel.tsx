@@ -11,11 +11,11 @@ function RandomFiltersPanel({ included, excluded, disabled, onChange }: IRandomF
     useRandomFiltersPanel({ included, excluded });
 
   return (
-    <div className="rounded-[12px] border border-border-glass bg-card/40 backdrop-blur-sm overflow-hidden">
+    <div className="rounded-xl border border-border-glass bg-card/40 backdrop-blur-sm overflow-hidden">
       <button
         type="button"
         onClick={toggleOpen}
-        className="w-full flex items-center justify-between px-4 py-2.5 text-left hover:bg-accent/30 transition-colors"
+        className="w-full flex items-center justify-between px-4 py-2.5 text-left hover:bg-accent/30 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
         aria-expanded={open}
       >
         <div className="flex items-center gap-2">

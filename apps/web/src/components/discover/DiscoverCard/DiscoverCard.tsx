@@ -1,8 +1,10 @@
 import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Check, Film, ListChecks, Plus, Star } from 'lucide-react';
+import { Check, Film, ListChecks, Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { PillTag } from '@/components/ui/pill-tag';
+import { ScoreChip } from '@/components/shared/ScoreChip';
+import { FadeInImage } from '@/components/shared/FadeInImage';
 import { formatRawScore } from '@/lib/anime-utils';
 import { useDiscoverCard } from './DiscoverCard.hooks';
 import type { IDiscoverCardProps } from './DiscoverCard.types';
@@ -24,7 +26,7 @@ function DiscoverCard({ media, inLibrary, onClick, onAddToLibrary }: IDiscoverCa
   return (
     <div
       className={cn(
-        'group relative rounded-[10px] overflow-hidden cursor-pointer',
+        'group relative rounded-lg overflow-hidden cursor-pointer',
         'border border-border-glass bg-card/60',
         'transition-transform duration-200 ease-out',
         'hover:-translate-y-0.5 hover:shadow-primary-glow',
@@ -34,10 +36,10 @@ function DiscoverCard({ media, inLibrary, onClick, onAddToLibrary }: IDiscoverCa
       {/* Cover — 2:3 aspect, matching Library card vocabulary */}
       <div className="relative aspect-[2/3] overflow-hidden">
         {showImage ? (
-          <img
+          <FadeInImage
             src={coverUrl}
             alt={title}
-            className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.03]"
+            className="w-full h-full object-cover transition-[transform,opacity] duration-500 ease-out group-hover:scale-[1.03]"
             loading="lazy"
             onError={handleImageError}
           />
@@ -74,13 +76,13 @@ function DiscoverCard({ media, inLibrary, onClick, onAddToLibrary }: IDiscoverCa
           aria-label={title}
           className={cn(
             'absolute inset-0 z-[2]',
-            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset rounded-[10px]'
+            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset rounded-lg'
           )}
         />
 
         {/* Format pill — top-left */}
         {formatLabel && (
-          <div className="absolute top-2 left-2 z-[2]">
+          <div className="pointer-events-none absolute top-2 left-2 z-[2]">
             <PillTag variant="muted" className="shadow-[0_1px_4px_oklch(0_0_0/0.5)]">
               {formatLabel}
             </PillTag>
@@ -91,7 +93,12 @@ function DiscoverCard({ media, inLibrary, onClick, onAddToLibrary }: IDiscoverCa
             explicitly resolved membership for a connected viewer. Sits below the
             format pill so it never overlaps it. */}
         {media.onList === true && (
-          <div className={cn('absolute left-2 z-[2]', formatLabel ? 'top-9' : 'top-2')}>
+          <div
+            className={cn(
+              'pointer-events-none absolute left-2 z-[2]',
+              formatLabel ? 'top-9' : 'top-2'
+            )}
+          >
             <span
               title={t('card.onListTooltip')}
               className={cn(
@@ -106,24 +113,18 @@ function DiscoverCard({ media, inLibrary, onClick, onAddToLibrary }: IDiscoverCa
           </div>
         )}
 
-        {/* Score chip — top-right, mono with star */}
+        {/* Score chip — top-right */}
         {hasScore && (
-          <div
-            className={cn(
-              'absolute top-2 right-2 z-[2]',
-              'flex items-center gap-[3px] px-[6px] py-[3px] rounded-[3px]',
-              'bg-black/70 text-[10px] font-mono font-bold leading-none',
-              'text-[oklch(0.8_0.14_70)]'
-            )}
-          >
-            <Star className="w-3 h-3 fill-current" strokeWidth={0} />
-            <span className="tabular-nums">{formatRawScore(media.averageScore ?? 0)}</span>
-          </div>
+          <ScoreChip
+            value={formatRawScore(media.averageScore ?? 0)}
+            scrim
+            className="pointer-events-none absolute top-2 right-2 z-[2]"
+          />
         )}
 
         {/* In-library indicator — bottom-right above title */}
         {inLibrary && (
-          <div className="absolute bottom-[58px] right-2 z-[2]">
+          <div className="pointer-events-none absolute bottom-[58px] right-2 z-[2]">
             <div className="w-5 h-5 rounded-full bg-status-success flex items-center justify-center shadow-[0_1px_4px_oklch(0_0_0/0.5)]">
               <Check className="w-3 h-3 text-white" />
             </div>
@@ -161,7 +162,7 @@ function DiscoverCard({ media, inLibrary, onClick, onAddToLibrary }: IDiscoverCa
               disabled={inLibrary}
               aria-label={inLibrary ? t('card.inLibraryAria') : t('card.addToLibrary')}
               className={cn(
-                'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[8px]',
+                'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md',
                 'text-[11.5px] font-bold shadow-[0_6px_16px_-6px_oklch(0_0_0/0.7)]',
                 'transition-colors duration-150 active:scale-[0.97]',
                 inLibrary

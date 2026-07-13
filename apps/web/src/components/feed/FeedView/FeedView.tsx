@@ -3,6 +3,7 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { TooltipButton } from '@/components/ui/tooltip-button';
 import { ViewHeader } from '@/components/shared/ViewHeader';
+import { EmptyState } from '@/components/shared/EmptyState';
 import { KanjiWatermark } from '@/components/shared/KanjiWatermark';
 import { FeedHero } from '../FeedHero';
 import { FeedSidebar } from '../FeedSidebar';
@@ -74,7 +75,7 @@ export default function FeedView() {
                 the header actions so it's always reachable, regardless of
                 viewport (sidebar hides below xl). */}
             <div
-              className="flex items-center gap-0.5 rounded-lg bg-white/[0.04] border border-white/[0.06] p-0.5"
+              className="flex items-center gap-0.5 rounded-lg bg-foreground/[0.03] border border-border-glass p-0.5"
               role="group"
               aria-label={t('viewToggle.ariaLabel')}
             >
@@ -84,6 +85,7 @@ export default function FeedView() {
                 aria-pressed={feedView === 'all'}
                 className={cn(
                   'px-2.5 h-6 rounded-md text-[11px] font-medium transition-colors duration-150',
+                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset active:scale-[0.98]',
                   feedView === 'all'
                     ? 'bg-primary/20 text-primary'
                     : 'text-muted-foreground/80 hover:text-foreground'
@@ -97,6 +99,7 @@ export default function FeedView() {
                 aria-pressed={feedView === 'bookmarks'}
                 className={cn(
                   'flex items-center gap-1 px-2.5 h-6 rounded-md text-[11px] font-medium transition-colors duration-150',
+                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset active:scale-[0.98]',
                   feedView === 'bookmarks'
                     ? 'bg-primary/20 text-primary'
                     : 'text-muted-foreground/80 hover:text-foreground'
@@ -159,7 +162,7 @@ export default function FeedView() {
                   className={cn(
                     'absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full',
                     'bg-primary text-[9px] font-bold leading-none grid place-items-center',
-                    'text-background animate-fade-in'
+                    'text-primary-foreground animate-fade-in'
                   )}
                 >
                   +{lastRefreshNewCount}
@@ -177,37 +180,39 @@ export default function FeedView() {
           <KanjiWatermark kanji="報" position="br" size={300} opacity={0.03} />
         </div>
 
-        <div className="absolute inset-0 overflow-y-auto overflow-x-hidden scrollbar-thin">
+        <div className="absolute inset-0 overflow-y-auto overflow-x-hidden">
           <div className="relative z-[1]">
             {feedView === 'all' && viewState === 'loading' ? (
               <FeedLoadingAnimation />
             ) : feedView === 'all' && viewState === 'error' ? (
-              <div className="flex-1 flex flex-col items-center justify-center py-16 gap-3 text-muted-foreground">
-                <Rss className="w-10 h-10 text-destructive/60" />
-                <p className="text-sm text-center max-w-xs">{error}</p>
-                <Button variant="outline" size="sm" onClick={() => fetchItems()}>
-                  {t('actions.tryAgain')}
-                </Button>
+              <div className="flex items-center justify-center w-full px-6 py-16">
+                <div className="w-full max-w-md rounded-xl border border-destructive/25 bg-destructive/[0.06] px-5 py-6 flex flex-col items-center gap-3 text-center">
+                  <div className="size-14 rounded-full bg-destructive/20 border border-destructive/40 grid place-items-center">
+                    <Rss className="size-6 text-destructive" aria-hidden="true" />
+                  </div>
+                  <p className="text-sm text-muted-foreground max-w-xs">{error}</p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-1.5"
+                    onClick={() => fetchItems()}
+                  >
+                    <RefreshCw className="w-3.5 h-3.5" aria-hidden="true" />
+                    {t('actions.tryAgain')}
+                  </Button>
+                </div>
               </div>
             ) : feedView === 'all' && viewState === 'empty' ? (
-              <div className="flex-1 flex flex-col items-center justify-center py-20 gap-4 text-muted-foreground">
-                <div className="w-16 h-16 rounded-2xl bg-white/[0.04] flex items-center justify-center">
-                  <Inbox className="w-8 h-8 text-muted-foreground/40" />
-                </div>
-                <div className="text-center space-y-1">
-                  <p className="text-sm font-medium text-foreground/70">{t('empty.title')}</p>
-                  <p className="text-xs text-muted-foreground/50">{t('empty.subtitle')}</p>
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="border-primary/20 text-primary hover:bg-primary/10"
-                  onClick={() => refreshFeeds()}
-                >
-                  <RefreshCw className="w-3.5 h-3.5 mr-1.5" />
-                  {t('actions.refresh')}
-                </Button>
-              </div>
+              <EmptyState
+                icon={Inbox}
+                title={t('empty.title')}
+                subtitle={t('empty.subtitle')}
+                action={{
+                  label: t('actions.refresh'),
+                  onClick: () => refreshFeeds(),
+                  icon: RefreshCw,
+                }}
+              />
             ) : (
               <div
                 role="region"
@@ -222,29 +227,17 @@ export default function FeedView() {
                   {heroItem && <FeedHero item={heroItem} onOpen={handleOpenInReader} />}
 
                   {feedView === 'bookmarks' && visibleItems.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-12 gap-3 text-muted-foreground">
-                      <Inbox className="w-8 h-8 opacity-40" />
-                      <div className="text-center space-y-1">
-                        <p className="text-sm font-medium text-foreground/70">
-                          {t('empty.noBookmarksTitle')}
-                        </p>
-                        <p className="text-xs text-muted-foreground/50">
-                          {t('empty.noBookmarksSubtitle')}
-                        </p>
-                      </div>
-                    </div>
+                    <EmptyState
+                      icon={Inbox}
+                      title={t('empty.noBookmarksTitle')}
+                      subtitle={t('empty.noBookmarksSubtitle')}
+                    />
                   ) : showNoResults ? (
-                    <div className="flex flex-col items-center justify-center py-12 gap-3 text-muted-foreground">
-                      <Inbox className="w-8 h-8 opacity-40" />
-                      <div className="text-center space-y-1">
-                        <p className="text-sm font-medium text-foreground/70">
-                          {t('empty.noResultsTitle')}
-                        </p>
-                        <p className="text-xs text-muted-foreground/50">
-                          {t('empty.noResultsSubtitle', { query: searchQuery })}
-                        </p>
-                      </div>
-                    </div>
+                    <EmptyState
+                      icon={Inbox}
+                      title={t('empty.noResultsTitle')}
+                      subtitle={t('empty.noResultsSubtitle', { query: searchQuery })}
+                    />
                   ) : (
                     <FeedList
                       items={listItems}
@@ -261,9 +254,9 @@ export default function FeedView() {
                         variant="outline"
                         size="sm"
                         className={cn(
-                          'border-white/[0.08] text-muted-foreground/70',
-                          'hover:border-white/[0.12] hover:text-foreground',
-                          'transition-all duration-200'
+                          'border-border-glass text-muted-foreground/70',
+                          'hover:border-foreground/20 hover:text-foreground',
+                          'transition-colors duration-200'
                         )}
                         onClick={handleLoadMore}
                         disabled={isLoading}

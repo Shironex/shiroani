@@ -15,9 +15,9 @@ function FeedListItem({ item, unread = false, onOpen, onOpenExternal }: IFeedLis
   return (
     <article
       className={cn(
-        'group grid grid-cols-[96px_1fr_auto] gap-3 p-2.5 rounded-[10px]',
-        'border border-white/[0.07] bg-white/[0.025] transition-colors duration-200',
-        'hover:border-white/[0.12] hover:bg-white/[0.045]',
+        'group grid grid-cols-[96px_1fr_auto] gap-3 p-2.5 rounded-lg',
+        'border border-border-glass bg-foreground/[0.03] transition-colors duration-200',
+        'hover:border-foreground/20 hover:bg-foreground/[0.06]',
         unread && 'bg-primary/[0.06] border-primary/[0.2] hover:bg-primary/[0.08]'
       )}
     >
@@ -91,16 +91,13 @@ function FeedListItem({ item, unread = false, onOpen, onOpenExternal }: IFeedLis
       </div>
 
       <div className="flex flex-col gap-1.5 items-end shrink-0">
-        <span className="font-mono text-[9.5px] tracking-[0.12em] uppercase text-muted-foreground/60 whitespace-nowrap">
-          {item.sourceName}
-        </span>
         <button
           onClick={() => onOpenExternal(item)}
           className={cn(
-            'p-1 rounded-md text-muted-foreground/40 transition-all duration-150',
+            'p-1 rounded-md text-muted-foreground/40 transition-[opacity,color,background-color] duration-150',
             'hover:text-primary hover:bg-primary/10',
             'opacity-0 group-hover:opacity-100',
-            'focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary'
+            'focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
           )}
           aria-label={t('item.openExternalAria', { title: item.title })}
         >

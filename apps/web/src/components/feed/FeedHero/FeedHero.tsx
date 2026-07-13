@@ -4,6 +4,7 @@ import { cn } from '@/lib/utils';
 import { handleImageError } from '@/lib/image-utils';
 import { readableTextColor } from '@/lib/color-utils';
 import { PillTag } from '@/components/ui/pill-tag';
+import { FadeInImage } from '@/components/shared/FadeInImage';
 import { KanjiWatermark } from '@/components/shared/KanjiWatermark';
 import { useFeedHero } from './FeedHero.hooks';
 import type { IFeedHeroProps } from './FeedHero.types';
@@ -22,26 +23,32 @@ function FeedHero({ item, onOpen }: IFeedHeroProps) {
       type="button"
       onClick={() => onOpen(item)}
       className={cn(
-        'group relative w-full text-left rounded-[12px] overflow-hidden',
-        'border border-white/[0.08]',
-        'transition-transform duration-300 hover:scale-[1.003]',
-        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50'
+        'group relative w-full text-left rounded-xl overflow-hidden',
+        'border border-border-glass',
+        'transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-primary-glow',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
       )}
       style={{
-        background: 'linear-gradient(120deg, oklch(0.45 0.17 350), oklch(0.25 0.1 290))',
+        // Fallback cover wash, derived from the brand token so it tracks the
+        // active theme instead of a frozen pink/violet gradient.
+        background:
+          'linear-gradient(120deg, oklch(from var(--primary) 0.45 c h), oklch(from var(--primary) 0.26 c calc(h - 60)))',
       }}
     >
-      {/* Background image if available */}
+      {/* Background image if available. Wrapper carries the permanent 60% dim
+          (keeps the headline legible); FadeInImage fades the bitmap in on load. */}
       {item.imageUrl && (
-        <img
-          src={item.imageUrl}
-          alt=""
-          loading="lazy"
-          decoding="async"
-          draggable={false}
-          onError={handleImageError}
-          className="absolute inset-0 w-full h-full object-cover opacity-60"
-        />
+        <div className="absolute inset-0 opacity-60">
+          <FadeInImage
+            src={item.imageUrl}
+            alt=""
+            loading="lazy"
+            decoding="async"
+            draggable={false}
+            onError={handleImageError}
+            className="w-full h-full object-cover"
+          />
+        </div>
       )}
 
       {/* Decorative highlight + grain overlay */}
@@ -74,6 +81,8 @@ function FeedHero({ item, onOpen }: IFeedHeroProps) {
 
       {/* Content */}
       <div className="relative z-[1] flex flex-col gap-2 p-5 sm:p-6 min-h-[180px]">
+        {/* Over-image scrim chips — white/black alphas are intentional here so
+            the pills stay legible on top of the cover art (not theme surfaces). */}
         <div className="flex flex-wrap items-center gap-1.5">
           <PillTag className="bg-white/20 text-white/95">{t('hero.featured')}</PillTag>
           <PillTag className="bg-black/35 text-white/95">{categoryLabel}</PillTag>

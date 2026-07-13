@@ -29,7 +29,7 @@ export function StreamingEpisodesList({ episodes }: IStreamingEpisodesListProps)
   const { t } = useTranslation('schedule');
 
   return (
-    <div className="flex gap-2 overflow-x-auto pb-1">
+    <div className="flex gap-2 overflow-x-auto pb-1 snap-x snap-proximity [mask-image:linear-gradient(to_right,#000_calc(100%_-_32px),transparent_100%)]">
       {/* streamingEpisodes is an unbounded AniList list field — cap the row */}
       {episodes.slice(0, 50).map(ep => (
         <button
@@ -37,7 +37,7 @@ export function StreamingEpisodesList({ episodes }: IStreamingEpisodesListProps)
           type="button"
           onClick={() => window.open(ep.url, '_blank', 'noopener,noreferrer')}
           aria-label={t('dialog.streamingEpisodeAria', { title: ep.title, site: ep.site })}
-          className="group/ep relative shrink-0 w-40 text-left rounded-lg overflow-hidden border border-border/50 bg-muted/30 transition-colors hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="group/ep relative shrink-0 w-40 snap-start text-left rounded-lg overflow-hidden border border-border/50 bg-muted/30 transition-colors hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           <div className="relative aspect-video overflow-hidden bg-muted">
             {ep.thumbnail && (

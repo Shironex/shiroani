@@ -64,7 +64,7 @@ function RandomDiscoveryPanel({
           {/* Banner backdrop — banner image blurred + accent gradient overlay */}
           <ShowcaseBackdrop banner={banner} />
 
-          <div className="relative rounded-[14px] border border-border-glass bg-card/40 backdrop-blur-sm overflow-hidden">
+          <div className="relative rounded-xl border border-border-glass bg-card/40 backdrop-blur-sm overflow-hidden">
             <RandomShowcaseCard
               media={current}
               index={index}

@@ -56,12 +56,12 @@ function DiscoverFiltersPanel({
   const yearValue = filters.year != null ? String(filters.year) : undefined;
 
   return (
-    <div className="rounded-[12px] border border-border-glass bg-card/40 overflow-hidden">
-      <div className="flex items-center justify-between px-4 py-2.5">
+    <div className="rounded-xl border border-border-glass bg-card/40 overflow-hidden">
+      <div className="flex items-center justify-between px-4 py-2.5 hover:bg-accent/30 transition-colors">
         <button
           type="button"
           onClick={toggleOpen}
-          className="flex items-center gap-2 text-left"
+          className="flex items-center gap-2 rounded-sm text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           aria-expanded={open}
         >
           <SlidersHorizontal className="w-3.5 h-3.5 text-primary" />
@@ -80,7 +80,7 @@ function DiscoverFiltersPanel({
               type="button"
               onClick={() => onChange({})}
               disabled={disabled}
-              className="text-2xs text-muted-foreground hover:text-foreground/80 transition-colors disabled:opacity-50"
+              className="rounded-sm text-2xs text-muted-foreground hover:text-foreground/80 transition-colors disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               {t('controls.reset')}
             </button>
@@ -89,7 +89,7 @@ function DiscoverFiltersPanel({
             type="button"
             onClick={toggleOpen}
             aria-expanded={open}
-            className="font-mono text-[9.5px] uppercase tracking-[0.14em] text-muted-foreground/70"
+            className="rounded-sm font-mono text-[9.5px] uppercase tracking-[0.14em] text-muted-foreground/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             {open ? t('controls.filtersCollapse') : t('controls.filtersExpand')}
           </button>

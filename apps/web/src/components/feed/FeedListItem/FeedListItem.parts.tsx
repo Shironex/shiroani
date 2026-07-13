@@ -1,13 +1,14 @@
 import { Rss } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { handleImageError } from '@/lib/image-utils';
+import { FadeInImage } from '@/components/shared/FadeInImage';
 
 /** Thumbnail tile for a feed list row, with a decorative RSS placeholder. */
 export function FeedThumb({ src, alt }: { src?: string; alt: string }) {
   return (
     <div
       className={cn(
-        'relative w-[96px] aspect-[16/10] rounded-[6px] overflow-hidden shrink-0',
+        'relative w-[96px] aspect-[16/10] rounded-md overflow-hidden shrink-0',
         'bg-gradient-to-br from-primary/25 via-primary/10 to-foreground/10'
       )}
     >
@@ -20,7 +21,7 @@ export function FeedThumb({ src, alt }: { src?: string; alt: string }) {
       />
       <Rss className="absolute inset-0 m-auto w-6 h-6 text-foreground/20" />
       {src && (
-        <img
+        <FadeInImage
           src={src}
           alt={alt}
           loading="lazy"

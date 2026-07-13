@@ -2,6 +2,7 @@ import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Play, Tv } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { handleImageError } from '@/lib/image-utils';
 import { PillTag } from '@/components/ui/pill-tag';
 import { formatCountdown, formatTime, getAnimeTitle, getCoverUrl } from '../schedule-utils';
 import { formatEpisodeProgress } from '@/lib/anime-utils';
@@ -52,11 +53,7 @@ const AiringEntry = memo(function AiringEntry({
   }
 
   // Mark (left stripe) colour
-  const markClass = isLive
-    ? 'bg-primary'
-    : isDone
-      ? 'bg-muted-foreground/40'
-      : 'bg-[oklch(0.5_0.15_280)]';
+  const markClass = isLive ? 'bg-primary' : isDone ? 'bg-muted-foreground/40' : 'bg-status-info';
 
   const ariaLabel = t('entry.ariaLabel', { title, time: formatTime(anime.airingAt) });
 
@@ -66,8 +63,8 @@ const AiringEntry = memo(function AiringEntry({
       aria-label={ariaLabel}
       style={style}
       className={cn(
-        'group relative flex items-stretch gap-3 rounded-[10px] overflow-hidden',
-        'border transition-all duration-200',
+        'group relative flex items-stretch gap-3 rounded-lg overflow-hidden',
+        'border transition-colors duration-200',
         isLive
           ? 'bg-primary/10 border-primary/40 shadow-[0_0_18px_oklch(from_var(--primary)_l_c_h/0.25)]'
           : 'bg-card/40 border-border-glass',
@@ -84,7 +81,7 @@ const AiringEntry = memo(function AiringEntry({
           type="button"
           onClick={() => onClick(anime)}
           aria-label={ariaLabel}
-          className="absolute inset-0 z-[1] rounded-[10px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
+          className="absolute inset-0 z-[1] rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
         />
       )}
 
@@ -108,6 +105,7 @@ const AiringEntry = memo(function AiringEntry({
           alt=""
           className="w-[42px] h-[56px] my-auto rounded-md object-cover border border-border-glass shrink-0"
           loading="lazy"
+          onError={handleImageError}
         />
       ) : (
         <div className="w-[42px] h-[56px] my-auto rounded-md bg-muted/60 border border-border-glass shrink-0" />
@@ -131,11 +129,15 @@ const AiringEntry = memo(function AiringEntry({
       {/* Right actions — above the stretched open button (z-[1]) so the bell
           stays independently clickable. */}
       <div className="relative z-[2] flex items-center gap-2 pr-3 shrink-0">
-        {statusLabel && <PillTag variant={statusVariant}>{statusLabel}</PillTag>}
+        {statusLabel && (
+          <PillTag variant={statusVariant} className="pointer-events-none">
+            {statusLabel}
+          </PillTag>
+        )}
         {isLive && (
           <span
             aria-hidden="true"
-            className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-primary text-primary-foreground text-[11px] font-bold"
+            className="pointer-events-none hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-primary text-primary-foreground text-[11px] font-bold"
           >
             <Play className="w-3 h-3 fill-current" strokeWidth={0} />
             {t('entry.watch')}

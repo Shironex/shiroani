@@ -24,7 +24,7 @@ export default function WeeklyView({
   });
 
   return (
-    <div className="flex-1 overflow-x-auto overflow-y-hidden">
+    <div className="flex-1 overflow-x-auto overflow-y-hidden [mask-image:linear-gradient(to_right,#000_calc(100%_-_40px),transparent_100%)]">
       <WeekColumns
         weekDays={weekDays}
         dayNamesShort={dayNamesShort}

@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { Star, Heart, Users, Trophy, Tv, Clock } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { PillTag } from '@/components/ui/pill-tag';
 import { formatRawScore } from '@/lib/anime-utils';
 import {
   getAnilistFormatLabel,
@@ -23,56 +24,57 @@ export default function AnimeInfoStats({
 
   return (
     <>
-      {/* Quick stats row */}
+      {/* Quick stats row — counts stay as Badges */}
       <div className="flex flex-wrap items-center gap-2 pt-3">
         {anime.media.averageScore != null && (
-          <Badge variant="secondary" className="gap-1">
-            <Star className="w-3 h-3 text-yellow-500" />
+          <Badge variant="secondary" className="gap-1 tabular-nums">
+            <Star className="w-3 h-3 text-gold" />
             {formatRawScore(anime.media.averageScore)}
           </Badge>
         )}
         {details?.popularity != null && (
-          <Badge variant="secondary" className="gap-1">
-            <Heart className="w-3 h-3 text-pink-500" />
+          <Badge variant="secondary" className="gap-1 tabular-nums">
+            <Heart className="w-3 h-3 text-status-error" />
             {details.popularity.toLocaleString()}
           </Badge>
         )}
         {details?.favourites != null && (
-          <Badge variant="secondary" className="gap-1">
+          <Badge variant="secondary" className="gap-1 tabular-nums">
             <Users className="w-3 h-3" />
             {details.favourites.toLocaleString()}
           </Badge>
         )}
         {topRanking && (
-          <Badge variant="secondary" className="gap-1">
-            <Trophy className="w-3 h-3 text-amber-500" />#{topRanking.rank} {topRanking.context}
+          <Badge variant="secondary" className="gap-1 tabular-nums">
+            <Trophy className="w-3 h-3 text-status-pending" />#{topRanking.rank}{' '}
+            {topRanking.context}
           </Badge>
         )}
       </div>
 
-      {/* Info badges */}
+      {/* Format / status / season row — unified on the card-layer PillTag */}
       <div className="flex flex-wrap gap-1.5">
-        {format && <Badge variant="outline">{getAnilistFormatLabel(format)}</Badge>}
-        {status && <Badge variant="outline">{getAnilistStatusLabel(status)}</Badge>}
+        {format && <PillTag variant="muted">{getAnilistFormatLabel(format)}</PillTag>}
+        {status && <PillTag variant="muted">{getAnilistStatusLabel(status)}</PillTag>}
         {details?.source && (
-          <Badge variant="outline">{getAnilistSourceLabel(details.source)}</Badge>
+          <PillTag variant="muted">{getAnilistSourceLabel(details.source)}</PillTag>
         )}
         {showSeason && (
-          <Badge variant="outline">
+          <PillTag variant="muted">
             {getAnilistSeasonLabel(details?.season ?? '')} {details?.seasonYear}
-          </Badge>
+          </PillTag>
         )}
         {episodes && (
-          <Badge variant="outline" className="gap-1">
+          <PillTag variant="muted" className="gap-1">
             <Tv className="w-3 h-3" />
             {episodes} {t('dialog.episodesShort')}
-          </Badge>
+          </PillTag>
         )}
         {details?.duration && (
-          <Badge variant="outline" className="gap-1">
+          <PillTag variant="muted" className="gap-1">
             <Clock className="w-3 h-3" />
             {details.duration} {t('dialog.minutesShort')}
-          </Badge>
+          </PillTag>
         )}
       </div>
     </>

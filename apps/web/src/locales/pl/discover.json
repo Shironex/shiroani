@@ -2,6 +2,7 @@
   "title": "Przeglądaj",
   "subtitle": "Popularne, sezonowe i losowe",
   "searchPlaceholder": "Szukaj anime...",
+  "loadingMore": "Wczytywanie...",
   "tabs": {
     "trending": "Na czasie",
     "popular": "Popularne",
@@ -98,8 +99,8 @@
     "alreadyInLibrary": "To anime jest już w bibliotece",
     "addedToLibrary": "Dodano do biblioteki",
     "addedToLibraryAndAniList": "Dodano do biblioteki i AniList",
-    "addedLocalOnly": "Dodano lokalnie — nie udało się zsynchronizować z AniList",
+    "addedLocalOnly": "Dodano lokalnie. Nie udało się zsynchronizować z AniList.",
     "addFailed": "Nie udało się dodać do biblioteki",
-    "rateLimited": "Zbyt wiele zapytań — odczekaj chwilę i spróbuj ponownie"
+    "rateLimited": "Zbyt wiele zapytań. Odczekaj chwilę i spróbuj ponownie."
   }
 }

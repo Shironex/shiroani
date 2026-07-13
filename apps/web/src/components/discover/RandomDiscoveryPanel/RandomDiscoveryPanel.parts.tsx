@@ -8,7 +8,7 @@ interface IShowcaseBackdropProps {
 /** Blurred banner image + accent gradient behind the showcase card. */
 export function ShowcaseBackdrop({ banner }: IShowcaseBackdropProps) {
   return (
-    <div className="absolute inset-0 -z-10 overflow-hidden rounded-[14px]">
+    <div className="absolute inset-0 -z-10 overflow-hidden rounded-xl">
       {banner ? (
         <img
           src={banner}

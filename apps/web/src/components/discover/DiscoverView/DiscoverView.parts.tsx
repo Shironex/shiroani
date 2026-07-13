@@ -26,7 +26,7 @@ export function SearchBanner({ onClear }: ISearchBannerProps) {
         </span>
         <button
           onClick={onClear}
-          className="flex items-center gap-1 text-2xs text-muted-foreground hover:text-foreground/70 transition-colors"
+          className="flex items-center gap-1 rounded-sm text-2xs text-muted-foreground hover:text-foreground/70 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           <X className="w-3 h-3" />
           {t('search.clear')}

@@ -1,7 +1,22 @@
 import { type CellComponentProps } from 'react-window';
+import { useTranslation } from 'react-i18next';
 import { Loader2 } from 'lucide-react';
 import { DiscoverCard } from '@/components/discover/DiscoverCard';
 import type { ICellProps } from './DiscoverGrid.types';
+
+/**
+ * Trailing load-more indicator — a labelled spinner that mirrors the feed's
+ * load-more treatment so the two infinite lists read consistently.
+ */
+function LoadMoreRow() {
+  const { t } = useTranslation('discover');
+  return (
+    <div className="flex items-center gap-1.5 text-xs text-muted-foreground/70">
+      <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
+      {t('loadingMore')}
+    </div>
+  );
+}
 
 // gap-3.5 between cards (mirrors the previous CSS grid `gap-3.5`).
 export const GAP_PX = 14;
@@ -63,7 +78,7 @@ export function GridCell({
         style={{ ...style, width: '100%' }}
         className="flex items-start justify-center pt-6"
       >
-        {isLoadingMore && <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />}
+        {isLoadingMore && <LoadMoreRow />}
       </div>
     );
   }

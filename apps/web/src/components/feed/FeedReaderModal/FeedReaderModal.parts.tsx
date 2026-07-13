@@ -89,14 +89,14 @@ export function RelatedPanel({
               onClick={() => onOpenRelated(rel)}
               className={cn(
                 'group w-full grid grid-cols-[72px_1fr] gap-2.5 p-2.5 text-left',
-                'rounded-[9px] border border-white/[0.07] bg-white/[0.03]',
+                'rounded-lg border border-border-glass bg-foreground/[0.03]',
                 'transition-colors duration-150',
-                'hover:border-white/[0.15] hover:bg-white/[0.06]',
-                'focus-visible:outline-none focus-visible:border-primary/40'
+                'hover:border-foreground/20 hover:bg-foreground/[0.06]',
+                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset'
               )}
             >
               <div
-                className="rounded-[6px] aspect-[16/10] bg-gradient-to-br from-primary/30 to-foreground/20 overflow-hidden"
+                className="rounded-md aspect-[16/10] bg-gradient-to-br from-primary/30 to-foreground/20 overflow-hidden"
                 aria-hidden="true"
               >
                 {rel.imageUrl && (
