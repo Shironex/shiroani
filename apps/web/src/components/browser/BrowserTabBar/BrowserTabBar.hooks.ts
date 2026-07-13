@@ -155,7 +155,7 @@ export function useBrowserTabBar(
     const ro = new ResizeObserver(check);
     ro.observe(el);
     return () => ro.disconnect();
-  }, [tabs.length]);
+  }, [tabs]);
 
   return {
     sensors,

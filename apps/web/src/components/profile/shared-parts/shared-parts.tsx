@@ -132,7 +132,7 @@ export function CountBars({ rows }: { rows: ICountBarRow[] }) {
       </div>
       <div className="h-[5px] rounded-full bg-foreground/7 overflow-hidden">
         <div
-          className="h-full w-full rounded-full origin-left transition-transform duration-700 ease-out"
+          className="h-full w-full origin-left transition-transform duration-700 ease-out"
           style={{
             transform: `scaleX(${Math.max(0, Math.min(100, row.pct)) / 100})`,
             backgroundColor: CHART_VARS[i % CHART_VARS.length],
@@ -233,7 +233,7 @@ export function SyncStatusWidget({
         <div className="mt-2 h-1 rounded-full bg-foreground/7 overflow-hidden">
           <div
             className={cn(
-              'h-full w-full rounded-full bg-primary origin-left transition-transform duration-500 ease-out',
+              'h-full w-full bg-primary origin-left transition-transform duration-500 ease-out',
               pct === null && 'animate-pulse'
             )}
             style={{ transform: `scaleX(${pct === null ? 1 : pct / 100})` }}
