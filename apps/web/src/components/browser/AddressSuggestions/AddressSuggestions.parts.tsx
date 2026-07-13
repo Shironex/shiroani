@@ -32,7 +32,7 @@ export const SuggestionRow = memo(function SuggestionRow({
       onMouseDown={handleMouseDown}
       onMouseEnter={() => onHoverIndex(index)}
       className={cn(
-        'flex items-center gap-2.5 px-3 py-2 cursor-pointer rounded-[8px]',
+        'flex items-center gap-2.5 px-3 py-2 cursor-pointer rounded-md',
         isActive ? 'bg-foreground/[0.08]' : 'hover:bg-foreground/[0.04]'
       )}
     >

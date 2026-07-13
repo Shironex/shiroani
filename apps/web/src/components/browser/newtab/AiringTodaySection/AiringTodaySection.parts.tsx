@@ -34,7 +34,7 @@ export function AiringPosterCard({ entry, isUser }: IAiringPosterCardProps) {
     <div className="w-[100px] shrink-0 group">
       <div
         className={cn(
-          'relative aspect-[3/4] rounded-lg overflow-hidden border transition-all',
+          'relative aspect-[3/4] rounded-lg overflow-hidden border transition-colors',
           isUser
             ? 'border-primary/30 shadow-[0_0_8px_-2px] shadow-primary/20'
             : 'border-border/20 hover:border-border/50'
@@ -52,7 +52,7 @@ export function AiringPosterCard({ entry, isUser }: IAiringPosterCardProps) {
             }}
           />
         ) : (
-          <div className="w-full h-full bg-muted/40" />
+          <div className="w-full h-full bg-card" />
         )}
 
         {/* Time badge */}
@@ -62,7 +62,8 @@ export function AiringPosterCard({ entry, isUser }: IAiringPosterCardProps) {
           </span>
         </div>
 
-        {/* Title + episode overlay at bottom */}
+        {/* Title + episode overlay at bottom — true over-image scrim, pure
+            black keeps white text legible over any cover art. */}
         <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-2 pt-6">
           <p className="text-2xs font-medium text-white leading-tight line-clamp-2">{title}</p>
           <p className="text-[10px] text-white/60 mt-0.5">

@@ -42,6 +42,7 @@ const meta = {
   },
   args: {
     urlInput: 'https://shinden.pl',
+    committedUrl: 'https://shinden.pl',
     onUrlInputChange: fn(),
     canGoBack: true,
     canGoForward: false,

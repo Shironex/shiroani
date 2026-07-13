@@ -35,7 +35,7 @@ export { horizontalListSortingStrategy };
 
 const CHIP_CLASS = cn(
   'group/chip relative flex items-center h-[26px] shrink-0 max-w-[180px]',
-  'rounded-[7px] border border-transparent',
+  'rounded-md border border-transparent',
   'hover:bg-foreground/[0.06] hover:border-border-glass transition-colors'
 );
 
@@ -55,7 +55,7 @@ export function FavoriteFavicon({ favicon }: { favicon?: string }) {
       />
     );
   }
-  return <Globe className="size-3 shrink-0 opacity-70" />;
+  return <Globe className="size-3.5 shrink-0 opacity-70" />;
 }
 
 /** Label shown on a chip: title, falling back to host, then raw URL. */
@@ -171,7 +171,7 @@ export function SortableFavoriteChip({
         className={cn(
           'flex min-w-0 items-center gap-1.5 pl-2 pr-1 h-full',
           'text-[11.5px] font-medium text-foreground/85 cursor-pointer outline-none',
-          'rounded-l-[7px] focus-visible:ring-2 focus-visible:ring-primary/50'
+          'rounded-l-md focus-visible:ring-2 focus-visible:ring-primary/50'
         )}
       >
         <FavoriteFavicon favicon={favorite.favicon} />
@@ -182,7 +182,7 @@ export function SortableFavoriteChip({
         onClick={handleKebab}
         aria-label={t('favorites.options', { title: chipLabel(favorite) })}
         className={cn(
-          'grid place-items-center size-5 mr-1 rounded-[5px] shrink-0 cursor-pointer',
+          'grid place-items-center size-5 mr-1 rounded-sm shrink-0 cursor-pointer',
           'text-muted-foreground/60 hover:text-foreground hover:bg-foreground/[0.08]',
           'opacity-0 group-hover/chip:opacity-100 focus-visible:opacity-100',
           'focus-visible:ring-2 focus-visible:ring-primary/50 outline-none transition-opacity'
@@ -327,7 +327,7 @@ export function FavoriteContextMenu({
       onKeyDown={handleMenuKeyDown}
       style={{ position: 'fixed', left: coords.x, top: coords.y }}
       className={cn(
-        'z-50 min-w-[180px] p-1 rounded-[10px]',
+        'z-50 min-w-[180px] p-1 rounded-lg',
         'bg-popover/95 backdrop-blur-md border border-border-glass shadow-xl',
         'animate-in fade-in-0 zoom-in-95'
       )}
@@ -340,7 +340,7 @@ export function FavoriteContextMenu({
           tabIndex={-1}
           onClick={item.action}
           className={cn(
-            'flex w-full items-center gap-2 px-2.5 py-1.5 rounded-[6px] text-left',
+            'flex w-full items-center gap-2 px-2.5 py-1.5 rounded-md text-left',
             'text-[12px] outline-none cursor-pointer transition-colors',
             'focus-visible:bg-foreground/[0.08]',
             item.danger

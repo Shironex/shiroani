@@ -3,6 +3,9 @@ import type { AddressSuggestion } from '../useAddressSuggestions';
 
 export interface IBrowserToolbarProps {
   urlInput: string;
+  /** The active pane's committed URL — used to gate the secure-lock icon so it
+   *  only shows once navigation to an https:// page has actually landed. */
+  committedUrl: string;
   onUrlInputChange: (value: string) => void;
   canGoBack: boolean;
   canGoForward: boolean;
@@ -13,6 +16,8 @@ export interface IBrowserToolbarProps {
   onGoBack: () => void;
   onGoForward: () => void;
   onReload: () => void;
+  /** Stop the in-flight load of the active pane (shown while `isLoading`). */
+  onStop: () => void;
   onNavigate: (url: string) => void;
   onGoHome: () => void;
   /** Toggle the active page's favorite state (the star). */

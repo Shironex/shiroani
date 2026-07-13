@@ -84,6 +84,9 @@ export default function NewTabPage({ onNavigate }: INewTabPageProps) {
               value={newSiteName}
               onChange={e => setNewSiteName(e.target.value)}
               aria-label={t('newTab.quickAccess.addDialog.nameAria')}
+              onKeyDown={e => {
+                if (e.key === 'Enter') handleAddSite();
+              }}
               className="h-8 text-sm"
             />
             <Input
@@ -98,7 +101,7 @@ export default function NewTabPage({ onNavigate }: INewTabPageProps) {
             />
           </div>
           <DialogFooter>
-            <Button variant="ghost" size="sm" onClick={() => setIsAddDialogOpen(false)}>
+            <Button variant="outline" size="sm" onClick={() => setIsAddDialogOpen(false)}>
               {t('actions.cancel', { ns: 'common' })}
             </Button>
             <Button

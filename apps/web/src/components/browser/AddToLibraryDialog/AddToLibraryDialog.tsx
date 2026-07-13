@@ -192,7 +192,11 @@ export default function AddToLibraryDialog({
             {t('actions.cancel', { ns: 'common' })}
           </Button>
           <Button size="sm" onClick={handleAdd} disabled={!editableTitle.trim() || isAdding}>
-            <BookmarkPlus className="w-4 h-4" />
+            {isAdding ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <BookmarkPlus className="w-4 h-4" />
+            )}
             {t('addDialog.submit')}
           </Button>
         </DialogFooter>

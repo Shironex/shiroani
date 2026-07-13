@@ -10,6 +10,17 @@ import {
   DialogTitle,
   DialogDescription,
 } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { useBrowserHistoryDialog } from './BrowserHistoryDialog.hooks';
 import { HistoryRow } from './BrowserHistoryDialog.parts';
 import type { IBrowserHistoryDialogProps } from './BrowserHistoryDialog.types';
@@ -77,16 +88,36 @@ export default function BrowserHistoryDialog({
         </div>
 
         <div className="flex justify-end pt-1">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={clearHistory}
-            disabled={history.length === 0}
-            className="text-muted-foreground hover:text-status-error"
-          >
-            <Trash2 className="size-3.5" />
-            {t('history.clearAll')}
-          </Button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                disabled={history.length === 0}
+                className="text-muted-foreground hover:text-status-error"
+              >
+                <Trash2 className="size-3.5" />
+                {t('history.clearAll')}
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>{t('history.clearConfirm.title')}</AlertDialogTitle>
+                <AlertDialogDescription>
+                  {t('history.clearConfirm.description')}
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>{t('actions.cancel', { ns: 'common' })}</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={clearHistory}
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                >
+                  {t('history.clearConfirm.confirm')}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       </DialogContent>
     </Dialog>

@@ -23,6 +23,7 @@ vi.mock('@/components/browser/useAddressSuggestions', () => ({
 function getDefaultProps() {
   return {
     urlInput: '',
+    committedUrl: '',
     onUrlInputChange: vi.fn(),
     canGoBack: false,
     canGoForward: false,
@@ -32,6 +33,7 @@ function getDefaultProps() {
     onGoBack: vi.fn(),
     onGoForward: vi.fn(),
     onReload: vi.fn(),
+    onStop: vi.fn(),
     onNavigate: vi.fn(),
     onGoHome: vi.fn(),
     onToggleFavorite: vi.fn(),

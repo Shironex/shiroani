@@ -20,7 +20,7 @@ export function ResumeCard({ entry, onResume }: IResumeCardProps) {
   return (
     <button
       onClick={onResume}
-      className="group relative flex w-[200px] shrink-0 flex-col overflow-hidden rounded-[10px] border border-border-glass bg-foreground/[0.04] text-left transition-colors hover:border-primary/40 hover:bg-primary/[0.04] cursor-pointer"
+      className="group relative flex w-[200px] shrink-0 flex-col overflow-hidden rounded-lg border border-border-glass bg-foreground/[0.04] text-left transition-colors hover:border-primary/40 hover:bg-primary/[0.04] cursor-pointer"
       aria-label={t('newTab.resume.ariaResume', { title: entry.title })}
     >
       <div className="relative h-[96px] w-full overflow-hidden bg-gradient-to-br from-primary/30 to-primary/5">
@@ -35,16 +35,18 @@ export function ResumeCard({ entry, onResume }: IResumeCardProps) {
         ) : (
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,oklch(1_0_0/0.2),transparent_55%)]" />
         )}
+        {/* True over-image scrim — pure black keeps cover art legible regardless of theme. */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
 
         <div className="absolute left-2 top-2">
+          {/* Over-image badge — black/white scrim reads on any cover art. */}
           <PillTag variant="muted" className="bg-black/60 text-white/90 backdrop-blur-sm">
             {episodeLabel}
           </PillTag>
         </div>
 
         <div className="absolute inset-0 grid place-items-center opacity-0 transition-opacity group-hover:opacity-100">
-          <span className="grid size-9 place-items-center rounded-full bg-white/90 text-background shadow-lg">
+          <span className="grid size-9 place-items-center rounded-full bg-foreground/90 text-background shadow-lg">
             <Play className="w-4 h-4 fill-current" />
           </span>
         </div>
@@ -67,7 +69,7 @@ export function ResumeCard({ entry, onResume }: IResumeCardProps) {
 export function EmptyResumeState({ onBrowseLibrary }: IEmptyResumeStateProps) {
   const { t } = useTranslation('browser');
   return (
-    <div className="flex items-center justify-between gap-4 rounded-[10px] border border-dashed border-border-glass bg-foreground/[0.02] px-4 py-5">
+    <div className="flex items-center justify-between gap-4 rounded-lg border border-dashed border-border-glass bg-foreground/[0.02] px-4 py-5">
       <div className="flex items-start gap-3 min-w-0">
         <span className="grid size-8 place-items-center rounded-md bg-primary/10 text-primary shrink-0">
           <Play className="w-3.5 h-3.5" />

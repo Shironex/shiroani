@@ -37,8 +37,9 @@ function AddressSuggestions({
       aria-label={t('urlBar.suggestions')}
       className={cn(
         'absolute left-0 right-0 top-[calc(100%+4px)] z-50 p-1',
-        'rounded-[12px] border border-border-glass bg-card shadow-lg',
-        'max-h-[320px] overflow-y-auto'
+        'rounded-lg border border-border-glass bg-card shadow-lg',
+        'max-h-[320px] overflow-y-auto',
+        'animate-in fade-in-0 slide-in-from-top-1 duration-100'
       )}
     >
       {rows}
