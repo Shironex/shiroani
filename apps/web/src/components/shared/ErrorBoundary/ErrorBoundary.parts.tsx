@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { MASCOT_SLEEP_URL } from '@/lib/constants';
+import { Button } from '@/components/ui/button';
 import { SpinnerRing } from '@/components/ui/spinner-ring';
 import { KanjiWatermark } from '@/components/shared/KanjiWatermark';
 
@@ -67,20 +68,12 @@ export function ErrorFallback({
         )}
 
         <div className="flex items-center gap-2 pt-1">
-          <button
-            type="button"
-            onClick={onRestart}
-            className="rounded-[7px] border border-foreground/10 bg-foreground/5 px-3.5 py-1.5 text-[11.5px] font-semibold text-foreground/85 hover:bg-foreground/10 cursor-pointer"
-          >
+          <Button type="button" variant="outline" size="sm" onClick={onRestart}>
             {t('restart')}
-          </button>
-          <button
-            type="button"
-            onClick={onReset}
-            className="rounded-[7px] bg-primary px-3.5 py-1.5 text-[11.5px] font-semibold text-primary-foreground hover:bg-primary/90 cursor-pointer"
-          >
+          </Button>
+          <Button type="button" size="sm" onClick={onReset}>
             {t('retry')}
-          </button>
+          </Button>
         </div>
       </div>
     </div>

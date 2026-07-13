@@ -55,7 +55,7 @@ export default function ViewHeader<T extends string = string>({
         <div className="flex items-center gap-3.5 min-w-0">
           <div
             className={cn(
-              'size-9 rounded-[10px] grid place-items-center flex-shrink-0',
+              'size-9 rounded-lg grid place-items-center flex-shrink-0',
               'bg-primary/15 border border-primary/30 text-primary'
             )}
           >
@@ -123,7 +123,7 @@ export default function ViewHeader<T extends string = string>({
                 <button
                   onClick={() => onSearchChange?.('')}
                   aria-label={t('header.clearSearch')}
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground/50 hover:text-foreground/70 transition-colors"
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-sm text-muted-foreground hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                 >
                   <SearchX className="w-3.5 h-3.5" />
                 </button>

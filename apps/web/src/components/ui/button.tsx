@@ -13,7 +13,7 @@ import { cn } from '@/lib/utils';
  *  - icon size → `.btn-icn` (30×30 glass square)
  */
 const buttonVariants = cva(
-  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-[9px] text-[12.5px] font-semibold transition-colors focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0',
+  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-[12.5px] font-semibold cursor-pointer transition-[color,background-color,border-color,box-shadow,transform] active:scale-[0.98] focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0',
   {
     variants: {
       variant: {
@@ -28,9 +28,9 @@ const buttonVariants = cva(
       },
       size: {
         default: 'h-9 px-[14px] py-2',
-        sm: 'h-8 rounded-[8px] px-3 text-[11.5px]',
-        lg: 'h-10 rounded-[10px] px-6 text-[13px]',
-        icon: 'size-[30px] rounded-[8px]',
+        sm: 'h-8 rounded-md px-3 text-[11.5px]',
+        lg: 'h-10 rounded-lg px-6 text-[13px]',
+        icon: 'size-[30px] rounded-md',
       },
     },
     defaultVariants: {

@@ -76,7 +76,7 @@ export default function BackgroundPanel({
         className="relative grid aspect-[16/9] place-items-center"
         style={{
           background:
-            'radial-gradient(ellipse 50% 45% at 30% 30%, oklch(0.72 0.15 355 / 0.5), transparent 60%), radial-gradient(ellipse 50% 40% at 75% 70%, oklch(0.4 0.15 280 / 0.6), transparent 60%), linear-gradient(135deg, oklch(0.25 0.08 340), oklch(0.18 0.06 280))',
+            'radial-gradient(ellipse 50% 45% at 30% 30%, oklch(from var(--primary) l c h / 0.5), transparent 60%), radial-gradient(ellipse 50% 40% at 75% 70%, oklch(from var(--primary) calc(l - 0.34) c calc(h - 75) / 0.6), transparent 60%), linear-gradient(135deg, oklch(from var(--background) calc(l + 0.13) calc(c + 0.06) h), oklch(from var(--background) calc(l + 0.06) calc(c + 0.04) calc(h - 20)))',
         }}
       >
         <span className="font-serif text-base font-bold text-white/95 drop-shadow-lg">
@@ -101,16 +101,14 @@ export default function BackgroundPanel({
           className="w-full h-full"
           style={{
             background:
-              'radial-gradient(ellipse 50% 45% at 30% 30%, oklch(0.72 0.15 355/0.65), transparent 60%), radial-gradient(ellipse 50% 40% at 75% 70%, oklch(0.4 0.15 280/0.75), transparent 60%), linear-gradient(135deg, oklch(0.25 0.08 340), oklch(0.18 0.06 280))',
+              'radial-gradient(ellipse 50% 45% at 30% 30%, oklch(from var(--primary) l c h / 0.65), transparent 60%), radial-gradient(ellipse 50% 40% at 75% 70%, oklch(from var(--primary) calc(l - 0.34) c calc(h - 75) / 0.75), transparent 60%), linear-gradient(135deg, oklch(from var(--background) calc(l + 0.13) calc(c + 0.06) h), oklch(from var(--background) calc(l + 0.06) calc(c + 0.04) calc(h - 20)))',
           }}
         />
       )}
       <div className="absolute bottom-2.5 left-3 font-serif text-[13px] font-bold text-white drop-shadow">
         {customBackground ? t('panel.labelCustom') : t('panel.labelDefault')}
         <span className="block font-mono text-[9px] font-normal tracking-[0.16em] uppercase text-white/75 mt-0.5">
-          {customBackground
-            ? t('panel.labelSet').toUpperCase()
-            : t('panel.labelDefaultTag').toUpperCase()}
+          {customBackground ? t('panel.labelSet') : t('panel.labelDefaultTag')}
         </span>
       </div>
     </div>

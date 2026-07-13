@@ -1,3 +1,4 @@
+import type { KeyboardEvent } from 'react';
 import type { LucideIcon } from 'lucide-react';
 
 export type FilterTab<T extends string = string> = {
@@ -17,4 +18,7 @@ export type FilterTabBarProps<T extends string = string> = {
 
 export type IFilterTabBarProps<T extends string = string> = FilterTabBarProps<T>;
 
-export type IFilterTabBarView = Record<string, never>;
+export interface IFilterTabBarView {
+  readonly registerTab: (index: number) => (el: HTMLButtonElement | null) => void;
+  readonly handleKeyDown: (e: KeyboardEvent<HTMLButtonElement>) => void;
+}

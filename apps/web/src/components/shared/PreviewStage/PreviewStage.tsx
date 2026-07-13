@@ -9,11 +9,14 @@ import type { IPreviewStageProps } from './PreviewStage.types';
  * layered on top so callers can recolor/reposition it (e.g. the destructive
  * red glow used by the AniList error state) without re-declaring the rest.
  */
-const BASE_GRADIENT = 'linear-gradient(135deg, oklch(0.14 0.02 300), oklch(0.1 0.02 280))';
+// Derived from theme tokens so the preview chrome tracks every theme instead of
+// hardcoding the Plum defaults.
+const BASE_GRADIENT =
+  'linear-gradient(135deg, oklch(from var(--background) calc(l + 0.02) c h), oklch(from var(--background) calc(l - 0.02) c h))';
 const DEFAULT_GLOW =
-  'radial-gradient(circle at 70% 30%, oklch(0.5 0.15 355 / 0.25), transparent 60%)';
+  'radial-gradient(circle at 70% 30%, oklch(from var(--primary) l c h / 0.25), transparent 60%)';
 const GRID_OVERLAY =
-  'linear-gradient(oklch(1 0 0 / 0.03) 1px, transparent 1px), linear-gradient(90deg, oklch(1 0 0 / 0.03) 1px, transparent 1px)';
+  'linear-gradient(oklch(from var(--foreground) l c h / 0.03) 1px, transparent 1px), linear-gradient(90deg, oklch(from var(--foreground) l c h / 0.03) 1px, transparent 1px)';
 
 /**
  * Single source of truth for settings-preview chrome: the gridded-gradient

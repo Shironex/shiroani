@@ -40,7 +40,7 @@ export default function ExportDialog({
           <DialogDescription>{t('exportDialog.description')}</DialogDescription>
         </DialogHeader>
 
-        <div className="py-4">
+        <div className="min-h-[120px] py-4">
           {/* Loading */}
           {state.step === 'loading' && (
             <div className="flex items-center justify-center gap-3 py-6 text-muted-foreground">
@@ -52,7 +52,7 @@ export default function ExportDialog({
           {/* Success - show count */}
           {state.step === 'success' && (
             <div className="flex flex-col items-center gap-3 py-4">
-              <CheckCircle className="w-8 h-8 text-green-400" />
+              <CheckCircle className="w-8 h-8 text-status-success" />
               <p className="text-sm text-foreground">
                 <Trans
                   i18nKey="exportDialog.exported"
@@ -67,8 +67,8 @@ export default function ExportDialog({
           {/* Error */}
           {state.step === 'error' && (
             <div className="flex flex-col items-center gap-3 py-4">
-              <AlertCircle className="w-8 h-8 text-red-400" />
-              <p className="text-sm text-red-400">{state.message}</p>
+              <AlertCircle className="w-8 h-8 text-status-error" />
+              <p className="text-sm text-status-error">{state.message}</p>
             </div>
           )}
 
@@ -83,16 +83,16 @@ export default function ExportDialog({
           {/* Saved */}
           {state.step === 'saved' && (
             <div className="flex flex-col items-center gap-3 py-4">
-              <CheckCircle className="w-8 h-8 text-green-400" />
-              <p className="text-sm text-green-400">{t('exportDialog.saved')}</p>
+              <CheckCircle className="w-8 h-8 text-status-success" />
+              <p className="text-sm text-status-success">{t('exportDialog.saved')}</p>
             </div>
           )}
 
           {/* Save error */}
           {state.step === 'save-error' && (
             <div className="flex flex-col items-center gap-3 py-4">
-              <AlertCircle className="w-8 h-8 text-red-400" />
-              <p className="text-sm text-red-400">{state.message}</p>
+              <AlertCircle className="w-8 h-8 text-status-error" />
+              <p className="text-sm text-status-error">{state.message}</p>
             </div>
           )}
         </div>

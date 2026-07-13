@@ -80,7 +80,8 @@ export default function TitleBar() {
           className={cn(
             'w-10 flex items-center justify-center',
             'text-muted-foreground hover:bg-accent hover:text-foreground',
-            'transition-colors duration-150'
+            'transition-colors duration-150',
+            'focus-visible:outline-none focus-visible:bg-accent focus-visible:text-foreground'
           )}
           aria-label={t('titleBar.minimize')}
         >
@@ -91,7 +92,8 @@ export default function TitleBar() {
           className={cn(
             'w-10 flex items-center justify-center',
             'text-muted-foreground hover:bg-accent hover:text-foreground',
-            'transition-colors duration-150'
+            'transition-colors duration-150',
+            'focus-visible:outline-none focus-visible:bg-accent focus-visible:text-foreground'
           )}
           aria-label={isMaximized ? t('titleBar.restore') : t('titleBar.maximize')}
         >
@@ -102,7 +104,8 @@ export default function TitleBar() {
           className={cn(
             'w-10 flex items-center justify-center',
             'text-muted-foreground hover:bg-destructive hover:text-destructive-foreground',
-            'transition-colors duration-150'
+            'transition-colors duration-150',
+            'focus-visible:outline-none focus-visible:bg-destructive focus-visible:text-destructive-foreground'
           )}
           aria-label={t('titleBar.close')}
         >

@@ -120,7 +120,7 @@ function App() {
           data-testid="app-ready"
           className={cn(
             'h-screen w-screen bg-background text-foreground flex flex-col overflow-hidden relative',
-            IS_ELECTRON && 'rounded-t-[10px]'
+            IS_ELECTRON && 'rounded-t-lg'
           )}
         >
           {/* Decorative radial glows + SVG noise — behind user wallpaper (if any) */}

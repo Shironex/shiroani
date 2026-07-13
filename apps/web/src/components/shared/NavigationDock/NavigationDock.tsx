@@ -53,6 +53,7 @@ export default function NavigationDock({ hasBg }: INavigationDockProps) {
             draggable && 'cursor-grab active:cursor-grabbing touch-none',
             'transition-shadow duration-300 ease-out',
             'hover:scale-110 hover:shadow-[0_20px_40px_-8px_rgba(0,0,0,0.55)]',
+            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background',
             hasBg ? 'bg-black/45' : 'bg-card/70'
           )}
         >
@@ -105,7 +106,7 @@ export default function NavigationDock({ hasBg }: INavigationDockProps) {
         {/* Subtle top/left highlight — sits along the inner edge of the pill */}
         <div
           className={cn(
-            'pointer-events-none absolute bg-gradient-to-r from-transparent via-white/10 to-transparent',
+            'pointer-events-none absolute bg-gradient-to-r from-transparent via-foreground/10 to-transparent',
             vertical ? 'inset-y-3 left-0 w-px bg-gradient-to-b' : 'inset-x-4 top-0 h-px'
           )}
         />
@@ -117,7 +118,9 @@ export default function NavigationDock({ hasBg }: INavigationDockProps) {
             showLabels ? 'rounded-xl' : 'rounded-full',
             'bg-primary',
             'animate-[dock-pill-glow_3s_ease-in-out_infinite] motion-reduce:animate-none',
-            'transition-all duration-300 ease-[cubic-bezier(0.25,0.1,0.25,1)]',
+            // Narrowed from transition-all: the pill only ever animates its
+            // position/size (top/left/width/height via pillStyle).
+            'transition-[top,left,width,height] duration-300 ease-[cubic-bezier(0.25,0.1,0.25,1)]',
             'motion-reduce:transition-none'
           )}
           style={pillStyle}

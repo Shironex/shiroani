@@ -73,7 +73,7 @@ export default function ImportDialog({ open, onOpenChange, type }: IImportDialog
           <DialogDescription>{t('importDialog.description')}</DialogDescription>
         </DialogHeader>
 
-        <div className="py-2">
+        <div className="min-h-[120px] py-2">
           {/* Loading file */}
           {state.step === 'loading-file' && (
             <div className="flex items-center justify-center gap-3 py-6 text-muted-foreground">
@@ -85,8 +85,8 @@ export default function ImportDialog({ open, onOpenChange, type }: IImportDialog
           {/* File error */}
           {state.step === 'file-error' && (
             <div className="flex flex-col items-center gap-3 py-4">
-              <AlertCircle className="w-8 h-8 text-red-400" />
-              <p className="text-sm text-red-400 text-center">{state.message}</p>
+              <AlertCircle className="w-8 h-8 text-status-error" />
+              <p className="text-sm text-status-error text-center">{state.message}</p>
             </div>
           )}
 
@@ -141,22 +141,22 @@ export default function ImportDialog({ open, onOpenChange, type }: IImportDialog
           {state.step === 'done' && (
             <div className="space-y-3 py-2">
               <div className="flex items-center justify-center gap-2 py-2">
-                <CheckCircle className="w-6 h-6 text-green-400" />
+                <CheckCircle className="w-6 h-6 text-status-success" />
                 <span className="text-sm font-medium text-foreground">
                   {t('importDialog.done')}
                 </span>
               </div>
               <div className="flex items-center justify-center gap-4 text-sm">
-                <span className="text-green-400">
+                <span className="text-status-success">
                   {t('importDialog.imported', { count: state.result.totalImported })}
                 </span>
                 {state.result.totalSkipped > 0 && (
-                  <span className="text-yellow-400">
+                  <span className="text-status-warning">
                     {t('importDialog.skipped', { count: state.result.totalSkipped })}
                   </span>
                 )}
                 {state.result.totalErrors > 0 && (
-                  <span className="text-red-400">
+                  <span className="text-status-error">
                     {t('importDialog.errors', { count: state.result.totalErrors })}
                   </span>
                 )}

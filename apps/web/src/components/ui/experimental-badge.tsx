@@ -17,10 +17,7 @@ export function ExperimentalBadge({ className, ...props }: Omit<BadgeProps, 'var
     <Badge
       variant="outline"
       title={t('experimental.tooltip')}
-      className={cn(
-        'border-amber-500/40 bg-amber-500/12 text-amber-700 dark:text-amber-400',
-        className
-      )}
+      className={cn('border-status-warning/40 bg-status-warning-bg text-status-warning', className)}
       {...props}
     >
       <FlaskConical className="size-3 flex-shrink-0" aria-hidden="true" />
