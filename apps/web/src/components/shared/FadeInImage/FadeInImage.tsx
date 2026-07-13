@@ -12,7 +12,7 @@ import type { IFadeInImageProps } from './FadeInImage.types';
  */
 const FadeInImage = forwardRef<HTMLImageElement, IFadeInImageProps>(
   ({ className, onLoad, ...props }, forwardedRef) => {
-    const { loaded, setRef, handleLoad } = useFadeInImage(forwardedRef, onLoad);
+    const { loaded, setRef, handleLoad } = useFadeInImage(props.src, forwardedRef, onLoad);
 
     return (
       <img

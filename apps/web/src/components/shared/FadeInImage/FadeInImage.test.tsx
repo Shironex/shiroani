@@ -19,6 +19,16 @@ describe('FadeInImage', () => {
     expect(img).toHaveAttribute('src', '/cover.jpg');
   });
 
+  it('resets the fade when src changes', () => {
+    const { rerender } = render(<FadeInImage src="/a.jpg" alt="Okładka" />);
+    const img = screen.getByRole('img', { name: 'Okładka' });
+    fireEvent.load(img);
+    expect(img).toHaveClass('opacity-100');
+
+    rerender(<FadeInImage src="/b.jpg" alt="Okładka" />);
+    expect(img).toHaveClass('opacity-0');
+  });
+
   it('merges custom className with the transition classes', () => {
     render(<FadeInImage src="/cover.jpg" alt="Okładka" className="rounded-lg" />);
     const img = screen.getByRole('img', { name: 'Okładka' });
