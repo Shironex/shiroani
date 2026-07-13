@@ -485,7 +485,17 @@
       "title": "Reset position",
       "description": "Move the mascot back to its default spot (bottom-right corner)",
       "action": "Reset"
+    },
+    "preview": {
+      "min": "MIN",
+      "current": "CURRENT",
+      "max": "MAX"
     }
+  },
+  "colorPicker": {
+    "pickAria": "Pick color: {{label}}",
+    "hexAria": "Hex code: {{label}}",
+    "invalidHex": "Invalid hex color"
   },
   "data": {
     "export": {

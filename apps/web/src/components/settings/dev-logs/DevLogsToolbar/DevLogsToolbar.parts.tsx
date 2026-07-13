@@ -14,7 +14,8 @@ export function SourceButton({ active, onClick, label }: SourceButtonProps) {
       onClick={onClick}
       aria-pressed={active}
       className={cn(
-        'rounded-md px-2.5 py-1 font-medium transition-colors',
+        'rounded-md px-2.5 py-1 font-medium transition-[color,background-color,transform] active:scale-[0.98]',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1',
         active
           ? 'bg-foreground/[0.08] text-foreground'
           : 'text-muted-foreground hover:text-foreground'

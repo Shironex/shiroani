@@ -53,7 +53,21 @@ export interface ISettingsRowLabelProps {
   id?: string;
   /** id applied to the description element for `aria-describedby` wiring. */
   descriptionId?: string;
+  /**
+   * When set, the title renders as a `<label htmlFor>` bound to this control id,
+   * making the caption a click target for the paired control (e.g. a Switch).
+   */
+  htmlFor?: string;
   className?: string;
+}
+
+export interface ISettingsFieldLabelProps {
+  /** Bind the label to a control id (native inputs). */
+  htmlFor?: string;
+  /** id for the label element (used with `aria-labelledby` on Radix triggers). */
+  id?: string;
+  className?: string;
+  children: ReactNode;
 }
 
 export interface ISettingsToggleRowProps {

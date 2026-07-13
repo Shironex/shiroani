@@ -5,5 +5,7 @@ export {
   SettingsToggleRow,
   SettingsSelectRow,
   SettingsInfoCallout,
+  SettingsFieldLabel,
+  SettingsSectionSkeleton,
 } from './SettingsCard';
 export * from './SettingsCard.types';

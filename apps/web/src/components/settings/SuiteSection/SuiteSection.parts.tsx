@@ -60,21 +60,15 @@ export function SiblingAppCard({ app }: { app: SiblingApp }) {
         'group relative overflow-hidden rounded-2xl border border-border-glass bg-card/40 backdrop-blur-sm',
         'transition-[transform,border-color,background-color,box-shadow] duration-300 ease-out',
         'hover:-translate-y-[2px] hover:bg-card/60',
+        'hover:border-[var(--accent-border)] hover:shadow-[0_22px_50px_-22px_var(--accent-glow)]',
         'motion-reduce:transition-none motion-reduce:hover:translate-y-0'
       )}
       style={
         {
-          '--accent-border-hover': accentBorder,
+          '--accent-border': accentBorder,
+          '--accent-glow': accentGlow,
         } as React.CSSProperties
       }
-      onMouseEnter={e => {
-        e.currentTarget.style.borderColor = accentBorder;
-        e.currentTarget.style.boxShadow = `0 22px 50px -22px ${accentGlow}`;
-      }}
-      onMouseLeave={e => {
-        e.currentTarget.style.borderColor = '';
-        e.currentTarget.style.boxShadow = '';
-      }}
     >
       {/* Decorative kanji watermark — anchors the Japanese aesthetic and tints with the app accent on hover. */}
       <span
@@ -83,7 +77,7 @@ export function SiblingAppCard({ app }: { app: SiblingApp }) {
         className={cn(
           'pointer-events-none absolute right-[-22px] bottom-[-44px] select-none',
           'font-serif font-extrabold leading-none tracking-[-0.05em]',
-          'opacity-[0.06] transition-[opacity,transform] duration-500 ease-out',
+          'opacity-[0.06] transition-[opacity,transform] duration-300 ease-out',
           'group-hover:opacity-[0.16] group-hover:scale-105',
           'motion-reduce:transition-none'
         )}
@@ -103,7 +97,7 @@ export function SiblingAppCard({ app }: { app: SiblingApp }) {
         {/* Soft accent vignette that brightens on hover. */}
         <div
           aria-hidden="true"
-          className="absolute inset-0 opacity-60 transition-opacity duration-500 group-hover:opacity-90"
+          className="absolute inset-0 opacity-60 transition-opacity duration-300 group-hover:opacity-90"
           style={{
             background: `radial-gradient(120% 80% at 100% 0%, ${accentSurface}, transparent 65%)`,
           }}
@@ -115,7 +109,7 @@ export function SiblingAppCard({ app }: { app: SiblingApp }) {
           draggable={false}
           className={cn(
             'relative h-full w-full object-cover object-top',
-            'transition-transform duration-500 ease-out',
+            'transition-transform duration-300 ease-out',
             'group-hover:scale-[1.035]',
             'motion-reduce:transition-none motion-reduce:group-hover:scale-100'
           )}

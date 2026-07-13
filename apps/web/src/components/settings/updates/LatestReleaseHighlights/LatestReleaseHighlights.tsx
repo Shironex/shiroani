@@ -18,7 +18,7 @@ export default function LatestReleaseHighlights() {
     <li key={i} className="contents">
       <PillTag
         variant={row.variant}
-        className="w-full justify-center mt-[3px] text-[8.5px]! px-1.5! py-[2px]!"
+        className="w-full justify-center mt-[3px] text-2xs px-1.5! py-[2px]!"
       >
         {row.label}
       </PillTag>
@@ -33,8 +33,8 @@ export default function LatestReleaseHighlights() {
       title={t('updates.changelogPreview.title')}
       subtitle={t('updates.changelogPreview.subtitle')}
     >
-      <div className="font-mono text-[10px] uppercase tracking-[0.15em] text-primary mb-2">
-        v{latest.version} — {latest.date}
+      <div className="font-mono text-2xs uppercase tracking-[0.12em] text-primary mb-2 tabular-nums">
+        v{latest.version} · {latest.date}
       </div>
       <ul className="grid grid-cols-[auto_1fr] gap-x-2.5 gap-y-1.5 items-start text-[12.5px] leading-snug text-foreground/90">
         {rowItems}

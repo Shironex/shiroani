@@ -90,41 +90,56 @@ export function useDiscordSection(): IDiscordSectionView {
     });
   }, [i18n, isMounted]);
 
+  // Auto-save model (matches every other settings section): persist the moment
+  // a field changes and flash a transient "saved" indicator, instead of gating
+  // the write behind an explicit Save button the rest of the surface doesn't have.
+  const persist = useCallback(
+    async (next: DiscordRpcSettings) => {
+      await window.electronAPI?.discordRpc?.updateSettings(next);
+      if (!isMounted()) return;
+      setSaved(true);
+      setTimeout(() => {
+        if (isMounted()) setSaved(false);
+      }, 1500);
+    },
+    [isMounted]
+  );
+
   const updateField = useCallback(
     <K extends keyof DiscordRpcSettings>(key: K, value: DiscordRpcSettings[K]) => {
-      setSettings(prev => (prev ? { ...prev, [key]: value } : prev));
+      setSettings(prev => {
+        if (!prev) return prev;
+        const next = { ...prev, [key]: value };
+        void persist(next);
+        return next;
+      });
     },
-    []
+    [persist]
   );
 
   const updateTemplate = useCallback(
     (type: DiscordActivityType, field: string, value: string | boolean) => {
       setSettings(prev => {
         if (!prev) return prev;
-        return {
+        const next = {
           ...prev,
           templates: {
             ...prev.templates,
             [type]: { ...prev.templates[type], [field]: value },
           },
         };
+        void persist(next);
+        return next;
       });
     },
-    []
+    [persist]
   );
-
-  const handleSave = useCallback(async () => {
-    if (!settings) return;
-    await window.electronAPI?.discordRpc?.updateSettings(settings);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
-  }, [settings]);
 
   const handleResetTemplate = useCallback(() => {
     const translate = (key: string) => tDynamic(i18n, `settings:${key}`);
     setSettings(prev => {
       if (!prev) return prev;
-      return {
+      const next = {
         ...prev,
         templates: {
           ...prev.templates,
@@ -134,8 +149,10 @@ export function useDiscordSection(): IDiscordSectionView {
           ),
         },
       };
+      void persist(next);
+      return next;
     });
-  }, [selectedActivity, i18n]);
+  }, [selectedActivity, i18n, persist]);
 
   const currentTemplate =
     settings?.templates?.[selectedActivity] ?? DEFAULT_DISCORD_TEMPLATES[selectedActivity];
@@ -161,7 +178,6 @@ export function useDiscordSection(): IDiscordSectionView {
     status,
     updateField,
     updateTemplate,
-    handleSave,
     handleResetTemplate,
     currentTemplate,
     previewDetails,

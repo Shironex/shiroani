@@ -44,7 +44,9 @@ export default function AboutSection(props: IAboutSectionProps) {
             variant="outline"
             size="sm"
             className="border-border-glass"
-            onClick={() => window.open('https://github.com/Shironex/shiroani', '_blank')}
+            onClick={() =>
+              window.open('https://github.com/Shironex/shiroani', '_blank', 'noopener,noreferrer')
+            }
           >
             <Globe className="w-3.5 h-3.5" />
             {t('about.github')}

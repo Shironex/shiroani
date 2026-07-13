@@ -6,6 +6,7 @@ import {
   SettingsInfoCallout,
   SettingsRow,
   SettingsRowLabel,
+  SettingsSectionSkeleton,
   SettingsToggleRow,
 } from '@/components/settings/SettingsCard';
 import {
@@ -15,6 +16,7 @@ import {
 } from '@shiroani/shared';
 import { persistLanguage } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
+import { selectableChip } from '@/components/settings/chip-styles';
 import { useGeneralSection } from './GeneralSection.hooks';
 import type { IGeneralSectionProps } from './GeneralSection.types';
 
@@ -35,24 +37,30 @@ export default function GeneralSection(props: IGeneralSectionProps) {
     persistLanguage(lang);
   }
 
-  if (!loaded) return null;
+  if (!loaded) return <SettingsSectionSkeleton cards={3} />;
 
-  const languageButtons = SUPPORTED_LANGUAGES.map(lang => (
-    <button
-      key={lang.code}
-      onClick={() => {
-        void handleLanguageChange(lang.code);
-      }}
-      className={cn(
-        'px-3 py-1.5 rounded-lg text-xs font-medium transition-colors',
-        i18n.language === lang.code
-          ? 'bg-primary/15 text-primary border border-primary/40'
-          : 'text-muted-foreground hover:bg-accent/50 hover:text-foreground border border-transparent'
-      )}
-    >
-      {lang.label}
-    </button>
-  ));
+  const languageButtons = SUPPORTED_LANGUAGES.map(lang => {
+    const isActive = i18n.language === lang.code;
+    return (
+      <button
+        key={lang.code}
+        type="button"
+        aria-pressed={isActive}
+        onClick={() => {
+          void handleLanguageChange(lang.code);
+        }}
+        className={cn(
+          'rounded-lg border px-3 py-1.5 text-xs font-medium',
+          'transition-[color,background-color,border-color,transform] active:scale-[0.98]',
+          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1',
+          selectableChip(isActive),
+          isActive && 'font-semibold'
+        )}
+      >
+        {lang.label}
+      </button>
+    );
+  });
 
   return (
     <div className="space-y-4">
@@ -112,7 +120,7 @@ export default function GeneralSection(props: IGeneralSectionProps) {
       {/* Info callout matching the mock's .info-box */}
       <SettingsInfoCallout
         icon={Sparkles}
-        iconClassName="w-[18px] h-[18px] flex-shrink-0 text-[oklch(0.8_0.14_70)]"
+        iconClassName="w-[18px] h-[18px] flex-shrink-0 text-gold"
         align="center"
         as="span"
       >

@@ -167,6 +167,7 @@ export default function BrowserSection(props: IBrowserSectionProps) {
         />
 
         <SettingsToggleRow
+          divider
           id="browser-split-tabs-label"
           title={t('browser.tabs.splitTitle')}
           description={t('browser.tabs.splitDescription')}
@@ -175,6 +176,7 @@ export default function BrowserSection(props: IBrowserSectionProps) {
         />
 
         <SettingsToggleRow
+          divider
           id="browser-favorites-bar-label"
           title={t('browser.tabs.favoritesBarTitle')}
           description={t('browser.tabs.favoritesBarDescription')}
@@ -183,6 +185,7 @@ export default function BrowserSection(props: IBrowserSectionProps) {
         />
 
         <SettingsToggleRow
+          divider
           id="browser-track-frequent-label"
           title={t('browser.tabs.trackTitle')}
           description={t('browser.tabs.trackDescription')}

@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { Cat, Image as ImageIcon, RotateCcw } from 'lucide-react';
+import { Cat, Image as ImageIcon, Loader2, RotateCcw } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
 import { Button } from '@/components/ui/button';
@@ -7,6 +7,7 @@ import {
   SettingsCard,
   SettingsRow,
   SettingsRowLabel,
+  SettingsSectionSkeleton,
   SettingsSelectRow,
   SettingsToggleRow,
 } from '@/components/settings/SettingsCard';
@@ -42,7 +43,7 @@ export default function MascotSection(props: IMascotSectionProps) {
     handleScaleModeChange,
   } = useMascotSection(props);
 
-  if (!loaded) return null;
+  if (!loaded) return <SettingsSectionSkeleton cards={1} />;
 
   return (
     <div className="space-y-4">
@@ -79,7 +80,7 @@ export default function MascotSection(props: IMascotSectionProps) {
                 step={8}
                 onValueChange={handleSizeChange}
               />
-              <div className="mt-1 flex justify-between font-mono text-[9.5px] tracking-[0.06em] text-muted-foreground/70">
+              <div className="mt-1 flex justify-between font-mono text-[9.5px] tracking-[0.06em] text-muted-foreground/80">
                 <span>{minSize}px</span>
                 <span>{maxSize}px</span>
               </div>
@@ -98,7 +99,11 @@ export default function MascotSection(props: IMascotSectionProps) {
                   onClick={handlePickSprite}
                   disabled={picking}
                 >
-                  <ImageIcon className="w-3.5 h-3.5" />
+                  {picking ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  ) : (
+                    <ImageIcon className="w-3.5 h-3.5" />
+                  )}
                   {customSpriteUrl ? t('mascot.sprite.change') : t('mascot.sprite.pick')}
                 </Button>
                 {customSpriteUrl && (

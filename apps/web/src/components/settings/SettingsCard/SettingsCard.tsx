@@ -1,6 +1,7 @@
 import { useId } from 'react';
 import { cn } from '@/lib/utils';
 import { Switch } from '@/components/ui/switch';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Select,
   SelectContent,
@@ -10,6 +11,7 @@ import {
 } from '@/components/ui/select';
 import type {
   ISettingsCardProps,
+  ISettingsFieldLabelProps,
   ISettingsInfoCalloutProps,
   ISettingsRowLabelProps,
   ISettingsRowProps,
@@ -21,11 +23,11 @@ import type {
 const TONE_TILE: Record<SettingsCardTone, string> = {
   primary: 'bg-primary/15 border-primary/30 text-primary',
   green:
-    'bg-[oklch(0.78_0.15_140/0.14)] border-[oklch(0.78_0.15_140/0.32)] text-[oklch(0.78_0.15_140)]',
-  gold: 'bg-[oklch(0.8_0.14_70/0.14)] border-[oklch(0.8_0.14_70/0.32)] text-[oklch(0.8_0.14_70)]',
-  blue: 'bg-[oklch(0.8_0.13_210/0.14)] border-[oklch(0.8_0.13_210/0.32)] text-[oklch(0.8_0.13_210)]',
+    'bg-[oklch(from_var(--status-success)_l_c_h/0.14)] border-[oklch(from_var(--status-success)_l_c_h/0.32)] text-status-success',
+  gold: 'bg-gold-bg border-[oklch(from_var(--gold)_l_c_h/0.32)] text-gold',
+  blue: 'bg-[oklch(from_var(--status-info)_l_c_h/0.14)] border-[oklch(from_var(--status-info)_l_c_h/0.32)] text-status-info',
   orange:
-    'bg-[oklch(0.74_0.18_40/0.14)] border-[oklch(0.74_0.18_40/0.32)] text-[oklch(0.74_0.18_40)]',
+    'bg-[oklch(from_var(--status-pending)_l_c_h/0.14)] border-[oklch(from_var(--status-pending)_l_c_h/0.32)] text-status-pending',
   muted: 'bg-muted/25 border-border-glass text-muted-foreground',
   destructive: 'bg-destructive/15 border-destructive/30 text-destructive',
 };
@@ -49,7 +51,7 @@ export default function SettingsCard({
     (Icon ? (
       <div
         className={cn(
-          'grid place-items-center flex-shrink-0 size-[38px] rounded-[10px] border',
+          'grid place-items-center flex-shrink-0 size-[38px] rounded-lg border',
           TONE_TILE[tone]
         )}
       >
@@ -100,7 +102,7 @@ export default function SettingsCard({
           )}
         </div>
       )}
-      {children && <div className={hasHeader ? 'space-y-3.5' : 'space-y-3.5'}>{children}</div>}
+      {children && <div className="space-y-3.5">{children}</div>}
     </div>
   );
 }
@@ -131,13 +133,25 @@ export function SettingsRowLabel({
   description,
   id,
   descriptionId,
+  htmlFor,
   className,
 }: ISettingsRowLabelProps) {
+  // When bound to a control (`htmlFor`), the title becomes a real <label> so the
+  // whole caption is a click target for the paired Switch; otherwise it's a
+  // plain <p> (used standalone or with aria-labelledby-wired controls).
+  const TitleTag = htmlFor ? 'label' : 'p';
   return (
     <div className={cn('min-w-0 flex-1', className)}>
-      <p id={id} className="text-[13px] font-semibold leading-snug text-foreground">
+      <TitleTag
+        id={id}
+        htmlFor={htmlFor}
+        className={cn(
+          'block text-[13px] font-semibold leading-snug text-foreground',
+          htmlFor && 'cursor-pointer'
+        )}
+      >
         {title}
-      </p>
+      </TitleTag>
       {description && (
         <p
           id={descriptionId}
@@ -168,17 +182,20 @@ export function SettingsToggleRow({
 }: ISettingsToggleRowProps) {
   const autoId = useId();
   const autoDescriptionId = useId();
+  const switchId = useId();
   const labelId = id ?? autoId;
   const describedBy = description ? autoDescriptionId : undefined;
   return (
     <SettingsRow divider={divider} className={className}>
       <SettingsRowLabel
         id={labelId}
+        htmlFor={switchId}
         descriptionId={describedBy}
         title={title}
         description={description}
       />
       <Switch
+        id={switchId}
         aria-labelledby={labelId}
         aria-describedby={describedBy}
         checked={checked}
@@ -260,6 +277,56 @@ export function SettingsInfoCallout({
     >
       <Icon className={iconClassName} />
       <Body>{children}</Body>
+    </div>
+  );
+}
+
+// ── Field label ─────────────────────────────────────────────────────
+//
+// Canonical form-field label for the settings surface (dialogs, editors,
+// stacked field rows). Standardizes the several `text-xs font-medium` label
+// treatments that had drifted between `text-foreground` and
+// `text-muted-foreground` across the Discord editor, theme editor and the
+// delete-data dialog.
+
+export function SettingsFieldLabel({ htmlFor, id, className, children }: ISettingsFieldLabelProps) {
+  return (
+    <label
+      htmlFor={htmlFor}
+      id={id}
+      className={cn('block text-xs font-medium text-foreground', className)}
+    >
+      {children}
+    </label>
+  );
+}
+
+// ── Loading skeleton ────────────────────────────────────────────────
+//
+// Shared loading placeholder for sections that gate their body on an async
+// hydrate (General, Mascot, Notifications, Discord). Renders a couple of
+// SettingsCard-shaped blocks so the panel keeps its shape instead of blanking
+// to `null` while the electron bridge resolves.
+
+export function SettingsSectionSkeleton({ cards = 2 }: { cards?: number }) {
+  const blocks = Array.from({ length: cards }, (_, i) => (
+    <div
+      key={i}
+      className="rounded-xl border border-border-glass bg-card/40 px-5 py-4 backdrop-blur-sm"
+    >
+      <div className="flex items-start gap-3">
+        <Skeleton className="size-[38px] shrink-0 rounded-lg" />
+        <div className="flex-1 space-y-2 pt-1">
+          <Skeleton className="h-4 w-40" />
+          <Skeleton className="h-3 w-56" />
+        </div>
+      </div>
+    </div>
+  ));
+
+  return (
+    <div className="space-y-4" aria-hidden="true">
+      {blocks}
     </div>
   );
 }

@@ -23,7 +23,6 @@ export interface IDiscordSectionView {
     field: string,
     value: string | boolean
   ) => void;
-  readonly handleSave: () => Promise<void>;
   readonly handleResetTemplate: () => void;
   readonly currentTemplate: DiscordPresenceTemplate;
   readonly previewDetails: string;

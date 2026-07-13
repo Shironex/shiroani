@@ -29,7 +29,7 @@ export default function AccountsSection() {
         subtitle={t('anilist.description')}
         headerAccessory={<ExperimentalBadge />}
       >
-        <p className="text-[12px] leading-snug text-amber-700 dark:text-amber-400">
+        <p className="text-[12px] leading-snug text-status-warning">
           {tCommon('experimental.hint')}
         </p>
         {connected && viewer ? (
@@ -48,7 +48,7 @@ export default function AccountsSection() {
             )}
             <div className="min-w-0 flex-1">
               <p className="flex items-center gap-1.5 truncate text-[14px] font-semibold text-foreground">
-                <Check className="size-3.5 flex-shrink-0 text-[oklch(0.78_0.15_140)]" />
+                <Check className="size-3.5 flex-shrink-0 text-status-success" />
                 {t('anilist.connectedAs', { name: viewer.name })}
               </p>
               {expiryHint && (

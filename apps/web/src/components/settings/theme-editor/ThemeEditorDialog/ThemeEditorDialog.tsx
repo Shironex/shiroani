@@ -11,6 +11,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
+import { SettingsFieldLabel } from '@/components/settings/SettingsCard';
 import {
   Select,
   SelectContent,
@@ -78,12 +79,9 @@ export default function ThemeEditorDialog(props: IThemeEditorDialogProps) {
           {/* ── Header section: name, dark/light, base theme ── */}
           <div className="space-y-3">
             <div>
-              <label
-                htmlFor="theme-editor-name"
-                className="text-xs font-medium text-foreground mb-1 block"
-              >
+              <SettingsFieldLabel htmlFor="theme-editor-name" className="mb-1">
                 {t('themes.editor.name')}
-              </label>
+              </SettingsFieldLabel>
               <Input
                 id="theme-editor-name"
                 value={name}
@@ -95,9 +93,9 @@ export default function ThemeEditorDialog(props: IThemeEditorDialogProps) {
 
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
-                <label htmlFor="theme-editor-dark" className="text-xs font-medium text-foreground">
+                <SettingsFieldLabel htmlFor="theme-editor-dark">
                   {t('themes.editor.dark')}
-                </label>
+                </SettingsFieldLabel>
                 <Switch
                   id="theme-editor-dark"
                   aria-label={t('themes.editor.dark')}
@@ -107,12 +105,9 @@ export default function ThemeEditorDialog(props: IThemeEditorDialogProps) {
               </div>
 
               <div className="flex-1">
-                <label
-                  id="theme-editor-base-label"
-                  className="text-xs font-medium text-foreground mb-1 block"
-                >
+                <SettingsFieldLabel id="theme-editor-base-label" className="mb-1">
                   {t('themes.editor.baseTheme')}
-                </label>
+                </SettingsFieldLabel>
                 <Select value={baseTheme} onValueChange={handleBaseThemeChange}>
                   <SelectTrigger aria-labelledby="theme-editor-base-label" className="h-8 text-xs">
                     <SelectValue />

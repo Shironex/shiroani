@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { SettingsFieldLabel } from '@/components/settings/SettingsCard';
 import { IS_ELECTRON } from '@/lib/platform';
 import { useDeleteAllDataDialog } from './DeleteAllDataDialog.hooks';
 import type { IDeleteAllDataDialogProps } from './DeleteAllDataDialog.types';
@@ -66,9 +67,9 @@ export default function DeleteAllDataDialog(props: IDeleteAllDataDialogProps) {
           </div>
 
           <div className="space-y-1.5">
-            <label htmlFor={inputId} className="text-[12.5px] font-medium text-foreground">
+            <SettingsFieldLabel htmlFor={inputId}>
               {t('data.danger.confirm.inputLabel', { keyword })}
-            </label>
+            </SettingsFieldLabel>
             <Input
               id={inputId}
               value={input}
