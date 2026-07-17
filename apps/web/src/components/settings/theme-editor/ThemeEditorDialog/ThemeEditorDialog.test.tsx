@@ -25,6 +25,12 @@ describe('ThemeEditorDialog', () => {
     expect(onOpenChange).toHaveBeenCalledWith(false);
   });
 
+  it('disables Save while the name is empty', async () => {
+    const { user } = render(<ThemeEditorDialog open onOpenChange={() => {}} />);
+    await user.clear(screen.getByLabelText('Name'));
+    expect(screen.getByRole('button', { name: 'Save' })).toBeDisabled();
+  });
+
   it('saves and closes when a name is present', async () => {
     const onOpenChange = vi.fn();
     const { user } = render(<ThemeEditorDialog open onOpenChange={onOpenChange} />);

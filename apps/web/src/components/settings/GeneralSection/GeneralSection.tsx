@@ -15,8 +15,7 @@ import {
   type SupportedLanguage,
 } from '@shiroani/shared';
 import { persistLanguage } from '@/lib/i18n';
-import { cn } from '@/lib/utils';
-import { selectableChip } from '@/components/settings/chip-styles';
+import { SelectableChipButton } from '@/components/settings/SelectableChipButton';
 import { useGeneralSection } from './GeneralSection.hooks';
 import type { IGeneralSectionProps } from './GeneralSection.types';
 
@@ -42,33 +41,27 @@ export default function GeneralSection(props: IGeneralSectionProps) {
   const languageButtons = SUPPORTED_LANGUAGES.map(lang => {
     const isActive = i18n.language === lang.code;
     return (
-      <button
+      <SelectableChipButton
         key={lang.code}
-        type="button"
-        aria-pressed={isActive}
+        active={isActive}
         onClick={() => {
           void handleLanguageChange(lang.code);
         }}
-        className={cn(
-          'rounded-lg border px-3 py-1.5 text-xs font-medium',
-          'transition-[color,background-color,border-color,transform] active:scale-[0.98]',
-          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1',
-          selectableChip(isActive),
-          isActive && 'font-semibold'
-        )}
+        className="py-1.5 text-xs focus-visible:outline-none"
       >
         {lang.label}
-      </button>
+      </SelectableChipButton>
     );
   });
 
   return (
     <div className="space-y-4">
-      <SettingsCard icon={Languages} title={t('app.languageTitle')}>
-        <div className="px-3">
-          <p className="text-xs text-muted-foreground mb-3">{t('app.languageDesc')}</p>
-          <div className="flex items-center gap-1.5">{languageButtons}</div>
-        </div>
+      <SettingsCard
+        icon={Languages}
+        title={t('app.languageTitle')}
+        subtitle={t('app.languageDesc')}
+      >
+        <div className="flex items-center gap-1.5">{languageButtons}</div>
       </SettingsCard>
 
       <SettingsCard

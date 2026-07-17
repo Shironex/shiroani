@@ -29,11 +29,11 @@
     "downloadProgressAria": "Download progress",
     "status": {
       "idle": "No new updates",
-      "checking": "Checking...",
+      "checking": "Checking…",
       "available": "Update available: {{version}}",
       "downloading": "Downloading · {{transferred}}/{{total}}",
       "downloadingPct": "Downloading · {{percent}}%",
-      "downloadingFallback": "Downloading...",
+      "downloadingFallback": "Downloading…",
       "ready": "Update ready to install",
       "awaitingArtifacts": "Release is uploading — download will start automatically.",
       "errorReleasePending": "Release in progress — try again in a moment.",
@@ -450,7 +450,7 @@
     "sizeAria": "Mascot size",
     "sprite": {
       "title": "Custom sprite",
-      "description": "PNG, JPG, GIF or WEBP · max 10 MB · 2048×2048 px. Animated GIFs render as a single frame.",
+      "description": "PNG, JPG, GIF or WEBP, max 10 MB, 2048×2048 px. Animated GIFs render as a single frame.",
       "change": "Change",
       "pick": "Pick sprite",
       "reset": "Reset",
@@ -549,7 +549,7 @@
   },
   "about": {
     "logoAlt": "ShiroAni logo",
-    "tagline": "Browser · anime tracker in one place",
+    "tagline": "Browser, anime tracker in one place",
     "rerunOnboarding": "Rerun setup wizard",
     "onboardingHint": "After clicking, the wizard launches right away and Shiro-chan walks you through it again!",
     "github": "GitHub",

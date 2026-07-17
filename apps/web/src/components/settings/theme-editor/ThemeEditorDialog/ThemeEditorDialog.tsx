@@ -130,7 +130,7 @@ export default function ThemeEditorDialog(props: IThemeEditorDialogProps) {
           <Button variant="outline" size="sm" onClick={handleCancel}>
             {t('themes.editor.cancel')}
           </Button>
-          <Button size="sm" onClick={handleSave}>
+          <Button size="sm" onClick={handleSave} disabled={!name.trim()}>
             {t('themes.editor.save')}
           </Button>
         </DialogFooter>

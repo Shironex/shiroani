@@ -9,7 +9,7 @@ import {
   Upload,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { SettingsCard } from '@/components/settings/SettingsCard';
+import { SettingsCard, SettingsInfoCallout } from '@/components/settings/SettingsCard';
 import { DeleteAllDataDialog } from '@/components/settings/DeleteAllDataDialog';
 import { ExportDialog } from '@/components/shared/ExportDialog';
 import { ImportDialog } from '@/components/shared/ImportDialog';
@@ -66,16 +66,16 @@ export default function DataSection() {
         subtitle={t('data.import.card.subtitle')}
         tone="orange"
       >
-        <div className="flex items-start gap-3 rounded-lg border border-border-glass bg-background/30 px-3 py-2.5 text-[11.5px] text-muted-foreground leading-relaxed">
-          <Info className="w-4 h-4 text-muted-foreground/80 mt-0.5 shrink-0" />
-          <p>
-            <Trans
-              i18nKey="data.import.warning"
-              t={t}
-              components={{ 1: <b className="font-semibold text-foreground" /> }}
-            />
-          </p>
-        </div>
+        <SettingsInfoCallout
+          icon={Info}
+          iconClassName="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground/80"
+        >
+          <Trans
+            i18nKey="data.import.warning"
+            t={t}
+            components={{ 1: <b className="font-semibold text-foreground" /> }}
+          />
+        </SettingsInfoCallout>
         <Button
           variant="outline"
           size="sm"

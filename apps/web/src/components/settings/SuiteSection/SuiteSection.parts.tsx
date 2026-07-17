@@ -168,7 +168,7 @@ export function SiblingAppCard({ app }: { app: SiblingApp }) {
           </span>
         </div>
 
-        <p className="mt-1 font-mono text-[10.5px] uppercase tracking-[0.18em] text-muted-foreground/75">
+        <p className="mt-1 font-mono text-[10.5px] uppercase tracking-[0.18em] text-muted-foreground/85">
           {tagline}
         </p>
 

@@ -61,6 +61,13 @@ describe('DiscordSection', () => {
     expect(await screen.findByText('Connected')).toBeInTheDocument();
   });
 
+  it('renders the error status with the destructive pill variant', async () => {
+    setBridge({ status: 'error' });
+    render(<DiscordSection />);
+    const pill = await screen.findByText('Connection error');
+    expect(pill.className).toContain('text-destructive');
+  });
+
   it('hides the status pill when disabled', async () => {
     setBridge({ settings: makeSettings({ enabled: false }) });
     render(<DiscordSection />);

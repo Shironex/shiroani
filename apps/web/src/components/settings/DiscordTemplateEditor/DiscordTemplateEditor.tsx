@@ -1,4 +1,4 @@
-import { useId } from 'react';
+import { Fragment, useId } from 'react';
 import { Clock, Image, ExternalLink, MessageCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
@@ -47,11 +47,15 @@ export default function DiscordTemplateEditor(props: IDiscordTemplateEditorProps
     </SelectItem>
   ));
 
-  const variableChips = DISCORD_TEMPLATE_VARIABLES.map(v => (
-    <span key={v.key} className="text-xs text-muted-foreground">
-      <code className="text-primary/80 bg-primary/5 px-1 rounded text-2xs">{v.key}</code> ·{' '}
-      {resolveLocalizedTemplateField(v.description, translate)}
-    </span>
+  const variableRows = DISCORD_TEMPLATE_VARIABLES.map(v => (
+    <Fragment key={v.key}>
+      <code className="self-baseline rounded bg-primary/5 px-1 text-2xs text-primary/80">
+        {v.key}
+      </code>
+      <span className="text-xs text-muted-foreground">
+        {resolveLocalizedTemplateField(v.description, translate)}
+      </span>
+    </Fragment>
   ));
 
   return (
@@ -127,7 +131,9 @@ export default function DiscordTemplateEditor(props: IDiscordTemplateEditorProps
         <p className="text-xs font-medium text-muted-foreground">
           {t('discord.editor.variablesLabel')}
         </p>
-        <div className="flex flex-wrap gap-x-4 gap-y-1">{variableChips}</div>
+        <div className="grid grid-cols-[auto_1fr] items-baseline gap-x-3 gap-y-1">
+          {variableRows}
+        </div>
       </div>
 
       {/* Reset button */}
