@@ -104,7 +104,10 @@ export default function DiaryEditor(props: IDiaryEditorProps) {
             <Eyebrow className="mb-1 flex items-center gap-2">
               {isEditing ? (
                 <>
-                  <span className="text-primary">{t('editor.editingBadge')}</span>
+                  <span className="inline-flex items-center gap-1.5 text-primary">
+                    <span aria-hidden className="size-1.5 rounded-full bg-primary" />
+                    {t('editor.editingBadge')}
+                  </span>
                   {entry?.createdAt && (
                     <span>
                       ·{' '}
@@ -117,7 +120,10 @@ export default function DiaryEditor(props: IDiaryEditorProps) {
                   )}
                 </>
               ) : (
-                <span className="text-primary">{t('editor.newBadge')}</span>
+                <span className="inline-flex items-center gap-1.5 text-primary">
+                  <span aria-hidden className="size-1.5 rounded-full bg-primary" />
+                  {t('editor.newBadge')}
+                </span>
               )}
             </Eyebrow>
             <input
@@ -134,9 +140,6 @@ export default function DiaryEditor(props: IDiaryEditorProps) {
             />
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" onClick={onClose} className="h-8 gap-1.5 text-xs">
-              {t('editor.cancel')}
-            </Button>
             <Button
               size="sm"
               onClick={handleSave}

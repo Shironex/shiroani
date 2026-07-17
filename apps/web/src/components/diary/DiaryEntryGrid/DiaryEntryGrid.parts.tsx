@@ -76,7 +76,10 @@ export function ListView({ entries, onSelect, t }: IListProps) {
                 {entry.isPinned && (
                   <Pin className="w-3 h-3 text-primary fill-primary rotate-45 shrink-0" />
                 )}
-                <h3 className="text-sm font-medium truncate group-hover/list-item:text-primary transition-colors">
+                <h3
+                  title={entry.title || t('untitled')}
+                  className="text-sm font-medium truncate group-hover/list-item:text-primary transition-colors"
+                >
                   {entry.title || t('untitled')}
                 </h3>
               </div>

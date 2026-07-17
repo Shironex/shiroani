@@ -46,7 +46,7 @@ const meta = {
   },
   argTypes: {
     entry: { description: 'The entry being edited, or null for a new entry.' },
-    onClose: { description: 'Closes the editor (back / cancel / Esc).' },
+    onClose: { description: 'Closes the editor (back / Esc).' },
     onCreate: { description: 'Persists a new entry; resolves true on success.' },
     onUpdate: { description: 'Persists edits to an existing entry; resolves true on success.' },
   },

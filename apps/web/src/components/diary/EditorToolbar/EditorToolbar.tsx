@@ -14,8 +14,9 @@ import {
   Undo2,
   Redo2,
 } from 'lucide-react';
+import { FormatButton } from '../shared-parts';
 import { useEditorToolbar } from './EditorToolbar.hooks';
-import { ToolbarButton, ToolbarDivider } from './EditorToolbar.parts';
+import { ToolbarDivider } from './EditorToolbar.parts';
 import type { IEditorToolbarProps } from './EditorToolbar.types';
 
 /**
@@ -36,112 +37,112 @@ export default function EditorToolbar({ editor, rightSlot }: IEditorToolbarProps
       )}
     >
       {/* Undo / Redo */}
-      <ToolbarButton
+      <FormatButton
         onClick={() => editor.chain().focus().undo().run()}
         disabled={!editor.can().undo()}
         title={t('toolbar.undo')}
       >
         <Undo2 className="w-3.5 h-3.5" />
-      </ToolbarButton>
-      <ToolbarButton
+      </FormatButton>
+      <FormatButton
         onClick={() => editor.chain().focus().redo().run()}
         disabled={!editor.can().redo()}
         title={t('toolbar.redo')}
       >
         <Redo2 className="w-3.5 h-3.5" />
-      </ToolbarButton>
+      </FormatButton>
 
       <ToolbarDivider />
 
       {/* Headings */}
-      <ToolbarButton
+      <FormatButton
         onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
         isActive={editor.isActive('heading', { level: 1 })}
         title={t('toolbar.heading1')}
       >
         <Heading1 className="w-3.5 h-3.5" />
-      </ToolbarButton>
-      <ToolbarButton
+      </FormatButton>
+      <FormatButton
         onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
         isActive={editor.isActive('heading', { level: 2 })}
         title={t('toolbar.heading2')}
       >
         <Heading2 className="w-3.5 h-3.5" />
-      </ToolbarButton>
-      <ToolbarButton
+      </FormatButton>
+      <FormatButton
         onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
         isActive={editor.isActive('heading', { level: 3 })}
         title={t('toolbar.heading3')}
       >
         <Heading3 className="w-3.5 h-3.5" />
-      </ToolbarButton>
+      </FormatButton>
 
       <ToolbarDivider />
 
       {/* Inline marks */}
-      <ToolbarButton
+      <FormatButton
         onClick={() => editor.chain().focus().toggleBold().run()}
         isActive={editor.isActive('bold')}
         title={t('toolbar.bold')}
       >
         <Bold className="w-3.5 h-3.5" />
-      </ToolbarButton>
-      <ToolbarButton
+      </FormatButton>
+      <FormatButton
         onClick={() => editor.chain().focus().toggleItalic().run()}
         isActive={editor.isActive('italic')}
         title={t('toolbar.italic')}
       >
         <Italic className="w-3.5 h-3.5" />
-      </ToolbarButton>
-      <ToolbarButton
+      </FormatButton>
+      <FormatButton
         onClick={() => editor.chain().focus().toggleStrike().run()}
         isActive={editor.isActive('strike')}
         title={t('toolbar.strike')}
       >
         <Strikethrough className="w-3.5 h-3.5" />
-      </ToolbarButton>
+      </FormatButton>
 
       <ToolbarDivider />
 
       {/* Lists & blocks */}
-      <ToolbarButton
+      <FormatButton
         onClick={() => editor.chain().focus().toggleBulletList().run()}
         isActive={editor.isActive('bulletList')}
         title={t('toolbar.bulletList')}
       >
         <List className="w-3.5 h-3.5" />
-      </ToolbarButton>
-      <ToolbarButton
+      </FormatButton>
+      <FormatButton
         onClick={() => editor.chain().focus().toggleOrderedList().run()}
         isActive={editor.isActive('orderedList')}
         title={t('toolbar.orderedList')}
       >
         <ListOrdered className="w-3.5 h-3.5" />
-      </ToolbarButton>
-      <ToolbarButton
+      </FormatButton>
+      <FormatButton
         onClick={() => editor.chain().focus().toggleBlockquote().run()}
         isActive={editor.isActive('blockquote')}
         title={t('toolbar.blockquote')}
       >
         <Quote className="w-3.5 h-3.5" />
-      </ToolbarButton>
-      <ToolbarButton
+      </FormatButton>
+      <FormatButton
         onClick={() => editor.chain().focus().toggleCodeBlock().run()}
         isActive={editor.isActive('codeBlock')}
         title={t('toolbar.codeBlock')}
       >
         <Code className="w-3.5 h-3.5" />
-      </ToolbarButton>
+      </FormatButton>
 
       <ToolbarDivider />
 
       {/* Horizontal rule */}
-      <ToolbarButton
+      <FormatButton
         onClick={() => editor.chain().focus().setHorizontalRule().run()}
         title={t('toolbar.horizontalRule')}
       >
         <Minus className="w-3.5 h-3.5" />
-      </ToolbarButton>
+      </FormatButton>
 
       {rightSlot && <div className="ml-auto flex items-center gap-1.5">{rightSlot}</div>}
     </div>

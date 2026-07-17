@@ -118,10 +118,7 @@ export function ReleaseCard({ release }: { release: ChangelogRelease }) {
             'font-mono text-[10.5px] font-semibold uppercase tracking-[0.15em] text-primary'
           )}
         >
-          <span
-            className={cn('size-[5px] rounded-full bg-primary', release.latest && 'animate-pulse')}
-          />
-          v{release.version}
+          <span className="size-[5px] rounded-full bg-primary" />v{release.version}
         </span>
         {release.latest && (
           <span className="rounded-[4px] bg-primary px-2 py-[3px] font-mono text-2xs font-bold uppercase tracking-[0.18em] text-primary-foreground">

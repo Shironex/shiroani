@@ -51,7 +51,7 @@ export function useDiaryEditor({
     editorProps: {
       attributes: {
         class: cn(
-          'diary-prose min-h-full px-10 py-8 focus:outline-none',
+          'min-h-full px-10 py-8 caret-primary focus:outline-none',
           'text-[14px] leading-[1.7] text-foreground/90'
         ),
       },
