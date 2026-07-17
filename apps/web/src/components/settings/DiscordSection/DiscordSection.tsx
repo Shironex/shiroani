@@ -1,7 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { MessageCircle, Check, Info } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
-import { cn } from '@/lib/utils';
 import {
   SettingsCard,
   SettingsInfoCallout,
@@ -15,11 +14,11 @@ import type { DiscordRpcStatus } from '@shiroani/shared';
 import { useDiscordSection } from './DiscordSection.hooks';
 
 /** Map each RPC connection status to a PillTag colour. */
-const STATUS_VARIANT: Record<DiscordRpcStatus, 'green' | 'gold' | 'muted' | 'orange'> = {
+const STATUS_VARIANT: Record<DiscordRpcStatus, 'green' | 'gold' | 'muted' | 'destructive'> = {
   connected: 'green',
   connecting: 'gold',
   disconnected: 'muted',
-  error: 'orange',
+  error: 'destructive',
 };
 
 export default function DiscordSection() {
@@ -49,13 +48,7 @@ export default function DiscordSection() {
       headerAccessory={
         <div className="flex items-center gap-2">
           {settings.enabled && (
-            <PillTag
-              variant={STATUS_VARIANT[status]}
-              aria-label={t('discord.status.aria')}
-              // Error is a failure state, not just another accent — force the
-              // destructive tint over the mapped variant so it reads as a problem.
-              className={cn(status === 'error' && 'bg-destructive/15 text-destructive')}
-            >
+            <PillTag variant={STATUS_VARIANT[status]} aria-label={t('discord.status.aria')}>
               {t(`discord.status.${status}`)}
             </PillTag>
           )}

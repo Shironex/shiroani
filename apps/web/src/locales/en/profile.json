@@ -197,10 +197,10 @@
       "less": "less",
       "more": "more",
       "tooltip": {
-        "future": "{{date}} — still ahead",
-        "empty": "{{date}} — no activity",
-        "active": "{{date}} — {{value}} actively",
-        "anime": "{{date}} — {{value}} of anime"
+        "future": "{{date}} · still ahead",
+        "empty": "{{date}} · no activity",
+        "active": "{{date}} · {{value}} actively",
+        "anime": "{{date}} · {{value}} of anime"
       }
     },
     "streak": {
@@ -280,5 +280,6 @@
     "daysShort": "d",
     "hoursShort": "h"
   },
-  "avatarAlt": "Avatar of {{name}}"
+  "avatarAlt": "Avatar of {{name}}",
+  "untitled": "Untitled"
 }

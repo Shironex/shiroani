@@ -184,7 +184,7 @@ const WeekEventCard = memo(function WeekEventCard({
             )}
           >
             {formatTime(anime.airingAt)}
-            {isLive && <span className="ml-1.5 uppercase tracking-[0.12em]">· {nowLabel}</span>}
+            {isLive && <span className="ml-1.5 uppercase tracking-[0.1em]">· {nowLabel}</span>}
           </div>
           <p className="mt-1 text-[11.5px] font-semibold leading-[1.25] text-foreground line-clamp-2 pr-6">
             {title}

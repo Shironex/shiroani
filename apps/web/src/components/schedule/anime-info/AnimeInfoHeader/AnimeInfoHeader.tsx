@@ -1,18 +1,14 @@
-import { useTranslation } from 'react-i18next';
-import { Bell, BellRing } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { SubscribeBellButton } from '../../SubscribeBellButton';
 import type { IAnimeInfoHeaderProps } from './AnimeInfoHeader.types';
 
 export default function AnimeInfoHeader({
+  anime,
   title,
   details,
   coverUrl,
   bannerUrl,
   accentColor,
-  isSubscribed,
-  onToggleSubscribe,
 }: IAnimeInfoHeaderProps) {
-  const { t } = useTranslation('schedule');
   const showEnglishTitle = Boolean(details?.title?.english && details.title.english !== title);
   return (
     <div className="relative h-44 overflow-hidden rounded-t-lg shrink-0">
@@ -55,20 +51,12 @@ export default function AnimeInfoHeader({
         </div>
 
         {/* Bell button — plain button without tooltip to avoid auto-show on dialog open */}
-        <Button
-          variant="ghost"
-          size="icon"
+        <SubscribeBellButton
+          anime={anime}
+          alwaysVisible
+          noTooltip
           className="shrink-0 w-8 h-8 bg-background/60 backdrop-blur-sm"
-          onClick={onToggleSubscribe}
-          aria-pressed={isSubscribed}
-          aria-label={isSubscribed ? t('subscribe.disable') : t('subscribe.enable')}
-        >
-          {isSubscribed ? (
-            <BellRing className="w-3.5 h-3.5 text-primary" />
-          ) : (
-            <Bell className="w-3.5 h-3.5" />
-          )}
-        </Button>
+        />
       </div>
     </div>
   );

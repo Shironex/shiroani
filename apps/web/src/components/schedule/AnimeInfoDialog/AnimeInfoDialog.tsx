@@ -22,13 +22,12 @@ export default function AnimeInfoDialog({ anime, open, onOpenChange }: IAnimeInf
         <DialogTitle className="sr-only">{view.title}</DialogTitle>
 
         <AnimeInfoHeader
+          anime={view.anime}
           title={view.title}
           details={view.details}
           coverUrl={view.coverUrl}
           bannerUrl={view.bannerUrl}
           accentColor={view.accentColor}
-          isSubscribed={view.isSubscribed}
-          onToggleSubscribe={view.toggle}
         />
 
         {/* Content */}

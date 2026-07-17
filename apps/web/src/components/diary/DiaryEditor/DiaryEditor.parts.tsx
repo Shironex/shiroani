@@ -53,7 +53,7 @@ export function EditorRail({
         <Eyebrow>{t('editor.cover')}</Eyebrow>
         <div
           className={cn(
-            'relative h-[104px] w-full overflow-hidden rounded-lg border border-white/10',
+            'relative h-[104px] w-full overflow-hidden rounded-lg border border-border-glass',
             'shadow-[0_10px_28px_oklch(0_0_0/0.35)]'
           )}
           style={{ background: gradientCss }}
@@ -80,11 +80,10 @@ export function EditorRail({
             aria-label={isPinned ? t('editor.unpinEntry') : t('editor.pinEntry')}
             className={cn(
               'absolute right-2 top-2 grid size-7 place-items-center rounded-md',
-              'transition-colors active:scale-95',
+              'text-muted-foreground transition-colors active:scale-95',
+              'hover:bg-accent/60 hover:text-foreground',
               'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-              isPinned
-                ? 'bg-white/25 text-white'
-                : 'bg-black/30 text-white/70 hover:bg-black/45 hover:text-white'
+              isPinned && 'text-primary'
             )}
           >
             <Pin className={cn('w-3.5 h-3.5', isPinned && 'fill-current rotate-45')} />

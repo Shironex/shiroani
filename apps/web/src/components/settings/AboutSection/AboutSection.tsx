@@ -26,7 +26,7 @@ export default function AboutSection(props: IAboutSectionProps) {
 
   const heroSubtitle = (
     <span className="inline-flex flex-wrap items-center gap-2">
-      <PillTag variant="accent">v{version || '...'}</PillTag>
+      <PillTag variant="accent">v{version || '…'}</PillTag>
       <span className="text-[11.5px] text-muted-foreground">{t('about.tagline')}</span>
     </span>
   );
@@ -61,7 +61,7 @@ export default function AboutSection(props: IAboutSectionProps) {
             {t('about.openChangelog')}
           </Button>
         </div>
-        <p className="text-[11.5px] text-muted-foreground/80 leading-relaxed">
+        <p className="text-[11.5px] text-muted-foreground/85 leading-relaxed">
           {t('about.onboardingHint')}
         </p>
       </SettingsCard>

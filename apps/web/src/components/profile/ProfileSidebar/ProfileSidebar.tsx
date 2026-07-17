@@ -61,7 +61,7 @@ export default function ProfileSidebar({
         <div className="font-sans font-extrabold text-[16px] tracking-[-0.01em] text-foreground truncate max-w-full">
           {profile.name}
         </div>
-        <div className="font-mono text-[10.5px] tracking-[0.12em] text-muted-foreground mt-0.5 truncate max-w-full">
+        <div className="font-mono text-[10.5px] tracking-[0.18em] text-muted-foreground mt-0.5 truncate max-w-full">
           @{profile.name.toLowerCase()}
         </div>
         <ConnectedBadge label={t('sidebar.connectedBadge')} />
@@ -88,7 +88,7 @@ export default function ProfileSidebar({
       </div>
 
       {/* ── Summary stat grid (2×2) ─────────────────────────── */}
-      <div className="font-mono text-2xs uppercase tracking-[0.2em] text-muted-foreground font-semibold mb-2">
+      <div className="font-mono text-2xs uppercase tracking-[0.18em] text-muted-foreground font-semibold mb-2">
         {t('sidebar.summaryHeading')}
       </div>
       <div className="grid grid-cols-2 gap-2 mb-4">

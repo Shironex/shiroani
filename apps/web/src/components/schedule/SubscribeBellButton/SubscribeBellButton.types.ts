@@ -9,6 +9,10 @@ export interface ISubscribeBellButtonProps {
   iconClassName?: string;
   /** Tooltip placement — defaults to "top" */
   tooltipSide?: 'top' | 'bottom' | 'left' | 'right';
+  /** Skip the hover/focus reveal and keep the bell fully visible at all times. */
+  alwaysVisible?: boolean;
+  /** Render a plain button without the tooltip wrapper (avoids tooltip auto-show). */
+  noTooltip?: boolean;
 }
 
 export interface ISubscribeBellButtonView {

@@ -19,6 +19,7 @@ const pillTagVariants = cva(
         gold: 'bg-(--gold-bg) text-(--gold)',
         blue: 'bg-status-info-bg text-status-info',
         orange: 'bg-status-pending-bg text-status-pending',
+        destructive: 'bg-destructive/15 text-destructive',
       },
     },
     defaultVariants: {

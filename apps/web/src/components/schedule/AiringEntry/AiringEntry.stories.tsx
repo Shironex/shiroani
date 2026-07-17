@@ -68,7 +68,8 @@ export const Live: Story = {
   args: { status: 'live' },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    await expect(canvas.getByText('Live')).toBeInTheDocument();
+    await expect(canvas.getByText('LIVE')).toBeInTheDocument();
+    await expect(canvas.getByText('Watch')).toBeInTheDocument();
   },
 };
 

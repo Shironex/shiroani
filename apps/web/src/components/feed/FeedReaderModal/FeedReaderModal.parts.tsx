@@ -78,7 +78,7 @@ export function RelatedPanel({
 
   return (
     <div className="mt-8">
-      <div className="font-mono text-[9px] tracking-[0.2em] uppercase text-muted-foreground/60 mb-2.5">
+      <div className="font-mono text-[9px] tracking-[0.18em] uppercase text-muted-foreground/60 mb-2.5">
         {t('reader.related')}
       </div>
       <ul className="flex flex-col gap-2">

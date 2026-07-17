@@ -50,4 +50,17 @@ describe('EmptyState', () => {
     );
     expect(container.querySelector('svg[aria-hidden="true"]')).toBeInTheDocument();
   });
+
+  it('recolors the action with destructive tone', () => {
+    render(
+      <EmptyState
+        tone="destructive"
+        icon={Star}
+        title="Coś poszło nie tak"
+        subtitle="Spróbuj ponownie"
+        action={{ label: 'Ponów', onClick: vi.fn() }}
+      />
+    );
+    expect(screen.getByRole('button', { name: 'Ponów' }).className).toContain('text-destructive');
+  });
 });

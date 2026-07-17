@@ -1,6 +1,7 @@
 import { type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CountBars, type ICountBarRow } from '../shared-parts';
+import { formatCount } from '../profile-constants';
 import type { IProfileExtraStatsView } from './ProfileExtraStats.types';
 
 interface CountItem {
@@ -19,10 +20,12 @@ interface CountItem {
  */
 function CountBreakdown({
   items,
+  locale,
   limit = 5,
   preserveOrder = false,
 }: {
   items: CountItem[];
+  locale: string;
   limit?: number;
   preserveOrder?: boolean;
 }) {
@@ -35,7 +38,7 @@ function CountBreakdown({
   const rows: ICountBarRow[] = top.map(item => ({
     key: item.key,
     label: item.label,
-    valueLabel: String(item.count),
+    valueLabel: formatCount(item.count, locale),
     pct: Math.round((item.count / max) * 100),
   }));
 
@@ -54,7 +57,8 @@ export function ExtraStatsGrid({
   lengths,
   renderHead,
 }: ExtraStatsGridProps) {
-  const { t } = useTranslation('profile');
+  const { t, i18n } = useTranslation('profile');
+  const locale = i18n.language;
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5">
@@ -62,6 +66,7 @@ export function ExtraStatsGrid({
         <section>
           {renderHead(t('extraStats.voiceActors'))}
           <CountBreakdown
+            locale={locale}
             items={voiceActors.map(v => ({ key: v.name, label: v.name, count: v.count }))}
           />
         </section>
@@ -71,6 +76,7 @@ export function ExtraStatsGrid({
         <section>
           {renderHead(t('extraStats.staff'))}
           <CountBreakdown
+            locale={locale}
             items={staff.map(s => ({ key: s.name, label: s.name, count: s.count }))}
           />
         </section>
@@ -83,6 +89,7 @@ export function ExtraStatsGrid({
               bars read as a start-year timeline. */}
           <CountBreakdown
             preserveOrder
+            locale={locale}
             items={[...startYears]
               .sort((a, b) => b.value - a.value)
               .map(y => ({ key: String(y.value), label: String(y.value), count: y.count }))}
@@ -94,6 +101,7 @@ export function ExtraStatsGrid({
         <section>
           {renderHead(t('extraStats.lengths'))}
           <CountBreakdown
+            locale={locale}
             items={lengths.map(l => ({
               key: l.value,
               label: t('extraStats.lengthLabel', { value: l.value }),

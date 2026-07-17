@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { ExternalLink, Play } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { FadeInImage } from '@/components/shared/FadeInImage';
 import type { IStreamingEpisodesListProps, IStreamingLinksListProps } from './AnimeInfoLinks.types';
 
 /** Platform streaming links (Crunchyroll, etc.) — open in the in-app browser. */
@@ -41,7 +42,7 @@ export function StreamingEpisodesList({ episodes }: IStreamingEpisodesListProps)
         >
           <div className="relative aspect-video overflow-hidden bg-muted">
             {ep.thumbnail && (
-              <img
+              <FadeInImage
                 src={ep.thumbnail}
                 alt=""
                 className="w-full h-full object-cover"

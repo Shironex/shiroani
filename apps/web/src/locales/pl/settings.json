@@ -29,11 +29,11 @@
     "downloadProgressAria": "Postęp pobierania",
     "status": {
       "idle": "Brak nowych aktualizacji",
-      "checking": "Sprawdzanie...",
+      "checking": "Sprawdzanie…",
       "available": "Dostępna aktualizacja: {{version}}",
       "downloading": "Pobieranie · {{transferred}}/{{total}}",
       "downloadingPct": "Pobieranie · {{percent}}%",
-      "downloadingFallback": "Pobieranie...",
+      "downloadingFallback": "Pobieranie…",
       "ready": "Aktualizacja gotowa do instalacji",
       "awaitingArtifacts": "Wydanie się wgrywa — pobieranie zacznie się automatycznie.",
       "errorReleasePending": "Wydanie w toku — spróbuj za chwilę.",
@@ -450,7 +450,7 @@
     "sizeAria": "Rozmiar maskotki",
     "sprite": {
       "title": "Własny sprite",
-      "description": "PNG, JPG, GIF lub WEBP · maks. 10 MB · 2048×2048 px. Animowane GIF-y wyświetlą się jako pierwsza klatka.",
+      "description": "PNG, JPG, GIF lub WEBP, maks. 10 MB, 2048×2048 px. Animowane GIF-y wyświetlą się jako pierwsza klatka.",
       "change": "Zmień",
       "pick": "Wybierz sprite",
       "reset": "Resetuj",
@@ -549,7 +549,7 @@
   },
   "about": {
     "logoAlt": "Logo ShiroAni",
-    "tagline": "Przeglądarka · tracker anime w jednym miejscu",
+    "tagline": "Przeglądarka, tracker anime w jednym miejscu",
     "rerunOnboarding": "Uruchom kreator ponownie",
     "onboardingHint": "Po kliknięciu kreator uruchomi się od razu, a Shiro-chan przeprowadzi Cię jeszcze raz!",
     "github": "GitHub",

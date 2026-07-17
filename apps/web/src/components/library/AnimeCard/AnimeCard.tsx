@@ -68,16 +68,12 @@ const AnimeCard = memo(function AnimeCard(props: IAnimeCardProps) {
       {/* Cover image — 2:3 aspect per mock */}
       <div className="relative aspect-[2/3] overflow-hidden">
         {entry.coverImage ? (
-          // Transform sits on a wrapper (not the img) so the hover zoom and
-          // FadeInImage's opacity transition don't collide on `transition-property`.
-          <div className="w-full h-full transition-transform duration-500 ease-out group-hover:scale-[1.03]">
-            <FadeInImage
-              src={entry.coverImage}
-              alt={entry.title}
-              className="w-full h-full object-cover"
-              loading="lazy"
-            />
-          </div>
+          <FadeInImage
+            src={entry.coverImage}
+            alt={entry.title}
+            className="w-full h-full object-cover"
+            loading="lazy"
+          />
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-muted via-muted/80 to-muted/60 flex flex-col items-center justify-center gap-2">
             <div className="w-10 h-10 rounded-xl bg-background/30 flex items-center justify-center">
@@ -194,7 +190,7 @@ const AnimeCard = memo(function AnimeCard(props: IAnimeCardProps) {
           <h3 className="text-[12px] font-bold leading-[1.2] text-white line-clamp-2 drop-shadow-[0_1px_3px_oklch(0_0_0/0.6)]">
             {entry.title}
           </h3>
-          <p className="mt-[3px] font-mono text-[10px] uppercase tracking-[0.08em] text-white/80">
+          <p className="mt-[3px] font-mono text-[10px] uppercase tracking-[0.08em] tabular-nums text-white/80">
             {progressText}
           </p>
         </div>

@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Play, Tv } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { handleImageError } from '@/lib/image-utils';
+import { FadeInImage } from '@/components/shared/FadeInImage';
 import { PillTag } from '@/components/ui/pill-tag';
 import { formatCountdown, formatTime, getAnimeTitle, getCoverUrl } from '../schedule-utils';
 import { formatEpisodeProgress } from '@/lib/anime-utils';
@@ -55,6 +56,8 @@ const AiringEntry = memo(function AiringEntry({
   // Mark (left stripe) colour
   const markClass = isLive ? 'bg-primary' : isDone ? 'bg-muted-foreground/40' : 'bg-status-info';
 
+  const showStatusPill = !isLive && Boolean(statusLabel);
+
   const ariaLabel = t('entry.ariaLabel', { title, time: formatTime(anime.airingAt) });
 
   return (
@@ -93,14 +96,14 @@ const AiringEntry = memo(function AiringEntry({
         <span className="font-mono text-[14px] font-bold tabular-nums text-foreground leading-none">
           {formatTime(anime.airingAt)}
         </span>
-        <span className="mt-[3px] font-mono text-[9.5px] uppercase tracking-[0.12em] font-medium text-muted-foreground">
+        <span className="mt-[3px] font-mono text-[9.5px] uppercase tracking-[0.1em] font-medium text-muted-foreground">
           {isLive ? t('entry.todayMarker', { day: dow }) : dow}
         </span>
       </div>
 
       {/* Cover thumbnail */}
       {coverUrl ? (
-        <img
+        <FadeInImage
           src={coverUrl}
           alt=""
           className="w-[42px] h-[56px] my-auto rounded-md object-cover border border-border-glass shrink-0"
@@ -113,7 +116,12 @@ const AiringEntry = memo(function AiringEntry({
 
       {/* Middle info block */}
       <div className="flex-1 min-w-0 py-2 pr-2 flex flex-col justify-center">
-        <h4 className="text-[13.5px] font-bold leading-[1.2] text-foreground truncate">{title}</h4>
+        <h4
+          className="text-[13.5px] font-bold leading-[1.2] text-foreground truncate"
+          title={title}
+        >
+          {title}
+        </h4>
         <div className="mt-[3px] flex items-center gap-2 text-[11px] text-muted-foreground truncate">
           <Tv className={cn('w-3 h-3 shrink-0', isLive && 'text-primary')} />
           <span className={cn('truncate', isLive && 'text-primary font-semibold')}>
@@ -129,8 +137,8 @@ const AiringEntry = memo(function AiringEntry({
       {/* Right actions — above the stretched open button (z-[1]) so the bell
           stays independently clickable. */}
       <div className="relative z-[2] flex items-center gap-2 pr-3 shrink-0">
-        {statusLabel && (
-          <PillTag variant={statusVariant} className="pointer-events-none">
+        {showStatusPill && (
+          <PillTag variant={statusVariant} className="pointer-events-none tabular-nums">
             {statusLabel}
           </PillTag>
         )}

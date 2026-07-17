@@ -94,7 +94,7 @@ export default function AddToLibraryDialog({
                   placeholder={t('addDialog.cover.placeholder')}
                   className="h-7 text-xs truncate"
                 />
-                <p className="text-[10px] text-muted-foreground/50">
+                <p className="text-[10px] text-muted-foreground/70">
                   {isFetchingCover
                     ? t('addDialog.cover.fetchingHint')
                     : coverImage

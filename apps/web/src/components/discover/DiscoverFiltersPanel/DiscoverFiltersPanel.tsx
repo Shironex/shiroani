@@ -15,6 +15,7 @@ import {
   getAnilistSeasonLabel,
 } from '@/lib/constants';
 import { Switch } from '@/components/ui/switch';
+import { Eyebrow } from '@/components/shared/Eyebrow';
 import { GenrePicker } from '@/components/discover/GenrePicker';
 import { useDiscoverFiltersPanel } from './DiscoverFiltersPanel.hooks';
 import { FacetSelect, TagChips } from './DiscoverFiltersPanel.parts';
@@ -89,7 +90,7 @@ function DiscoverFiltersPanel({
             type="button"
             onClick={toggleOpen}
             aria-expanded={open}
-            className="rounded-sm font-mono text-[9.5px] uppercase tracking-[0.14em] text-muted-foreground/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="rounded-sm font-mono text-[9.5px] uppercase tracking-[0.18em] text-muted-foreground/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             {open ? t('controls.filtersCollapse') : t('controls.filtersExpand')}
           </button>
@@ -141,9 +142,7 @@ function DiscoverFiltersPanel({
           {/* Score range */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
-                {t('controls.scoreLabel')}
-              </span>
+              <Eyebrow>{t('controls.scoreLabel')}</Eyebrow>
               <span className="text-2xs text-foreground/80 tabular-nums">
                 {t('controls.scoreRange', { min: localScore[0], max: localScore[1] })}
               </span>
@@ -169,9 +168,7 @@ function DiscoverFiltersPanel({
 
           {/* Genres (reused tri-state picker) */}
           <div className="space-y-1.5">
-            <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
-              {t('genres.title')}
-            </span>
+            <Eyebrow>{t('genres.title')}</Eyebrow>
             <GenrePicker
               included={filters.includedGenres ?? []}
               excluded={filters.excludedGenres ?? []}
@@ -182,9 +179,7 @@ function DiscoverFiltersPanel({
 
           {/* Free-form tags */}
           <div className="space-y-1.5">
-            <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
-              {t('controls.tagsLabel')}
-            </span>
+            <Eyebrow>{t('controls.tagsLabel')}</Eyebrow>
             <input
               type="text"
               value={tagDraft}
@@ -209,9 +204,7 @@ function DiscoverFiltersPanel({
           {connected && (
             <label className="flex items-center justify-between gap-3 pt-1 cursor-pointer">
               <span className="flex flex-col gap-0.5">
-                <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
-                  {t('controls.excludeOnList')}
-                </span>
+                <Eyebrow>{t('controls.excludeOnList')}</Eyebrow>
                 <span className="text-2xs text-muted-foreground/70">
                   {t('controls.excludeOnListHint')}
                 </span>

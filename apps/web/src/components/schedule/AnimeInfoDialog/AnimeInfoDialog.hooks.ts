@@ -4,7 +4,6 @@ import { stripHtmlSimple } from '@/lib/html-text';
 import { getAnimeTitle } from '@/lib/anime-utils';
 import { emitAsync } from '@/lib/socketHelpers';
 import { useNavigateToBrowser } from '@/hooks/useNavigateToBrowser';
-import { useNotificationToggle } from '@/hooks/useNotificationToggle';
 import type { AiringAnime, AnimeDetail } from '@shiroani/shared';
 import { AnimeEvents } from '@shiroani/shared';
 import type { IAnimeInfoDialogView } from './AnimeInfoDialog.types';
@@ -25,10 +24,6 @@ export function useAnimeInfoDialog(
   const [loading, setLoading] = useState(false);
   const [descExpanded, setDescExpanded] = useState(false);
   const navigateToBrowser = useNavigateToBrowser();
-  const { isSubscribed, toggle } = useNotificationToggle(
-    anime?.media.id ?? 0,
-    anime as AiringAnime
-  );
 
   const fetchDetails = useCallback(async (anilistId: number) => {
     setLoading(true);
@@ -116,8 +111,6 @@ export function useAnimeInfoDialog(
     loading,
     descExpanded,
     setDescExpanded,
-    isSubscribed,
-    toggle,
     handleNavigate,
     title,
     language: i18n.language,

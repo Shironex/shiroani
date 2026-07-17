@@ -23,7 +23,11 @@ export default function RecentsPanel({ frequentSites, onNavigate }: IRecentsPane
         id="newtab-recent"
         icon={Clock}
         title={t('newTab.recents.title')}
-        meta={frequentSites.length > 0 ? `${frequentSites.length}` : undefined}
+        meta={
+          frequentSites.length > 0
+            ? t('newTab.recents.count', { count: frequentSites.length })
+            : undefined
+        }
       />
 
       {frequentSites.length > 0 ? (

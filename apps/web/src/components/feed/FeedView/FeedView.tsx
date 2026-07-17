@@ -1,6 +1,7 @@
 import { Rss, RefreshCw, Inbox, CheckCheck, Bookmark } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
 import { TooltipButton } from '@/components/ui/tooltip-button';
 import { ViewHeader } from '@/components/shared/ViewHeader';
 import { EmptyState } from '@/components/shared/EmptyState';
@@ -120,7 +121,7 @@ export default function FeedView() {
               </button>
             </div>
 
-            <div className="w-px h-4 bg-border-glass mx-1" />
+            <Separator orientation="vertical" className="h-4 mx-1" />
 
             {/* Language pill toggle — mirrors mock sub-header */}
             <LanguageToggle
@@ -129,7 +130,7 @@ export default function FeedView() {
               onSelect={setLanguageFilter}
             />
 
-            <div className="w-px h-4 bg-border-glass mx-1" />
+            <Separator orientation="vertical" className="h-4 mx-1" />
 
             <TooltipButton
               variant="ghost"
@@ -185,23 +186,17 @@ export default function FeedView() {
             {feedView === 'all' && viewState === 'loading' ? (
               <FeedLoadingAnimation />
             ) : feedView === 'all' && viewState === 'error' ? (
-              <div className="flex items-center justify-center w-full px-6 py-16">
-                <div className="w-full max-w-md rounded-xl border border-destructive/25 bg-destructive/[0.06] px-5 py-6 flex flex-col items-center gap-3 text-center">
-                  <div className="size-14 rounded-full bg-destructive/20 border border-destructive/40 grid place-items-center">
-                    <Rss className="size-6 text-destructive" aria-hidden="true" />
-                  </div>
-                  <p className="text-sm text-muted-foreground max-w-xs">{error}</p>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="gap-1.5"
-                    onClick={() => fetchItems()}
-                  >
-                    <RefreshCw className="w-3.5 h-3.5" aria-hidden="true" />
-                    {t('actions.tryAgain')}
-                  </Button>
-                </div>
-              </div>
+              <EmptyState
+                tone="destructive"
+                icon={Rss}
+                title={t('error.title')}
+                subtitle={error ?? ''}
+                action={{
+                  label: t('actions.tryAgain'),
+                  onClick: () => fetchItems(),
+                  icon: RefreshCw,
+                }}
+              />
             ) : feedView === 'all' && viewState === 'empty' ? (
               <EmptyState
                 icon={Inbox}

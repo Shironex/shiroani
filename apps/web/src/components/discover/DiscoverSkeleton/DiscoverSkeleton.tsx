@@ -7,7 +7,7 @@ export default function DiscoverSkeleton() {
   return (
     <div
       aria-busy="true"
-      className="grid gap-3.5 grid-cols-[repeat(auto-fill,minmax(130px,1fr))] xl:grid-cols-[repeat(auto-fill,minmax(140px,1fr))]"
+      className="grid gap-3.5 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 2xl:grid-cols-6"
     >
       <SkeletonCards />
     </div>

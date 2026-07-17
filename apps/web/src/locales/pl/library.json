@@ -117,7 +117,7 @@
   "sync": {
     "anilist": {
       "badge": {
-        "synced": "Zsynchronizowano z AniList · {{date}}",
+        "synced": "Zsynchronizowano z AniList, {{date}}",
         "notSynced": "Jeszcze nie zsynchronizowano z AniList"
       },
       "entry": {
@@ -138,7 +138,7 @@
     },
     "mal": {
       "badge": {
-        "synced": "Zsynchronizowano z MyAnimeList · {{date}}",
+        "synced": "Zsynchronizowano z MyAnimeList, {{date}}",
         "notSynced": "Jeszcze nie zsynchronizowano z MyAnimeList"
       },
       "entry": {

@@ -4,6 +4,7 @@ import { cn } from '@/lib/utils';
 import { formatTime } from '@/components/schedule/schedule-utils';
 import { getAnimeTitle, getCoverUrl } from '@/lib/anime-utils';
 import { handleImageError } from '@/lib/image-utils';
+import { FadeInImage } from '@/components/shared/FadeInImage';
 import type { IAiringPosterCardProps } from './AiringTodaySection.types';
 
 const SKELETON_KEYS = [0, 1, 2, 3, 4, 5];
@@ -41,7 +42,7 @@ export function AiringPosterCard({ entry, isUser }: IAiringPosterCardProps) {
         )}
       >
         {coverUrl && !imgError ? (
-          <img
+          <FadeInImage
             src={coverUrl}
             alt=""
             className="w-full h-full object-cover"
@@ -57,7 +58,7 @@ export function AiringPosterCard({ entry, isUser }: IAiringPosterCardProps) {
 
         {/* Time badge */}
         <div className="absolute top-1.5 right-1.5">
-          <span className="text-[10px] font-medium bg-background/80 text-foreground/80 px-1 py-px rounded">
+          <span className="text-[10px] font-medium bg-background/80 text-foreground/80 px-1 py-px rounded tabular-nums">
             {time}
           </span>
         </div>
@@ -66,7 +67,7 @@ export function AiringPosterCard({ entry, isUser }: IAiringPosterCardProps) {
             black keeps white text legible over any cover art. */}
         <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-2 pt-6">
           <p className="text-2xs font-medium text-white leading-tight line-clamp-2">{title}</p>
-          <p className="text-[10px] text-white/60 mt-0.5">
+          <p className="text-[10px] text-white/60 mt-0.5 tabular-nums">
             {t('newTab.airingToday.episodeShort', { episode: entry.episode })}
           </p>
         </div>

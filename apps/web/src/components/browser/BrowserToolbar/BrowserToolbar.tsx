@@ -178,7 +178,7 @@ export default function BrowserToolbar({
           variant="ghost"
           size="icon"
           className={cn(
-            'size-[30px] rounded-md',
+            'size-[30px] rounded-full',
             isFavorite
               ? 'text-primary hover:text-primary'
               : 'text-muted-foreground hover:text-primary'
@@ -195,7 +195,7 @@ export default function BrowserToolbar({
         <TooltipButton
           variant="ghost"
           size="icon"
-          className="size-[30px] rounded-md text-muted-foreground hover:text-primary"
+          className="size-[30px] rounded-full text-muted-foreground hover:text-primary"
           onClick={onAddToLibrary}
           disabled={!hasActiveTab}
           tooltip={t('toolbar.addToLibrary')}
@@ -207,7 +207,7 @@ export default function BrowserToolbar({
         <TooltipButton
           variant="ghost"
           size="icon"
-          className="size-[30px] rounded-md text-muted-foreground hover:text-foreground"
+          className="size-[30px] rounded-full text-muted-foreground hover:text-foreground"
           onClick={onGoHome}
           tooltip={t('toolbar.home')}
           tooltipSide="bottom"
@@ -218,7 +218,7 @@ export default function BrowserToolbar({
         <TooltipButton
           variant="ghost"
           size="icon"
-          className="size-[30px] rounded-md text-muted-foreground hover:text-foreground"
+          className="size-[30px] rounded-full text-muted-foreground hover:text-foreground"
           onClick={onOpenHistory}
           tooltip={t('toolbar.history')}
           tooltipSide="bottom"

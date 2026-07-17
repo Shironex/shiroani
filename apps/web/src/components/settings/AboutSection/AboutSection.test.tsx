@@ -13,7 +13,7 @@ describe('AboutSection', () => {
   it('renders the app hero with a version pill', () => {
     render(<AboutSection />);
     // No electronAPI in jsdom, so the version stays at its placeholder.
-    expect(screen.getByText('v...')).toBeInTheDocument();
+    expect(screen.getByText('v…')).toBeInTheDocument();
   });
 
   it('reruns onboarding via the onboarding store', async () => {

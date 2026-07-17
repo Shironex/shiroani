@@ -8,12 +8,12 @@ export default function PanelHeader({ id, icon: Icon, title, meta, action }: IPa
       </span>
       <h2
         id={id}
-        className="flex-1 min-w-0 truncate font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground"
+        className="flex-1 min-w-0 truncate font-mono text-2xs font-semibold uppercase tracking-[0.18em] text-muted-foreground"
       >
         {title}
       </h2>
       {meta && (
-        <span className="shrink-0 font-mono text-[9.5px] uppercase tracking-[0.1em] text-muted-foreground/70">
+        <span className="shrink-0 font-mono text-2xs uppercase tracking-[0.18em] text-muted-foreground/70">
           {meta}
         </span>
       )}

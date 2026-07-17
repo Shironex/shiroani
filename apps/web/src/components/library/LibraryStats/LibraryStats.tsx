@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { Eye, Star, Tv, TrendingUp } from 'lucide-react';
 import { STATUS_CONFIG, STATUS_LABEL_KEY, STATUS_ORDER } from '@/lib/constants';
 import { tDynamic } from '@/lib/i18n';
+import { Eyebrow } from '@/components/shared/Eyebrow';
 import { useLibraryStats } from './LibraryStats.hooks';
 import { StatCard } from './LibraryStats.parts';
 
@@ -100,9 +101,7 @@ export default function LibraryStats() {
       {hasEntries && (
         <div className="space-y-2.5">
           <div className="flex items-center justify-between">
-            <p className="text-2xs font-medium text-muted-foreground uppercase tracking-wider">
-              {t('library:stats.distribution')}
-            </p>
+            <Eyebrow>{t('library:stats.distribution')}</Eyebrow>
             <p className="text-2xs text-muted-foreground/60">
               {t('library:stats.entriesCount', { count: stats.totalEntries })}
             </p>

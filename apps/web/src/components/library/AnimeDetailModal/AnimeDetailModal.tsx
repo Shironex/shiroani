@@ -68,7 +68,7 @@ export default function AnimeDetailModal({ entry, open, onOpenChange }: IAnimeDe
   const progressPercent = entry.episodes
     ? Math.min(100, Math.round((currentEpisode / entry.episodes) * 100))
     : 0;
-  const altTitle = [entry.titleNative, entry.titleRomaji].filter(Boolean).join(' · ');
+  const altTitle = [entry.titleNative, entry.titleRomaji].filter(Boolean).join(', ');
 
   const statusItems = statusOptions.map(opt => (
     <SelectItem key={opt.value} value={opt.value} className="text-xs">

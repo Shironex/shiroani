@@ -1,8 +1,9 @@
 import { memo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Check, Film, Plus, Star } from 'lucide-react';
+import { Check, Film, Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { FadeInImage } from '@/components/shared/FadeInImage';
+import { ScoreChip } from '@/components/shared/ScoreChip';
 import { formatRawScore } from '@/lib/anime-utils';
 import { useLibraryStore } from '@/stores/useLibraryStore';
 import type { IRecommendationCardProps } from './RecommendationsSection.types';
@@ -67,17 +68,18 @@ export const RecommendationCard = memo(function RecommendationCard({
 
         {/* Score chip — top-right */}
         {node.averageScore != null && node.averageScore > 0 && (
-          <div className="absolute top-1 right-1 z-[2] flex items-center gap-[2px] px-[5px] py-[2px] rounded-[3px] bg-black/70 text-[9px] font-mono font-bold leading-none text-gold">
-            <Star className="w-2.5 h-2.5 fill-current" strokeWidth={0} />
-            <span className="tabular-nums">{formatRawScore(node.averageScore)}</span>
-          </div>
+          <ScoreChip
+            value={formatRawScore(node.averageScore)}
+            scrim
+            className="absolute top-1 right-1 z-[2]"
+          />
         )}
 
         {/* In-library / add affordance — bottom-left badge */}
         <div className="absolute bottom-1 left-1 z-[2]">
           {inLibrary ? (
             <div className="w-5 h-5 rounded-full bg-status-success flex items-center justify-center shadow-[0_1px_4px_oklch(0_0_0/0.5)]">
-              <Check className="w-3 h-3 text-white" />
+              <Check className="w-3 h-3 text-background" />
             </div>
           ) : (
             <div className="w-5 h-5 rounded-full bg-primary/90 flex items-center justify-center shadow-[0_1px_4px_oklch(0_0_0/0.5)] opacity-0 transition-opacity group-hover/rec:opacity-100 group-focus-visible/rec:opacity-100">

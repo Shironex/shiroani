@@ -167,7 +167,7 @@ function RandomShowcaseCard({
           <button
             type="button"
             onClick={onOpenDetails}
-            className="text-left cursor-pointer transition-colors hover:text-primary focus-visible:outline-none focus-visible:text-primary"
+            className="text-left cursor-pointer rounded-sm transition-colors hover:text-primary focus-visible:outline-none focus-visible:text-primary focus-visible:ring-2 focus-visible:ring-ring"
           >
             {meta.title}
           </button>
@@ -183,12 +183,7 @@ function RandomShowcaseCard({
           <span className="text-primary/90 font-semibold">
             {t('random.indexFormat', { index: index + 1, total })}
           </span>
-          {media.episodes && (
-            <>
-              <span aria-hidden>·</span>
-              <span>{t('card.episodeCount', { count: media.episodes })}</span>
-            </>
-          )}
+          {media.episodes && <span>{t('card.episodeCount', { count: media.episodes })}</span>}
           {meta.statusLabel && (
             <>
               <span aria-hidden>·</span>

@@ -40,7 +40,7 @@ export function SourcesCard({
         <span className="w-5 h-5 rounded-sm grid place-items-center bg-primary/15 text-primary">
           <Rss className="w-3 h-3" />
         </span>
-        <h4 className="font-mono text-[9.5px] tracking-[0.22em] uppercase text-muted-foreground font-semibold">
+        <h4 className="font-mono text-[9.5px] tracking-[0.18em] uppercase text-muted-foreground font-semibold">
           {t('sidebar.mySources')}
         </h4>
         <span className="ml-auto font-mono text-[9.5px] text-muted-foreground/60">
@@ -153,7 +153,7 @@ export function TrendingCard({ trending, isBookmarksView }: ITrendingCardProps) 
         <span className="w-5 h-5 rounded-sm grid place-items-center bg-primary/15 text-primary">
           <Flame className="w-3 h-3" />
         </span>
-        <h4 className="font-mono text-[9.5px] tracking-[0.22em] uppercase text-muted-foreground font-semibold">
+        <h4 className="font-mono text-[9.5px] tracking-[0.18em] uppercase text-muted-foreground font-semibold">
           {t('sidebar.trending')}
         </h4>
         <span className="ml-auto font-mono text-[9.5px] text-muted-foreground/60">

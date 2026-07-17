@@ -29,7 +29,7 @@ export default function QuickAccessPanel({
     <button
       key={site.id}
       onClick={() => onShowPredefined(site.id)}
-      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-foreground/[0.04] hover:bg-foreground/[0.08] text-[11px] text-muted-foreground hover:text-foreground/80 transition-colors cursor-pointer"
+      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-foreground/[0.04] hover:bg-foreground/[0.08] text-[11px] text-muted-foreground hover:text-foreground/80 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
     >
       <Eye className="w-3 h-3" />
       {site.name}
@@ -58,19 +58,20 @@ export default function QuickAccessPanel({
             'group relative flex aspect-[1.7] flex-col items-center justify-center gap-1.5',
             'rounded-lg border border-dashed border-border-glass bg-foreground/[0.02]',
             'text-muted-foreground transition-colors',
-            'hover:border-primary/40 hover:bg-primary/[0.06] hover:text-primary cursor-pointer'
+            'hover:border-primary/40 hover:bg-primary/[0.06] hover:text-primary cursor-pointer',
+            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50'
           )}
         >
           <Plus className="w-4 h-4" />
-          <span className="font-mono text-[9px] uppercase tracking-[0.15em]">
+          <span className="font-mono text-2xs uppercase tracking-[0.18em]">
             {t('newTab.quickAccess.add')}
           </span>
         </button>
       </div>
 
       {hiddenPredefined.length > 0 && (
-        <div className="mt-4 pt-3 border-t border-border-glass/60">
-          <h3 className="mb-2 font-mono text-[9.5px] uppercase tracking-[0.16em] text-muted-foreground/80">
+        <div className="mt-4 pt-3 border-t border-border-glass">
+          <h3 className="mb-2 font-mono text-2xs uppercase tracking-[0.18em] text-muted-foreground/80">
             {t('newTab.quickAccess.hiddenTitle')}
           </h3>
           <div className="flex flex-wrap gap-1.5">{hiddenChips}</div>

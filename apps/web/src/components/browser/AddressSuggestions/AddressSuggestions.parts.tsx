@@ -31,6 +31,7 @@ export const SuggestionRow = memo(function SuggestionRow({
       aria-selected={isActive}
       onMouseDown={handleMouseDown}
       onMouseEnter={() => onHoverIndex(index)}
+      title={suggestion.url}
       className={cn(
         'flex items-center gap-2.5 px-3 py-2 cursor-pointer rounded-md',
         isActive ? 'bg-foreground/[0.08]' : 'hover:bg-foreground/[0.04]'
@@ -44,7 +45,7 @@ export const SuggestionRow = memo(function SuggestionRow({
       <span className="truncate text-[12.5px] text-foreground">
         {suggestion.title || suggestion.url}
       </span>
-      <span className="truncate text-[11px] text-muted-foreground/60 font-mono ml-auto max-w-[45%]">
+      <span className="truncate text-[11px] text-muted-foreground/70 font-mono ml-auto max-w-[45%]">
         {suggestion.url}
       </span>
     </li>

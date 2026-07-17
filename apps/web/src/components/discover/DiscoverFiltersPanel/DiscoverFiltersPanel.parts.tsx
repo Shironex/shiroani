@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { X } from 'lucide-react';
 import type { DiscoverFilters } from '@shiroani/shared';
 import { cn } from '@/lib/utils';
+import { Eyebrow } from '@/components/shared/Eyebrow';
 import {
   Select,
   SelectContent,
@@ -26,9 +27,7 @@ export function FacetSelect({
 }: IFacetSelectProps) {
   return (
     <label className="flex flex-col gap-1">
-      <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
-        {label}
-      </span>
+      <Eyebrow>{label}</Eyebrow>
       <Select
         value={value ?? ANY}
         onValueChange={v => onChange(v === ANY ? undefined : v)}

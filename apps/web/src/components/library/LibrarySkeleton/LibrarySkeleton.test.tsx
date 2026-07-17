@@ -22,4 +22,11 @@ describe('LibrarySkeleton', () => {
     const skeletons = container.querySelectorAll('[data-slot="skeleton"], .animate-pulse');
     expect(skeletons.length).toBeGreaterThanOrEqual(14);
   });
+
+  it('renders a busy list container with 14 row placeholders in list mode', () => {
+    const { container } = render(<LibrarySkeleton viewMode="list" />);
+    const list = container.querySelector('[aria-busy="true"]');
+    expect(list).toBeInTheDocument();
+    expect(list?.children).toHaveLength(14);
+  });
 });

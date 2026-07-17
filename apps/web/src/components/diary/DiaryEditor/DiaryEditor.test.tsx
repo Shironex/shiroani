@@ -50,13 +50,6 @@ describe('DiaryEditor', () => {
     expect(cbs.onClose).toHaveBeenCalled();
   });
 
-  it('calls onClose when Cancel is clicked', async () => {
-    const cbs = handlers();
-    const { user } = render(<DiaryEditor entry={null} {...cbs} />);
-    await user.click(screen.getByRole('button', { name: 'Cancel' }));
-    expect(cbs.onClose).toHaveBeenCalled();
-  });
-
   it('creates a new entry with the typed title and closes on success', async () => {
     const cbs = handlers();
     const { user } = render(<DiaryEditor entry={null} {...cbs} />);

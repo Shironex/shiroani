@@ -35,9 +35,11 @@ describe('AiringEntry', () => {
     expect(screen.getByText('T-1h')).toBeInTheDocument();
   });
 
-  it('shows the "Live" pill for a live slot', () => {
+  it('shows the LIVE badge and Watch CTA for a live slot, without a redundant Live pill', () => {
     render(<AiringEntry anime={anime} status="live" now={1717003600} />);
-    expect(screen.getByText('Live')).toBeInTheDocument();
+    expect(screen.getByText('LIVE')).toBeInTheDocument();
+    expect(screen.getByText('Watch')).toBeInTheDocument();
+    expect(screen.queryByText('Live')).not.toBeInTheDocument();
   });
 
   it('shows the "Watched" pill for a past slot', () => {

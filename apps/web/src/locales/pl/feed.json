@@ -53,6 +53,9 @@
     "noBookmarksTitle": "Brak zakładek",
     "noBookmarksSubtitle": "Kliknij ikonę zakładki w czytniku artykułu."
   },
+  "error": {
+    "title": "Nie udało się wczytać aktualności"
+  },
   "loading": "Ładowanie aktualności",
   "hero": {
     "featured": "Wyróżnione"
@@ -77,6 +80,7 @@
     "addBookmark": "Zapisz na później",
     "removeBookmark": "Usuń z zakładek",
     "copyLink": "Kopiuj link",
+    "copyLinkDone": "Skopiowano link",
     "openExternal": "Otwórz w przeglądarce",
     "readFull": "Czytaj pełny artykuł",
     "openOnSite": "Otwórz na stronie",

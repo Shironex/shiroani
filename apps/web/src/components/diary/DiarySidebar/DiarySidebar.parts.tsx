@@ -178,7 +178,7 @@ export function ActivityHeatmap({ weeks, maxCount, total }: IActivityHeatmapProp
 }
 
 const HEATMAP_LEVELS = [
-  'oklch(1 0 0 / 0.05)',
+  'oklch(from var(--foreground) l c h / 0.06)',
   'oklch(from var(--primary) l c h / 0.25)',
   'oklch(from var(--primary) l c h / 0.5)',
   'oklch(from var(--primary) l c h / 0.8)',

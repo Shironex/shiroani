@@ -81,6 +81,20 @@ export const Enabled: Story = {
   },
 };
 
+/** Connection error — the status pill switches to the destructive variant. */
+export const ErrorStatus: Story = {
+  beforeEach: () => {
+    const { restore } = stubDiscordBridge({ status: 'error' });
+    return restore;
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const pill = await canvas.findByText('Connection error');
+    await expect(pill).toBeInTheDocument();
+    await expect(pill).toHaveClass('text-destructive');
+  },
+};
+
 /** Disabled — no status pill, and the detail toggles are non-interactive. */
 export const Disabled: Story = {
   beforeEach: () => {

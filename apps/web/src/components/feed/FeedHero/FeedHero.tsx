@@ -113,8 +113,6 @@ function FeedHero({ item, onOpen }: IFeedHeroProps) {
         )}
 
         <div className="mt-auto flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-[10.5px] tracking-[0.1em] uppercase text-white/80">
-          <span>{item.sourceName}</span>
-          <span aria-hidden="true">·</span>
           <time dateTime={item.publishedAt ?? item.createdAt}>{published}</time>
           {item.author && (
             <>

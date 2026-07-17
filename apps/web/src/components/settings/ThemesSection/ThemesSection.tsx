@@ -10,6 +10,7 @@ import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import { IS_MAC } from '@/lib/platform';
 import { cn } from '@/lib/utils';
 import { selectableChip } from '@/components/settings/chip-styles';
+import { SelectableChipButton } from '@/components/settings/SelectableChipButton';
 import { UI_FONT_SCALE_PRESETS, type Theme } from '@shiroani/shared';
 import { useThemesSection } from './ThemesSection.hooks';
 import { CustomThemeSwatchWrapper } from './ThemesSection.parts';
@@ -60,21 +61,14 @@ export default function ThemesSection(props: IThemesSectionProps) {
     const isActive = uiFontScale === scale;
     const percentLabel = Math.round(scale * 100);
     return (
-      <button
+      <SelectableChipButton
         key={scale}
-        type="button"
-        aria-pressed={isActive}
+        active={isActive}
         onClick={() => setUIFontScale(scale)}
-        className={cn(
-          'rounded-lg border px-3 py-[6px] text-[12px] font-medium',
-          'transition-[color,background-color,border-color,transform] active:scale-[0.98]',
-          'focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1',
-          selectableChip(isActive),
-          isActive && 'font-semibold'
-        )}
+        className="py-[6px] text-[12px]"
       >
         {percentLabel}%
-      </button>
+      </SelectableChipButton>
     );
   });
 
@@ -104,7 +98,7 @@ export default function ThemesSection(props: IThemesSectionProps) {
         </div>
 
         {IS_MAC && (
-          <p className="text-[11.5px] leading-relaxed text-muted-foreground/80">
+          <p className="text-[11.5px] leading-relaxed text-muted-foreground/85">
             {t('themes.readability.macHint')}
           </p>
         )}

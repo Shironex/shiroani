@@ -166,6 +166,10 @@
     },
     "recents": {
       "title": "Ostatnio odwiedzone",
+      "count_one": "{{count}} strona",
+      "count_few": "{{count}} strony",
+      "count_many": "{{count}} stron",
+      "count_other": "{{count}} stron",
       "empty": {
         "title": "Brak historii",
         "body": "Strony, które odwiedzasz, pojawią się tutaj."
@@ -181,8 +185,7 @@
     },
     "airingToday": {
       "title": "Emitowane dzisiaj",
-      "viewAll": "Pokaż wszystkie →",
-      "more": "Więcej",
+      "viewAll": "Pokaż wszystkie",
       "episodeShort": "Odc. {{episode}}"
     },
     "resume": {

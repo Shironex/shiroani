@@ -1,24 +1,21 @@
-import { memo, useState } from 'react';
+import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Activity, Film, RefreshCw } from 'lucide-react';
 import type { AniListActivity } from '@shiroani/shared';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { FadeInImage } from '@/components/shared/FadeInImage';
+import { Skeleton } from '@/components/ui/skeleton';
+import { ImageWithFallback, mediaTitle } from '@/components/shared/ImageWithFallback';
 import { formatRelativeTime } from '@/lib/relative-time';
 
 const SKELETON_ROWS = [0, 1, 2];
-
-/** Picks the most readable media title, profile-local order (english-first). */
-function mediaTitle(title: { english?: string; romaji?: string; native?: string }): string {
-  return title.english || title.romaji || title.native || '?';
-}
 
 interface ActivityRowProps {
   item: AniListActivity;
 }
 
 const ActivityRow = memo(function ActivityRow({ item }: ActivityRowProps) {
+  const { t } = useTranslation('profile');
   const { t: tBrowser } = useTranslation('browser');
   const relative = formatRelativeTime(item.createdAt * 1000, tBrowser);
 
@@ -32,15 +29,13 @@ const ActivityRow = memo(function ActivityRow({ item }: ActivityRowProps) {
           <p className="text-xs text-foreground/90 leading-snug whitespace-pre-wrap break-words">
             {item.text}
           </p>
-          <span className="font-mono text-2xs text-muted-foreground/70 tabular-nums">
-            {relative}
-          </span>
+          <span className="font-mono text-2xs text-muted-foreground tabular-nums">{relative}</span>
         </div>
       </div>
     );
   }
 
-  const title = mediaTitle(item.media.title);
+  const title = mediaTitle(item.media.title, t('untitled'));
   const line = [item.status, item.progress].filter(Boolean).join(' · ');
 
   return (
@@ -50,7 +45,7 @@ const ActivityRow = memo(function ActivityRow({ item }: ActivityRowProps) {
         <p className="text-xs font-medium text-foreground/90 leading-tight truncate">{title}</p>
         {line && <p className="text-[11px] text-muted-foreground leading-tight truncate">{line}</p>}
       </div>
-      <span className="font-mono text-2xs text-muted-foreground/70 tabular-nums shrink-0">
+      <span className="font-mono text-2xs text-muted-foreground tabular-nums shrink-0">
         {relative}
       </span>
     </div>
@@ -58,41 +53,27 @@ const ActivityRow = memo(function ActivityRow({ item }: ActivityRowProps) {
 });
 
 /**
- * 40×56 poster thumb with a placeholder fallback. Local error state (not the
- * `display:none` helper) so a missing cover shows a placeholder rather than a
- * hole. No hover-scale / backdrop-blur / will-change — these rows scroll.
+ * 40×56 poster thumb with a local placeholder fallback. No hover-scale /
+ * backdrop-blur / will-change — these rows scroll.
  */
 function PosterThumb({ src, alt }: { src?: string; alt: string }) {
-  const [imgError, setImgError] = useState(false);
-  const showImage = src && !imgError;
-
   return (
-    <div className="w-10 h-14 shrink-0 rounded-md overflow-hidden border border-border/20 bg-muted/30">
-      {showImage ? (
-        <FadeInImage
-          src={src}
-          alt={alt}
-          className="w-full h-full object-cover"
-          loading="lazy"
-          draggable={false}
-          onError={() => setImgError(true)}
-        />
-      ) : (
-        <div className="w-full h-full grid place-items-center">
-          <Film className="w-3.5 h-3.5 text-muted-foreground/30" aria-hidden="true" />
-        </div>
-      )}
-    </div>
+    <ImageWithFallback
+      src={src}
+      alt={alt}
+      className="w-10 h-14 rounded-md"
+      fallback={<Film className="w-3.5 h-3.5 text-muted-foreground/30" aria-hidden="true" />}
+    />
   );
 }
 
 function SkeletonRow() {
   return (
     <div className="flex items-center gap-3 py-1.5 px-2.5 rounded-lg bg-foreground/3 border border-border-glass/60">
-      <div className="w-10 h-14 shrink-0 rounded-md bg-foreground/5 animate-pulse" />
+      <Skeleton className="w-10 h-14 shrink-0" />
       <div className="min-w-0 flex-1 space-y-1.5">
-        <div className="h-3 w-2/5 rounded bg-foreground/5 animate-pulse" />
-        <div className="h-2.5 w-1/4 rounded bg-foreground/5 animate-pulse" />
+        <Skeleton className="h-3 w-2/5" />
+        <Skeleton className="h-2.5 w-1/4" />
       </div>
     </div>
   );

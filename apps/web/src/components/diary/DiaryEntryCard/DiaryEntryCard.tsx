@@ -50,7 +50,7 @@ function DiaryEntryCard({ entry, onSelect, onRemove, onTogglePin }: IDiaryEntryC
         {/* Pin indicator */}
         {entry.isPinned && (
           <div className="absolute top-1.5 left-1.5">
-            <Pin className="w-3 h-3 text-white/80 fill-white/80 rotate-45" />
+            <Pin className="w-3 h-3 fill-primary text-primary rotate-45" />
           </div>
         )}
 
@@ -63,11 +63,10 @@ function DiaryEntryCard({ entry, onSelect, onRemove, onTogglePin }: IDiaryEntryC
             }}
             aria-label={pinLabel}
             className={cn(
-              'p-1.5 rounded-md transition-colors active:scale-95',
+              'p-1.5 rounded-md text-muted-foreground transition-colors active:scale-95',
+              'hover:bg-accent/60 hover:text-foreground',
               'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-              entry.isPinned
-                ? 'bg-white/20 text-white hover:bg-white/30'
-                : 'bg-black/20 text-white/70 hover:bg-black/30 hover:text-white'
+              entry.isPinned && 'text-primary'
             )}
           >
             <Pin className={cn('w-3 h-3', entry.isPinned && 'fill-current rotate-45')} />
@@ -79,8 +78,8 @@ function DiaryEntryCard({ entry, onSelect, onRemove, onTogglePin }: IDiaryEntryC
             }}
             aria-label={removeLabel}
             className={cn(
-              'p-1.5 rounded-md bg-black/20 text-white/70 transition-colors active:scale-95',
-              'hover:bg-destructive/40 hover:text-white',
+              'p-1.5 rounded-md text-muted-foreground transition-colors active:scale-95',
+              'hover:bg-destructive/15 hover:text-destructive',
               'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
             )}
           >
@@ -94,11 +93,16 @@ function DiaryEntryCard({ entry, onSelect, onRemove, onTogglePin }: IDiaryEntryC
       <div className="pointer-events-none p-3.5">
         {/* Anime reference */}
         {entry.animeTitle && (
-          <p className="text-2xs text-muted-foreground truncate mb-0.5">{entry.animeTitle}</p>
+          <p title={entry.animeTitle} className="text-2xs text-muted-foreground truncate mb-0.5">
+            {entry.animeTitle}
+          </p>
         )}
 
         {/* Title */}
-        <h3 className="text-sm font-semibold text-foreground truncate group-hover/card:text-primary transition-colors">
+        <h3
+          title={title}
+          className="text-sm font-semibold text-foreground truncate group-hover/card:text-primary transition-colors"
+        >
           {title}
         </h3>
 

@@ -43,7 +43,7 @@ export default function UpdatesSection() {
         <div className="flex flex-wrap items-center gap-6 pb-3.5 border-b border-border-glass/60">
           <div>
             <p className="font-serif font-extrabold text-[44px] leading-none tracking-[-0.04em] text-foreground tabular-nums">
-              {version || '...'}
+              {version || '…'}
             </p>
             <p className="mt-1 font-mono text-[11px] tracking-[0.12em] text-muted-foreground">
               {channel === 'beta' ? t('updates.channelBetaUpper') : t('updates.channelStableUpper')}
@@ -52,7 +52,7 @@ export default function UpdatesSection() {
           <div className="flex flex-col gap-1">
             <StatusPill tone={statusTone} text={statusText} />
             {lastCheckedLabel && (
-              <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground/70">
+              <p className="font-mono text-[10px] text-muted-foreground/85">
                 {t('updates.lastChecked', { label: lastCheckedLabel })}
               </p>
             )}
@@ -93,11 +93,11 @@ export default function UpdatesSection() {
               </ChannelButton>
             </div>
             {updateLocked && !isChannelSwitching ? (
-              <p className="mt-2 text-[11.5px] text-muted-foreground/80 leading-relaxed">
+              <p className="mt-2 text-[11.5px] text-muted-foreground/85 leading-relaxed">
                 {t('updates.channelLockedNote')}
               </p>
             ) : (
-              <p className="mt-2 text-[11.5px] text-muted-foreground/80 leading-relaxed">
+              <p className="mt-2 text-[11.5px] text-muted-foreground/85 leading-relaxed">
                 {t('updates.channelDescription')}
               </p>
             )}

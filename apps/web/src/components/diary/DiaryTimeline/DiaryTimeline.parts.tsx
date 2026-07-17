@@ -132,7 +132,7 @@ const DiaryListCard = memo(function DiaryListCard({
         aria-label={entry.title || t('untitled')}
         className={cn(
           'absolute inset-0 z-[1] cursor-pointer rounded-lg',
-          'focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/50'
+          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
         )}
       />
       {/* Cover thumb — 48x68 aspect 2:3 */}
@@ -176,7 +176,10 @@ const DiaryListCard = memo(function DiaryListCard({
                   className="size-3 shrink-0 rotate-45 fill-primary text-primary"
                 />
               )}
-              <h3 className="truncate text-[14.5px] font-bold leading-snug text-foreground">
+              <h3
+                title={entry.title || t('untitled')}
+                className="truncate text-sm font-bold leading-snug text-foreground"
+              >
                 {entry.title || t('untitled')}
               </h3>
               {moodEmoji && (
@@ -191,7 +194,9 @@ const DiaryListCard = memo(function DiaryListCard({
               {entry.animeTitle && (
                 <span className="inline-flex max-w-full items-center gap-1.5 truncate">
                   <LinkIcon className="size-[10px] shrink-0" aria-hidden="true" />
-                  <span className="truncate">{entry.animeTitle}</span>
+                  <span className="truncate" title={entry.animeTitle}>
+                    {entry.animeTitle}
+                  </span>
                 </span>
               )}
               {entry.animeTitle && <span aria-hidden="true">·</span>}
@@ -249,7 +254,7 @@ const DiaryListCard = memo(function DiaryListCard({
         </div>
 
         {preview && (
-          <p className="text-[12.5px] leading-[1.55] text-foreground/80 line-clamp-3">{preview}</p>
+          <p className="text-xs leading-[1.55] text-foreground/80 line-clamp-3">{preview}</p>
         )}
 
         {(entry.tags?.length ?? 0) > 0 && (

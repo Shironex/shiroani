@@ -1,11 +1,13 @@
 import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
+import { toast } from 'sonner';
 import { ArrowLeft, ExternalLink, Share2, Bookmark } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { handleImageError } from '@/lib/image-utils';
 import { readableTextColor } from '@/lib/color-utils';
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
 import { TooltipButton } from '@/components/ui/tooltip-button';
 import { PillTag } from '@/components/ui/pill-tag';
 import { useFeedReaderModal } from './FeedReaderModal.hooks';
@@ -126,7 +128,9 @@ function FeedReaderModal({
               className="w-8 h-8"
               onClick={() => {
                 if (navigator.clipboard) {
-                  void navigator.clipboard.writeText(item.url);
+                  void navigator.clipboard.writeText(item.url).then(() => {
+                    toast.success(t('reader.copyLinkDone'));
+                  });
                 }
               }}
               tooltip={t('reader.copyLink')}
@@ -229,7 +233,7 @@ function FeedReaderModal({
               </div>
             </div>
 
-            <div className="h-px bg-border-glass my-4" />
+            <Separator className="my-4" />
 
             <ArticleBody
               articleHtml={articleHtml}
@@ -237,7 +241,7 @@ function FeedReaderModal({
               paragraphs={paragraphs}
             />
 
-            <div className="h-px bg-border-glass my-6" />
+            <Separator className="my-6" />
 
             <div className="flex justify-center">
               <Button

@@ -39,14 +39,11 @@ export function DayColumnCardList({
         return renderCard(anime, status);
       })}
       {entries.length === 0 && (
-        <div
-          className={cn(
-            'flex flex-col items-center justify-center text-muted-foreground/30',
-            emptyStateClassName
-          )}
-        >
-          <Calendar className={cn('mb-1', emptyIconClassName)} />
-          <p className="text-[10.5px] font-mono tracking-[0.1em] uppercase">{emptyLabel}</p>
+        <div className={cn('flex flex-col items-center justify-center', emptyStateClassName)}>
+          <Calendar className={cn('mb-1 text-muted-foreground/40', emptyIconClassName)} />
+          <p className="text-[10.5px] font-mono tracking-[0.1em] uppercase text-muted-foreground/55">
+            {emptyLabel}
+          </p>
         </div>
       )}
     </>
