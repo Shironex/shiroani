@@ -61,8 +61,9 @@ function FeedListItem({ item, unread = false, onOpen, onOpenExternal }: IFeedLis
           <button
             onClick={() => onOpen(item)}
             className={cn(
-              'text-left cursor-pointer transition-colors duration-200',
-              'hover:text-primary focus-visible:outline-none focus-visible:text-primary'
+              'text-left cursor-pointer rounded-sm transition-colors duration-200',
+              'hover:text-primary focus-visible:outline-none focus-visible:text-primary',
+              'focus-visible:ring-2 focus-visible:ring-ring'
             )}
           >
             {item.title}
@@ -77,15 +78,11 @@ function FeedListItem({ item, unread = false, onOpen, onOpenExternal }: IFeedLis
 
         <div className="flex items-center gap-2 font-mono text-[9.5px] tracking-[0.1em] uppercase text-muted-foreground/60">
           <span className="truncate max-w-[160px]">{item.sourceName}</span>
-          <i aria-hidden="true" className="shrink-0 w-1 h-1 rounded-full bg-foreground/20" />
           <time dateTime={item.publishedAt ?? item.createdAt}>{published}</time>
           {item.author && (
-            <>
-              <i aria-hidden="true" className="shrink-0 w-1 h-1 rounded-full bg-foreground/20" />
-              <span className="truncate max-w-[120px] normal-case tracking-normal">
-                {item.author}
-              </span>
-            </>
+            <span className="truncate max-w-[120px] normal-case tracking-normal">
+              {item.author}
+            </span>
           )}
         </div>
       </div>

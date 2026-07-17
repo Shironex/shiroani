@@ -11,11 +11,7 @@ export function SkeletonCards() {
   return (
     <>
       {SKELETON_CARDS.map(i => (
-        <div
-          key={i}
-          className="rounded-lg overflow-hidden bg-card/60 border border-border-glass"
-          style={{ animationDelay: `${i * 50}ms` }}
-        >
+        <div key={i} className="rounded-lg overflow-hidden bg-card/60 border border-border-glass">
           <div className="relative aspect-[2/3]">
             <Skeleton className="absolute inset-0 rounded-none" />
 

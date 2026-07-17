@@ -53,6 +53,9 @@
     "noBookmarksTitle": "No bookmarks",
     "noBookmarksSubtitle": "Click the bookmark icon in the article reader."
   },
+  "error": {
+    "title": "Couldn't load news"
+  },
   "loading": "Loading news",
   "hero": {
     "featured": "Featured"
@@ -77,6 +80,7 @@
     "addBookmark": "Save for later",
     "removeBookmark": "Remove bookmark",
     "copyLink": "Copy link",
+    "copyLinkDone": "Link copied",
     "openExternal": "Open in browser",
     "readFull": "Read full article",
     "openOnSite": "Open on site",

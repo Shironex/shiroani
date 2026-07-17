@@ -9,7 +9,7 @@ export function GenreTags({ genres }: IGenreTagsProps) {
       {genres.map(g => (
         <span
           key={g}
-          className="inline-flex items-center px-2 py-[3px] rounded-full text-[10px] font-medium bg-primary/10 text-primary/90 border border-primary/20"
+          className="inline-flex items-center px-2 py-[3px] rounded-full font-mono text-[10px] uppercase tracking-[0.08em] font-semibold bg-primary/15 text-primary border border-primary/40"
         >
           {g}
         </span>

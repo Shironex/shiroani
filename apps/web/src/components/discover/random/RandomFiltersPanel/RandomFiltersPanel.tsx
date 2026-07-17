@@ -11,7 +11,7 @@ function RandomFiltersPanel({ included, excluded, disabled, onChange }: IRandomF
     useRandomFiltersPanel({ included, excluded });
 
   return (
-    <div className="rounded-xl border border-border-glass bg-card/40 backdrop-blur-sm overflow-hidden">
+    <div className="rounded-xl border border-border-glass bg-card/40 overflow-hidden">
       <button
         type="button"
         onClick={toggleOpen}
