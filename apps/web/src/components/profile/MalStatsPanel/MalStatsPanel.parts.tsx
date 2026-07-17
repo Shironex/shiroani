@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { FadeInImage } from '@/components/shared/FadeInImage';
+import { Eyebrow } from '@/components/shared/Eyebrow';
 import { useMalSyncStore } from '@/stores/useMalSyncStore';
 import { useNavigateToBrowser } from '@/hooks/useNavigateToBrowser';
 import { ProgressRing } from '../ProgressRing';
@@ -105,7 +106,7 @@ export function MalSidebar({ profile, locale }: { profile: MalUserStats; locale:
       </div>
 
       {/* Summary stat grid (2×2) */}
-      <div className="font-mono text-2xs uppercase tracking-[0.2em] text-muted-foreground font-semibold mb-2">
+      <div className="font-mono text-2xs uppercase tracking-[0.18em] text-muted-foreground font-semibold mb-2">
         {t('sidebar.summaryHeading')}
       </div>
       <div className="grid grid-cols-2 gap-2 mb-4">
@@ -308,9 +309,7 @@ function MalSyncStatusWidget() {
 function SummaryRow({ label, value, tone }: { label: string; value: string; tone?: 'accent' }) {
   return (
     <div className="flex items-baseline justify-between gap-3 border-b border-border-glass/60 pb-2 last:border-0 last:pb-0">
-      <span className="font-mono text-2xs uppercase tracking-[0.18em] text-muted-foreground">
-        {label}
-      </span>
+      <Eyebrow>{label}</Eyebrow>
       <span
         className={cn(
           'font-sans font-extrabold text-[16px] tracking-[-0.02em] tabular-nums',
@@ -333,9 +332,7 @@ function TimeCard({ color, label, value }: { color: string; label: string; value
           className="size-2 rounded-full flex-shrink-0"
           style={{ backgroundColor: color }}
         />
-        <span className="font-mono text-2xs uppercase tracking-[0.18em] text-muted-foreground truncate">
-          {label}
-        </span>
+        <Eyebrow className="truncate">{label}</Eyebrow>
       </div>
       <div className="font-sans font-extrabold text-[18px] tracking-[-0.02em] tabular-nums text-foreground">
         {value}

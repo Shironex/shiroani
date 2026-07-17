@@ -35,7 +35,10 @@ function SocialActivityRow({ item }: ISocialActivityRowProps) {
       <PosterThumb src={item.media.coverImage} alt={title} />
       <div className="min-w-0 flex-1">
         <AuthorLine user={item.user} relative={relative} />
-        <p className="mt-0.5 text-xs font-medium text-foreground/90 leading-tight truncate">
+        <p
+          className="mt-0.5 text-xs font-medium text-foreground/90 leading-tight truncate"
+          title={title}
+        >
           {title}
         </p>
         {line && <p className="text-[11px] text-muted-foreground leading-tight truncate">{line}</p>}

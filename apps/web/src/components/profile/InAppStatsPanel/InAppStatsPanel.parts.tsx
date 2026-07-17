@@ -1,4 +1,5 @@
 import { cn } from '@/lib/utils';
+import { Eyebrow } from '@/components/shared/Eyebrow';
 import { StatCard } from '../shared-parts';
 
 export { SectionHead } from '../shared-parts';
@@ -21,9 +22,7 @@ export function CounterCard({
 export function Stat({ label, value, tone }: { label: string; value: string; tone?: 'accent' }) {
   return (
     <div className="flex flex-col">
-      <span className="font-mono text-2xs uppercase tracking-[0.18em] text-muted-foreground">
-        {label}
-      </span>
+      <Eyebrow>{label}</Eyebrow>
       <span
         className={cn(
           'font-sans font-extrabold text-[18px] tracking-[-0.02em] tabular-nums',

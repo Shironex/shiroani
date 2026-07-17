@@ -18,7 +18,7 @@ const LEGEND_LEVELS = [0, 1, 2, 3, 4] as const;
 export function MonthRow({ data }: { data: IActivityHeatmapView['data'] }) {
   return (
     <div
-      className="grid gap-[3px] pl-7 font-mono text-2xs uppercase tracking-[0.16em] text-muted-foreground"
+      className="grid gap-[3px] pl-7 font-mono text-2xs uppercase tracking-[0.18em] text-muted-foreground"
       style={{ gridTemplateColumns: `repeat(${data.weeks.length}, 12px)` }}
       aria-hidden="true"
     >
@@ -35,7 +35,7 @@ export function MonthRow({ data }: { data: IActivityHeatmapView['data'] }) {
 export function WeekdayAxis({ weekdays }: { weekdays: string[] }) {
   return (
     <div
-      className="grid grid-rows-7 gap-[3px] font-mono text-2xs uppercase tracking-[0.14em] text-muted-foreground/80 pt-px"
+      className="grid grid-rows-7 gap-[3px] font-mono text-2xs uppercase tracking-[0.18em] text-muted-foreground/80 pt-px"
       aria-hidden="true"
     >
       {weekdays.map((label, idx) => (
@@ -90,7 +90,7 @@ export function CellGrid({
 /** Less→more intensity legend. */
 export function HeatmapLegend({ lessLabel, moreLabel }: { lessLabel: string; moreLabel: string }) {
   return (
-    <div className="flex items-center gap-2 pl-7 font-mono text-2xs uppercase tracking-[0.16em] text-muted-foreground">
+    <div className="flex items-center gap-2 pl-7 font-mono text-2xs uppercase tracking-[0.18em] text-muted-foreground">
       <span>{lessLabel}</span>
       {LEGEND_LEVELS.map(level => (
         <span

@@ -12,6 +12,7 @@ import {
 import type { AniListUser } from '@shiroani/shared';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import { FadeInImage } from '@/components/shared/FadeInImage';
 
 const SKELETON_ROWS = [0, 1, 2];
@@ -223,9 +224,9 @@ function Avatar({ src, name }: { src?: string; name: string }) {
 function SkeletonRow() {
   return (
     <div className="flex items-center gap-2.5 py-1.5 px-2 rounded-lg">
-      <div className="w-7 h-7 shrink-0 rounded-full bg-foreground/5 animate-pulse" />
-      <div className="h-3 w-1/3 rounded bg-foreground/5 animate-pulse" />
-      <div className="ml-auto h-6 w-16 rounded bg-foreground/5 animate-pulse" />
+      <Skeleton className="w-7 h-7 shrink-0 rounded-full" />
+      <Skeleton className="h-3 w-1/3" />
+      <Skeleton className="ml-auto h-6 w-16" />
     </div>
   );
 }

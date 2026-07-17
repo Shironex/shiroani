@@ -15,7 +15,9 @@ export function AuthorLine({ user, relative }: { user?: AniListActivityUser; rel
     <div className="flex items-center gap-1.5 min-w-0">
       <AuthorAvatar user={user} />
       {user?.name && (
-        <span className="text-[11px] font-semibold text-foreground/80 truncate">{user.name}</span>
+        <span className="text-[11px] font-semibold text-foreground/80 truncate" title={user.name}>
+          {user.name}
+        </span>
       )}
       <span className="font-mono text-2xs text-muted-foreground tabular-nums shrink-0">
         {relative}

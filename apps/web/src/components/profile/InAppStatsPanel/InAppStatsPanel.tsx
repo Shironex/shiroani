@@ -26,7 +26,7 @@ export default function InAppStatsPanel() {
           'bg-gradient-to-br from-primary/[0.08] via-foreground/[0.02] to-foreground/[0.04]'
         )}
       >
-        <div className="font-mono text-2xs uppercase tracking-[0.22em] text-muted-foreground mb-3 flex items-center gap-2">
+        <div className="font-mono text-2xs uppercase tracking-[0.18em] text-muted-foreground mb-3 flex items-center gap-2">
           <Sparkles className="w-3 h-3 text-primary" />
           <span>{t('appPanel.heroTag')}</span>
         </div>

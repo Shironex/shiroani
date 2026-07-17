@@ -2,6 +2,7 @@ import { RefreshCw, RotateCw, CheckCircle2, AlertCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { tDynamic } from '@/lib/i18n';
+import { Eyebrow } from '@/components/shared/Eyebrow';
 
 /**
  * Shared profile presentational primitives.
@@ -15,7 +16,7 @@ import { tDynamic } from '@/lib/i18n';
 /** Section heading with a trailing hairline rule. */
 export function SectionHead({ children }: { children: React.ReactNode }) {
   return (
-    <h3 className="font-mono text-2xs uppercase tracking-[0.2em] text-muted-foreground font-semibold flex items-center gap-2.5 mb-3">
+    <h3 className="font-mono text-2xs uppercase tracking-[0.18em] text-muted-foreground font-semibold flex items-center gap-2.5 mb-3">
       <span>{children}</span>
       <span aria-hidden="true" className="flex-1 h-px bg-border-glass" />
     </h3>
@@ -41,9 +42,7 @@ export function StatCard({
 }) {
   return (
     <div className="px-4 py-3.5 rounded-xl bg-foreground/[0.025] border border-border-glass">
-      <div className="font-mono text-2xs uppercase tracking-[0.2em] text-muted-foreground mb-1.5">
-        {label}
-      </div>
+      <Eyebrow className="block mb-1.5">{label}</Eyebrow>
       <div
         className={cn(
           'font-sans font-extrabold tabular-nums',
@@ -65,10 +64,8 @@ export function StatCard({
 /** Compact 2-col summary stat used in the profile sidebars. */
 export function SideStat({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
-    <div className="px-2.5 py-2 rounded-lg bg-foreground/3 border border-border-glass">
-      <div className="font-mono text-2xs uppercase tracking-[0.14em] text-muted-foreground mb-0.5">
-        {label}
-      </div>
+    <div className="px-2.5 py-2 rounded-lg bg-foreground/[0.025] border border-border-glass">
+      <Eyebrow className="block mb-0.5">{label}</Eyebrow>
       <div className="font-extrabold text-[18px] tracking-[-0.02em] text-foreground leading-none tabular-nums">
         {value}
         {sub && (
@@ -125,7 +122,9 @@ export function CountBars({ rows }: { rows: ICountBarRow[] }) {
   const bars = rows.map((row, i) => (
     <div key={row.key}>
       <div className="flex justify-between items-baseline mb-1">
-        <span className="text-[11.5px] font-medium text-foreground/90 truncate">{row.label}</span>
+        <span className="text-[11.5px] font-medium text-foreground/90 truncate" title={row.label}>
+          {row.label}
+        </span>
         <span className="font-mono text-2xs text-muted-foreground tabular-nums">
           {row.valueLabel}
         </span>
@@ -214,9 +213,7 @@ export function SyncStatusWidget({
       )}
       aria-live={syncing ? 'off' : 'polite'}
     >
-      <div className="font-mono text-2xs uppercase tracking-[0.2em] text-muted-foreground mb-1.5">
-        {heading}
-      </div>
+      <Eyebrow className="block mb-1.5">{heading}</Eyebrow>
       <div
         className={cn(
           'flex items-center gap-1.5 text-[11.5px] leading-snug',
