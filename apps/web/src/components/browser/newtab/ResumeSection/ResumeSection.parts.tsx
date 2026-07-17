@@ -5,6 +5,7 @@ import { hostFromUrl } from '@/lib/url-utils';
 import { Button } from '@/components/ui/button';
 import { PillTag } from '@/components/ui/pill-tag';
 import { ProgressBar } from '@/components/shared/ProgressBar';
+import { FadeInImage } from '@/components/shared/FadeInImage';
 import type { IResumeCardProps, IEmptyResumeStateProps } from './ResumeSection.types';
 
 export function ResumeCard({ entry, onResume }: IResumeCardProps) {
@@ -25,7 +26,7 @@ export function ResumeCard({ entry, onResume }: IResumeCardProps) {
     >
       <div className="relative h-[96px] w-full overflow-hidden bg-gradient-to-br from-primary/30 to-primary/5">
         {entry.coverImage && !imgError ? (
-          <img
+          <FadeInImage
             src={entry.coverImage}
             alt=""
             className="h-full w-full object-cover"
@@ -40,7 +41,7 @@ export function ResumeCard({ entry, onResume }: IResumeCardProps) {
 
         <div className="absolute left-2 top-2">
           {/* Over-image badge — black/white scrim reads on any cover art. */}
-          <PillTag variant="muted" className="bg-black/60 text-white/90 backdrop-blur-sm">
+          <PillTag variant="muted" className="bg-black/60 text-white/90">
             {episodeLabel}
           </PillTag>
         </div>
@@ -56,7 +57,7 @@ export function ResumeCard({ entry, onResume }: IResumeCardProps) {
         <p className="line-clamp-1 text-[12px] font-bold leading-tight text-foreground">
           {entry.title}
         </p>
-        <p className="line-clamp-1 font-mono text-[10px] text-muted-foreground">
+        <p className="line-clamp-1 font-mono text-[10px] text-muted-foreground tabular-nums">
           {host ?? t('newTab.resume.noUrl')}
           {total > 0 && ` · ${current}/${total}`}
         </p>

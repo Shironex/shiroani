@@ -11,7 +11,6 @@ export interface IAiringTodaySectionView {
   readonly isLoading: boolean;
   readonly navigateToSchedule: () => void;
   readonly cards: AiringCard[];
-  readonly hasMore: boolean;
 }
 
 export interface IAiringPosterCardProps {

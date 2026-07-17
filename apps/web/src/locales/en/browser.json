@@ -156,6 +156,8 @@
     },
     "recents": {
       "title": "Recently visited",
+      "count_one": "{{count}} site",
+      "count_other": "{{count}} sites",
       "empty": {
         "title": "No history yet",
         "body": "Sites you visit will show up here."
@@ -171,8 +173,7 @@
     },
     "airingToday": {
       "title": "Airing today",
-      "viewAll": "View all →",
-      "more": "More",
+      "viewAll": "View all",
       "episodeShort": "Ep. {{episode}}"
     },
     "resume": {

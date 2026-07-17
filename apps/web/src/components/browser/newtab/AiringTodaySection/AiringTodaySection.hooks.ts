@@ -30,8 +30,8 @@ export function useAiringTodaySection(maxCards: number): IAiringTodaySectionView
     }
   }, [todayKey, todayEntries]);
 
-  const { cards, hasMore } = useMemo(() => {
-    if (!todayEntries) return { cards: [] as AiringCard[], hasMore: false };
+  const cards = useMemo(() => {
+    if (!todayEntries) return [] as AiringCard[];
 
     const sorted = [...todayEntries].sort((a, b) => a.airingAt - b.airingAt);
 
@@ -46,11 +46,7 @@ export function useAiringTodaySection(maxCards: number): IAiringTodaySectionView
       else other.push({ ...entry, isUser: false });
     }
 
-    const all = [...user, ...other];
-    return {
-      cards: all.slice(0, maxCards),
-      hasMore: all.length > maxCards,
-    };
+    return [...user, ...other].slice(0, maxCards);
   }, [todayEntries, libraryAnilistIds, subscribedIds, maxCards]);
 
   return {
@@ -58,6 +54,5 @@ export function useAiringTodaySection(maxCards: number): IAiringTodaySectionView
     isLoading,
     navigateToSchedule: () => navigateTo('schedule'),
     cards,
-    hasMore,
   };
 }

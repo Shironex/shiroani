@@ -46,8 +46,8 @@ export default function SiteCard({ site, onClick, onRemove }: ISiteCardProps) {
             className={cn(
               'pointer-events-none absolute -right-3 -bottom-3',
               'h-[84px] w-[84px] object-contain opacity-25',
-              'transition-[opacity,transform] duration-200',
-              'group-hover:opacity-40 group-hover:scale-105'
+              'transition-opacity duration-200',
+              'group-hover:opacity-40'
             )}
           />
         )}
@@ -58,7 +58,7 @@ export default function SiteCard({ site, onClick, onRemove }: ISiteCardProps) {
           className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_10%_0%,oklch(from_var(--foreground)_l_c_h/0.05),transparent_60%)]"
         />
 
-        <span className="relative z-[1] flex items-center gap-1.5 font-mono text-[9px] font-medium uppercase tracking-[0.12em] text-muted-foreground">
+        <span className="relative z-[1] flex items-center gap-1.5 font-mono text-2xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
           {site.icon && !faviconError ? (
             <img
               src={site.icon}

@@ -18,6 +18,7 @@ export const HistoryRow = memo(function HistoryRow({
       <button
         type="button"
         onClick={() => onOpen(entry.url)}
+        title={entry.title || host}
         className="flex min-w-0 flex-1 items-center gap-2.5 text-left cursor-pointer"
       >
         {entry.favicon ? (

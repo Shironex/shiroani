@@ -9,7 +9,8 @@ export default function FrequentSiteRow({ site, onClick }: IFrequentSiteRowProps
   return (
     <button
       onClick={onClick}
-      className="group flex items-center gap-2.5 rounded-md px-2 py-1.5 text-left transition-colors hover:bg-foreground/[0.05] cursor-pointer min-w-0"
+      title={host}
+      className="group flex items-center gap-2.5 rounded-md px-2 py-1.5 text-left transition-colors hover:bg-foreground/[0.05] cursor-pointer min-w-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
     >
       {site.favicon && !imgError ? (
         <img

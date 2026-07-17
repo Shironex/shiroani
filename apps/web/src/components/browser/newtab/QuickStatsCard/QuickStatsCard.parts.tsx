@@ -21,7 +21,7 @@ export function StatTile({ icon: Icon, label, value, tone }: IStatTileProps) {
       >
         {value}
       </div>
-      <div className="mt-1 font-mono text-[9px] uppercase tracking-[0.16em] text-muted-foreground/80">
+      <div className="mt-1 font-mono text-2xs uppercase tracking-[0.18em] text-muted-foreground/80">
         {label}
       </div>
     </div>
