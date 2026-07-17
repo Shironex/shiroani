@@ -1,4 +1,3 @@
-import type { MouseEvent } from 'react';
 import type {
   AiringAnime,
   AnimeDetail,
@@ -25,10 +24,6 @@ export interface IAnimeInfoDialogView {
   readonly loading: boolean;
   readonly descExpanded: boolean;
   readonly setDescExpanded: (value: boolean | ((prev: boolean) => boolean)) => void;
-
-  // Subscription
-  readonly isSubscribed: boolean;
-  readonly toggle: (e: MouseEvent) => void;
 
   // Navigation
   readonly handleNavigate: (url: string) => void;

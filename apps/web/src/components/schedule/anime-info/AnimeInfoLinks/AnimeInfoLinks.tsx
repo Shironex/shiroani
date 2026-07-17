@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { SectionLabel } from '../SectionLabel';
 import { StreamingEpisodesList, StreamingLinksList } from './AnimeInfoLinks.parts';
 import type { IAnimeInfoLinksProps } from './AnimeInfoLinks.types';
 
@@ -20,7 +21,7 @@ export default function AnimeInfoLinks({
       {/* Trailer */}
       {hasTrailer && (
         <div>
-          <h3 className="text-xs font-medium text-muted-foreground mb-2">{t('dialog.trailer')}</h3>
+          <SectionLabel className="mb-2">{t('dialog.trailer')}</SectionLabel>
           <div className="relative aspect-video rounded-lg overflow-hidden border border-border/50">
             <iframe
               src={`https://www.youtube.com/embed/${details!.trailer!.id}`}
@@ -36,9 +37,7 @@ export default function AnimeInfoLinks({
       {/* Streaming links */}
       {streamingLinks.length > 0 && (
         <div>
-          <h3 className="text-xs font-medium text-muted-foreground mb-1.5">
-            {t('dialog.streaming')}
-          </h3>
+          <SectionLabel>{t('dialog.streaming')}</SectionLabel>
           <StreamingLinksList streamingLinks={streamingLinks} onNavigate={onNavigate} />
         </div>
       )}
@@ -47,9 +46,7 @@ export default function AnimeInfoLinks({
           Open in the system browser as instructed for streaming episodes. */}
       {streamingEpisodes.length > 0 && (
         <div>
-          <h3 className="text-xs font-medium text-muted-foreground mb-1.5">
-            {t('dialog.streamingEpisodes')}
-          </h3>
+          <SectionLabel>{t('dialog.streamingEpisodes')}</SectionLabel>
           <StreamingEpisodesList episodes={streamingEpisodes} />
         </div>
       )}

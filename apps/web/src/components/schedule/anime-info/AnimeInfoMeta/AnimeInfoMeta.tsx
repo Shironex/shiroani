@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { formatFuzzyDate, formatTimeUntilAiring } from '@/lib/anime-utils';
+import { SectionLabel } from '../SectionLabel';
 import { GenresList, TagsList } from './AnimeInfoMeta.parts';
 import type { IAnimeInfoMetaProps } from './AnimeInfoMeta.types';
 
@@ -53,7 +54,7 @@ export default function AnimeInfoMeta({
       {/* Studios */}
       {mainStudios.length > 0 && (
         <div>
-          <h3 className="text-xs font-medium text-muted-foreground mb-1">{t('dialog.studios')}</h3>
+          <SectionLabel className="mb-1">{t('dialog.studios')}</SectionLabel>
           <p className="text-sm font-medium">{mainStudios.join(', ')}</p>
         </div>
       )}
@@ -61,7 +62,7 @@ export default function AnimeInfoMeta({
       {/* Genres */}
       {genres.length > 0 && (
         <div>
-          <h3 className="text-xs font-medium text-muted-foreground mb-1.5">{t('dialog.genres')}</h3>
+          <SectionLabel>{t('dialog.genres')}</SectionLabel>
           <GenresList genres={genres} />
         </div>
       )}
@@ -69,7 +70,7 @@ export default function AnimeInfoMeta({
       {/* Tags */}
       {nonSpoilerTags.length > 0 && (
         <div>
-          <h3 className="text-xs font-medium text-muted-foreground mb-1.5">{t('dialog.tags')}</h3>
+          <SectionLabel>{t('dialog.tags')}</SectionLabel>
           <TagsList tags={nonSpoilerTags} />
         </div>
       )}
@@ -83,9 +84,7 @@ export default function AnimeInfoMeta({
         </div>
       ) : cleanDescription ? (
         <div>
-          <h3 className="text-xs font-medium text-muted-foreground mb-1.5">
-            {t('dialog.description')}
-          </h3>
+          <SectionLabel>{t('dialog.description')}</SectionLabel>
           <p
             className={cn(
               'text-sm text-foreground/80 leading-relaxed whitespace-pre-line',
@@ -120,17 +119,13 @@ export default function AnimeInfoMeta({
         <div className="flex gap-6">
           {startDate && (
             <div>
-              <h3 className="text-xs font-medium text-muted-foreground mb-0.5">
-                {t('dialog.startDate')}
-              </h3>
+              <SectionLabel className="mb-0.5">{t('dialog.startDate')}</SectionLabel>
               <p className="text-sm tabular-nums">{startDate}</p>
             </div>
           )}
           {endDate && (
             <div>
-              <h3 className="text-xs font-medium text-muted-foreground mb-0.5">
-                {t('dialog.endDate')}
-              </h3>
+              <SectionLabel className="mb-0.5">{t('dialog.endDate')}</SectionLabel>
               <p className="text-sm tabular-nums">{endDate}</p>
             </div>
           )}

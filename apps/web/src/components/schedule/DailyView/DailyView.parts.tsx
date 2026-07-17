@@ -89,7 +89,7 @@ export function NowIndicator({ nowTop, nowLabel }: { nowTop: number; nowLabel: s
       style={{ top: `${nowTop}px`, height: '2px' }}
     >
       <div
-        className="relative h-full bg-primary animate-pulse"
+        className="relative h-full bg-primary"
         style={{
           boxShadow: '0 0 14px oklch(from var(--primary) l c h / 0.6)',
         }}
@@ -100,7 +100,7 @@ export function NowIndicator({ nowTop, nowLabel }: { nowTop: number; nowLabel: s
             boxShadow: '0 0 16px oklch(from var(--primary) l c h / 0.9)',
           }}
         />
-        <span className="absolute right-0 top-1/2 -translate-y-1/2 font-mono text-[10px] tracking-[0.16em] font-bold text-primary bg-background/90 px-1.5 py-[2px] rounded">
+        <span className="absolute right-0 top-1/2 -translate-y-1/2 font-mono text-[10px] tracking-[0.18em] font-bold text-primary bg-background/90 px-1.5 py-[2px] rounded">
           {t('daily.nowMarker', { time: nowLabel })}
         </span>
       </div>
@@ -151,7 +151,7 @@ export function SlotCards({
 export function NoAiringsNow() {
   const { t } = useTranslation('schedule');
   return (
-    <div className="absolute right-0 top-2 text-[10px] font-mono tracking-[0.12em] uppercase text-muted-foreground/60">
+    <div className="absolute right-0 top-2 text-[10px] font-mono tracking-[0.1em] uppercase text-muted-foreground/60">
       {t('daily.noAiringsNow')}
     </div>
   );

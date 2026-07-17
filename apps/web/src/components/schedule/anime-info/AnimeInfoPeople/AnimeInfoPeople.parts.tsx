@@ -1,6 +1,8 @@
 import { useTranslation } from 'react-i18next';
 import { getAnilistRelationLabel } from '@/lib/constants';
+import { FadeInImage } from '@/components/shared/FadeInImage';
 import { PersonCard } from '../PersonCard';
+import { SectionLabel } from '../SectionLabel';
 import type {
   ICharactersListProps,
   IRelationsListProps,
@@ -13,7 +15,7 @@ export function CharactersList({ characters }: ICharactersListProps) {
 
   return (
     <div>
-      <h3 className="text-xs font-medium text-muted-foreground mb-2">{t('dialog.characters')}</h3>
+      <SectionLabel className="mb-2">{t('dialog.characters')}</SectionLabel>
       <div className="grid grid-cols-2 gap-2">
         {characters.slice(0, 6).map(char => (
           <PersonCard
@@ -34,7 +36,7 @@ export function StaffList({ staff }: IStaffListProps) {
 
   return (
     <div>
-      <h3 className="text-xs font-medium text-muted-foreground mb-2">{t('dialog.staff')}</h3>
+      <SectionLabel className="mb-2">{t('dialog.staff')}</SectionLabel>
       <div className="grid grid-cols-2 gap-2">
         {staff.slice(0, 4).map(staffEdge => (
           <PersonCard
@@ -55,7 +57,7 @@ export function RelationsList({ relations }: IRelationsListProps) {
 
   return (
     <div>
-      <h3 className="text-xs font-medium text-muted-foreground mb-2">{t('dialog.related')}</h3>
+      <SectionLabel className="mb-2">{t('dialog.related')}</SectionLabel>
       <div className="flex gap-2 overflow-x-auto pb-1 snap-x snap-proximity [mask-image:linear-gradient(to_right,#000_calc(100%_-_32px),transparent_100%)]">
         {relations.slice(0, 8).map(rel => (
           <div
@@ -63,7 +65,7 @@ export function RelationsList({ relations }: IRelationsListProps) {
             className="shrink-0 w-24 snap-start text-center"
           >
             {rel.node.coverImage?.medium ? (
-              <img
+              <FadeInImage
                 src={rel.node.coverImage.medium}
                 alt={rel.node.title.romaji ?? rel.node.title.english ?? ''}
                 className="w-full aspect-[3/4] rounded-lg object-cover border border-border/50"
@@ -75,7 +77,10 @@ export function RelationsList({ relations }: IRelationsListProps) {
             <p className="text-2xs text-primary mt-1">
               {getAnilistRelationLabel(rel.relationType)}
             </p>
-            <p className="text-2xs font-medium truncate mt-0.5">
+            <p
+              className="text-2xs font-medium truncate mt-0.5"
+              title={rel.node.title.romaji ?? rel.node.title.english ?? ''}
+            >
               {rel.node.title.romaji ?? rel.node.title.english}
             </p>
           </div>

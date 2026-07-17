@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { SectionLabel } from '../SectionLabel';
 import { useAnimeInfoRecommendations } from './AnimeInfoRecommendations.hooks';
 import { RecommendationsList } from './AnimeInfoRecommendations.parts';
 import type { IAnimeInfoRecommendationsProps } from './AnimeInfoRecommendations.types';
@@ -18,9 +19,7 @@ export default function AnimeInfoRecommendations({ details }: IAnimeInfoRecommen
 
   return (
     <div>
-      <h3 className="text-xs font-medium text-muted-foreground mb-2">
-        {t('dialog.recommendations')}
-      </h3>
+      <SectionLabel className="mb-2">{t('dialog.recommendations')}</SectionLabel>
       <RecommendationsList nodes={nodes} inLibraryIds={inLibraryIds} onAdd={addToLibrary} />
     </div>
   );

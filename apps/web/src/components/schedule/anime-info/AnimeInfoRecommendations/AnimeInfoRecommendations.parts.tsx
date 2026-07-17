@@ -2,6 +2,7 @@ import { memo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Check, Plus } from 'lucide-react';
 import { formatRawScore } from '@/lib/anime-utils';
+import { FadeInImage } from '@/components/shared/FadeInImage';
 import { ScoreChip } from '@/components/shared/ScoreChip';
 import type {
   IRecommendationCardProps,
@@ -41,7 +42,7 @@ export const RecommendationCard = memo(function RecommendationCard({
     >
       <div className="relative">
         {node.coverImage?.medium ? (
-          <img
+          <FadeInImage
             src={node.coverImage.medium}
             alt={title}
             className="w-full aspect-[3/4] rounded-lg object-cover border border-border/50 group-focus-visible/rec:ring-2 group-focus-visible/rec:ring-ring"

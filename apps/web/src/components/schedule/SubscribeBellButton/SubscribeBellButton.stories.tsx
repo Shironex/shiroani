@@ -73,3 +73,25 @@ export const Subscribed: Story = {
     );
   },
 };
+
+/**
+ * `alwaysVisible` + `noTooltip` — the always-shown, tooltip-free variant used in
+ * the detail dialog header. The button carries its own accessible name and
+ * `aria-pressed`, so nothing auto-shows when a dialog opens.
+ */
+export const AlwaysVisibleNoTooltip: Story = {
+  args: { alwaysVisible: true, noTooltip: true },
+  beforeEach: () => {
+    useNotificationStore.setState({
+      subscribedIds: new Set<number>(),
+      subscribe: fn(),
+      unsubscribe: fn(),
+    });
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const bell = canvas.getByRole('button', { name: 'Enable notifications' });
+    await expect(bell).toHaveAttribute('aria-pressed', 'false');
+    await expect(bell).not.toHaveClass('opacity-0');
+  },
+};

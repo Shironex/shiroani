@@ -28,7 +28,7 @@ export default function AnimeInfoStats({
       <div className="flex flex-wrap items-center gap-2 pt-3">
         {anime.media.averageScore != null && (
           <Badge variant="secondary" className="gap-1 tabular-nums">
-            <Star className="w-3 h-3 text-gold" />
+            <Star className="w-3 h-3 text-(--gold)" />
             {formatRawScore(anime.media.averageScore)}
           </Badge>
         )}

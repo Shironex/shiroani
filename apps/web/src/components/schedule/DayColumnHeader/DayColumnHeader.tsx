@@ -27,7 +27,7 @@ export default function DayColumnHeader({ day, label, entryCount }: IDayColumnHe
     >
       <span
         className={cn(
-          'block font-mono text-[10px] uppercase tracking-[0.2em]',
+          'block font-mono text-[10px] uppercase tracking-[0.18em]',
           isTodayDay ? 'text-primary font-bold' : 'text-muted-foreground'
         )}
       >

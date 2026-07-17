@@ -56,4 +56,21 @@ describe('SubscribeBellButton', () => {
     expect(useNotificationStore.getState().unsubscribe).toHaveBeenCalledWith(1);
     expect(useNotificationStore.getState().subscribe).not.toHaveBeenCalled();
   });
+
+  it('exposes aria-pressed reflecting the subscription state', () => {
+    useNotificationStore.setState({ subscribedIds: new Set<number>([1]) });
+    render(<SubscribeBellButton anime={anime} />);
+    expect(screen.getByRole('button')).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  it('stays fully visible when alwaysVisible is set', () => {
+    render(<SubscribeBellButton anime={anime} alwaysVisible />);
+    expect(screen.getByRole('button')).not.toHaveClass('opacity-0');
+  });
+
+  it('renders a labelled toggle without the tooltip wrapper when noTooltip is set', () => {
+    render(<SubscribeBellButton anime={anime} noTooltip />);
+    const button = screen.getByRole('button', { name: 'Enable notifications' });
+    expect(button).toHaveAttribute('aria-pressed', 'false');
+  });
 });
