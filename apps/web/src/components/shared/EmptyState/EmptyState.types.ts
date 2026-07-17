@@ -11,6 +11,11 @@ export interface IEmptyStateProps {
   title: string;
   subtitle: string;
   action?: IEmptyStateAction;
+  /**
+   * Visual tone. `default` is the neutral primary-accented placeholder;
+   * `destructive` recolors the icon tile and action for error surfaces.
+   */
+  tone?: 'default' | 'destructive';
 }
 
 export type IEmptyStateView = Record<string, never>;

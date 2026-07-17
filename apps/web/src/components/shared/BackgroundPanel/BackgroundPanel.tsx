@@ -79,9 +79,9 @@ export default function BackgroundPanel({
             'radial-gradient(ellipse 50% 45% at 30% 30%, oklch(from var(--primary) l c h / 0.5), transparent 60%), radial-gradient(ellipse 50% 40% at 75% 70%, oklch(from var(--primary) calc(l * 0.54) c calc(h - 75) / 0.6), transparent 60%), linear-gradient(135deg, oklch(from var(--background) calc(l * 2.1) calc(c + 0.06) h), oklch(from var(--background) calc(l * 1.5) calc(c + 0.04) calc(h - 20)))',
         }}
       >
-        <span className="font-serif text-base font-bold text-white/95 drop-shadow-lg">
+        <span className="font-serif text-base font-bold text-foreground">
           {t('panel.labelEmpty')}
-          <small className="block text-center font-mono text-[9px] font-medium uppercase tracking-[0.2em] text-white/60">
+          <small className="block text-center font-mono text-[9px] font-medium uppercase tracking-[0.2em] text-muted-foreground">
             {t('panel.labelDefault')}
           </small>
         </span>
@@ -105,9 +105,19 @@ export default function BackgroundPanel({
           }}
         />
       )}
-      <div className="absolute bottom-2.5 left-3 font-serif text-[13px] font-bold text-white drop-shadow">
+      <div
+        className={cn(
+          'absolute bottom-2.5 left-3 font-serif text-[13px] font-bold drop-shadow',
+          customBackground ? 'text-white' : 'text-foreground'
+        )}
+      >
         {customBackground ? t('panel.labelCustom') : t('panel.labelDefault')}
-        <span className="block font-mono text-[9px] font-normal tracking-[0.16em] uppercase text-white/75 mt-0.5">
+        <span
+          className={cn(
+            'block font-mono text-[9px] font-normal tracking-[0.16em] uppercase mt-0.5',
+            customBackground ? 'text-white/75' : 'text-muted-foreground'
+          )}
+        >
           {customBackground ? t('panel.labelSet') : t('panel.labelDefaultTag')}
         </span>
       </div>

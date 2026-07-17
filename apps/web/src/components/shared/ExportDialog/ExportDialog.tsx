@@ -29,9 +29,14 @@ export default function ExportDialog({
   const showCloseButton =
     state.step === 'error' || state.step === 'saved' || state.step === 'save-error';
 
+  const isBusy = state.step === 'loading' || state.step === 'saving';
+
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent>
+      <DialogContent
+        onPointerDownOutside={isBusy ? e => e.preventDefault() : undefined}
+        onEscapeKeyDown={isBusy ? e => e.preventDefault() : undefined}
+      >
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Download className="w-5 h-5 text-primary" />

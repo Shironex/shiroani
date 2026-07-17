@@ -23,9 +23,6 @@ export default function SupportBanner() {
       >
         {t('supportBanner.action')}
       </button>
-      <span aria-hidden="true" className="text-muted-foreground/60">
-        ·
-      </span>
       <button
         type="button"
         onClick={openSponsorsLink}

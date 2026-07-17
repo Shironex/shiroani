@@ -18,7 +18,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
       style={
         {
           // Remap Sonner's internal CSS vars to our theme vars
-          '--normal-bg': 'var(--background)',
+          '--normal-bg': 'var(--popover)',
           '--normal-border': 'var(--border)',
           '--normal-text': 'var(--foreground)',
         } as React.CSSProperties
