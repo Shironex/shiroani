@@ -2,9 +2,8 @@ import { Trans, useTranslation } from 'react-i18next';
 import { Library } from 'lucide-react';
 import { ExperimentalBadge } from '@/components/ui/experimental-badge';
 import { StepLayout } from '../../StepLayout';
-import { emPrimary, bStrong, bPrimary } from '../../shared-parts';
+import { emPrimary, bStrong, bPrimary, OnboardingAccountCard } from '../../shared-parts';
 import { useAniListStep } from './AniListStep.hooks';
-import { AniListAccountCard } from './AniListStep.parts';
 
 /**
  * Step 07 · AniList account (optional).
@@ -41,7 +40,8 @@ export default function AniListStep() {
       }
       stepHint={tCommon('experimental.hint')}
     >
-      <AniListAccountCard
+      <OnboardingAccountCard
+        keyPrefix="step.anilist"
         connected={connected}
         viewer={viewer}
         loading={loading}
