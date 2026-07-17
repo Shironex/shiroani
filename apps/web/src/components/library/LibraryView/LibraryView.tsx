@@ -229,7 +229,7 @@ export default function LibraryView() {
         <div className="absolute inset-0 z-[1] px-7 pt-5 flex flex-col">
           {isLoading ? (
             <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden">
-              <LibrarySkeleton />
+              <LibrarySkeleton viewMode={viewMode} />
             </div>
           ) : error && entries.length === 0 ? (
             // A failed initial fetch must NOT render the "library is empty"
@@ -249,17 +249,11 @@ export default function LibraryView() {
           ) : filteredEntries.length === 0 ? (
             <div className="flex-1 min-h-0 overflow-y-auto">
               {searchQuery ? (
-                <div className="flex flex-col items-center justify-center text-muted-foreground gap-4 py-24">
-                  <div className="w-14 h-14 rounded-2xl bg-muted/40 flex items-center justify-center border border-border-glass">
-                    <SearchX className="w-7 h-7 opacity-40" />
-                  </div>
-                  <div className="text-center space-y-1.5">
-                    <p className="text-sm font-medium text-foreground/70">{t('empty.noResults')}</p>
-                    <p className="text-xs text-muted-foreground/60 max-w-[240px]">
-                      {t('empty.noResultsHint')}
-                    </p>
-                  </div>
-                </div>
+                <EmptyState
+                  icon={SearchX}
+                  title={t('empty.noResults')}
+                  subtitle={t('empty.noResultsHint')}
+                />
               ) : (
                 <EmptyState
                   icon={BookOpen}
