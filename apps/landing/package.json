@@ -17,7 +17,7 @@
     "@shiroani/changelog": "workspace:*",
     "@shiroani/shared": "workspace:*",
     "@tailwindcss/vite": "^4.2.4",
-    "astro": "^7.0.0",
+    "astro": "^7.1.0",
     "react": "19.2.6",
     "react-dom": "19.2.6",
     "tailwindcss": "^4.2.4",
