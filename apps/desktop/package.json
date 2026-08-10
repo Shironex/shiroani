@@ -31,7 +31,7 @@
     "@ghostery/adblocker-electron": "^2.17.3",
     "@ghostery/adblocker-electron-preload": "^2.17.3",
     "@mozilla/readability": "^0.6.0",
-    "@nestjs/common": "^11.1.24",
+    "@nestjs/common": "^11.1.28",
     "@nestjs/core": "^11.1.24",
     "@nestjs/platform-express": "^11.1.24",
     "@nestjs/platform-socket.io": "^11.1.24",
