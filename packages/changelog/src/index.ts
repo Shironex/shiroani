@@ -133,10 +133,127 @@ export function localizeReleases(locale: Locale): ResolvedRelease[] {
 
 export const RELEASES: readonly Release[] = [
   {
+    version: '1.3.0',
+    shortDate: '19.08.2026',
+    type: 'minor',
+    latest: true,
+    pl: {
+      date: '19 sierpnia 2026',
+      title: 'Nowy szlif całego interfejsu',
+      description:
+        'Cała aplikacja przeszła gruntowne dopieszczanie — spójne kolory w każdym motywie, płynnie pojawiające się okładki, czytelniejsze etykiety i porządna obsługa klawiatury. Przeglądarka dostała pasek ładowania oraz ekran błędu z ponawianiem, a pod spodem wylądowała duża aktualizacja bezpieczeństwa.',
+      categories: [
+        {
+          kind: 'polish',
+          label: 'Odświeżony wygląd',
+          entries: [
+            'Okładki i awatary pojawiają się płynnie, zamiast doskakiwać',
+            'Oceny, nastroje i statusy mają spójne kolory w każdym motywie — również w jasnych',
+            'Puste widoki, ładowanie i błędy wyglądają wreszcie tak samo w całej aplikacji',
+            'Wykresy i statystyki dostały paletę dopasowaną do wybranego motywu',
+            'Poziome półki z plakatami przewijają się skokowo, z delikatnym cieniowaniem na krawędziach',
+          ],
+        },
+        {
+          kind: 'feature',
+          label: 'Przeglądarka',
+          entries: [
+            'Ekran błędu wczytywania strony z przyciskiem „Spróbuj ponownie"',
+            'Cienki pasek postępu podczas ładowania, a przycisk odświeżania zmienia się wtedy w zatrzymanie',
+            'Czyszczenie historii pyta o potwierdzenie',
+            'Karty płynniej się pojawiają i lepiej mieszczą na wąskim pasku',
+          ],
+        },
+        {
+          kind: 'app',
+          label: 'Codzienne używanie',
+          entries: [
+            'Widoczne obramowanie zaznaczenia przy poruszaniu się klawiaturą po całej aplikacji',
+            'Etykiety w ustawieniach klikają swoje przełączniki',
+            'Animacje szanują systemowe ograniczenie ruchu',
+            'Ekran powitalny znika szybciej — start aplikacji jest krótszy',
+            'Sekcja Discorda zapisuje się sama, tak jak reszta ustawień',
+            'Konta AniList i MyAnimeList podpinasz w jednym, wspólnym kroku',
+          ],
+        },
+        {
+          kind: 'fix',
+          label: 'Poprawki',
+          entries: [
+            'Ręcznie wpisywany kod koloru w edytorze motywu nie jest już poprawiany w połowie pisania',
+            'Okładka nie zostaje wyblakła po podmianie obrazka',
+            'Jaśniejsze odcienie w edytorze motywu liczone są poprawnie',
+            'Liczniki i odliczanie nie skaczą już przy zmianie cyfr',
+          ],
+        },
+        {
+          kind: 'security',
+          label: 'Bezpieczeństwo',
+          entries: ['Duża aktualizacja zależności — wszystkie znane podatności zamknięte'],
+        },
+      ],
+    },
+    en: {
+      date: 'August 19, 2026',
+      title: 'A fresh coat of polish across the whole app',
+      description:
+        'Every view got a careful pass — consistent colors in every theme, covers that fade in instead of popping, clearer labels and proper keyboard support. The built-in browser gains a loading bar and an error screen with retry, and a large security update landed underneath.',
+      categories: [
+        {
+          kind: 'polish',
+          label: 'A refreshed look',
+          entries: [
+            'Covers and avatars fade in instead of popping into place',
+            'Scores, moods and statuses use consistent colors in every theme — light ones included',
+            'Empty, loading and error views finally look the same everywhere',
+            'Charts and stats now follow a palette matched to your theme',
+            'Horizontal poster shelves snap as you scroll, with soft fades at the edges',
+          ],
+        },
+        {
+          kind: 'feature',
+          label: 'Browser',
+          entries: [
+            'A page-load error screen with a "Try again" button',
+            'A thin progress bar while a page loads, with reload turning into stop',
+            'Clearing history now asks for confirmation',
+            'Tabs appear more smoothly and fit better on a narrow bar',
+          ],
+        },
+        {
+          kind: 'app',
+          label: 'Everyday use',
+          entries: [
+            'A visible focus outline as you move through the app with the keyboard',
+            'Labels in settings click their own switches',
+            'Animations respect the system reduced-motion setting',
+            'The splash screen clears sooner — startup feels shorter',
+            'The Discord section saves itself, just like every other settings section',
+            'AniList and MyAnimeList accounts connect in one shared step',
+          ],
+        },
+        {
+          kind: 'fix',
+          label: 'Fixes',
+          entries: [
+            'A hand-typed color code in the theme editor is no longer corrected mid-typing',
+            'A cover no longer stays faded out after its image is swapped',
+            'Lighter shades in the theme editor are calculated correctly',
+            'Counters and countdowns no longer jitter as the digits change',
+          ],
+        },
+        {
+          kind: 'security',
+          label: 'Security',
+          entries: ['A large dependency update closing all known vulnerabilities'],
+        },
+      ],
+    },
+  },
+  {
     version: '1.2.0',
     shortDate: '25.06.2026',
     type: 'minor',
-    latest: true,
     pl: {
       date: '25 czerwca 2026',
       title: 'Menu po kliknięciu prawym i nawigacja myszką w przeglądarce',
