@@ -8,11 +8,15 @@ import { fileURLToPath } from 'node:url';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = resolve(__dirname, '..');
 
+// Every package whose version tracks the shipped app version. `apps/bot`,
+// `apps/landing` and `apps/landing-demo` deploy on their own cadence and are
+// deliberately absent.
 const PACKAGE_FILES = [
   'package.json',
   'apps/desktop/package.json',
   'apps/web/package.json',
   'packages/shared/package.json',
+  'packages/changelog/package.json',
 ];
 
 const args = process.argv.slice(2);
