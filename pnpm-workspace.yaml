@@ -37,8 +37,12 @@ overrides:
   smol-toml: '>=1.6.1'
   electron: '>=41.10.3 <42'
   '@nestjs/core': '>=11.1.18 <12'
-  'astro>vite': '>=7.3.5 <8'
-  '@astrojs/react>vite': '>=7.3.5 <8'
+  # Must track astro's own `vite` range (^8.0.13 as of astro 7). Astro 7 writes
+  # `build.rolldownOptions.input`, which only vite 8 (rolldown) reads — a `<8`
+  # ceiling here silently pinned vite 7, leaving the SSR input unset and failing
+  # `astro build` with "rollupOptions.input should not be an html file".
+  'astro>vite': '>=8.0.16 <9'
+  '@astrojs/react>vite': '>=8.0.16 <9'
   esbuild: '>=0.28.1'
   defu: '>=6.1.5 <7'
   fast-uri: '>=3.1.5 <4'
