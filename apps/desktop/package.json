@@ -61,7 +61,7 @@
     "@types/jest": "^30.0.0",
     "@types/jsdom": "^28.0.3",
     "@types/node": "^25.9.1",
-    "@types/semver": "^7.7.1",
+    "@types/semver": "^7.8.0",
     "cross-env": "^10.1.0",
     "electron": "^42.0.0",
     "electron-builder": "^26.8.1",
