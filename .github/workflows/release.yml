@@ -80,6 +80,12 @@ jobs:
         working-directory: apps/desktop
         run: pnpm exec electron-builder --mac --publish never -c.publish.channel=${{ steps.version.outputs.channel }}
         env:
+          # No Apple Developer cert on CI. The bundle is ad-hoc signed instead —
+          # see `mac.identity: "-"` in electron-builder.json. That signature is
+          # mandatory: electron-builder flips Electron fuses into the Electron
+          # Framework binary right before signing, which invalidates the
+          # linker-signed ad-hoc signature Electron ships with. An unsigned
+          # result is SIGKILL'd on Apple Silicon (CODESIGNING / Invalid Page).
           CSC_IDENTITY_AUTO_DISCOVERY: false
 
       - name: Package Windows
