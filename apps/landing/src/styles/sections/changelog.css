@@ -100,6 +100,15 @@ html[data-theme='plum'] {
 }
 
 .log {
+  /* Timeline geometry, kept in one place: the rail axis, the gap from the rail
+     to the release body, and the width of the version/date column. `--rail-x`
+     must clear `--side-w` plus the 5px the dot is pulled left and the 4px
+     opaque ring it paints to mask the rail behind it — otherwise the ring
+     covers the last glyph of the version and date. */
+  --side-w: 76px;
+  --rail-x: 92px;
+  --rail-gap: 48px;
+
   max-width: 1200px;
   margin: 0 auto;
   padding: 20px 32px 80px;
@@ -108,7 +117,7 @@ html[data-theme='plum'] {
 .log::before {
   content: '';
   position: absolute;
-  left: calc(32px + 82px);
+  left: calc(32px + var(--rail-x));
   top: 0;
   bottom: 0;
   width: 1px;
@@ -117,13 +126,13 @@ html[data-theme='plum'] {
 }
 .rel {
   position: relative;
-  padding-left: calc(82px + 48px);
+  padding-left: calc(var(--rail-x) + var(--rail-gap));
   padding-bottom: 56px;
 }
 .rel::before {
   content: '';
   position: absolute;
-  left: 82px;
+  left: var(--rail-x);
   top: 8px;
   width: 12px;
   height: 12px;
@@ -146,7 +155,7 @@ html[data-theme='plum'] {
   position: absolute;
   left: 0;
   top: 2px;
-  width: 76px;
+  width: var(--side-w);
   text-align: right;
   font-family: var(--font-mono);
   font-size: 10.5px;
@@ -335,14 +344,14 @@ html[data-theme='plum'] {
   --cat-color: oklch(0.75 0.15 280);
 }
 .end {
-  padding-left: calc(82px + 48px);
+  padding-left: calc(var(--rail-x) + var(--rail-gap));
   padding-bottom: 20px;
   position: relative;
 }
 .end::before {
   content: '';
   position: absolute;
-  left: 82px;
+  left: var(--rail-x);
   top: 8px;
   width: 12px;
   height: 12px;
