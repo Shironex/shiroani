@@ -133,10 +133,51 @@ export function localizeReleases(locale: Locale): ResolvedRelease[] {
 
 export const RELEASES: readonly Release[] = [
   {
+    version: '1.3.1',
+    shortDate: '31.08.2026',
+    type: 'minor',
+    latest: true,
+    pl: {
+      date: '31 sierpnia 2026',
+      title: 'Aplikacja znowu uruchamia się na macOS',
+      description:
+        'Wersje 1.1.0, 1.2.0 i 1.3.0 w ogóle nie chciały się otworzyć na Macach z procesorami Apple — ikona podskakiwała raz w Docku i znikała. Już działa. Jeśli masz Maca, pobierz tę wersję ręcznie ze strony wydań: aktualizacja nie zainstaluje się sama, bo wersja, którą masz, nie potrafi się uruchomić. Na Windowsie nic się nie zmienia.',
+      categories: [
+        {
+          kind: 'macos',
+          label: 'macOS',
+          entries: [
+            'Aplikacja znowu się uruchamia na Macach z procesorami Apple (M1 i nowsze)',
+            'Wersje 1.1.0, 1.2.0 i 1.3.0 zamykały się natychmiast po kliknięciu — ta wersja to naprawia',
+            'Przy pierwszym otwarciu system może poprosić o dodatkowe potwierdzenie — instrukcja jest w opisie wydania',
+            'Każde wydanie jest teraz sprawdzane automatycznie, zanim trafi do pobrania, żeby taka sytuacja się nie powtórzyła',
+          ],
+        },
+      ],
+    },
+    en: {
+      date: 'August 31, 2026',
+      title: 'The app opens again on macOS',
+      description:
+        'Versions 1.1.0, 1.2.0 and 1.3.0 would not open at all on Apple Silicon Macs — the icon bounced once in the Dock and disappeared. That is fixed. If you are on a Mac, download this version manually from the releases page: the update cannot install itself, because the version you have cannot start. Nothing changes on Windows.',
+      categories: [
+        {
+          kind: 'macos',
+          label: 'macOS',
+          entries: [
+            'The app launches again on Apple Silicon Macs (M1 and newer)',
+            'Versions 1.1.0, 1.2.0 and 1.3.0 quit the instant you clicked them — this version fixes that',
+            'macOS may ask for one extra confirmation the first time you open it — the release notes walk you through it',
+            'Every release is now checked automatically before it goes out, so this cannot happen again',
+          ],
+        },
+      ],
+    },
+  },
+  {
     version: '1.3.0',
     shortDate: '19.08.2026',
     type: 'minor',
-    latest: true,
     pl: {
       date: '19 sierpnia 2026',
       title: 'Nowy szlif całego interfejsu',
