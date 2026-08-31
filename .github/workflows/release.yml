@@ -88,6 +88,31 @@ jobs:
           # result is SIGKILL'd on Apple Silicon (CODESIGNING / Invalid Page).
           CSC_IDENTITY_AUTO_DISCOVERY: false
 
+      # Guards the failure that shipped v1.1.0-v1.3.0 dead on Apple Silicon:
+      # app-builder-lib 26.15 dropped its implicit arm64 ad-hoc signing
+      # fallback, the fused bundle went out carrying only Electron's stale
+      # linker signature, and macOS SIGKILL'd it on launch. Nothing in CI
+      # noticed. Fail the release rather than publish an app that cannot open.
+      - name: Verify macOS code signature
+        if: matrix.platform == 'mac'
+        working-directory: apps/desktop
+        run: |
+          set -euo pipefail
+          APP=$(ls -d release/mac-*/ShiroAni.app | head -1)
+          echo "Verifying $APP"
+          codesign --verify --deep --strict --verbose=2 "$APP"
+          INFO=$(codesign -dv "$APP" 2>&1)
+          echo "$INFO"
+          case "$INFO" in
+            *"Identifier=com.shironex.shiroani"*) ;;
+            *) echo "::error::bundle is not signed with the app identifier"; exit 1 ;;
+          esac
+          case "$INFO" in
+            *linker-signed*)
+              echo "::error::bundle still carries Electron's linker-signed signature - it was never re-signed"
+              exit 1 ;;
+          esac
+
       - name: Package Windows
         if: matrix.platform == 'win'
         shell: bash
