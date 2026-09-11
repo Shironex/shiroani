@@ -4,6 +4,18 @@ import type { AiringAnime } from '@shiroani/shared';
 import { useNotificationStore } from '@/stores/useNotificationStore';
 import SubscribeBellButton from './SubscribeBellButton';
 
+// Keeps every other export real so only the notification capability is steered.
+const platform = vi.hoisted(() => ({ supportsNative: true }));
+vi.mock('@/lib/platform', async importOriginal => {
+  const actual = await importOriginal<typeof import('@/lib/platform')>();
+  return {
+    ...actual,
+    get SUPPORTS_NATIVE_NOTIFICATIONS() {
+      return platform.supportsNative;
+    },
+  };
+});
+
 const anime = {
   id: 1,
   airingAt: 1717000000,
@@ -24,6 +36,7 @@ const noMediaId = {
 } as unknown as AiringAnime;
 
 beforeEach(() => {
+  platform.supportsNative = true;
   useNotificationStore.setState({
     subscribedIds: new Set<number>(),
     subscribe: vi.fn(),
@@ -72,5 +85,13 @@ describe('SubscribeBellButton', () => {
     render(<SubscribeBellButton anime={anime} noTooltip />);
     const button = screen.getByRole('button', { name: 'Enable notifications' });
     expect(button).toHaveAttribute('aria-pressed', 'false');
+  });
+
+  // macOS cannot display native notifications until the app is code-signed, so
+  // the control is withheld rather than left as a no-op.
+  it('renders nothing when the platform cannot show native notifications', () => {
+    platform.supportsNative = false;
+    const { container } = render(<SubscribeBellButton anime={anime} />);
+    expect(container).toBeEmptyDOMElement();
   });
 });

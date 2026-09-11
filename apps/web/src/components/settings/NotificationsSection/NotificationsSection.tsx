@@ -1,5 +1,5 @@
 import { Trans, useTranslation } from 'react-i18next';
-import { Bell, X, BellRing, Info } from 'lucide-react';
+import { Bell, X, BellRing, Info, BellOff } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
 import {
@@ -10,7 +10,7 @@ import {
   SettingsToggleRow,
 } from '@/components/settings/SettingsCard';
 import { TooltipButton } from '@/components/ui/tooltip-button';
-import { IS_WINDOWS } from '@/lib/platform';
+import { IS_WINDOWS, SUPPORTS_NATIVE_NOTIFICATIONS } from '@/lib/platform';
 import { useNotificationsSection } from './NotificationsSection.hooks';
 import type { INotificationsSectionProps } from './NotificationsSection.types';
 
@@ -28,8 +28,12 @@ export default function NotificationsSection(props: INotificationsSectionProps) 
 
   if (!loaded) return <SettingsSectionSkeleton cards={2} />;
 
+  // macOS cannot display native notifications until the app is properly
+  // code-signed, so every control in the first card is inert there.
+  const unsupported = !SUPPORTS_NATIVE_NOTIFICATIONS;
+  const controlsDisabled = unsupported || !data.enabled;
   const showWindowsInfo = IS_WINDOWS && data.enabled;
-  const showQuietHourInputs = data.quietHoursEnabled && data.enabled;
+  const showQuietHourInputs = data.quietHoursEnabled && data.enabled && !unsupported;
 
   const subscriptionRows = subscriptions.map(sub => {
     const showRomaji = Boolean(sub.titleRomaji && sub.titleRomaji !== sub.title);
@@ -73,6 +77,15 @@ export default function NotificationsSection(props: INotificationsSectionProps) 
 
   return (
     <div className="space-y-4">
+      {unsupported && (
+        <SettingsInfoCallout
+          icon={BellOff}
+          iconClassName="w-4 h-4 text-muted-foreground/80 mt-0.5 shrink-0"
+        >
+          {t('notifications.macUnsupported')}
+        </SettingsInfoCallout>
+      )}
+
       <SettingsCard
         icon={Bell}
         title={t('notifications.card.title')}
@@ -82,8 +95,9 @@ export default function NotificationsSection(props: INotificationsSectionProps) 
           id="notif-enabled-label"
           title={t('notifications.enabled.title')}
           description={t('notifications.enabled.description')}
-          checked={data.enabled}
+          checked={data.enabled && !unsupported}
           onCheckedChange={v => updateAndSave({ enabled: v })}
+          disabled={unsupported}
         />
 
         <SettingsSelectRow
@@ -92,7 +106,7 @@ export default function NotificationsSection(props: INotificationsSectionProps) 
           description={t('notifications.leadTime.description')}
           value={data.leadTime}
           onValueChange={v => updateAndSave({ leadTime: v })}
-          disabled={!data.enabled}
+          disabled={controlsDisabled}
           options={leadTimeOptions}
         />
 
@@ -103,7 +117,7 @@ export default function NotificationsSection(props: INotificationsSectionProps) 
           description={t('notifications.quietHours.description')}
           checked={data.quietHoursEnabled}
           onCheckedChange={v => updateAndSave({ quietHoursEnabled: v })}
-          disabled={!data.enabled}
+          disabled={controlsDisabled}
         />
 
         {showQuietHourInputs && (
@@ -142,7 +156,7 @@ export default function NotificationsSection(props: INotificationsSectionProps) 
           description={t('notifications.useSystemSound.description')}
           checked={data.useSystemSound}
           onCheckedChange={v => updateAndSave({ useSystemSound: v })}
-          disabled={!data.enabled}
+          disabled={controlsDisabled}
         />
       </SettingsCard>
 
@@ -169,7 +183,11 @@ export default function NotificationsSection(props: INotificationsSectionProps) 
       >
         {subscriptions.length === 0 ? (
           <div className="rounded-lg border border-border-glass bg-background/30 px-4 py-3 text-center text-[12px] text-muted-foreground">
-            {t('notifications.subscriptions.empty')}
+            {t(
+              unsupported
+                ? 'notifications.subscriptions.emptyUnsupported'
+                : 'notifications.subscriptions.empty'
+            )}
           </div>
         ) : (
           <div className="space-y-2">{subscriptionRows}</div>

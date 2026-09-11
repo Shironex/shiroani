@@ -9,6 +9,18 @@ import type { AiringAnime, NotificationSettings } from '@shiroani/shared';
  */
 export abstract class NotificationHostPort {
   /**
+   * Whether the host can actually display native notifications.
+   *
+   * Electron 42 moved macOS to the `UNNotification` API, which only shows
+   * notifications for a properly code-signed app. ShiroAni ships macOS builds
+   * with an ad-hoc signature (`mac.identity: "-"`), which does NOT qualify —
+   * verified by experiment, see docs/migrations/2026-09-11-electron-41-to-44.md.
+   * Until the project has an Apple Developer ID, macOS returns `false` here so
+   * the service never starts a check loop that could only ever fail.
+   */
+  abstract supportsNativeNotifications(): boolean;
+
+  /**
    * Show a native notification for the given airing entry. Resolves once the
    * notification has been dispatched to the OS (icon fetch may still be in
    * flight on slow networks, but firing proceeds).

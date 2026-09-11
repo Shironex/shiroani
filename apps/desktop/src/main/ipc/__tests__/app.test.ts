@@ -12,7 +12,7 @@ jest.mock('../../backend-port', () => ({
   getBackendPort: jest.fn(() => 3000),
 }));
 
-import { ipcMain, app, clipboard } from 'electron';
+import { ipcMain, app, clipboard, nativeImage } from 'electron';
 import { registerAppHandlers, cleanupAppHandlers } from '../app';
 
 describe('registerAppHandlers', () => {
@@ -71,6 +71,55 @@ describe('registerAppHandlers', () => {
       await expect(
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (ipcMain as any).__invoke('app:clipboard-write', 123)
+      ).rejects.toMatchObject({ code: 'BAD_REQUEST' });
+    });
+  });
+
+  // Electron 44 removed clipboard.writeImage(); images now go through
+  // clipboard.write([new ClipboardItem({ 'image/png': Blob })]).
+  describe('app:clipboard-write-image', () => {
+    const PNG_BASE64 = Buffer.from('fake-png-bytes').toString('base64');
+
+    // jest is not configured with clearMocks, so call history would otherwise
+    // leak between the cases below.
+    beforeEach(() => {
+      (clipboard.write as jest.Mock).mockClear();
+      (nativeImage.createFromBuffer as jest.Mock).mockClear();
+    });
+
+    it('writes a ClipboardItem carrying the decoded png bytes', async () => {
+      (nativeImage.createFromBuffer as jest.Mock).mockReturnValue({ isEmpty: () => false });
+      registerAppHandlers();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await (ipcMain as any).__invoke('app:clipboard-write-image', PNG_BASE64);
+
+      expect(nativeImage.createFromBuffer).toHaveBeenCalledWith(Buffer.from(PNG_BASE64, 'base64'));
+      expect(clipboard.write).toHaveBeenCalledTimes(1);
+
+      const [items] = (clipboard.write as jest.Mock).mock.calls[0];
+      expect(items).toHaveLength(1);
+      expect(items[0].types).toEqual(['image/png']);
+
+      const blob = await items[0].getType('image/png');
+      expect(blob.type).toBe('image/png');
+      await expect(blob.text()).resolves.toBe('fake-png-bytes');
+    });
+
+    it('throws when the payload does not decode to an image', async () => {
+      (nativeImage.createFromBuffer as jest.Mock).mockReturnValue({ isEmpty: () => true });
+      registerAppHandlers();
+      await expect(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (ipcMain as any).__invoke('app:clipboard-write-image', PNG_BASE64)
+      ).rejects.toThrow('Failed to create image from provided data');
+      expect(clipboard.write).not.toHaveBeenCalled();
+    });
+
+    it('BAD_REQUEST on non-string', async () => {
+      registerAppHandlers();
+      await expect(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (ipcMain as any).__invoke('app:clipboard-write-image', 42)
       ).rejects.toMatchObject({ code: 'BAD_REQUEST' });
     });
   });

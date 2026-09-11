@@ -133,10 +133,67 @@ export function localizeReleases(locale: Locale): ResolvedRelease[] {
 
 export const RELEASES: readonly Release[] = [
   {
+    version: '1.4.0',
+    shortDate: '12.09.2026',
+    type: 'minor',
+    latest: true,
+    pl: {
+      date: '12 września 2026',
+      title: 'Nowszy silnik aplikacji i zmiana w powiadomieniach na macOS',
+      description:
+        'Aplikacja przeszła na znacznie nowszą wersję silnika, na którym działa — to komplet poprawek bezpieczeństwa i nowsze technologie we wbudowanej przeglądarce. Jest też jeden minus: na macOS powiadomienia o nowych odcinkach są chwilowo wyłączone, bo Apple wymaga teraz, żeby aplikacja była podpisana płatnym certyfikatem, którego ten projekt jeszcze nie ma. Na Windowsie powiadomienia działają bez zmian.',
+      categories: [
+        {
+          kind: 'security',
+          label: 'Bezpieczeństwo',
+          entries: [
+            'Aplikacja działa na znacznie nowszym silniku — z kompletem poprawek bezpieczeństwa',
+            'Wbudowana przeglądarka lepiej radzi sobie z nowszymi stronami i odtwarzaczami wideo',
+          ],
+        },
+        {
+          kind: 'macos',
+          label: 'macOS',
+          entries: [
+            'Powiadomienia o nowych odcinkach są chwilowo wyłączone na macOS',
+            'Apple wymaga podpisania aplikacji płatnym certyfikatem — projekt jest darmowy i jeszcze go nie ma',
+            'Twoje subskrypcje i ustawienia są zachowane i włączą się same, gdy certyfikat się pojawi',
+            'Na Windowsie powiadomienia działają normalnie',
+          ],
+        },
+      ],
+    },
+    en: {
+      date: 'September 12, 2026',
+      title: 'A newer app engine, and a change to macOS notifications',
+      description:
+        'The app moved to a much newer version of the engine it runs on — that means a full set of security fixes and newer web technology in the built-in browser. There is one downside: on macOS, notifications about new episodes are switched off for now, because Apple requires the app to be signed with a paid certificate that this project does not have yet. Notifications on Windows are unchanged.',
+      categories: [
+        {
+          kind: 'security',
+          label: 'Security',
+          entries: [
+            'The app runs on a much newer engine — with a full set of security fixes',
+            'The built-in browser handles newer sites and video players better',
+          ],
+        },
+        {
+          kind: 'macos',
+          label: 'macOS',
+          entries: [
+            'Notifications about new episodes are switched off for now on macOS',
+            'Apple requires the app to be signed with a paid certificate — this is a free project and does not have one yet',
+            'Your subscriptions and settings are kept, and will switch back on by themselves once that is sorted',
+            'Notifications on Windows work as normal',
+          ],
+        },
+      ],
+    },
+  },
+  {
     version: '1.3.1',
     shortDate: '31.08.2026',
     type: 'minor',
-    latest: true,
     pl: {
       date: '31 sierpnia 2026',
       title: 'Aplikacja znowu uruchamia się na macOS',

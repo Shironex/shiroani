@@ -6,6 +6,9 @@ import type {
   WebContents,
 } from 'electron';
 import { t } from '../i18n-strings';
+import { createMainLogger } from '../logging/logger';
+
+const logger = createMainLogger('WebviewContextMenu');
 
 /**
  * Right-click context menu for the built-in browser's `<webview>` guests.
@@ -189,7 +192,11 @@ export function attachWebviewContextMenu(
         copy: () => webContents.copy(),
         paste: () => webContents.paste(),
         selectAll: () => webContents.selectAll(),
-        copyLinkURL: url => clipboard.writeText(url),
+        copyLinkURL: url => {
+          // clipboard.writeText is async as of Electron 44 — swallow-and-log so a
+          // rejected copy can't surface as an unhandled rejection in the main process.
+          void clipboard.writeText(url).catch(err => logger.error('copyLinkURL failed', err));
+        },
         openInNewTab,
         copyImage: () => webContents.copyImageAt(params.x, params.y),
         inspect: () => webContents.inspectElement(params.x, params.y),

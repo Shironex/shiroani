@@ -4,6 +4,7 @@ import { cn } from '@/lib/utils';
 import { Bell, BellRing } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { TooltipButton } from '@/components/ui/tooltip-button';
+import { SUPPORTS_NATIVE_NOTIFICATIONS } from '@/lib/platform';
 import { useSubscribeBellButton } from './SubscribeBellButton.hooks';
 import type { ISubscribeBellButtonProps } from './SubscribeBellButton.types';
 
@@ -18,7 +19,10 @@ function SubscribeBellButton({
   const { t } = useTranslation('schedule');
   const { isSubscribed, toggle, mediaId } = useSubscribeBellButton(anime);
 
-  if (!mediaId) return null;
+  // Subscribing is meaningless where the OS cannot show notifications (macOS,
+  // pending code signing) — don't offer a control that silently does nothing.
+  // Existing subscriptions are preserved and still listed in Settings.
+  if (!mediaId || !SUPPORTS_NATIVE_NOTIFICATIONS) return null;
 
   const label = isSubscribed ? t('subscribe.disable') : t('subscribe.enable');
   const buttonClassName = cn(

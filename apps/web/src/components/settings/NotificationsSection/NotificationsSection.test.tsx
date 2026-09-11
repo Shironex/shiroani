@@ -5,6 +5,18 @@ import i18n from '@/lib/i18n';
 import { useNotificationStore } from '@/stores/useNotificationStore';
 import { NotificationsSection } from '.';
 
+// Keeps every other export real so only the notification capability is steered.
+const platform = vi.hoisted(() => ({ supportsNative: true }));
+vi.mock('@/lib/platform', async importOriginal => {
+  const actual = await importOriginal<typeof import('@/lib/platform')>();
+  return {
+    ...actual,
+    get SUPPORTS_NATIVE_NOTIFICATIONS() {
+      return platform.supportsNative;
+    },
+  };
+});
+
 function makeSubscription(overrides?: Partial<NotificationSubscription>): NotificationSubscription {
   return {
     anilistId: 1,
@@ -42,6 +54,7 @@ function setBridge(settings?: Partial<NotificationSettings>) {
 
 describe('NotificationsSection', () => {
   beforeEach(async () => {
+    platform.supportsNative = true;
     await i18n.changeLanguage('en');
     useNotificationStore.setState({
       subscriptions: [],
@@ -168,5 +181,50 @@ describe('NotificationsSection', () => {
     await screen.findByText('Bocchi');
     await user.click(screen.getByRole('button', { name: 'Remove subscription' }));
     expect(unsubscribe).toHaveBeenCalledWith(7);
+  });
+
+  // macOS: Electron 42+ routes notifications through UNNotification, which
+  // refuses to display them for an ad-hoc-signed app. The whole first card is
+  // inert there, but persisted subscriptions stay visible.
+  describe('when the platform cannot show native notifications', () => {
+    beforeEach(() => {
+      platform.supportsNative = false;
+    });
+
+    it('explains why notifications are unavailable', async () => {
+      setBridge({ enabled: true });
+      render(<NotificationsSection />);
+      // Names the actual blocker — distinguishes the callout from the
+      // subscriptions empty state, which also mentions macOS.
+      expect(await screen.findByText(/Apple Developer ID/i)).toBeInTheDocument();
+    });
+
+    it('swaps the empty state for one that does not point at the bell icon', async () => {
+      setBridge({ enabled: true });
+      useNotificationStore.setState({ subscriptions: [] });
+      render(<NotificationsSection />);
+      expect(
+        await screen.findByText(/Notifications are currently unavailable on macOS/i)
+      ).toBeInTheDocument();
+      expect(screen.queryByText(/clicking the bell icon/i)).not.toBeInTheDocument();
+    });
+
+    it('disables every control in the notifications card', async () => {
+      setBridge({ enabled: true });
+      render(<NotificationsSection />);
+      const toggle = await screen.findByRole('switch', { name: /Episode notifications/i });
+      expect(toggle).toBeDisabled();
+      expect(toggle).not.toBeChecked();
+      expect(screen.getByRole('combobox')).toBeDisabled();
+      expect(screen.getByRole('switch', { name: /Quiet hours/i })).toBeDisabled();
+      expect(screen.getByRole('switch', { name: /System sound/i })).toBeDisabled();
+    });
+
+    it('keeps persisted subscriptions listed so nothing is lost', async () => {
+      setBridge({ enabled: true });
+      useNotificationStore.setState({ subscriptions: [makeSubscription()] });
+      render(<NotificationsSection />);
+      expect(await screen.findByText('Frieren')).toBeInTheDocument();
+    });
   });
 });

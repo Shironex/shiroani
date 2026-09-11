@@ -1,4 +1,4 @@
-import { ipcMain, app, clipboard, nativeImage } from 'electron';
+import { ipcMain, app, clipboard, nativeImage, ClipboardItem } from 'electron';
 import { resolve, sep, join } from 'path';
 import { writeFile, rm } from 'fs/promises';
 import { release as osRelease } from 'os';
@@ -104,20 +104,24 @@ export function registerAppHandlers(): void {
 
   handle(
     'app:clipboard-write',
-    (_event, text) => {
-      clipboard.writeText(text);
+    async (_event, text) => {
+      await clipboard.writeText(text);
     },
     { schema: appClipboardWriteSchema }
   );
 
   handle(
     'app:clipboard-write-image',
-    (_event, pngBase64) => {
-      const image = nativeImage.createFromBuffer(Buffer.from(pngBase64, 'base64'));
-      if (image.isEmpty()) {
+    async (_event, pngBase64) => {
+      const buffer = Buffer.from(pngBase64, 'base64');
+      // nativeImage still decodes the payload purely as validation — the clipboard
+      // would otherwise accept malformed bytes as an opaque image/png blob.
+      if (nativeImage.createFromBuffer(buffer).isEmpty()) {
         throw new Error('Failed to create image from provided data');
       }
-      clipboard.writeImage(image);
+      await clipboard.write([
+        new ClipboardItem({ 'image/png': new Blob([buffer], { type: 'image/png' }) }),
+      ]);
     },
     { schema: appClipboardWriteImageSchema }
   );

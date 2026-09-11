@@ -30,7 +30,20 @@ export class ElectronNotificationHost extends NotificationHostPort {
     this.targetWindow = window;
   }
 
+  /**
+   * macOS is excluded until the project has an Apple Developer ID — see the
+   * rationale on `NotificationHostPort.supportsNativeNotifications`.
+   */
+  supportsNativeNotifications(): boolean {
+    return process.platform !== 'darwin';
+  }
+
   async showAiringNotification(airing: AiringAnime, settings: NotificationSettings): Promise<void> {
+    // Defence in depth: the service already skips its check loop when the host
+    // reports no support, but never fetch an icon and build a Notification that
+    // the OS would only reject.
+    if (!this.supportsNativeNotifications()) return;
+
     const title = resolveAnimeTitle(airing.media);
     const minutesLeft = Math.round((airing.airingAt - Date.now() / 1000) / 60);
     const body = buildLocalizedNotificationBody(airing.episode, minutesLeft);
@@ -69,8 +82,22 @@ export class ElectronNotificationHost extends NotificationHostPort {
       }
     });
 
+    // Electron 42 moved macOS to the UNNotification API, which only displays
+    // notifications for a code-signed app; unsigned builds emit `failed` instead
+    // of showing anything. Without this listener the failure is silent and the
+    // "Notification shown" line below would still claim success.
+    notification.on('failed', (_event, error) => {
+      logger.error(
+        `Notification failed: "${title}" Ep ${airing.episode}` +
+          (process.platform === 'darwin'
+            ? ' (on macOS this usually means the app bundle is not code-signed)'
+            : ''),
+        error
+      );
+    });
+
     notification.show();
-    logger.info(`Notification sent: "${title}" Ep ${airing.episode} (in ${minutesLeft}min)`);
+    logger.info(`Notification shown: "${title}" Ep ${airing.episode} (in ${minutesLeft}min)`);
   }
 
   async scheduleToastsOnQuit(

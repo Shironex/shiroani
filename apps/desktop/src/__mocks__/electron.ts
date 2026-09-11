@@ -106,11 +106,25 @@ export const shell = {
   openPath: jest.fn(),
 };
 
+// Electron 44 rearchitected `clipboard` around the W3C Clipboard API: the
+// read/write methods return Promises and `writeImage`/`readImage` are gone in
+// favour of `write([new ClipboardItem({ [mime]: blob })])`.
 export const clipboard = {
-  writeText: jest.fn(),
-  readText: jest.fn(() => ''),
-  writeImage: jest.fn(),
+  writeText: jest.fn(() => Promise.resolve()),
+  readText: jest.fn(() => Promise.resolve('')),
+  write: jest.fn(() => Promise.resolve()),
+  read: jest.fn(() => Promise.resolve([])),
 };
+
+export class ClipboardItem {
+  readonly types: string[];
+  constructor(private readonly items: Record<string, unknown>) {
+    this.types = Object.keys(items);
+  }
+  getType(type: string) {
+    return Promise.resolve(this.items[type]);
+  }
+}
 
 export const nativeImage = {
   createFromPath: jest.fn(() => ({ isEmpty: () => true, toDataURL: () => '' })),
