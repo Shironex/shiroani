@@ -26,7 +26,9 @@ overrides:
   brace-expansion@<1.1.18: 1.1.18
   brace-expansion@>=2.0.0 <2.1.4: 2.1.4
   smol-toml: '>=1.7.1'
-  electron: '>=41.10.3 <42'
+  electron: '>=44.3.0 <45'
+  node-abi@3: '>=3.96.0 <4'
+  node-abi@4: '>=4.35.0 <5'
   '@nestjs/core': '>=11.1.18 <12'
   astro>vite: '>=8.0.16 <9'
   '@astrojs/react>vite': '>=8.0.16 <9'
@@ -210,10 +212,10 @@ importers:
     dependencies:
       '@ghostery/adblocker-electron':
         specifier: ^2.17.3
-        version: 2.18.0(electron@41.10.5)
+        version: 2.18.0(electron@44.3.0)
       '@ghostery/adblocker-electron-preload':
         specifier: ^2.17.3
-        version: 2.18.0(electron@41.10.5)
+        version: 2.18.0(electron@44.3.0)
       '@mozilla/readability':
         specifier: ^0.6.0
         version: 0.6.0
@@ -309,8 +311,8 @@ importers:
         specifier: ^10.1.0
         version: 10.1.0
       electron:
-        specifier: '>=41.10.3 <42'
-        version: 41.10.5
+        specifier: '>=44.3.0 <45'
+        version: 44.3.0
       electron-builder:
         specifier: ^26.8.1
         version: 26.15.3(electron-builder-squirrel-windows@26.8.1)
@@ -1605,12 +1607,12 @@ packages:
   '@ghostery/adblocker-electron-preload@2.18.0':
     resolution: {integrity: sha512-dtUmIAFfiZowbW+NDQtUy+sceQYl4XfJhnKycBWEWeljQ67EVQgFKbfbkEK4Tr3jmP+GxEUp8dYKzwT05b3gdw==}
     peerDependencies:
-      electron: '>=41.10.3 <42'
+      electron: '>=44.3.0 <45'
 
   '@ghostery/adblocker-electron@2.18.0':
     resolution: {integrity: sha512-q8tvkJ247ysebswlT+Ak2OrP4rWqI1Ql4BePR6cbJHh05C0FVak9fnynFw4A5AZyk1+S3eOaoNIOID6yQ20HLA==}
     peerDependencies:
-      electron: '>=41.10.3 <42'
+      electron: '>=44.3.0 <45'
 
   '@ghostery/adblocker-extended-selectors@2.18.0':
     resolution: {integrity: sha512-oeSb/1liYplCq76rrPDmR7A69kNB6WsWjPfcsJFkrPip+WUd83Xbc+I5fnZ36Id3IOyegozZG1ucr3ywwC7OyQ==}
@@ -5520,8 +5522,8 @@ packages:
     resolution: {integrity: sha512-bO3y10YikuUwUuDUQRM4KfwNkKhnpVO7IPdbsrejwN9/AABJzzTQ4GeHwyzNSrVO+tEH3/Np255a3sVZpZDjvg==}
     engines: {node: '>=8.0.0'}
 
-  electron@41.10.5:
-    resolution: {integrity: sha512-grSJOhLddanWX1UfE8B4xA2kOOduUCfpYoOQ2D4zEYte8lSQtrd1HYbV4xErsZmm+V+1Q3yzCQLBsCxEIiw/QQ==}
+  electron@44.3.0:
+    resolution: {integrity: sha512-St9EV7F2VtYaYWD2qaAjBwUgKxx39eJOUsUJ5+/1113sqbVfNqv4Dbm/W1rN7qmYSPa+mWwR6yr+b7MfgjgVfQ==}
     engines: {node: '>= 22.12.0'}
     hasBin: true
 
@@ -7086,12 +7088,12 @@ packages:
   nlcst-to-string@4.0.0:
     resolution: {integrity: sha512-YKLBCcUYKAg0FNlOBT6aI91qFmSiFKiluk655WzPF+DDMA02qIyy8uiRqI8QXtcFpEvll12LpL5MXqEmAZ+dcA==}
 
-  node-abi@3.89.0:
-    resolution: {integrity: sha512-6u9UwL0HlAl21+agMN3YAMXcKByMqwGx+pq+P76vii5f7hTPtKDp08/H9py6DY+cfDw7kQNTGEj/rly3IgbNQA==}
+  node-abi@3.96.0:
+    resolution: {integrity: sha512-rebQ/lz7i0EkoLzUVSrKRzA69zMkwLp95kKMWoMDkkM00Suxz0D7zEQPwRml5fQum24mj7bPvmlgLAmu2JCiYg==}
     engines: {node: '>=10'}
 
-  node-abi@4.28.0:
-    resolution: {integrity: sha512-Qfp5XZL1cJDOabOT8H5gnqMTmM4NjvYzHp4I/Kt/Sl76OVkOBBHRFlPspGV0hYvMoqQsypFjT/Yp7Km0beXW9g==}
+  node-abi@4.35.0:
+    resolution: {integrity: sha512-ymk4aIzxdPopw2giv8Fs1Ec6vybGkjmyxUwVqhkI4MCy2tVfXdkOGGWieWVjL0THgH+7a8lRdevyupoYj3Js/Q==}
     engines: {node: '>=22.12.0'}
 
   node-addon-api@8.8.0:
@@ -10183,7 +10185,7 @@ snapshots:
     dependencies:
       '@malept/cross-spawn-promise': 2.0.0
       debug: 4.4.3
-      node-abi: 4.28.0
+      node-abi: 4.35.0
       node-api-version: 0.2.1
       node-gyp: 12.3.0
       read-binary-file-arch: 1.0.6
@@ -10434,16 +10436,16 @@ snapshots:
     dependencies:
       '@ghostery/adblocker-extended-selectors': 2.18.0
 
-  '@ghostery/adblocker-electron-preload@2.18.0(electron@41.10.5)':
+  '@ghostery/adblocker-electron-preload@2.18.0(electron@44.3.0)':
     dependencies:
       '@ghostery/adblocker-content': 2.18.0
-      electron: 41.10.5
+      electron: 44.3.0
 
-  '@ghostery/adblocker-electron@2.18.0(electron@41.10.5)':
+  '@ghostery/adblocker-electron@2.18.0(electron@44.3.0)':
     dependencies:
       '@ghostery/adblocker': 2.18.0
-      '@ghostery/adblocker-electron-preload': 2.18.0(electron@41.10.5)
-      electron: 41.10.5
+      '@ghostery/adblocker-electron-preload': 2.18.0(electron@44.3.0)
+      electron: 44.3.0
       tldts-experimental: 7.4.3
 
   '@ghostery/adblocker-extended-selectors@2.18.0': {}
@@ -14655,7 +14657,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  electron@41.10.5:
+  electron@44.3.0:
     dependencies:
       '@electron-internal/extract-zip': 1.0.5
       '@electron/get': 5.1.0
@@ -16461,11 +16463,11 @@ snapshots:
     dependencies:
       '@types/nlcst': 2.0.3
 
-  node-abi@3.89.0:
+  node-abi@3.96.0:
     dependencies:
       semver: 7.8.5
 
-  node-abi@4.28.0:
+  node-abi@4.35.0:
     dependencies:
       semver: 7.8.5
 
@@ -16963,7 +16965,7 @@ snapshots:
       minimist: 1.2.8
       mkdirp-classic: 0.5.3
       napi-build-utils: 2.0.0
-      node-abi: 3.89.0
+      node-abi: 3.96.0
       pump: 3.0.4
       rc: 1.2.8
       simple-get: 4.0.1

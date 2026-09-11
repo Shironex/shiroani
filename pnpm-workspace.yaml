@@ -7,7 +7,6 @@ onlyBuiltDependencies:
   - '@prisma/client'
   - '@prisma/engines'
   - '@swc/core'
-  - electron
   - esbuild
   - better-sqlite3
   - necord
@@ -35,7 +34,17 @@ overrides:
   'brace-expansion@<1.1.18': '1.1.18'
   'brace-expansion@>=2.0.0 <2.1.4': '2.1.4'
   smol-toml: '>=1.7.1'
-  electron: '>=41.10.3 <42'
+  # Pin to the current Electron major. A stale ceiling here silently overrides
+  # the `electron` range in apps/desktop/package.json and re-pins the lockfile
+  # (a `<42` ceiling held the app on 41.10.5 while package.json said ^42).
+  # Bump this and apps/desktop/package.json together.
+  electron: '>=44.3.0 <45'
+  # node-abi must know the current Electron major's ABI or `electron-builder
+  # install-app-deps` aborts with "Could not detect abi for version 44.x and
+  # runtime electron", silently leaving native modules built for the old ABI.
+  # Two majors are in the tree: 4.x via @electron/rebuild, 3.x via prebuild-install.
+  'node-abi@3': '>=3.96.0 <4'
+  'node-abi@4': '>=4.35.0 <5'
   '@nestjs/core': '>=11.1.18 <12'
   # Must track astro's own `vite` range (^8.0.13 as of astro 7). Astro 7 writes
   # `build.rolldownOptions.input`, which only vite 8 (rolldown) reads — a `<8`
