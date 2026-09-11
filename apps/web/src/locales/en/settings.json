@@ -82,10 +82,12 @@
       "description": "Play a sound when a new notification arrives."
     },
     "windowsInfo": "On Windows, when the app is closed, upcoming notifications are scheduled by a background PowerShell command. <1>You don't need to do anything.</1>",
+    "macUnsupported": "System notifications are unavailable on macOS. They require an app signed with an Apple Developer ID certificate, which this project does not have yet. Your subscriptions and settings are preserved and will work as soon as signing is in place.",
     "subscriptions": {
       "title": "Subscriptions",
       "subtitle": "Anime you want to receive notifications for.",
       "empty": "No subscriptions. Add an anime from the schedule by clicking the bell icon.",
+      "emptyUnsupported": "No subscriptions. Notifications are currently unavailable on macOS.",
       "remove": "Remove subscription"
     }
   },

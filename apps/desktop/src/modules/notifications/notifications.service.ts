@@ -81,6 +81,14 @@ export class NotificationsService implements OnModuleDestroy {
       `NotificationsService initialized (enabled: ${settings.enabled}, leadTime: ${settings.leadTimeMinutes}min, subscriptions: ${settings.subscriptions.length})`
     );
 
+    if (!this.host.supportsNativeNotifications()) {
+      logger.info(
+        'Native notifications are unavailable on this platform — check loop not started. ' +
+          'Settings and subscriptions are preserved and take effect if support returns.'
+      );
+      return;
+    }
+
     if (settings.enabled) {
       this.startChecking();
     }
@@ -95,7 +103,7 @@ export class NotificationsService implements OnModuleDestroy {
     const next = sanitizeSettingsUpdate(current, updates);
     this.saveSettings(next);
 
-    if (next.enabled) {
+    if (next.enabled && this.host.supportsNativeNotifications()) {
       this.startChecking();
     } else {
       this.stopChecking();
@@ -161,7 +169,7 @@ export class NotificationsService implements OnModuleDestroy {
    */
   async shutdown(): Promise<void> {
     const settings = this.getSettings();
-    if (settings.enabled) {
+    if (settings.enabled && this.host.supportsNativeNotifications()) {
       try {
         const schedule = this.getScheduleForQuit();
         const notifyIds = this.getNotifyIds();

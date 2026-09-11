@@ -82,10 +82,12 @@
       "description": "Dźwięk przy nowym powiadomieniu."
     },
     "windowsInfo": "Na Windowsie po zamknięciu aplikacji nadchodzące powiadomienia planowane są przez polecenie PowerShell w tle. <1>Nic nie musisz robić.</1>",
+    "macUnsupported": "Powiadomienia systemowe są niedostępne na macOS. Wymagają aplikacji podpisanej certyfikatem Apple Developer ID, którego projekt jeszcze nie ma. Twoje subskrypcje i ustawienia są zachowane i zadziałają, gdy tylko podpis będzie dostępny.",
     "subscriptions": {
       "title": "Subskrypcje",
       "subtitle": "Anime, z których chcesz otrzymywać powiadomienia.",
       "empty": "Brak subskrypcji. Dodaj anime z harmonogramu, klikając ikonę dzwonka.",
+      "emptyUnsupported": "Brak subskrypcji. Powiadomienia są obecnie niedostępne na macOS.",
       "remove": "Usuń subskrypcję"
     }
   },
