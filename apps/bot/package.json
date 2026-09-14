@@ -26,7 +26,7 @@
     "@prisma/client": "^7.5.0",
     "@shiroani/shared": "workspace:*",
     "discord.js": "^14.26.4",
-    "ioredis": "^5.11.0",
+    "ioredis": "^6.0.0",
     "necord": "^6.13.0",
     "nestjs-pino": "^4.6.1",
     "pg": "^8.21.0",
