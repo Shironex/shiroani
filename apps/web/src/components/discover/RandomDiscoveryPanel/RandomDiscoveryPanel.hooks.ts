@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react';
 import { useDiscoverStore } from '@/stores/useDiscoverStore';
-import { useAddDiscoverMediaToLibrary } from '@/components/discover/useAddDiscoverMediaToLibrary';
+import { useAddDiscoverMediaToLibrary } from '@/hooks/useAddDiscoverMediaToLibrary';
 import { useRandomCarousel } from '../random/useRandomCarousel';
 import { buildShowcaseMeta } from '../random/random-utils';
 import type {

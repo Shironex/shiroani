@@ -1,7 +1,7 @@
 import { Eye } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
-import { SettingsCard, SettingsRow, SettingsRowLabel } from '@/components/settings/SettingsCard';
+import { SettingsCard, SettingsRow, SettingsRowLabel } from '@/components/shared/SettingsCard';
 import { ALWAYS_VISIBLE_VIEWS } from '@/lib/nav-items';
 import { DockStage } from '@/components/shared/DockStage';
 import { SortableList } from '@/components/shared/SortableList';

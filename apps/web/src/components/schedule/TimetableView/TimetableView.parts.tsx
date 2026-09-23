@@ -7,7 +7,7 @@ import { FadeInImage } from '@/components/shared/FadeInImage';
 import type { AiringAnime } from '@shiroani/shared';
 import { formatTime, getAnimeTitle, type SlotStatus } from '../schedule-utils';
 import { ScheduleDayColumn } from '../ScheduleDayColumn';
-import { SubscribeBellButton } from '../SubscribeBellButton';
+import { SubscribeBellButton } from '@/components/shared/SubscribeBellButton';
 
 /* ────────────── Poster grid ────────────── */
 

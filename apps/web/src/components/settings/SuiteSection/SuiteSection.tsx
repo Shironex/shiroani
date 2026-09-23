@@ -1,6 +1,6 @@
 import { Boxes } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { SettingsCard } from '@/components/settings/SettingsCard';
+import { SettingsCard } from '@/components/shared/SettingsCard';
 import { useSuiteSection } from './SuiteSection.hooks';
 import { APPS, SiblingAppCard } from './SuiteSection.parts';
 

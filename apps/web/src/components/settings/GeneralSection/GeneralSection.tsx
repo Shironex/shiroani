@@ -8,7 +8,7 @@ import {
   SettingsRowLabel,
   SettingsSectionSkeleton,
   SettingsToggleRow,
-} from '@/components/settings/SettingsCard';
+} from '@/components/shared/SettingsCard';
 import {
   DISPLAY_NAME_MAX_LENGTH,
   SUPPORTED_LANGUAGES,

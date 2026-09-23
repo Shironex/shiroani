@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { UserCircle, LogOut, Loader2, AlertCircle, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { SettingsCard, SettingsInfoCallout } from '@/components/settings/SettingsCard';
+import { SettingsCard, SettingsInfoCallout } from '@/components/shared/SettingsCard';
 import { ExperimentalBadge } from '@/components/ui/experimental-badge';
 import { handleImageError } from '@/lib/image-utils';
 import { useAccountsSection } from './AccountsSection.hooks';

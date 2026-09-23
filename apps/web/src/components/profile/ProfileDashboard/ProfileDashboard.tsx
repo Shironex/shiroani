@@ -1,8 +1,8 @@
 import { useTranslation } from 'react-i18next';
 import { ProfileSidebar } from '../ProfileSidebar';
 import { ProfileStatGrid } from '../ProfileStatGrid';
-import { GenreBreakdown } from '../GenreBreakdown';
-import { StudioBreakdown } from '../StudioBreakdown';
+import { GenreBreakdown } from '@/components/shared/GenreBreakdown';
+import { StudioBreakdown } from '@/components/shared/StudioBreakdown';
 import { ActivityFeed } from '../ActivityFeed';
 import { ProfileFollow } from '../ProfileFollow';
 import { ProfileExtraStats } from '../ProfileExtraStats';

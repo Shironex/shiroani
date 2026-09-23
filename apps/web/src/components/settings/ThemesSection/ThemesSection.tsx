@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { SYSTEM_THEME } from '@/stores/useSettingsStore';
 import { darkThemes, lightThemes } from '@/lib/theme';
 import { ThemeEditorDialog } from '@/components/settings/theme-editor/ThemeEditorDialog';
-import { SettingsCard } from '@/components/settings/SettingsCard';
+import { SettingsCard } from '@/components/shared/SettingsCard';
 import { ThemeGrid } from '@/components/shared/theme/ThemeGrid';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import { IS_MAC } from '@/lib/platform';

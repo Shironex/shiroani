@@ -1,7 +1,8 @@
 import { useTranslation, Trans } from 'react-i18next';
 import type { UserProfile } from '@shiroani/shared';
 import { ProgressRing } from '../ProgressRing';
-import { useStatusLabels, formatDays, useDaysLabel, formatCount } from '../profile-constants';
+import { useStatusLabels, formatDays, useDaysLabel } from '../profile-constants';
+import { formatCount } from '@/lib/format-count';
 import type { IStatusRing, ITopYear } from './ProfileDashboard.types';
 
 interface LibraryBreakdownProps {

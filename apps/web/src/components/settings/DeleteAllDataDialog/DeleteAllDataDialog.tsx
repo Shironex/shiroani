@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { SettingsFieldLabel } from '@/components/settings/SettingsCard';
+import { SettingsFieldLabel } from '@/components/shared/SettingsCard';
 import { IS_ELECTRON } from '@/lib/platform';
 import { useDeleteAllDataDialog } from './DeleteAllDataDialog.hooks';
 import type { IDeleteAllDataDialogProps } from './DeleteAllDataDialog.types';

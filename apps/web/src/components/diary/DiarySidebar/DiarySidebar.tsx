@@ -1,7 +1,7 @@
 import { Clapperboard, Building2, RotateCw } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { GenreBreakdown } from '@/components/profile/GenreBreakdown';
-import { StudioBreakdown } from '@/components/profile/StudioBreakdown';
+import { GenreBreakdown } from '@/components/shared/GenreBreakdown';
+import { StudioBreakdown } from '@/components/shared/StudioBreakdown';
 import { useDiarySidebar } from './DiarySidebar.hooks';
 import {
   ActivityHeatmap,

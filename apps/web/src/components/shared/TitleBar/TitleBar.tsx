@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { Minus, Square, Copy, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { IS_MAC } from '@/lib/platform';
-import { NotificationBell } from '@/components/social/NotificationBell';
+import { NotificationBell } from '@/components/shared/NotificationBell';
 import { useTitleBar } from './TitleBar.hooks';
 
 /**

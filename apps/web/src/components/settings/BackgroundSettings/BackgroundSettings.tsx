@@ -1,7 +1,7 @@
 import { Image } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { BackgroundPanel } from '@/components/shared/BackgroundPanel';
-import { SettingsCard } from '@/components/settings/SettingsCard';
+import { SettingsCard } from '@/components/shared/SettingsCard';
 import { useBackgroundSettings } from './BackgroundSettings.hooks';
 import type { IBackgroundSettingsProps } from './BackgroundSettings.types';
 

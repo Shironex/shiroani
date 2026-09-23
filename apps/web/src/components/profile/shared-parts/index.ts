@@ -1,9 +1,1 @@
-export {
-  SectionHead,
-  StatCard,
-  SideStat,
-  ConnectedBadge,
-  CountBars,
-  SyncStatusWidget,
-} from './shared-parts';
-export type { ICountBarRow } from './shared-parts';
+export { SectionHead, StatCard, SideStat, ConnectedBadge, SyncStatusWidget } from './shared-parts';

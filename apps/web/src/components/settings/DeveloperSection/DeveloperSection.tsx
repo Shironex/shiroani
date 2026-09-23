@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { Terminal, SquareCode, ClipboardCopy, ScrollText, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { SettingsCard, SettingsToggleRow } from '@/components/settings/SettingsCard';
+import { SettingsCard, SettingsToggleRow } from '@/components/shared/SettingsCard';
 import { DevLogsDialog } from '@/components/settings/dev-logs/DevLogsDialog';
 import { useDeveloperSection } from './DeveloperSection.hooks';
 import type { IDeveloperSectionProps } from './DeveloperSection.types';

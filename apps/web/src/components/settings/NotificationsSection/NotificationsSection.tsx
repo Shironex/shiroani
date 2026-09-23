@@ -8,7 +8,7 @@ import {
   SettingsSectionSkeleton,
   SettingsSelectRow,
   SettingsToggleRow,
-} from '@/components/settings/SettingsCard';
+} from '@/components/shared/SettingsCard';
 import { TooltipButton } from '@/components/ui/tooltip-button';
 import { IS_WINDOWS, SUPPORTS_NATIVE_NOTIFICATIONS } from '@/lib/platform';
 import { useNotificationsSection } from './NotificationsSection.hooks';

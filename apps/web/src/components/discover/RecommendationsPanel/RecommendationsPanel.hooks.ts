@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import type { AniListCommunityRecommendation, RecommendationRating } from '@shiroani/shared';
 import { useDiscoverStore } from '@/stores/useDiscoverStore';
-import { useAddDiscoverMediaToLibrary } from '@/components/discover/useAddDiscoverMediaToLibrary';
+import { useAddDiscoverMediaToLibrary } from '@/hooks/useAddDiscoverMediaToLibrary';
 import type { IRecommendationsPanelView } from './RecommendationsPanel.types';
 
 export function useRecommendationsPanel(): IRecommendationsPanelView {

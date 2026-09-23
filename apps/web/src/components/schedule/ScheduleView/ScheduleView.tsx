@@ -14,7 +14,7 @@ import { TooltipButton } from '@/components/ui/tooltip-button';
 import { KanjiWatermark } from '@/components/shared/KanjiWatermark';
 import { ViewHeader } from '@/components/shared/ViewHeader';
 import { isToday } from '../schedule-utils';
-import { AnimeInfoDialog } from '../AnimeInfoDialog';
+import { AnimeInfoDialog } from '@/components/shared/AnimeInfoDialog';
 import { useScheduleView } from './ScheduleView.hooks';
 import { LegendSwatch, ModeSwitcher, ScheduleBody } from './ScheduleView.parts';
 

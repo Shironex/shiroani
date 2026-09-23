@@ -31,17 +31,6 @@ export function formatScoreOutOf10(score: number): string {
 }
 
 /**
- * Locale-aware integer formatter for the profile stat counters. Uses
- * `Intl.NumberFormat` so grouping follows the active locale (e.g. `1,234` in
- * en, `1 234` in pl) instead of a hand-rolled comma→space regex that corrupts
- * comma-decimal locales. The single shared formatter keeps every sibling stat
- * site (sidebar, dashboard summary, MAL panel) rendering numbers identically.
- */
-export function formatCount(n: number, locale: string): string {
-  return new Intl.NumberFormat(locale).format(n);
-}
-
-/**
  * Localized AniList status labels keyed by the upstream enum value
  * (`CURRENT`, `COMPLETED`, …). Translations live in `profile:rings.labels.*`.
  *

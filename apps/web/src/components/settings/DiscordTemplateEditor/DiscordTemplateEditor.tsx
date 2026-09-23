@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { SettingsCard, SettingsFieldLabel } from '@/components/settings/SettingsCard';
+import { SettingsCard, SettingsFieldLabel } from '@/components/shared/SettingsCard';
 import { tDynamic } from '@/lib/i18n';
 import type { DiscordActivityType } from '@shiroani/shared';
 import {

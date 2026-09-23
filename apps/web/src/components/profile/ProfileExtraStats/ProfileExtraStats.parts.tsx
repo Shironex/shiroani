@@ -1,7 +1,7 @@
 import { type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { CountBars, type ICountBarRow } from '../shared-parts';
-import { formatCount } from '../profile-constants';
+import { CountBars, type ICountBarRow } from '@/components/shared/count-bars';
+import { formatCount } from '@/lib/format-count';
 import type { IProfileExtraStatsView } from './ProfileExtraStats.types';
 
 interface CountItem {

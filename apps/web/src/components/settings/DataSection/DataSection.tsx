@@ -9,7 +9,7 @@ import {
   Upload,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { SettingsCard, SettingsInfoCallout } from '@/components/settings/SettingsCard';
+import { SettingsCard, SettingsInfoCallout } from '@/components/shared/SettingsCard';
 import { DeleteAllDataDialog } from '@/components/settings/DeleteAllDataDialog';
 import { ExportDialog } from '@/components/shared/ExportDialog';
 import { ImportDialog } from '@/components/shared/ImportDialog';
