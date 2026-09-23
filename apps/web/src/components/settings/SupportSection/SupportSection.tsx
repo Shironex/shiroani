@@ -2,7 +2,7 @@ import { useTranslation, Trans } from 'react-i18next';
 import { Coffee, Heart, HeartHandshake } from 'lucide-react';
 import { BUY_ME_A_COFFEE_URL, GITHUB_SPONSORS_URL } from '@/lib/constants';
 import { Button } from '@/components/ui/button';
-import { SettingsCard } from '@/components/settings/SettingsCard';
+import { SettingsCard } from '@/components/shared/SettingsCard';
 import { useSupportSection } from './SupportSection.hooks';
 import type { ISupportSectionProps } from './SupportSection.types';
 

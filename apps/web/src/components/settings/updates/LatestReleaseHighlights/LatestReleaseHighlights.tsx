@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { Sparkles } from 'lucide-react';
 import { PillTag } from '@/components/ui/pill-tag';
-import { SettingsCard } from '@/components/settings/SettingsCard';
+import { SettingsCard } from '@/components/shared/SettingsCard';
 import { useLatestReleaseHighlights } from './LatestReleaseHighlights.hooks';
 
 /**

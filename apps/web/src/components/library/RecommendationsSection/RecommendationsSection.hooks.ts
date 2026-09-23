@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useLibraryStore } from '@/stores/useLibraryStore';
-import { useAddDiscoverMediaToLibrary } from '@/components/discover/useAddDiscoverMediaToLibrary';
+import { useAddDiscoverMediaToLibrary } from '@/hooks/useAddDiscoverMediaToLibrary';
 import type { AnimeEntry } from '@shiroani/shared';
 import type {
   IRecommendationsSectionProps,

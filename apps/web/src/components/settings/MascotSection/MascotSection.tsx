@@ -10,7 +10,7 @@ import {
   SettingsSectionSkeleton,
   SettingsSelectRow,
   SettingsToggleRow,
-} from '@/components/settings/SettingsCard';
+} from '@/components/shared/SettingsCard';
 import { MascotPreview } from '@/components/settings/MascotPreview';
 import { useMascotSection } from './MascotSection.hooks';
 import type { IMascotSectionProps } from './MascotSection.types';

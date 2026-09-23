@@ -3,7 +3,7 @@ import { Globe, Shield, X, AppWindow, Copy, ListVideo } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { PillTag } from '@/components/ui/pill-tag';
-import { SettingsCard, SettingsToggleRow } from '@/components/settings/SettingsCard';
+import { SettingsCard, SettingsToggleRow } from '@/components/shared/SettingsCard';
 import { cn } from '@/lib/utils';
 import { useBrowserSection } from './BrowserSection.hooks';
 import type { IBrowserSectionProps } from './BrowserSection.types';

@@ -2,7 +2,7 @@ import { useTranslation, Trans } from 'react-i18next';
 import { AlertTriangle, Download, ExternalLink, Loader2, RefreshCw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { SettingsCard } from '@/components/settings/SettingsCard';
+import { SettingsCard } from '@/components/shared/SettingsCard';
 import { ProgressBar } from '@/components/shared/ProgressBar';
 import { StatusPill } from '@/components/settings/updates/StatusPill';
 import { ChannelButton } from '@/components/settings/updates/ChannelButton';

@@ -6,7 +6,7 @@ import {
   SettingsInfoCallout,
   SettingsSectionSkeleton,
   SettingsToggleRow,
-} from '@/components/settings/SettingsCard';
+} from '@/components/shared/SettingsCard';
 import { DiscordPreview } from '@/components/settings/DiscordPreview';
 import { DiscordTemplateEditor } from '@/components/settings/DiscordTemplateEditor';
 import { PillTag } from '@/components/ui/pill-tag';

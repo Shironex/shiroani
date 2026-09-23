@@ -6,7 +6,7 @@ import {
   SettingsRow,
   SettingsRowLabel,
   SettingsToggleRow,
-} from '@/components/settings/SettingsCard';
+} from '@/components/shared/SettingsCard';
 import { DockStage } from '@/components/shared/DockStage';
 import { DockEdgePicker } from '@/components/shared/DockEdgePicker';
 import { useDockSection } from './DockSection.hooks';

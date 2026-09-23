@@ -1,6 +1,6 @@
 import { Trans, useTranslation } from 'react-i18next';
 import { Shield } from 'lucide-react';
-import { SettingsToggleRow } from '@/components/settings/SettingsCard';
+import { SettingsToggleRow } from '@/components/shared/SettingsCard';
 import { IS_ELECTRON } from '@/lib/platform';
 import { StepLayout } from '../../StepLayout';
 import { emPrimary, bStrong, bPrimary } from '../../shared-parts';

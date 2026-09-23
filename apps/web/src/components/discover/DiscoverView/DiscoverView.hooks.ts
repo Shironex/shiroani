@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useDiscoverStore, type DiscoverMedia } from '@/stores/useDiscoverStore';
 import { useLibraryStore } from '@/stores/useLibraryStore';
 import { useAniListAuthStore } from '@/stores/useAniListAuthStore';
-import { useAddDiscoverMediaToLibrary } from '@/components/discover/useAddDiscoverMediaToLibrary';
+import { useAddDiscoverMediaToLibrary } from '@/hooks/useAddDiscoverMediaToLibrary';
 import type { AiringAnime, AnimeStatus, DiscoverSort, DiscoverFilters } from '@shiroani/shared';
 import type { DiscoverTab, IDiscoverViewView } from './DiscoverView.types';
 

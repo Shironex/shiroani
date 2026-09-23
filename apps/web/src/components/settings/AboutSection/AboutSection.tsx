@@ -5,7 +5,7 @@ import { APP_LOGO_URL } from '@/lib/constants';
 import { Button } from '@/components/ui/button';
 import { PillTag } from '@/components/ui/pill-tag';
 import { useAppStore } from '@/stores/useAppStore';
-import { SettingsCard } from '@/components/settings/SettingsCard';
+import { SettingsCard } from '@/components/shared/SettingsCard';
 import { useAboutSection } from './AboutSection.hooks';
 import type { IAboutSectionProps } from './AboutSection.types';
 

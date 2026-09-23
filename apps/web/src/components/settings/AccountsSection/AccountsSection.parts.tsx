@@ -4,7 +4,7 @@ import { UserCircle, LogOut, Loader2, AlertCircle, Check, RefreshCw } from 'luci
 import { Button } from '@/components/ui/button';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import { ProgressBar } from '@/components/shared/ProgressBar';
-import { SettingsCard, SettingsInfoCallout } from '@/components/settings/SettingsCard';
+import { SettingsCard, SettingsInfoCallout } from '@/components/shared/SettingsCard';
 import { ExperimentalBadge } from '@/components/ui/experimental-badge';
 import { SyncModeSelector, PushLibraryButton } from '@/components/settings/SyncDirectionControls';
 import { handleImageError } from '@/lib/image-utils';

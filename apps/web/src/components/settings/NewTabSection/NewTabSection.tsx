@@ -8,7 +8,7 @@ import {
   SettingsRow,
   SettingsRowLabel,
   SettingsToggleRow,
-} from '@/components/settings/SettingsCard';
+} from '@/components/shared/SettingsCard';
 import { NewTabPreview } from '@/components/settings/NewTabPreview';
 import { SortableList } from '@/components/shared/SortableList';
 import { useNewTabSection } from './NewTabSection.hooks';

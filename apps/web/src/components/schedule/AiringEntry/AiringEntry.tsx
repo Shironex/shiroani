@@ -7,7 +7,7 @@ import { FadeInImage } from '@/components/shared/FadeInImage';
 import { PillTag } from '@/components/ui/pill-tag';
 import { formatCountdown, formatTime, getAnimeTitle, getCoverUrl } from '../schedule-utils';
 import { formatEpisodeProgress } from '@/lib/anime-utils';
-import { SubscribeBellButton } from '../SubscribeBellButton';
+import { SubscribeBellButton } from '@/components/shared/SubscribeBellButton';
 import type { IAiringEntryProps } from './AiringEntry.types';
 
 const DOW_KEYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'] as const;

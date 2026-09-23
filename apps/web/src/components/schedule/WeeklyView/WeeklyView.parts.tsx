@@ -6,7 +6,7 @@ import { handleImageError } from '@/lib/image-utils';
 import { FadeInImage } from '@/components/shared/FadeInImage';
 import { formatTime, getAnimeTitle, getCoverUrl, type SlotStatus } from '../schedule-utils';
 import { ScheduleDayColumn } from '../ScheduleDayColumn';
-import { SubscribeBellButton } from '../SubscribeBellButton';
+import { SubscribeBellButton } from '@/components/shared/SubscribeBellButton';
 
 type MembershipKind = 'library' | 'subscribed' | 'none';
 

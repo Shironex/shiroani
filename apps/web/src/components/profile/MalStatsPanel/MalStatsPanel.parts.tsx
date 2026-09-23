@@ -10,7 +10,7 @@ import { useMalSyncStore } from '@/stores/useMalSyncStore';
 import { useNavigateToBrowser } from '@/hooks/useNavigateToBrowser';
 import { ProgressRing } from '../ProgressRing';
 import { SectionHead, SideStat, StatCard, ConnectedBadge, SyncStatusWidget } from '../shared-parts';
-import { formatCount } from '../profile-constants';
+import { formatCount } from '@/lib/format-count';
 import type { IMalStatusRow, MalStatusKey } from './MalStatsPanel.types';
 
 const MAL_PROFILE_BASE = 'https://myanimelist.net/profile/';

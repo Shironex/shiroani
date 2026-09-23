@@ -4,7 +4,7 @@ import { KanjiWatermark } from '@/components/shared/KanjiWatermark';
 import { ViewHeader } from '@/components/shared/ViewHeader';
 import { AniListErrorState } from '@/components/shared/AniListErrorState';
 import { DiscoverGrid } from '@/components/discover/DiscoverGrid';
-import { AnimeInfoDialog } from '@/components/schedule/AnimeInfoDialog';
+import { AnimeInfoDialog } from '@/components/shared/AnimeInfoDialog';
 import { useDiscoverView } from './DiscoverView.hooks';
 import { DiscoverBody, DiscoverControls, SearchBanner } from './DiscoverView.parts';
 import type { DiscoverTab } from './DiscoverView.types';
