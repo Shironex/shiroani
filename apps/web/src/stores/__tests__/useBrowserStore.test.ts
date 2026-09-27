@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import type { BrowserLeafNode, BrowserNode } from '@shiroani/shared';
 import { useBrowserStore } from '../useBrowserStore';
+import i18n from '@/lib/i18n';
 
 // Mock webviewRefs — must be before importing the store
 vi.mock('@/components/browser/webviewRefs', () => ({
@@ -79,7 +80,7 @@ describe('useBrowserStore', () => {
       const { tabs, activeTabId } = useBrowserStore.getState();
       expect(tabs).toHaveLength(1);
       const leaf = expectLeaf(tabs[0]);
-      expect(leaf.title).toBe('Nowa karta');
+      expect(leaf.title).toBe(i18n.t('browser:tabs.newTab'));
       expect(leaf.isLoading).toBe(false); // new tab page doesn't load
       expect(leaf.canGoBack).toBe(false);
       expect(leaf.canGoForward).toBe(false);
@@ -205,7 +206,9 @@ describe('useBrowserStore', () => {
       const firstTabId = useBrowserStore.getState().tabs[0].id;
       useBrowserStore.getState().updateTabState(firstTabId, { title: 'Changed' });
 
-      expect(expectLeaf(useBrowserStore.getState().tabs[1]).title).toBe('Nowa karta');
+      expect(expectLeaf(useBrowserStore.getState().tabs[1]).title).toBe(
+        i18n.t('browser:tabs.newTab')
+      );
     });
   });
 
