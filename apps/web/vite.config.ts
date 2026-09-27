@@ -20,8 +20,53 @@ function themeInjectionPlugin(): Plugin {
   };
 }
 
+/**
+ * `vite build --mode showcase` only: boots the renderer through
+ * `src/showcase/entry.ts`, which installs a fake `window.electronAPI`, swaps
+ * `socket.io-client` for an in-memory fixture socket and replaces the built-in
+ * new-tab shortcuts with invented ones. Every other mode (dev, production,
+ * Storybook, Vitest) is untouched, so the packaged app never contains any of
+ * `src/showcase`.
+ */
+function showcaseFixturePlugin(): Plugin {
+  let enabled = false;
+  return {
+    name: 'shiroani-showcase-fixtures',
+    config(config, { mode }) {
+      enabled = mode === 'showcase';
+      if (!enabled) return;
+      const existing = config.resolve?.alias ?? {};
+      const inherited = Array.isArray(existing)
+        ? existing
+        : Object.entries(existing).map(([find, replacement]) => ({ find, replacement }));
+      // Listed first so they win over the broader `@` alias.
+      config.resolve = {
+        ...config.resolve,
+        alias: [
+          {
+            find: /^socket\.io-client$/,
+            replacement: resolve(__dirname, './src/showcase/fake-socket.ts'),
+          },
+          {
+            find: /^@\/lib\/quick-access-defaults$/,
+            replacement: resolve(__dirname, './src/showcase/fixtures/quick-access-defaults.ts'),
+          },
+          ...inherited,
+        ],
+      };
+    },
+    transformIndexHtml: {
+      order: 'pre',
+      handler(html) {
+        if (!enabled) return html;
+        return html.replace('/src/main.tsx', '/src/showcase/entry.ts');
+      },
+    },
+  };
+}
+
 export default defineConfig({
-  plugins: [tailwindcss(), react(), themeInjectionPlugin()],
+  plugins: [tailwindcss(), react(), themeInjectionPlugin(), showcaseFixturePlugin()],
   base: './', // Use relative paths for Electron compatibility
   resolve: {
     alias: {
