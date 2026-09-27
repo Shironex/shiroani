@@ -4,7 +4,7 @@
   "private": true,
   "description": "ShiroAni — Your personal anime browser and tracker",
   "license": "SEE LICENSE IN LICENSE",
-  "packageManager": "pnpm@10.9.0",
+  "packageManager": "pnpm@10.34.5",
   "scripts": {
     "dev": "pnpm build:packages && concurrently -k -n web,desktop -c cyan,yellow \"pnpm dev:web\" \"wait-on http://localhost:15174 && pnpm --filter @shiroani/desktop dev\"",
     "dev:debug": "LOG_LEVEL=debug pnpm dev",
