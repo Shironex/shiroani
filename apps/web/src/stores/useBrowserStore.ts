@@ -17,6 +17,7 @@ import {
 } from '@shiroani/shared';
 import { getWebview, unregisterWebview } from '@/components/browser/webviewRefs';
 import { normalizeUrl, normalizeWhitelistHost } from '@/lib/url-utils';
+import i18n from '@/lib/i18n';
 import {
   electronStoreGet,
   electronStoreSet,
@@ -173,7 +174,7 @@ export const useBrowserStore = create<BrowserStore>()(
           kind: 'leaf',
           id: tabId,
           url: targetUrl,
-          title: 'Nowa karta',
+          title: i18n.t('browser:tabs.newTab'),
           isLoading: targetUrl !== NEW_TAB_URL,
           canGoBack: false,
           canGoForward: false,

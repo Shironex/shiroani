@@ -1,6 +1,8 @@
 <a name="top"></a>
 
 <div align="center">
+  <img src="assets/showcase/hero.pl.webp" alt="ShiroAni: biblioteka, harmonogram i profil" width="100%" />
+
   <img src="assets/icon.png" alt="ShiroAni" width="128" height="128" />
 
   <h1>白アニ &nbsp;·&nbsp; ShiroAni</h1>
@@ -48,36 +50,42 @@ ShiroAni to aplikacja desktopowa, która zbiera wszystko co anime w jednym miejs
 
 <table>
   <tr>
-    <td width="50%"><img src="assets/screenshots/pl/library.webp" alt="Biblioteka — wszystko, co oglądasz" /></td>
-    <td width="50%"><img src="assets/screenshots/pl/schedule.webp" alt="Tygodniowy harmonogram emisji z AniList" /></td>
+    <td width="50%"><img src="assets/showcase/pl/library.webp" alt="ShiroAni: Biblioteka" /></td>
+    <td width="50%"><img src="assets/showcase/pl/discover.webp" alt="ShiroAni: Odkrywaj" /></td>
   </tr>
   <tr>
-    <td align="center"><sub>Biblioteka — oglądane, ukończone, planowane, wstrzymane, porzucone.</sub></td>
-    <td align="center"><sub>Harmonogram — widok tygodniowy, dzienny i tabelaryczny z AniList.</sub></td>
+    <td align="center"><sub>Wszystko, co oglądasz, na jednej półce.</sub></td>
+    <td align="center"><sub>Popularne, sezonowe i losowe anime, prosto z AniList.</sub></td>
   </tr>
   <tr>
-    <td width="50%"><img src="assets/screenshots/pl/browser.webp" alt="Nowa karta wbudowanej przeglądarki z wybranymi serwisami" /></td>
-    <td width="50%"><img src="assets/screenshots/pl/discover.webp" alt="Odkrywaj — losowanie anime i przegląd po gatunkach" /></td>
+    <td width="50%"><img src="assets/showcase/pl/diary.webp" alt="ShiroAni: Dziennik" /></td>
+    <td width="50%"><img src="assets/showcase/pl/schedule.webp" alt="ShiroAni: Harmonogram" /></td>
   </tr>
   <tr>
-    <td align="center"><sub>Przeglądarka — nowa karta bez reklam z wybranymi serwisami.</sub></td>
-    <td align="center"><sub>Odkrywaj — losowanie anime i przegląd po gatunkach.</sub></td>
+    <td align="center"><sub>Osobisty dziennik z edytorem tekstu.</sub></td>
+    <td align="center"><sub>Odcinki emitowane w tym tygodniu w jednym miejscu.</sub></td>
   </tr>
   <tr>
-    <td width="50%"><img src="assets/screenshots/pl/feed.webp" alt="Aktualności anime z zakładkami" /></td>
-    <td width="50%"><img src="assets/screenshots/pl/diary.webp" alt="Pamiętnik z edytorem tekstu" /></td>
+    <td width="50%"><img src="assets/showcase/pl/feed.webp" alt="ShiroAni: Aktualności" /></td>
+    <td width="50%"><img src="assets/showcase/pl/profile.webp" alt="ShiroAni: Profil" /></td>
   </tr>
   <tr>
-    <td align="center"><sub>Aktualności — RSS z anime newsami, źródła PL + EN.</sub></td>
-    <td align="center"><sub>Pamiętnik — osobisty dziennik z edytorem tekstu.</sub></td>
+    <td align="center"><sub>Wiadomości i nowe odcinki, po angielsku i po polsku.</sub></td>
+    <td align="center"><sub>Twoje statystyki AniList i ostatnia aktywność.</sub></td>
   </tr>
   <tr>
-    <td width="50%"><img src="assets/screenshots/pl/profile.webp" alt="Profil — Twoje statystyki AniList i aktywność" /></td>
-    <td width="50%"><img src="assets/screenshots/pl/settings.webp" alt="Ustawienia — motywy, tła, dock" /></td>
+    <td width="50%"><img src="assets/showcase/pl/changelog.webp" alt="ShiroAni: Historia" /></td>
+    <td width="50%"><img src="assets/showcase/pl/browser.webp" alt="ShiroAni: Przeglądarka" /></td>
   </tr>
   <tr>
-    <td align="center"><sub>Profil — Twoje statystyki AniList i ostatnia aktywność.</sub></td>
-    <td align="center"><sub>Ustawienia — motywy, tła, dock, język.</sub></td>
+    <td align="center"><sub>Co nowego, prosto z historii wydań.</sub></td>
+    <td align="center"><sub>Nowa karta bez reklam, z Twoimi skrótami.</sub></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="assets/showcase/pl/settings.webp" alt="ShiroAni: Ustawienia" /></td>
+  </tr>
+  <tr>
+    <td align="center"><sub>Siedemnaście motywów, edytor wizualny i nie tylko.</sub></td>
   </tr>
 </table>
 
@@ -121,6 +129,10 @@ Pobierz najnowszą wersję ze strony [Releases](https://github.com/Shironex/shir
 ## Budowanie ze źródeł
 
 Chcesz pogrzebać w ShiroAni albo zbudować aplikację samodzielnie? Zajrzyj do [CONTRIBUTING.md](CONTRIBUTING.md).
+
+## Zrzuty ekranu w README
+
+Zrzuty ekranu powyżej powstają przy użyciu [`@noctcore/showcase-kit`](https://www.npmjs.com/package/@noctcore/showcase-kit). `pnpm showcase` generuje je od nowa: buduje interfejs aplikacji w specjalnym trybie z wymyślonymi danymi demonstracyjnymi (bez prawdziwego konta, biblioteki ani plików), a potem robi zrzuty każdego widoku po angielsku i po polsku. Szczegóły znajdziesz w [CONTRIBUTING.md](CONTRIBUTING.md#refreshing-readme-screenshots).
 
 ## Licencja
 

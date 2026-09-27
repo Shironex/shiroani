@@ -4,6 +4,8 @@ node_modules/
 
 # Build outputs
 dist/
+dist-showcase/
+showcase-out/
 dist-electron/
 release/
 out/

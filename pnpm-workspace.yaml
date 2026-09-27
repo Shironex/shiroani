@@ -12,6 +12,11 @@ onlyBuiltDependencies:
   - necord
   - prisma
 
+# Let first-party @noctcore packages through the machine-wide
+# minimum-release-age gate; every other package still has to age in.
+minimumReleaseAgeExclude:
+  - '@noctcore/*'
+
 overrides:
   file-type: '>=21.3.1'
   multer: '>=2.3.0 <3.0.0'

@@ -1,6 +1,8 @@
 <a name="top"></a>
 
 <div align="center">
+  <img src="assets/showcase/hero.en.webp" alt="ShiroAni: library, schedule and profile views" width="100%" />
+
   <img src="assets/icon.png" alt="ShiroAni" width="128" height="128" />
 
   <h1>白アニ &nbsp;·&nbsp; ShiroAni</h1>
@@ -48,36 +50,42 @@ ShiroAni is a desktop app that brings everything anime into one place — browse
 
 <table>
   <tr>
-    <td width="50%"><img src="assets/screenshots/en/library.webp" alt="Your library — track everything you're watching" /></td>
-    <td width="50%"><img src="assets/screenshots/en/schedule.webp" alt="Weekly airing schedule from AniList" /></td>
+    <td width="50%"><img src="assets/showcase/en/library.webp" alt="ShiroAni: Library" /></td>
+    <td width="50%"><img src="assets/showcase/en/discover.webp" alt="ShiroAni: Discover" /></td>
   </tr>
   <tr>
-    <td align="center"><sub>Library — watching, completed, plan-to-watch, on-hold, dropped.</sub></td>
-    <td align="center"><sub>Schedule — weekly, daily, and timetable views from AniList.</sub></td>
+    <td align="center"><sub>Everything you&#39;re watching, tracked in one shelf.</sub></td>
+    <td align="center"><sub>Trending, popular and seasonal anime, powered by AniList.</sub></td>
   </tr>
   <tr>
-    <td width="50%"><img src="assets/screenshots/en/browser.webp" alt="Built-in browser new tab with curated anime sites" /></td>
-    <td width="50%"><img src="assets/screenshots/en/discover.webp" alt="Discover — random anime roulette and genre browser" /></td>
+    <td width="50%"><img src="assets/showcase/en/diary.webp" alt="ShiroAni: Diary" /></td>
+    <td width="50%"><img src="assets/showcase/en/schedule.webp" alt="ShiroAni: Schedule" /></td>
   </tr>
   <tr>
-    <td align="center"><sub>Browser — ad-free new tab with curated sites.</sub></td>
-    <td align="center"><sub>Discover — random anime roulette and genre browser.</sub></td>
+    <td align="center"><sub>A personal journal with a rich-text editor.</sub></td>
+    <td align="center"><sub>The week&#39;s airing episodes, at a glance.</sub></td>
   </tr>
   <tr>
-    <td width="50%"><img src="assets/screenshots/en/feed.webp" alt="Bookmarkable RSS feed of anime news" /></td>
-    <td width="50%"><img src="assets/screenshots/en/diary.webp" alt="Personal diary with rich text editor" /></td>
+    <td width="50%"><img src="assets/showcase/en/feed.webp" alt="ShiroAni: News" /></td>
+    <td width="50%"><img src="assets/showcase/en/profile.webp" alt="ShiroAni: Profile" /></td>
   </tr>
   <tr>
-    <td align="center"><sub>News — bookmarkable RSS feed across EN + PL sources.</sub></td>
-    <td align="center"><sub>Diary — a personal journal with a rich text editor.</sub></td>
+    <td align="center"><sub>Anime news and episode drops, English and Polish.</sub></td>
+    <td align="center"><sub>Your AniList stats and recent activity.</sub></td>
   </tr>
   <tr>
-    <td width="50%"><img src="assets/screenshots/en/profile.webp" alt="Profile — your AniList stats and recent activity" /></td>
-    <td width="50%"><img src="assets/screenshots/en/settings.webp" alt="Settings — themes, backgrounds, dock" /></td>
+    <td width="50%"><img src="assets/showcase/en/changelog.webp" alt="ShiroAni: Changelog" /></td>
+    <td width="50%"><img src="assets/showcase/en/browser.webp" alt="ShiroAni: Browser" /></td>
   </tr>
   <tr>
-    <td align="center"><sub>Profile — your AniList stats and recent activity.</sub></td>
-    <td align="center"><sub>Settings — themes, backgrounds, dock, language.</sub></td>
+    <td align="center"><sub>What&#39;s new, straight from the release history.</sub></td>
+    <td align="center"><sub>An ad-free new tab with your own shortcuts.</sub></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="assets/showcase/en/settings.webp" alt="ShiroAni: Settings" /></td>
+  </tr>
+  <tr>
+    <td align="center"><sub>Seventeen themes, a visual editor, and more.</sub></td>
   </tr>
 </table>
 
@@ -121,6 +129,10 @@ Grab the latest version for your system from [Releases](https://github.com/Shiro
 ## Building from source
 
 Want to hack on ShiroAni or build it yourself? See [CONTRIBUTING.md](CONTRIBUTING.md).
+
+## Showcase images
+
+The screenshots above are captured with [`@noctcore/showcase-kit`](https://www.npmjs.com/package/@noctcore/showcase-kit). `pnpm showcase` rebuilds them: it builds the web renderer in a dedicated showcase mode with invented demo data (no real account, library or files), then captures every view in English and Polish. See [CONTRIBUTING.md](CONTRIBUTING.md#refreshing-readme-screenshots) for details.
 
 ## License
 

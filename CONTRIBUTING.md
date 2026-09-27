@@ -68,23 +68,20 @@ shiroani/
 
 ## Refreshing README screenshots
 
-`pnpm screenshots` drives a running Electron window over CDP, walks every top-level view in each supported UI language, and writes PNGs to `assets/screenshots/<lang>/<view>.png`, plus compressed `.webp` variants alongside them. The READMEs embed the `.webp` files; the Remotion demo reel (`apps/landing-demo`) reads the canonical PNGs.
+`pnpm showcase` regenerates every screenshot with [`@noctcore/showcase-kit`](https://www.npmjs.com/package/@noctcore/showcase-kit). It needs no running app and no account: it builds the web renderer with `vite build --mode showcase`, which replaces the Electron bridge and the backend socket with invented fixture data (`apps/web/src/showcase`), then captures every view in English and Polish in a headless Chromium with a frozen clock.
 
-Steps:
+It writes:
 
-1. Start the renderer: `pnpm dev:web` (terminal 1).
-2. Start Electron with CDP enabled (terminal 2):
-   ```bash
-   cd apps/desktop
-   pnpm exec electron . --remote-debugging-port=9222
-   ```
-3. Once the dock is visible (onboarding done), run `pnpm screenshots` (terminal 3).
+- `assets/screenshots/<lang>/<view>.png`: plain captures, also read by the Remotion demo reel (`apps/landing-demo`);
+- `assets/showcase/<lang>/<view>.webp`: framed images embedded in the READMEs;
+- `assets/showcase/hero.<lang>.webp`: the README banners;
+- `../portfolio/public/projects/shiroani/`: the portfolio set, when the portfolio repo is checked out next to this one.
 
-Needs a local `playwright` install or `PLAYWRIGHT_PATH` pointing at one. `LANGS=en` limits the run to a single language; the default is `en,pl`.
+The capture is configured in `showcase.config.mjs`. After changing captions, `node scripts/showcase-extras.mjs readme en` (or `pl`) prints the screenshot table to paste into `README.md` (or `README.pl.md`). The first run needs a Chromium for Playwright: `pnpm exec playwright install chromium`.
 
 ## Refreshing the landing demo reel
 
-The landing page hero is followed by a short Remotion-rendered video reel cycling through the in-app screenshots. It lives in `apps/landing-demo/` and reads from the same `assets/screenshots/<lang>/` PNGs that the READMEs use, so refreshing the screenshots covers half the work.
+The landing page hero is followed by a short Remotion-rendered video reel cycling through the in-app screenshots. It lives in `apps/landing-demo/` and reads the plain `assets/screenshots/<lang>/` PNGs that `pnpm showcase` writes, so refreshing the screenshots covers half the work.
 
 ```bash
 # Render both locales (MP4 + JPG + AVIF poster) into apps/landing/public/demo/
