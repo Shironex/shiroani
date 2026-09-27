@@ -81,7 +81,7 @@ The capture is configured in `showcase.config.mjs`. After changing captions, `no
 
 ## Refreshing the landing demo reel
 
-The landing page hero is followed by a short Remotion-rendered video reel cycling through the in-app screenshots. It lives in `apps/landing-demo/` and reads from the same `assets/screenshots/<lang>/` PNGs that the READMEs use, so refreshing the screenshots covers half the work.
+The landing page hero is followed by a short Remotion-rendered video reel cycling through the in-app screenshots. It lives in `apps/landing-demo/` and reads the plain `assets/screenshots/<lang>/` PNGs that `pnpm showcase` writes, so refreshing the screenshots covers half the work.
 
 ```bash
 # Render both locales (MP4 + JPG + AVIF poster) into apps/landing/public/demo/
