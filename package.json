@@ -60,6 +60,7 @@
     "@noctcore/eslint-plugin-prisma": "^0.4.0",
     "@noctcore/eslint-plugin-react": "^0.4.0",
     "@noctcore/eslint-plugin-security": "^0.3.0",
+    "@noctcore/showcase-kit": "0.2.0",
     "concurrently": "^10.0.0",
     "eslint": "^10.4.0",
     "eslint-config-prettier": "^10.1.8",
