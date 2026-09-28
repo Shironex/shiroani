@@ -9,10 +9,23 @@
  * player is playing, or the last check still heard sound, the monitor polls
  * `isCurrentlyAudible()` once per interval and reports changes. When nothing
  * is playing and the guest is silent, polling stops.
+ *
+ * The playing counter is best effort: a late `media-paused` from the previous
+ * document can arrive after a navigation, and a player removed from the page
+ * without pausing never reports. The counter is clamped at zero, and polling
+ * also stops after `MAX_SILENT_POLLS` silent checks in a row even when the
+ * counter still says something plays, so a leaked count never polls forever.
  */
 
 /** Poll cadence while media is playing. Each poll is one sync IPC round trip. */
 export const AUDIBLE_POLL_MS = 1000;
+
+/**
+ * Consecutive silent polls after which polling stops even though a player is
+ * still counted as playing (one minute at the default cadence). A later
+ * `media-started-playing` starts polling again.
+ */
+export const MAX_SILENT_POLLS = 60;
 
 export interface IAudibleSource {
   isCurrentlyAudible: () => boolean;
@@ -32,9 +45,11 @@ export interface IAudibleMonitor {
 export function createAudibleMonitor(
   source: IAudibleSource,
   onChange: (audible: boolean) => void,
-  pollMs: number = AUDIBLE_POLL_MS
+  pollMs: number = AUDIBLE_POLL_MS,
+  maxSilentPolls: number = MAX_SILENT_POLLS
 ): IAudibleMonitor {
   let playing = 0;
+  let silentPolls = 0;
   let audible = false;
   let timer: ReturnType<typeof setInterval> | null = null;
 
@@ -58,10 +73,20 @@ export function createAudibleMonitor(
       // Guest detached or not attached yet; treat as silent.
     }
     report(now);
-    if (playing === 0 && !now) stopPolling();
+    silentPolls = now ? 0 : silentPolls + 1;
+    if (now) return;
+    if (playing === 0) {
+      stopPolling();
+    } else if (silentPolls >= maxSilentPolls) {
+      // The counter has most likely leaked (a player vanished without a
+      // pause event); forget it rather than poll for the page's lifetime.
+      playing = 0;
+      stopPolling();
+    }
   };
 
   const startPolling = () => {
+    silentPolls = 0;
     if (timer !== null) return;
     timer = setInterval(check, pollMs);
   };

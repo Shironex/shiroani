@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { AUDIBLE_POLL_MS, createAudibleMonitor } from './webviewAudio';
+import { AUDIBLE_POLL_MS, createAudibleMonitor, MAX_SILENT_POLLS } from './webviewAudio';
 
 describe('createAudibleMonitor', () => {
   let audibleNow: boolean;
@@ -87,6 +87,72 @@ describe('createAudibleMonitor', () => {
     const calls = source.isCurrentlyAudible.mock.calls.length;
     vi.advanceTimersByTime(AUDIBLE_POLL_MS * 3);
     expect(source.isCurrentlyAudible.mock.calls.length).toBe(calls);
+  });
+
+  it('clamps a late pause from the previous document at zero', () => {
+    const onChange = vi.fn();
+    const monitor = createAudibleMonitor(source, onChange);
+    monitor.mediaStarted();
+    monitor.documentChanged();
+    // The old document's player reports its pause after the navigation.
+    monitor.mediaPaused();
+    // One player in the new document: the count must be 1, not 0, so the
+    // silent (for example muted autoplay) player keeps being polled.
+    monitor.mediaStarted();
+    vi.advanceTimersByTime(AUDIBLE_POLL_MS * 3);
+    const calls = source.isCurrentlyAudible.mock.calls.length;
+    vi.advanceTimersByTime(AUDIBLE_POLL_MS * 3);
+    expect(source.isCurrentlyAudible.mock.calls.length).toBeGreaterThan(calls);
+  });
+
+  it('stops polling after a bounded run of silent polls even if the count says playing', () => {
+    const onChange = vi.fn();
+    const monitor = createAudibleMonitor(source, onChange, AUDIBLE_POLL_MS, 5);
+    // A player removed from the page without a pause event leaks this count.
+    monitor.mediaStarted();
+    vi.advanceTimersByTime(AUDIBLE_POLL_MS * 5);
+    expect(source.isCurrentlyAudible).toHaveBeenCalledTimes(5);
+    vi.advanceTimersByTime(AUDIBLE_POLL_MS * 20);
+    expect(source.isCurrentlyAudible).toHaveBeenCalledTimes(5);
+
+    // The leaked count is forgotten: a new player polls again, and pausing it
+    // stops polling as soon as the guest is silent.
+    monitor.mediaStarted();
+    audibleNow = true;
+    vi.advanceTimersByTime(AUDIBLE_POLL_MS);
+    expect(onChange).toHaveBeenLastCalledWith(true);
+    monitor.mediaPaused();
+    audibleNow = false;
+    vi.advanceTimersByTime(AUDIBLE_POLL_MS);
+    expect(onChange).toHaveBeenLastCalledWith(false);
+    const calls = source.isCurrentlyAudible.mock.calls.length;
+    vi.advanceTimersByTime(AUDIBLE_POLL_MS * 5);
+    expect(source.isCurrentlyAudible.mock.calls.length).toBe(calls);
+  });
+
+  it('resets the silent run whenever sound is heard', () => {
+    const onChange = vi.fn();
+    const monitor = createAudibleMonitor(source, onChange, AUDIBLE_POLL_MS, 3);
+    monitor.mediaStarted();
+    vi.advanceTimersByTime(AUDIBLE_POLL_MS * 2);
+    audibleNow = true;
+    vi.advanceTimersByTime(AUDIBLE_POLL_MS);
+    audibleNow = false;
+    vi.advanceTimersByTime(AUDIBLE_POLL_MS * 2);
+    // 2 silent + 1 audible + 2 silent: still under the bound of 3 in a row.
+    const calls = source.isCurrentlyAudible.mock.calls.length;
+    vi.advanceTimersByTime(AUDIBLE_POLL_MS);
+    expect(source.isCurrentlyAudible.mock.calls.length).toBe(calls + 1);
+    vi.advanceTimersByTime(AUDIBLE_POLL_MS * 5);
+    expect(source.isCurrentlyAudible.mock.calls.length).toBe(calls + 1);
+  });
+
+  it('defaults the silent-poll bound to one minute of polling', () => {
+    expect(MAX_SILENT_POLLS * AUDIBLE_POLL_MS).toBe(60_000);
+    const monitor = createAudibleMonitor(source, vi.fn());
+    monitor.mediaStarted();
+    vi.advanceTimersByTime(AUDIBLE_POLL_MS * (MAX_SILENT_POLLS + 10));
+    expect(source.isCurrentlyAudible).toHaveBeenCalledTimes(MAX_SILENT_POLLS);
   });
 
   it('treats a throwing guest as silent', () => {
