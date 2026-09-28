@@ -218,4 +218,30 @@ describe('BrowserToolbar', () => {
       expect(props.onAddToLibrary).toHaveBeenCalledOnce();
     });
   });
+  describe('zoom indicator', () => {
+    it('is hidden at 100% (and by default)', () => {
+      const { rerender } = render(<BrowserToolbar {...getDefaultProps()} />);
+      expect(screen.queryByTestId('browser-zoom-indicator')).not.toBeInTheDocument();
+      rerender(<BrowserToolbar {...getDefaultProps()} zoomPercent={100} />);
+      expect(screen.queryByTestId('browser-zoom-indicator')).not.toBeInTheDocument();
+    });
+
+    it('shows the percentage when the page is zoomed', () => {
+      render(<BrowserToolbar {...getDefaultProps()} zoomPercent={125} />);
+      const indicator = screen.getByTestId('browser-zoom-indicator');
+      expect(indicator).toHaveTextContent('125%');
+      expect(indicator).toHaveAccessibleName(
+        i18n.t('browser:toolbar.zoom.ariaLabel', { percent: 125 })
+      );
+    });
+
+    it('resets the zoom when clicked', async () => {
+      const onResetZoom = vi.fn();
+      const { user } = render(
+        <BrowserToolbar {...getDefaultProps()} zoomPercent={67} onResetZoom={onResetZoom} />
+      );
+      await user.click(screen.getByTestId('browser-zoom-indicator'));
+      expect(onResetZoom).toHaveBeenCalledOnce();
+    });
+  });
 });

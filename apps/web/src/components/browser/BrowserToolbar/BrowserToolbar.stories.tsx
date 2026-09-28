@@ -39,6 +39,11 @@ const meta = {
     onToggleFavorite: { description: 'Favorite-star toggle handler.' },
     onAddToLibrary: { description: 'Add-to-library button handler.' },
     onOpenHistory: { description: 'History button handler.' },
+    zoomPercent: {
+      control: 'number',
+      description: 'Site zoom of the active page in percent; the indicator shows when not 100.',
+    },
+    onResetZoom: { description: 'Zoom indicator handler: resets the site to 100%.' },
   },
   args: {
     urlInput: 'https://shinden.pl',
@@ -57,6 +62,7 @@ const meta = {
     onToggleFavorite: fn(),
     onAddToLibrary: fn(),
     onOpenHistory: fn(),
+    onResetZoom: fn(),
   },
   beforeEach: () => {
     // Empty history + bookmarks → the suggestions listbox never opens.
@@ -119,5 +125,29 @@ export const NoActiveTab: Story = {
     await expect(canvas.getByRole('button', { name: 'Back' })).toBeDisabled();
     await expect(canvas.getByRole('button', { name: 'Forward' })).toBeDisabled();
     await expect(canvas.getByRole('button', { name: 'Add to library' })).toBeDisabled();
+  },
+};
+
+/**
+ * The page is zoomed (Ctrl/Cmd + or -), so the URL pill shows the site's zoom
+ * percentage. Clicking it resets the site to 100%, after which it disappears.
+ */
+export const Zoomed: Story = {
+  args: { zoomPercent: 150 },
+  play: async ({ canvasElement, args }) => {
+    const canvas = within(canvasElement);
+    const indicator = canvas.getByTestId('browser-zoom-indicator');
+    await expect(indicator).toHaveTextContent('150%');
+    await userEvent.click(indicator);
+    await expect(args.onResetZoom).toHaveBeenCalledOnce();
+  },
+};
+
+/** At 100% there is no zoom indicator. */
+export const NotZoomed: Story = {
+  args: { zoomPercent: 100 },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await expect(canvas.queryByTestId('browser-zoom-indicator')).toBeNull();
   },
 };

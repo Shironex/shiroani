@@ -4,6 +4,8 @@ import { useShallow } from 'zustand/react/shallow';
 import { isNewTabUrl, NEW_TAB_URL, type BrowserLeafNode, type BrowserNode } from '@shiroani/shared';
 import { findLeafById, useBrowserStore } from '@/stores/useBrowserStore';
 import { collectLeaves } from '@/stores/browser/browserTree';
+import { zoomDirectionForKey, zoomPercentForUrl } from '@/stores/browser/browserZoom';
+import { useAppStore } from '@/stores/useAppStore';
 import { useBrowserInit } from '@/components/browser/useBrowserInit';
 import { getWebview, unregisterWebview } from '@/components/browser/webviewRefs';
 import { isEditableTarget } from '@/lib/is-editable-target';
@@ -22,6 +24,7 @@ const {
   splitTabs,
   unsplitTab,
   closeFocusedPane,
+  zoomActivePane,
 } = useBrowserStore.getState();
 
 export { unsplitTab };
@@ -60,6 +63,9 @@ export function useBrowserView(): IBrowserViewView {
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
 
   const activePane = activePaneId ? findLeafById(tabs, activePaneId) : null;
+  const activeZoomPercent = useBrowserStore(s =>
+    zoomPercentForUrl(s.zoomLevels, activePane?.url ?? null)
+  );
 
   // Tab restoration on mount
   useBrowserInit();
@@ -72,7 +78,10 @@ export function useBrowserView(): IBrowserViewView {
   // so the main process intercepts them via before-input-event and forwards via IPC.
   const handleShortcut = useCallback(
     (input: { key: string; ctrl?: boolean; shift?: boolean; alt?: boolean }) => {
-      if (input.ctrl && input.key === 'w') {
+      const zoomDirection = input.ctrl && !input.alt ? zoomDirectionForKey(input.key) : null;
+      if (zoomDirection) {
+        zoomActivePane(zoomDirection);
+      } else if (input.ctrl && input.key === 'w') {
         closeFocusedPane();
       } else if (input.ctrl && input.key === 't') {
         openTab();
@@ -101,11 +110,21 @@ export function useBrowserView(): IBrowserViewView {
   // Keyboard shortcuts — local keydown for when renderer has focus
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (isEditableTarget(e.target)) return;
-
       const ctrl = e.ctrlKey || e.metaKey;
       const alt = e.altKey;
       const key = e.key;
+
+      // Page zoom works from the browser chrome too (address bar, find bar),
+      // like a desktop browser. BrowserView stays mounted while other views
+      // are shown, so zoom only reacts while the browser view is on screen.
+      if (ctrl && !alt && zoomDirectionForKey(key)) {
+        if (useAppStore.getState().activeView !== 'browser') return;
+        e.preventDefault();
+        handleShortcut({ key, ctrl, shift: e.shiftKey, alt });
+        return;
+      }
+
+      if (isEditableTarget(e.target)) return;
 
       const isHandled =
         (ctrl &&
@@ -214,6 +233,8 @@ export function useBrowserView(): IBrowserViewView {
   // Stop the active pane's in-flight load (toolbar reload button turns into a
   // stop button while loading). Reads the live pane id so it targets whatever
   // is focused at click time.
+  const handleResetZoom = useCallback(() => zoomActivePane('reset'), []);
+
   const stop = useCallback(() => {
     const { activePaneId: paneId } = useBrowserStore.getState();
     if (paneId) getWebview(paneId)?.stop();
@@ -384,7 +405,10 @@ export function useBrowserView(): IBrowserViewView {
     handlePaneClick,
     handleSplitterStart,
     handleSplitterEnd,
+    handleResetZoom,
+    activeZoomPercent,
     openTab,
+
     closeTab,
     switchTab,
     reorderTabs,

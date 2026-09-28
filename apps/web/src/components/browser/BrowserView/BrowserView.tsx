@@ -50,6 +50,8 @@ export default function BrowserView() {
     handlePaneClick,
     handleSplitterStart,
     handleSplitterEnd,
+    handleResetZoom,
+    activeZoomPercent,
     openTab,
     closeTab,
     switchTab,
@@ -127,6 +129,8 @@ export default function BrowserView() {
           onToggleFavorite={handleToggleFavorite}
           onAddToLibrary={() => setIsAddToLibraryOpen(true)}
           onOpenHistory={() => setIsHistoryOpen(true)}
+          zoomPercent={activeZoomPercent}
+          onResetZoom={handleResetZoom}
           urlInputRef={urlInputRef}
         />
       )}

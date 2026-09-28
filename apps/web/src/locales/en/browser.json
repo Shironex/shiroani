@@ -14,7 +14,11 @@
     "addFavorite": "Add to favorites",
     "removeFavorite": "Remove from favorites",
     "addToLibrary": "Add to library",
-    "history": "History"
+    "history": "History",
+    "zoom": {
+      "reset": "Reset zoom to 100%",
+      "ariaLabel": "Page zoom {{percent}}%. Reset to 100%"
+    }
   },
   "favorites": {
     "barLabel": "Favorites bar",

@@ -69,6 +69,10 @@ export interface IBrowserViewView {
   readonly handlePaneClick: (paneId: string) => void;
   readonly handleSplitterStart: () => void;
   readonly handleSplitterEnd: () => void;
+  /** Reset the active pane's site zoom to 100% (toolbar zoom indicator). */
+  readonly handleResetZoom: () => void;
+  /** Remembered zoom percentage of the active pane's site (100 when none). */
+  readonly activeZoomPercent: number;
   readonly openTab: () => void;
   readonly closeTab: (id: string) => void;
   readonly switchTab: (id: string) => void;

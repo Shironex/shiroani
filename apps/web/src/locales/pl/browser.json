@@ -14,7 +14,11 @@
     "addFavorite": "Dodaj do ulubionych",
     "removeFavorite": "Usuń z ulubionych",
     "addToLibrary": "Dodaj do biblioteki",
-    "history": "Historia"
+    "history": "Historia",
+    "zoom": {
+      "reset": "Przywróć powiększenie 100%",
+      "ariaLabel": "Powiększenie strony {{percent}}%. Przywróć 100%"
+    }
   },
   "favorites": {
     "barLabel": "Pasek ulubionych",

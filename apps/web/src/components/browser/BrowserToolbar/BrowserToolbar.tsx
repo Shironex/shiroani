@@ -31,6 +31,8 @@ const LISTBOX_ID = 'browser-address-suggestions';
  *
  * Preserves button order expected by BrowserToolbar.test.tsx:
  *   0 back · 1 forward · 2 reload · 3 favorite-star · 4 add-to-library · 5 home · 6 history
+ * (the zoom indicator inside the URL pill only renders when the page is not at
+ * 100%, so the default order is unchanged).
  */
 export default function BrowserToolbar({
   urlInput,
@@ -50,6 +52,8 @@ export default function BrowserToolbar({
   onToggleFavorite,
   onAddToLibrary,
   onOpenHistory,
+  zoomPercent = 100,
+  onResetZoom,
   urlInputRef: externalUrlInputRef,
 }: IBrowserToolbarProps) {
   const { t } = useTranslation('browser');
@@ -160,6 +164,23 @@ export default function BrowserToolbar({
               'focus-visible:ring-0 focus-visible:border-0 focus-visible:bg-transparent'
             )}
           />
+          {zoomPercent !== 100 && (
+            <TooltipButton
+              variant="ghost"
+              size="sm"
+              className={cn(
+                'h-6 shrink-0 rounded-full px-2 text-[11px] font-mono tabular-nums',
+                'text-muted-foreground hover:text-foreground'
+              )}
+              onClick={onResetZoom}
+              data-testid="browser-zoom-indicator"
+              aria-label={t('toolbar.zoom.ariaLabel', { percent: zoomPercent })}
+              tooltip={t('toolbar.zoom.reset')}
+              tooltipSide="bottom"
+            >
+              {zoomPercent}%
+            </TooltipButton>
+          )}
         </div>
         {showSuggestions && (
           <AddressSuggestions
