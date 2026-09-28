@@ -197,9 +197,13 @@ export async function createMainWindow(browserManager: BrowserManager): Promise<
   mainWindow.show();
 
   mainWindowStateSaver?.dispose();
-  mainWindowStateSaver = createWindowStateSaver(mainWindow, ({ bounds, maximized }) => {
-    store.set({ [WINDOW_BOUNDS_KEY]: bounds, [WINDOW_MAXIMIZED_KEY]: maximized });
-  });
+  mainWindowStateSaver = createWindowStateSaver(
+    mainWindow,
+    ({ bounds, maximized }) => {
+      store.set({ [WINDOW_BOUNDS_KEY]: bounds, [WINDOW_MAXIMIZED_KEY]: maximized });
+    },
+    { onPersistError: error => logger.error('Failed to save window state:', error) }
+  );
 
   // Security: validate and harden <webview> tags before they attach
   mainWindow.webContents.on('will-attach-webview', (_event, webPreferences, _params) => {
