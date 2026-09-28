@@ -1,3 +1,6 @@
+// Must stay the first import: it applies ELECTRON_USER_DATA_DIR before the
+// store and logger modules below resolve userData.
+import './user-data-override';
 import { app, BrowserWindow, powerMonitor, protocol } from 'electron';
 import { join } from 'path';
 import { NestFactory } from '@nestjs/core';
@@ -91,13 +94,6 @@ protocol.registerSchemesAsPrivileged([
     },
   },
 ]);
-
-// Allow E2E tests to isolate userData by setting ELECTRON_USER_DATA_DIR.
-// Must run before app.ready so electron-store and other userData consumers
-// see the overridden path.
-if (process.env.ELECTRON_USER_DATA_DIR) {
-  app.setPath('userData', process.env.ELECTRON_USER_DATA_DIR);
-}
 
 // Pin the Windows AppUserModelID so scheduled toast notifications resolve to
 // the same Start Menu shortcut electron-builder installs (see electron-builder.json
