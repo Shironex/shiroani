@@ -31,6 +31,7 @@ import { AppBackground } from '@/components/shared/AppBackground';
 import { BackgroundOverlay } from '@/components/shared/BackgroundOverlay';
 import { ConnectionBanner } from '@/components/shared/ConnectionBanner';
 import { SupportBanner } from '@/components/shared/SupportBanner';
+import { DropOverlay } from '@/components/shared/DropOverlay';
 
 function App() {
   const activeView = useAppStore(s => s.activeView);
@@ -173,6 +174,9 @@ function App() {
 
           {/* Floating dock navigation — hidden in fullscreen */}
           {!isFullScreen && <NavigationDock hasBg={hasBg} />}
+
+          {/* Window drop target: links, ShiroAni exports and images (desktop only) */}
+          {IS_ELECTRON && <DropOverlay />}
         </div>
       )}
     </>
