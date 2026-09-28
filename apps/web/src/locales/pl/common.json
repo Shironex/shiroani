@@ -73,5 +73,54 @@
     "label": "Eksperymentalne",
     "tooltip": "Ta integracja jest eksperymentalna — nie jest jeszcze w pełni stabilna i może mieć drobne usterki.",
     "hint": "Eksperymentalne: ta integracja nie jest jeszcze w pełni stabilna i wciąż jest testowana. Mogą pojawić się drobne usterki."
+  },
+  "drop": {
+    "overlay": {
+      "link": {
+        "title": "Upuść, aby otworzyć link",
+        "hint": "Otworzy się w nowej karcie przeglądarki."
+      },
+      "json": {
+        "title": "Upuść, aby zaimportować",
+        "hint": "Zanim cokolwiek zostanie zaimportowane, zobaczysz zawartość eksportu ShiroAni."
+      },
+      "image": {
+        "title": "Upuść obraz",
+        "hint": "Potem wybierzesz, czym ma się stać."
+      },
+      "unknown": {
+        "title": "Upuść tutaj",
+        "hint": "Obsługiwane są linki, eksporty ShiroAni (.json) i obrazy (PNG, JPG, GIF, WebP)."
+      },
+      "unsupported": {
+        "title": "Tego nie da się tu upuścić",
+        "hint": "Obsługiwane są linki, eksporty ShiroAni (.json) i obrazy (PNG, JPG, GIF, WebP)."
+      }
+    },
+    "unsupported": {
+      "title": "Nie wiem, co z tym zrobić",
+      "multiple": "Upuszczaj jeden plik naraz.",
+      "hint": "Obsługiwane są linki, eksporty ShiroAni (.json) i obrazy (PNG, JPG, GIF, WebP)."
+    },
+    "import": {
+      "tooLarge": "Ten plik jest za duży do importu (maksymalnie {{maxMb}} MB).",
+      "readFailed": "Nie udało się odczytać upuszczonego pliku."
+    },
+    "image": {
+      "title": "Czym ma być ten obraz?",
+      "description": "Nic się nie zmieni, dopóki nie wybierzesz opcji.",
+      "previewAlt": "Podgląd upuszczonego obrazu",
+      "setBackground": "Ustaw jako tło",
+      "setMascot": "Ustaw jako sprite maskotki",
+      "backgroundSet": "Tło zostało zmienione.",
+      "mascotSet": "Sprite maskotki został zmieniony.",
+      "errors": {
+        "tooLarge": "Obraz jest za duży (maksymalnie {{maxMb}} MB).",
+        "notAnImage": "Ten plik nie jest obsługiwanym obrazem.",
+        "dimensionsTooLarge": "Obraz jest za duży na maskotkę (maksymalnie {{maxPx}}×{{maxPx}} px).",
+        "invalidDimensions": "Obraz ma nieprawidłowe wymiary.",
+        "failed": "Nie udało się zapisać obrazu. Spróbuj ponownie."
+      }
+    }
   }
 }
