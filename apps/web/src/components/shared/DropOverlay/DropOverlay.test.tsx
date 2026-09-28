@@ -26,8 +26,12 @@ interface DragPayload {
   strings?: Record<string, string>;
 }
 
-/** Dispatch a drag event on window with a DataTransfer-shaped payload (jsdom has no DragEvent). */
-function fireDrag(type: string, { files = [], strings = {} }: DragPayload = {}) {
+/** Dispatch a drag event (on window by default) with a DataTransfer-shaped payload (jsdom has no DragEvent). */
+function fireDrag(
+  type: string,
+  { files = [], strings = {} }: DragPayload = {},
+  target: EventTarget = window
+) {
   const event = new Event(type, { bubbles: true, cancelable: true });
   const dataTransfer = {
     files,
@@ -38,7 +42,7 @@ function fireDrag(type: string, { files = [], strings = {} }: DragPayload = {}) 
   };
   Object.defineProperty(event, 'dataTransfer', { value: dataTransfer });
   act(() => {
-    window.dispatchEvent(event);
+    target.dispatchEvent(event);
   });
   return { event, dataTransfer };
 }
@@ -206,6 +210,74 @@ describe('DropOverlay', () => {
     expect(event.defaultPrevented).toBe(false);
     expect(navigateToBrowser).not.toHaveBeenCalled();
     fireDrag('dragend');
+  });
+
+  describe('internal drags that lose their dragend', () => {
+    beforeEach(() => {
+      vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'Date'] });
+    });
+
+    /** Start a drag from an element inside the app, then remove that element. */
+    function startDragFromRemovedElement() {
+      const source = document.createElement('img');
+      document.body.append(source);
+      fireDrag('dragstart', {}, source);
+      source.remove();
+      // Dispatched on a detached node, so it never reaches window.
+      fireDrag('dragend', {}, source);
+    }
+
+    it('handles the next external drag once the lost internal drag has gone quiet', () => {
+      render(<DropOverlay />);
+      startDragFromRemovedElement();
+
+      act(() => {
+        vi.advanceTimersByTime(1000);
+      });
+      fireDrag('dragenter', LINK);
+      expect(screen.getByRole('status')).toHaveTextContent('Drop to open the link');
+
+      fireDrag('drop', LINK);
+      expect(navigateToBrowser).toHaveBeenCalledWith('https://anilist.co/anime/154587');
+    });
+
+    it('still ignores the internal drag while it keeps moving over the window', () => {
+      render(<DropOverlay />);
+      startDragFromRemovedElement();
+
+      act(() => {
+        vi.advanceTimersByTime(300);
+      });
+      fireDrag('dragenter', LINK);
+
+      expect(screen.queryByRole('status')).not.toBeInTheDocument();
+    });
+
+    it('ends the internal drag on drop even without a dragend', () => {
+      render(<DropOverlay />);
+      startDragFromRemovedElement();
+
+      const { event } = fireDrag('drop', LINK);
+      expect(event.defaultPrevented).toBe(false);
+      expect(navigateToBrowser).not.toHaveBeenCalled();
+
+      fireDrag('dragenter', LINK);
+      expect(screen.getByRole('status')).toBeInTheDocument();
+    });
+
+    it('sees a dragend even when the source stops its propagation', () => {
+      render(<DropOverlay />);
+      const source = document.createElement('img');
+      source.addEventListener('dragend', e => e.stopPropagation());
+      document.body.append(source);
+
+      fireDrag('dragstart', {}, source);
+      fireDrag('dragend', {}, source);
+      fireDrag('dragenter', LINK);
+
+      expect(screen.getByRole('status')).toBeInTheDocument();
+      source.remove();
+    });
   });
 
   it('ignores new drops while a dropped item is waiting for a choice', async () => {

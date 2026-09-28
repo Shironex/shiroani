@@ -30,6 +30,12 @@ const DRAG_IDLE_TIMEOUT_MS = 1000;
 
 type WithDataTransfer = DragEvent & { dataTransfer: DataTransfer };
 
+/** Whether a drag carries something the overlay acts on (files or links). */
+function carriesFilesOrLinks(e: DragEvent): boolean {
+  const types = e.dataTransfer?.types ?? [];
+  return types.includes('Files') || types.includes('text/uri-list');
+}
+
 export function useDropOverlay(): IDropOverlayView {
   const { t } = useTranslation('common');
   const navigateToBrowser = useNavigateToBrowser();
@@ -82,6 +88,8 @@ export function useDropOverlay(): IDropOverlayView {
   useEffect(() => {
     let depth = 0;
     let internalDrag = false;
+    /** When the window last saw any drag event, internal ones included. */
+    let lastDragEventAt = 0;
     let idleTimer: ReturnType<typeof setTimeout> | null = null;
 
     const hide = () => {
@@ -102,12 +110,20 @@ export function useDropOverlay(): IDropOverlayView {
 
     const onDragStart = () => {
       internalDrag = true;
+      lastDragEventAt = Date.now();
     };
     const onDragEnd = () => {
       internalDrag = false;
     };
 
     const onDragEnter = (e: DragEvent) => {
+      // A live drag fires dragover several times a second. When the element an
+      // internal drag started from is removed, its dragend never reaches the
+      // window; a drag with files or links that enters after a quiet spell is
+      // then a new one from outside, not the lost internal drag.
+      const quiet = Date.now() - lastDragEventAt >= DRAG_IDLE_TIMEOUT_MS;
+      if (internalDrag && quiet && carriesFilesOrLinks(e)) internalDrag = false;
+      lastDragEventAt = Date.now();
       if (!isExternal(e)) return;
       e.preventDefault();
       if (latest.current.dialogOpen) return;
@@ -117,6 +133,7 @@ export function useDropOverlay(): IDropOverlayView {
     };
 
     const onDragOver = (e: DragEvent) => {
+      lastDragEventAt = Date.now();
       if (!isExternal(e)) return;
       // Always cancel dragover: an uncancelled drop makes Chromium navigate the
       // app window to the dropped file or link.
@@ -134,12 +151,19 @@ export function useDropOverlay(): IDropOverlayView {
     };
 
     const onDragLeave = (e: DragEvent) => {
+      lastDragEventAt = Date.now();
       if (!isExternal(e)) return;
       depth = Math.max(0, depth - 1);
       if (depth === 0) hide();
     };
 
     const onDrop = (e: DragEvent) => {
+      lastDragEventAt = Date.now();
+      if (internalDrag) {
+        // An internal drag ends here, even if its dragend never arrives.
+        internalDrag = false;
+        return;
+      }
       if (!isExternal(e)) return;
       e.preventDefault();
       hide();
@@ -148,16 +172,18 @@ export function useDropOverlay(): IDropOverlayView {
       void latest.current.handleDrop(classifyDrop(e.dataTransfer));
     };
 
-    window.addEventListener('dragstart', onDragStart);
-    window.addEventListener('dragend', onDragEnd);
+    // Capture, so an element that stops propagation cannot hide the drag's
+    // start or end from the overlay.
+    window.addEventListener('dragstart', onDragStart, true);
+    window.addEventListener('dragend', onDragEnd, true);
     window.addEventListener('dragenter', onDragEnter);
     window.addEventListener('dragover', onDragOver);
     window.addEventListener('dragleave', onDragLeave);
     window.addEventListener('drop', onDrop);
     return () => {
       if (idleTimer) clearTimeout(idleTimer);
-      window.removeEventListener('dragstart', onDragStart);
-      window.removeEventListener('dragend', onDragEnd);
+      window.removeEventListener('dragstart', onDragStart, true);
+      window.removeEventListener('dragend', onDragEnd, true);
       window.removeEventListener('dragenter', onDragEnter);
       window.removeEventListener('dragover', onDragOver);
       window.removeEventListener('dragleave', onDragLeave);
