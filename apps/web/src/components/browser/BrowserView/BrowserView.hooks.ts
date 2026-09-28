@@ -25,6 +25,7 @@ const {
   unsplitTab,
   closeFocusedPane,
   zoomActivePane,
+  toggleTabMuted,
 } = useBrowserStore.getState();
 
 export { unsplitTab };
@@ -407,8 +408,8 @@ export function useBrowserView(): IBrowserViewView {
     handleSplitterEnd,
     handleResetZoom,
     activeZoomPercent,
+    toggleTabMuted,
     openTab,
-
     closeTab,
     switchTab,
     reorderTabs,

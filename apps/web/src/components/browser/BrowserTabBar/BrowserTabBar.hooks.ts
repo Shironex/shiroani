@@ -163,6 +163,7 @@ export function useBrowserTabBar(
     mergeTargetId,
     wasDragging,
     activeDragTab,
+    activeDragNode,
     collisionDetection,
     handleDragStart,
     handleDragOver,

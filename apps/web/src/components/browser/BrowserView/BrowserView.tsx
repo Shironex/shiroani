@@ -52,6 +52,7 @@ export default function BrowserView() {
     handleSplitterEnd,
     handleResetZoom,
     activeZoomPercent,
+    toggleTabMuted,
     openTab,
     closeTab,
     switchTab,
@@ -106,6 +107,7 @@ export default function BrowserView() {
           onNewTab={() => openTab()}
           onReorderTabs={reorderTabs}
           onSplitTabs={splitTabsEnabled ? splitTabs : undefined}
+          onToggleTabMuted={toggleTabMuted}
         />
       )}
 

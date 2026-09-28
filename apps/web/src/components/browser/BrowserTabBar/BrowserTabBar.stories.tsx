@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { within, userEvent, expect, fn } from 'storybook/test';
-import type { BrowserNode } from '@shiroani/shared';
+import type { BrowserLeafNode, BrowserNode } from '@shiroani/shared';
 import BrowserTabBar from './BrowserTabBar';
 
-function leaf(id: string, title: string): BrowserNode {
+function leaf(id: string, title: string, audio: Partial<BrowserLeafNode> = {}): BrowserNode {
   return {
     kind: 'leaf',
     id,
@@ -12,6 +12,7 @@ function leaf(id: string, title: string): BrowserNode {
     isLoading: false,
     canGoBack: false,
     canGoForward: false,
+    ...audio,
   };
 }
 
@@ -45,6 +46,10 @@ const meta = {
     onSplitTabs: {
       description: 'Optional — when set, dropping a tab onto another splits them side by side.',
     },
+    onToggleTabMuted: {
+      description:
+        'Called with a tab id from the speaker icon or the M key on a focused tab: mutes or unmutes every pane.',
+    },
   },
   args: {
     tabs,
@@ -54,6 +59,7 @@ const meta = {
     onNewTab: fn(),
     onReorderTabs: fn(),
     onSplitTabs: fn(),
+    onToggleTabMuted: fn(),
   },
 } satisfies Meta<typeof BrowserTabBar>;
 
@@ -92,5 +98,39 @@ export const NewTab: Story = {
     const canvas = within(canvasElement);
     await userEvent.click(canvas.getByTestId('browser-new-tab'));
     await expect(args.onNewTab).toHaveBeenCalledOnce();
+  },
+};
+
+/**
+ * Audio indicators: a speaker on a tab playing sound, a crossed-out speaker on
+ * a muted tab. The icon is presentational (like the close X): clicking it
+ * toggles mute without selecting the tab, M does the same on a focused tab, and
+ * the state is announced through the tab's `aria-description`.
+ */
+export const AudioStates: Story = {
+  args: {
+    tabs: [
+      leaf('a', 'Shinden', { isAudible: true }),
+      leaf('b', 'YouTube', { isMuted: true }),
+      leaf('c', 'Docs'),
+    ],
+  },
+  play: async ({ canvasElement, args }) => {
+    const canvas = within(canvasElement);
+    const chip = (title: string) => canvas.getByText(title).closest('[role="tab"]') as HTMLElement;
+
+    await expect(within(chip('Shinden')).getByTestId('browser-tab-audio')).toHaveAttribute(
+      'data-audio-state',
+      'audible'
+    );
+    await expect(within(chip('YouTube')).getByTestId('browser-tab-audio')).toHaveAttribute(
+      'data-audio-state',
+      'muted'
+    );
+    await expect(within(chip('Docs')).queryByTestId('browser-tab-audio')).toBeNull();
+
+    await userEvent.click(within(chip('Shinden')).getByTestId('browser-tab-audio'));
+    await expect(args.onToggleTabMuted).toHaveBeenCalledWith('a');
+    await expect(args.onSelectTab).not.toHaveBeenCalled();
   },
 };

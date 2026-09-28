@@ -4,6 +4,7 @@ import { DndContext, DragOverlay } from '@dnd-kit/core';
 import { SortableContext } from '@dnd-kit/sortable';
 import { restrictToHorizontalAxis } from '@dnd-kit/modifiers';
 import { cn } from '@/lib/utils';
+import { tabAudioState } from '@/stores/browser/browserTree';
 import { TooltipButton } from '@/components/ui/tooltip-button';
 import { useBrowserTabBar, nodeToChipLeaf } from './BrowserTabBar.hooks';
 import { SortableTab, TabContent, horizontalListSortingStrategy } from './BrowserTabBar.parts';
@@ -26,6 +27,7 @@ export default function BrowserTabBar({
   onNewTab,
   onReorderTabs,
   onSplitTabs,
+  onToggleTabMuted,
 }: IBrowserTabBarProps) {
   const { t } = useTranslation('browser');
   const {
@@ -34,6 +36,7 @@ export default function BrowserTabBar({
     mergeTargetId,
     wasDragging,
     activeDragTab,
+    activeDragNode,
     collisionDetection,
     handleDragStart,
     handleDragOver,
@@ -60,6 +63,11 @@ export default function BrowserTabBar({
         onClose={e => {
           e.stopPropagation();
           onCloseTab(node.id);
+        }}
+        audioState={tabAudioState(node)}
+        onToggleMute={e => {
+          e.stopPropagation();
+          onToggleTabMuted?.(node.id);
         }}
         wasDragging={wasDragging}
       />
@@ -123,6 +131,7 @@ export default function BrowserTabBar({
             <TabContent
               tab={activeDragTab}
               isActive={activeDragTab.id === activeTabId}
+              audioState={activeDragNode ? tabAudioState(activeDragNode) : null}
               isDragOverlay
             />
           ) : null}

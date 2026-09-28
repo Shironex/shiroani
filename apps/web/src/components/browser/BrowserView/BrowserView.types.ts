@@ -73,6 +73,8 @@ export interface IBrowserViewView {
   readonly handleResetZoom: () => void;
   /** Remembered zoom percentage of the active pane's site (100 when none). */
   readonly activeZoomPercent: number;
+  /** Mute or unmute every pane of a top-level tab. */
+  readonly toggleTabMuted: (tabId: string) => void;
   readonly openTab: () => void;
   readonly closeTab: (id: string) => void;
   readonly switchTab: (id: string) => void;

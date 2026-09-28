@@ -78,6 +78,12 @@
     "empty": {
       "cta": "Click + to open a new tab",
       "action": "New tab"
+    },
+    "audio": {
+      "playing": "Playing audio",
+      "muted": "Muted",
+      "muteHint": "Playing audio. Click or press M to mute the tab",
+      "unmuteHint": "Muted. Click or press M to unmute the tab"
     }
   },
   "addDialog": {
