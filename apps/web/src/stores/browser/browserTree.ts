@@ -101,6 +101,23 @@ export function collectLeaves(node: BrowserNode): BrowserLeafNode[] {
 }
 
 /**
+ * Audio indicator for a whole tab (every pane in it). `audible` when any pane
+ * that is not muted is producing sound, otherwise `muted` when any pane is
+ * muted, otherwise `null` (no indicator). An audible unmuted pane wins over a
+ * muted sibling so a split tab never hides sound that is actually playing.
+ */
+export type TabAudioState = 'audible' | 'muted' | null;
+
+export function tabAudioState(node: BrowserNode): TabAudioState {
+  let anyMuted = false;
+  for (const leaf of collectLeaves(node)) {
+    if (leaf.isAudible && !leaf.isMuted) return 'audible';
+    if (leaf.isMuted) anyMuted = true;
+  }
+  return anyMuted ? 'muted' : null;
+}
+
+/**
  * Single-pass split-ratio update. Returns `null` when the split id is not in
  * this subtree (caller keeps searching), `{ kind: 'unchanged' }` when the
  * split was found but the ratio already matches (caller stops without a
