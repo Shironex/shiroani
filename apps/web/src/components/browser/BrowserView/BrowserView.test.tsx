@@ -1,6 +1,6 @@
 import { act } from 'react';
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { fireEvent, render } from '@/test/test-utils';
+import { fireEvent, render, screen } from '@/test/test-utils';
 
 // Mock webview registry so the store doesn't try to call into a real webview
 vi.mock('@/components/browser/webviewRefs', () => ({
@@ -204,6 +204,42 @@ describe('BrowserView: page zoom shortcuts', () => {
   const pressZoomIn = (target: Window | Element = window) =>
     fireEvent.keyDown(target, { key: '=', ctrlKey: true });
 
+  it('zooms the active page while the browser view is on screen', () => {
+    useBrowserStore.getState().openTab('https://shinden.pl/');
+    render(<BrowserView />);
+
+    pressZoomIn();
+
+    expect(zoomLevels()).toEqual({ 'shinden.pl': 110 });
+  });
+
+  it('ignores zoom keys while another view is active', () => {
+    useBrowserStore.getState().openTab('https://shinden.pl/');
+    render(<BrowserView />);
+
+    for (const view of ['library', 'settings'] as const) {
+      useAppStore.setState({ activeView: view });
+      const event = pressZoomIn();
+      expect(event, `${view}: default not prevented`).toBe(true);
+      fireEvent.keyDown(window, { key: '0', ctrlKey: true });
+      fireEvent.keyDown(window, { key: '-', metaKey: true });
+    }
+
+    expect(zoomLevels()).toEqual({});
+  });
+
+  it('zooms from the address bar, before the editable-target guard', () => {
+    useBrowserStore.getState().openTab('https://shinden.pl/');
+    render(<BrowserView />);
+    const addressBar = screen.getByRole('combobox');
+    addressBar.focus();
+
+    pressZoomIn(addressBar);
+    fireEvent.keyDown(addressBar, { key: '=', metaKey: true });
+
+    expect(zoomLevels()).toEqual({ 'shinden.pl': 125 });
+  });
+
   it('ignores zoom keys typed inside a dialog over the browser', () => {
     useBrowserStore.getState().openTab('https://shinden.pl/');
     render(<BrowserView />);
@@ -259,4 +295,18 @@ describe('BrowserView: page zoom shortcuts', () => {
     expect(findPaneIdByWebContentsId).not.toHaveBeenCalled();
     expect(zoomLevels()).toEqual({ 'a.com': 90 });
   });
+
+  it.each(['__proto__', 'constructor', 'toString', 'hasOwnProperty'])(
+    'renders and zooms a page on http://%s/ without crashing',
+    host => {
+      useBrowserStore.getState().openTab(`http://${host}/`);
+
+      expect(() => render(<BrowserView />)).not.toThrow();
+      expect(screen.queryByTestId('browser-zoom-indicator')).toBeNull();
+
+      pressZoomIn();
+
+      expect(screen.getByTestId('browser-zoom-indicator')).toHaveTextContent('110%');
+    }
+  );
 });
