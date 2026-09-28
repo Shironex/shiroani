@@ -16,12 +16,48 @@ import type {
   ImportStrategy,
 } from './ImportDialog.types';
 
-type IUseImportDialogArgs = Pick<IImportDialogProps, 'open' | 'onOpenChange' | 'type'>;
+type IUseImportDialogArgs = Pick<
+  IImportDialogProps,
+  'open' | 'onOpenChange' | 'type' | 'preloadedContent'
+>;
+
+/** Error keys under `importDialog.errorMessages` that {@link parseImportContent} can return. */
+type ImportParseError = 'invalidJson' | 'notShiroaniExport';
+
+/**
+ * The single validation path for import files, shared by the native picker
+ * and preloaded (dropped) content. The server validates the full payload with
+ * zod again when the import is confirmed.
+ */
+export function parseImportContent(
+  raw: string
+):
+  | { ok: true; data: ShiroaniExportFormat; libraryCount: number; diaryCount: number }
+  | { ok: false; error: ImportParseError } {
+  let data: ShiroaniExportFormat;
+  try {
+    data = JSON.parse(raw);
+  } catch {
+    return { ok: false, error: 'invalidJson' };
+  }
+
+  if (data?.source !== 'shiroani' || data.version !== 1) {
+    return { ok: false, error: 'notShiroaniExport' };
+  }
+
+  return {
+    ok: true,
+    data,
+    libraryCount: data.data?.library?.length ?? 0,
+    diaryCount: data.data?.diary?.length ?? 0,
+  };
+}
 
 export function useImportDialog({
   open,
   onOpenChange,
   type,
+  preloadedContent,
 }: IUseImportDialogArgs): IImportDialogView {
   const { t } = useTranslation('nav');
   const { state, transition, reset, updateState } = useDialogStateMachine<ImportStep>({
@@ -40,6 +76,22 @@ export function useImportDialog({
       listenerCleanupRef.current?.();
     };
   }, []);
+
+  const showParsedContent = useCallback(
+    (raw: string) => {
+      const parsed = parseImportContent(raw);
+      if (!parsed.ok) {
+        transition({
+          step: 'file-error',
+          message: t(`importDialog.errorMessages.${parsed.error}`),
+        });
+        return;
+      }
+      const { data, libraryCount, diaryCount } = parsed;
+      transition({ step: 'preview', data, libraryCount, diaryCount });
+    },
+    [transition, t]
+  );
 
   const handleFileSelect = useCallback(async () => {
     transition({ step: 'loading-file' });
@@ -63,33 +115,14 @@ export function useImportDialog({
         return;
       }
 
-      let data: ShiroaniExportFormat;
-      try {
-        data = JSON.parse(raw);
-      } catch {
-        transition({ step: 'file-error', message: t('importDialog.errorMessages.invalidJson') });
-        return;
-      }
-
-      if (data.source !== 'shiroani' || data.version !== 1) {
-        transition({
-          step: 'file-error',
-          message: t('importDialog.errorMessages.notShiroaniExport'),
-        });
-        return;
-      }
-
-      const libraryCount = data.data?.library?.length ?? 0;
-      const diaryCount = data.data?.diary?.length ?? 0;
-
-      transition({ step: 'preview', data, libraryCount, diaryCount });
+      showParsedContent(raw);
     } catch (err) {
       transition({
         step: 'file-error',
         message: err instanceof Error ? err.message : t('importDialog.errorMessages.unknown'),
       });
     }
-  }, [onOpenChange, transition, reset, t]);
+  }, [onOpenChange, transition, reset, showParsedContent, t]);
 
   const handleImport = useCallback(async () => {
     if (state.step !== 'preview') return;
@@ -186,6 +219,7 @@ export function useImportDialog({
   // so the async side-effect is StrictMode-safe — the ref guard ensures the
   // file dialog fires exactly once per open session even though the first
   // `transition` away from 'idle' hasn't settled yet on the double mount.
+  // Preloaded content (a dropped file) replaces the picker, not the preview.
   useEffect(() => {
     if (!open) {
       autoTriggeredRef.current = false;
@@ -193,9 +227,13 @@ export function useImportDialog({
     }
     if (state.step === 'idle' && !autoTriggeredRef.current) {
       autoTriggeredRef.current = true;
-      handleFileSelect();
+      if (preloadedContent != null) {
+        showParsedContent(preloadedContent);
+      } else {
+        handleFileSelect();
+      }
     }
-  }, [open, state.step, handleFileSelect]);
+  }, [open, state.step, preloadedContent, handleFileSelect, showParsedContent]);
 
   // Compute progress stats for the importing step
   const progressInfo = useMemo(() => {

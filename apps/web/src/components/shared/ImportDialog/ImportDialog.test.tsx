@@ -179,4 +179,75 @@ describe('ImportDialog', () => {
 
     expect(await screen.findByText('Server exploded')).toBeInTheDocument();
   });
+
+  it('uses the native picker, not preloaded content, when none is given', async () => {
+    const { openFile, readJson } = stubFileBridge();
+    render(<ImportDialog open onOpenChange={() => {}} type="all" preloadedContent={null} />);
+
+    await screen.findByText(/found/i);
+    expect(openFile).toHaveBeenCalledTimes(1);
+    expect(readJson).toHaveBeenCalledWith('/tmp/in.json');
+  });
+
+  describe('with preloaded content (a dropped file)', () => {
+    it('shows the preview without opening the native picker or reading a path', async () => {
+      const { openFile, readJson } = stubFileBridge();
+      render(
+        <ImportDialog
+          open
+          onOpenChange={() => {}}
+          type="all"
+          preloadedContent={JSON.stringify(VALID_EXPORT)}
+        />
+      );
+
+      expect(await screen.findByText(/found/i)).toBeInTheDocument();
+      expect(screen.getByText('What to do with duplicates?')).toBeInTheDocument();
+      expect(openFile).not.toHaveBeenCalled();
+      expect(readJson).not.toHaveBeenCalled();
+    });
+
+    it('imports nothing until the user confirms', async () => {
+      stubFileBridge();
+      const { user } = render(
+        <ImportDialog
+          open
+          onOpenChange={() => {}}
+          type="all"
+          preloadedContent={JSON.stringify(VALID_EXPORT)}
+        />
+      );
+
+      await screen.findByText(/found/i);
+      expect(emitWithErrorHandling).not.toHaveBeenCalled();
+
+      await user.click(screen.getByRole('radio', { name: /overwrite/i }));
+      await user.click(screen.getByRole('button', { name: /^import$/i }));
+      const [, payload] = emitWithErrorHandling.mock.calls[0];
+      expect(payload).toMatchObject({ type: 'all', strategy: 'overwrite', data: VALID_EXPORT });
+    });
+
+    it('runs the same validation as the picker (non-ShiroAni file)', async () => {
+      stubFileBridge();
+      render(
+        <ImportDialog
+          open
+          onOpenChange={() => {}}
+          type="all"
+          preloadedContent={JSON.stringify({ source: 'other', version: 1, data: {} })}
+        />
+      );
+
+      expect(await screen.findByText('This is not a ShiroAni export file.')).toBeInTheDocument();
+    });
+
+    it('runs the same validation as the picker (invalid JSON)', async () => {
+      stubFileBridge();
+      render(
+        <ImportDialog open onOpenChange={() => {}} type="all" preloadedContent="{ not json" />
+      );
+
+      expect(await screen.findByText('This is not a valid JSON file')).toBeInTheDocument();
+    });
+  });
 });
