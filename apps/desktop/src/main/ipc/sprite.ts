@@ -23,6 +23,7 @@ import {
   setCustomSpriteFileName,
   setActiveSpriteScaleMode,
   getActiveSpriteScaleMode,
+  resolveSpritePath,
   type MascotSpriteScaleMode,
 } from '../mascot/overlay-state';
 import { applyActiveSprite } from '../mascot/overlay';
@@ -117,19 +118,6 @@ function ensureSpritesDir(): string {
 function isAllowedExtension(filePath: string): boolean {
   const ext = extname(filePath).toLowerCase().replace('.', '');
   return ALLOWED_EXTENSIONS.has(ext);
-}
-
-/**
- * Resolve a sprite file name to its absolute path inside the sprites folder,
- * or null when the name is not a plain image file name that stays inside it.
- * Use it for every name that main did not just generate: the active sprite
- * name lives in the renderer-writable `settings` store key.
- */
-function resolveSpritePath(fileName: string): string | null {
-  if (!fileName || isUnsafeFileName(fileName) || !isAllowedExtension(fileName)) return null;
-  const spritesDir = ensureSpritesDir();
-  const filePath = resolve(join(spritesDir, fileName));
-  return filePath.startsWith(resolve(spritesDir) + sep) ? filePath : null;
 }
 
 /**
