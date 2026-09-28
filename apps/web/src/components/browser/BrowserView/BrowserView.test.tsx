@@ -1,6 +1,6 @@
 import { act } from 'react';
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { render } from '@/test/test-utils';
+import { fireEvent, render } from '@/test/test-utils';
 
 // Mock webview registry so the store doesn't try to call into a real webview
 vi.mock('@/components/browser/webviewRefs', () => ({
@@ -201,6 +201,28 @@ describe('BrowserView: page zoom shortcuts', () => {
   });
 
   const zoomLevels = () => ({ ...useBrowserStore.getState().zoomLevels });
+  const pressZoomIn = (target: Window | Element = window) =>
+    fireEvent.keyDown(target, { key: '=', ctrlKey: true });
+
+  it('ignores zoom keys typed inside a dialog over the browser', () => {
+    useBrowserStore.getState().openTab('https://shinden.pl/');
+    render(<BrowserView />);
+    const dialog = document.createElement('div');
+    dialog.setAttribute('role', 'dialog');
+    const field = document.createElement('input');
+    dialog.appendChild(field);
+    document.body.appendChild(dialog);
+
+    try {
+      const notPrevented = pressZoomIn(field);
+      fireEvent.keyDown(dialog, { key: '-', ctrlKey: true });
+
+      expect(notPrevented).toBe(true);
+      expect(zoomLevels()).toEqual({});
+    } finally {
+      dialog.remove();
+    }
+  });
 
   it('routes a forwarded zoom to the guest that sent it, not the active pane', () => {
     useBrowserStore.getState().openTab('https://a.com/');

@@ -35,6 +35,13 @@ const {
 
 export { unsplitTab };
 
+/** Whether `target` sits inside a modal or dialog (anything with a dialog role). */
+function isInsideDialog(target: EventTarget | null): boolean {
+  return (
+    target instanceof Element && target.closest('[role="dialog"], [role="alertdialog"]') !== null
+  );
+}
+
 /** Measurement-only DOM marker attribute for a pane's slot. */
 export const PANE_SLOT_ATTR = 'data-pane-slot';
 
@@ -138,9 +145,11 @@ export function useBrowserView(): IBrowserViewView {
 
       // Page zoom works from the browser chrome too (address bar, find bar),
       // like a desktop browser. BrowserView stays mounted while other views
-      // are shown, so zoom only reacts while the browser view is on screen.
+      // are shown, so zoom only reacts while the browser view is on screen,
+      // and never from inside a dialog drawn over it (add to library, history).
       if (ctrl && !alt && zoomDirectionForKey(key)) {
         if (useAppStore.getState().activeView !== 'browser') return;
+        if (isInsideDialog(e.target)) return;
         e.preventDefault();
         handleShortcut({ key, ctrl, shift: e.shiftKey, alt });
         return;
