@@ -287,6 +287,23 @@ describe('registerSpriteHandlers', () => {
       expect(applyActiveSprite).toHaveBeenCalled();
     });
 
+    it('stores only the viewed bytes of a Uint8Array over a larger buffer', async () => {
+      // A view that starts past other data, as a structured-cloned subarray can.
+      const image = new Uint8Array(makePngBytes(64, 64));
+      const backing = new Uint8Array(16 + image.byteLength + 16).fill(0x41);
+      backing.set(image, 16);
+      const view = new Uint8Array(backing.buffer, 16, image.byteLength);
+      registerSpriteHandlers(win);
+
+      const result = (await invoke('overlay:add-sprite-from-bytes', view)) as {
+        ok: true;
+        fileName: string;
+      };
+
+      expect(result.ok).toBe(true);
+      expect(new Uint8Array(readFileSync(join(spritesDir(), result.fileName)))).toEqual(image);
+    });
+
     it('deletes the previous custom sprite after activating the new one', async () => {
       mkdirSync(spritesDir(), { recursive: true });
       writeFileSync(join(spritesDir(), 'old.png'), makePngBytes());

@@ -191,6 +191,23 @@ describe('registerBackgroundHandlers', () => {
       expect(new Uint8Array(readFileSync(join(bgDir(), result.fileName)))).toEqual(bytes);
     });
 
+    it('stores only the viewed bytes of a Uint8Array over a larger buffer', async () => {
+      // A view that starts past other data, as a structured-cloned subarray can.
+      const image = bytesWithSignature(PNG_SIGNATURE);
+      const backing = new Uint8Array(16 + image.byteLength + 16).fill(0x41);
+      backing.set(image, 16);
+      const view = new Uint8Array(backing.buffer, 16, image.byteLength);
+      registerBackgroundHandlers(win);
+
+      const result = (await invoke('background:add-from-bytes', view)) as {
+        ok: true;
+        fileName: string;
+      };
+
+      expect(result.ok).toBe(true);
+      expect(new Uint8Array(readFileSync(join(bgDir(), result.fileName)))).toEqual(image);
+    });
+
     it('names the file after the detected signature (JPEG is stored as .jpg)', async () => {
       registerBackgroundHandlers(win);
       const result = (await invoke(
