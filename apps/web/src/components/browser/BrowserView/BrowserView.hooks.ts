@@ -7,7 +7,11 @@ import { collectLeaves } from '@/stores/browser/browserTree';
 import { zoomDirectionForKey, zoomPercentForUrl } from '@/stores/browser/browserZoom';
 import { useAppStore } from '@/stores/useAppStore';
 import { useBrowserInit } from '@/components/browser/useBrowserInit';
-import { getWebview, unregisterWebview } from '@/components/browser/webviewRefs';
+import {
+  findPaneIdByWebContentsId,
+  getWebview,
+  unregisterWebview,
+} from '@/components/browser/webviewRefs';
 import { isEditableTarget } from '@/lib/is-editable-target';
 import type { IBrowserViewView } from './BrowserView.types';
 
@@ -25,6 +29,7 @@ const {
   unsplitTab,
   closeFocusedPane,
   zoomActivePane,
+  zoomPane,
   toggleTabMuted,
 } = useBrowserStore.getState();
 
@@ -78,10 +83,26 @@ export function useBrowserView(): IBrowserViewView {
   // When the webview has focus, key events don't reach the renderer's window,
   // so the main process intercepts them via before-input-event and forwards via IPC.
   const handleShortcut = useCallback(
-    (input: { key: string; ctrl?: boolean; shift?: boolean; alt?: boolean }) => {
+    (input: {
+      key: string;
+      ctrl?: boolean;
+      shift?: boolean;
+      alt?: boolean;
+      webContentsId?: number;
+    }) => {
       const zoomDirection = input.ctrl && !input.alt ? zoomDirectionForKey(input.key) : null;
       if (zoomDirection) {
-        zoomActivePane(zoomDirection);
+        // A forwarded zoom key or Ctrl+wheel names the guest that sent it: zoom
+        // that pane (in a split, the wheel may be over the inactive one). A
+        // sender without a registered pane (closed meanwhile) is ignored.
+        // Keys pressed in the browser chrome have no sender and zoom the
+        // active pane.
+        if (input.webContentsId === undefined) {
+          zoomActivePane(zoomDirection);
+        } else {
+          const paneId = findPaneIdByWebContentsId(input.webContentsId);
+          if (paneId) zoomPane(paneId, zoomDirection);
+        }
       } else if (input.ctrl && input.key === 'w') {
         closeFocusedPane();
       } else if (input.ctrl && input.key === 't') {

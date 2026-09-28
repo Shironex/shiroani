@@ -1028,6 +1028,24 @@ describe('useBrowserStore', () => {
       expect(el.setAudioMuted).toHaveBeenCalledWith(false);
     });
 
+    it('zoomPane zooms the named pane even when another pane is active', () => {
+      const target = openSite('https://shinden.pl/');
+      const active = openSite('https://youtube.com/');
+      expect(useBrowserStore.getState().activePaneId).toBe(active.paneId);
+
+      useBrowserStore.getState().zoomPane(target.paneId, 'in');
+
+      expect(useBrowserStore.getState().zoomLevels).toEqual({ 'shinden.pl': 110 });
+      expect(target.el.setZoomFactor).toHaveBeenCalledWith(1.1);
+      expect(active.el.setZoomFactor).not.toHaveBeenCalled();
+    });
+
+    it('zoomPane ignores an unknown pane', () => {
+      openSite('https://shinden.pl/');
+      useBrowserStore.getState().zoomPane('no-such-pane', 'in');
+      expect(useBrowserStore.getState().zoomLevels).toEqual({});
+    });
+
     it('keeps going when a webview throws from setZoomFactor', async () => {
       const broken = openSite('https://shinden.pl/a');
       const healthy = openSite('https://shinden.pl/b');

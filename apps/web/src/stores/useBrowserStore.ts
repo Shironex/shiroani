@@ -158,6 +158,8 @@ interface BrowserActions {
   // ── Zoom ──────────────────────────────────────────────────────
   /** Step the active pane's site zoom in or out, or reset it to 100%. */
   zoomActivePane: (direction: ZoomDirection) => void;
+  /** Step a specific pane's site zoom (the guest that sent a zoom key or Ctrl+wheel). */
+  zoomPane: (paneId: string, direction: ZoomDirection) => void;
   /** Set the remembered zoom for a hostname and apply it to every pane on that site. */
   setSiteZoom: (host: string, percent: number) => void;
 }
@@ -947,8 +949,12 @@ export const useBrowserStore = create<BrowserStore>()(
       // ── Zoom ──────────────────────────────────────────────────
 
       zoomActivePane: (direction: ZoomDirection) => {
-        const pane = getActivePane();
-        const host = zoomHostKey(pane?.url);
+        const { activePaneId } = get();
+        if (activePaneId) get().zoomPane(activePaneId, direction);
+      },
+
+      zoomPane: (paneId: string, direction: ZoomDirection) => {
+        const host = zoomHostKey(findLeafById(get().tabs, paneId)?.url);
         if (!host) return;
         const current = zoomPercentForHost(get().zoomLevels, host);
         get().setSiteZoom(host, nextZoomStep(current, direction));
