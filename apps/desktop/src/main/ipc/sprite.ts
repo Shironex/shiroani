@@ -111,6 +111,19 @@ function isAllowedExtension(filePath: string): boolean {
 }
 
 /**
+ * Resolve a sprite file name to its absolute path inside the sprites folder,
+ * or null when the name is not a plain image file name that stays inside it.
+ * Use it for every name that main did not just generate: the active sprite
+ * name lives in the renderer-writable `settings` store key.
+ */
+function resolveSpritePath(fileName: string): string | null {
+  if (!fileName || isUnsafeFileName(fileName) || !isAllowedExtension(fileName)) return null;
+  const spritesDir = ensureSpritesDir();
+  const filePath = resolve(join(spritesDir, fileName));
+  return filePath.startsWith(resolve(spritesDir) + sep) ? filePath : null;
+}
+
+/**
  * Dimension guard shared by the picker and the dropped-bytes flow. Returns
  * the problem, or null when the image is acceptable (unparseable dimensions
  * are accepted, see {@link readImageDimensions}).
@@ -152,8 +165,10 @@ async function activateSprite(
   }
 
   if (previous && previous !== uniqueName) {
-    const previousPath = join(ensureSpritesDir(), previous);
-    if (existsSync(previousPath)) {
+    const previousPath = resolveSpritePath(previous);
+    if (!previousPath) {
+      logger.warn(`Not deleting previous sprite with an unsafe stored name: ${previous}`);
+    } else if (existsSync(previousPath)) {
       await unlinkWithRetry(previousPath, `previous sprite ${previous}`);
     }
   }

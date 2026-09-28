@@ -354,6 +354,71 @@ describe('registerSpriteHandlers', () => {
     });
   });
 
+  // The active sprite name lives in the renderer-writable `settings` key, so
+  // the previous-sprite cleanup must never follow it outside the folder.
+  describe('previous sprite cleanup', () => {
+    const spritesDir = () => join(tmpDir, 'mascot-sprites');
+
+    const doors: Array<[string, () => Promise<unknown>]> = [
+      [
+        'overlay:add-sprite-from-bytes',
+        () => invoke('overlay:add-sprite-from-bytes', new Uint8Array(makePngBytes())),
+      ],
+      [
+        'overlay:pick-sprite',
+        async () => {
+          const sourcePath = join(tmpDir, 'picked.png');
+          writeFileSync(sourcePath, makePngBytes());
+          (dialog.showOpenDialog as jest.Mock).mockResolvedValue({
+            canceled: false,
+            filePaths: [sourcePath],
+          });
+          return invoke('overlay:pick-sprite');
+        },
+      ],
+    ];
+
+    describe.each(doors)('%s', (_channel, activateNewSprite) => {
+      it.each([
+        // [label, stored name, file that must survive]. Functions, because
+        // tmpDir only exists once beforeEach ran.
+        ['a parent-relative name', () => '../outside.png', () => join(tmpDir, 'outside.png')],
+        ['a backslash name', () => '..\\outside.png', () => join(spritesDir(), '..\\outside.png')],
+        [
+          'an absolute path',
+          () => join(tmpDir, 'absolute.png'),
+          () => join(tmpDir, 'absolute.png'),
+        ],
+        [
+          'a nested name',
+          () => 'nested/inner.png',
+          () => join(spritesDir(), 'nested', 'inner.png'),
+        ],
+      ])('does not delete %s stored as the previous sprite', async (_label, stored, target) => {
+        mkdirSync(join(spritesDir(), 'nested'), { recursive: true });
+        writeFileSync(target(), 'keep me');
+        storeState['settings.mascotCustomSprite'] = stored();
+        registerSpriteHandlers(win);
+
+        await activateNewSprite();
+
+        expect(existsSync(target())).toBe(true);
+        expect(storeState['settings.mascotCustomSprite']).toMatch(/^sprite-.*\.png$/);
+      });
+
+      it('still deletes a legitimate previous sprite', async () => {
+        mkdirSync(spritesDir(), { recursive: true });
+        writeFileSync(join(spritesDir(), 'sprite-old.png'), makePngBytes());
+        storeState['settings.mascotCustomSprite'] = 'sprite-old.png';
+        registerSpriteHandlers(win);
+
+        await activateNewSprite();
+
+        expect(existsSync(join(spritesDir(), 'sprite-old.png'))).toBe(false);
+      });
+    });
+  });
+
   describe('overlay:set-sprite-scale', () => {
     it('persists a valid mode and returns success envelope', async () => {
       registerSpriteHandlers(win);
