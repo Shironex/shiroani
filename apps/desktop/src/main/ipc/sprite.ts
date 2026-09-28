@@ -8,6 +8,7 @@ import { randomUUID } from 'crypto';
 import { createMainLogger } from '../logging/logger';
 import { t } from '../i18n-strings';
 import { handle, handleWithFallback } from './with-ipc-handler';
+import { writeWithinFolderQuota } from './folder-quota';
 import {
   spritePickSchema,
   spriteRemoveSchema,
@@ -41,6 +42,14 @@ const ALLOWED_EXTENSIONS = new Set(['png', 'jpg', 'jpeg', 'gif', 'webp']);
 
 /** Maximum file size: 10 MB — bumped from the background-image cap to accommodate animated GIFs. */
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
+
+/**
+ * Cap on the whole sprites folder for renderer-supplied bytes: 100 MB, ten
+ * maximum-size sprites. Main keeps one custom sprite and deletes the previous
+ * one, but the stored name is renderer-writable, so a renderer could stop that
+ * cleanup and call `overlay:add-sprite-from-bytes` in a loop without this cap.
+ */
+const MAX_FOLDER_SIZE = 10 * MAX_FILE_SIZE;
 
 /** Maximum supported pixel dimension on either axis. */
 const MAX_DIMENSION = 2048;
@@ -315,7 +324,16 @@ export function registerSpriteHandlers(mainWindow: BrowserWindow): void {
         return { ok: false, reason: dimensionProblem };
       }
 
-      const stored = await activateSprite(ext, destPath => writeFile(destPath, buffer));
+      const stored = await writeWithinFolderQuota(
+        ensureSpritesDir(),
+        MAX_FOLDER_SIZE,
+        buffer.byteLength,
+        () => activateSprite(ext, destPath => writeFile(destPath, buffer))
+      );
+      if (!stored) {
+        logger.warn('Rejected dropped sprite: the sprites folder is over its quota');
+        return { ok: false, reason: 'storage-full' };
+      }
       return { ok: true, ...stored };
     },
     { schema: spriteAddFromBytesSchema }

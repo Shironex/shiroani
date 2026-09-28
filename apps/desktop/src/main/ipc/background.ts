@@ -10,6 +10,7 @@ import { t } from '../i18n-strings';
 import { handle, handleWithFallback } from './with-ipc-handler';
 import type { ImageBytesUploadResult } from '@shiroani/shared';
 import { detectImageFormat, formatToExtension, MAGIC_PROBE_BYTES } from '../image/probe';
+import { writeWithinFolderQuota } from './folder-quota';
 import {
   backgroundPickSchema,
   backgroundRemoveSchema,
@@ -27,6 +28,14 @@ const ALLOWED_EXTENSIONS = new Set(['png', 'jpg', 'jpeg', 'gif', 'webp']);
 
 /** Maximum file size: 20 MB */
 const MAX_FILE_SIZE = 20 * 1024 * 1024;
+
+/**
+ * Cap on the whole backgrounds folder for renderer-supplied bytes: 200 MB, ten
+ * maximum-size images. The app keeps one background (two for a moment while
+ * the previous one is replaced), so real use stays far below it, while a
+ * renderer calling `background:add-from-bytes` in a loop cannot fill the disk.
+ */
+const MAX_FOLDER_SIZE = 10 * MAX_FILE_SIZE;
 
 /**
  * Check if a filename contains path-traversal or otherwise unsafe characters.
@@ -192,7 +201,16 @@ export function registerBackgroundHandlers(mainWindow: BrowserWindow): void {
         return { ok: false, reason: 'not-an-image' };
       }
 
-      const stored = await storeBackground(ext, destPath => writeFile(destPath, buffer));
+      const stored = await writeWithinFolderQuota(
+        getBackgroundsDir(),
+        MAX_FOLDER_SIZE,
+        buffer.byteLength,
+        () => storeBackground(ext, destPath => writeFile(destPath, buffer))
+      );
+      if (!stored) {
+        logger.warn('Rejected dropped background: the backgrounds folder is over its quota');
+        return { ok: false, reason: 'storage-full' };
+      }
       return { ok: true, ...stored };
     },
     { schema: backgroundAddFromBytesSchema }

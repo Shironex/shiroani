@@ -10,7 +10,16 @@ jest.mock('../../logging/logger', () => ({
 
 import { tmpdir } from 'os';
 import { join } from 'path';
-import { mkdtempSync, rmSync, writeFileSync, existsSync, readdirSync, readFileSync } from 'fs';
+import {
+  mkdtempSync,
+  mkdirSync,
+  rmSync,
+  writeFileSync,
+  existsSync,
+  readdirSync,
+  readFileSync,
+  truncateSync,
+} from 'fs';
 import { ipcMain, app, dialog, BrowserWindow } from 'electron';
 import { registerBackgroundHandlers, cleanupBackgroundHandlers } from '../background';
 
@@ -224,6 +233,58 @@ describe('registerBackgroundHandlers', () => {
       registerBackgroundHandlers(win);
       const result = await invoke('background:add-from-bytes', new Uint8Array(0));
       expect(result).toEqual({ ok: false, reason: 'not-an-image' });
+    });
+
+    describe('folder quota', () => {
+      const MAX_FOLDER_SIZE = 200 * 1024 * 1024;
+
+      /** A sparse file that makes the folder hold `size` bytes without writing them. */
+      function fillFolder(size: number): string {
+        mkdirSync(bgDir(), { recursive: true });
+        const filler = join(bgDir(), 'bg-filler.png');
+        writeFileSync(filler, '');
+        truncateSync(filler, size);
+        return filler;
+      }
+
+      it('accepts bytes that fill the folder exactly to 200 MB', async () => {
+        fillFolder(MAX_FOLDER_SIZE - 64);
+        registerBackgroundHandlers(win);
+        const result = (await invoke(
+          'background:add-from-bytes',
+          bytesWithSignature(PNG_SIGNATURE, 64)
+        )) as { ok: boolean };
+        expect(result.ok).toBe(true);
+      });
+
+      it('rejects bytes that would take the folder past 200 MB and deletes nothing', async () => {
+        const filler = fillFolder(MAX_FOLDER_SIZE - 63);
+        registerBackgroundHandlers(win);
+
+        const result = await invoke(
+          'background:add-from-bytes',
+          bytesWithSignature(PNG_SIGNATURE, 64)
+        );
+
+        expect(result).toEqual({ ok: false, reason: 'storage-full' });
+        expect(storedFiles()).toEqual(['bg-filler.png']);
+        expect(existsSync(filler)).toBe(true);
+      });
+
+      it('lets only as many parallel calls through as fit', async () => {
+        fillFolder(MAX_FOLDER_SIZE - 100);
+        registerBackgroundHandlers(win);
+
+        const results = (await Promise.all(
+          Array.from({ length: 5 }, () =>
+            invoke('background:add-from-bytes', bytesWithSignature(PNG_SIGNATURE, 64))
+          )
+        )) as Array<{ ok: boolean; reason?: string }>;
+
+        expect(results.filter(r => r.ok)).toHaveLength(1);
+        expect(results.filter(r => r.reason === 'storage-full')).toHaveLength(4);
+        expect(storedFiles()).toHaveLength(2);
+      });
     });
 
     it('refuses a filesystem path instead of bytes (schema)', async () => {

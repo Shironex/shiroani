@@ -40,6 +40,7 @@ import {
   mkdirSync,
   readdirSync,
   readFileSync,
+  truncateSync,
 } from 'fs';
 import { ipcMain, app, dialog, BrowserWindow } from 'electron';
 import { registerSpriteHandlers, cleanupSpriteHandlers } from '../sprite';
@@ -344,6 +345,37 @@ describe('registerSpriteHandlers', () => {
       );
       expect(result).toEqual({ ok: false, reason: 'dimensions-too-large' });
       expect(storedFiles()).toEqual([]);
+    });
+
+    it('rejects bytes that would take the folder past 100 MB and deletes nothing', async () => {
+      // The stored name no longer matches a file, so the previous-sprite
+      // cleanup cannot keep the folder small; the quota has to.
+      mkdirSync(spritesDir(), { recursive: true });
+      const filler = join(spritesDir(), 'sprite-filler.png');
+      writeFileSync(filler, '');
+      const bytes = new Uint8Array(makePngBytes());
+      truncateSync(filler, 100 * 1024 * 1024 - bytes.byteLength + 1);
+      storeState['settings.mascotCustomSprite'] = 'sprite-filler.png';
+      registerSpriteHandlers(win);
+
+      const result = await invoke('overlay:add-sprite-from-bytes', bytes);
+
+      expect(result).toEqual({ ok: false, reason: 'storage-full' });
+      expect(storedFiles()).toEqual(['sprite-filler.png']);
+      expect(storeState['settings.mascotCustomSprite']).toBe('sprite-filler.png');
+    });
+
+    it('accepts bytes that fill the folder exactly to 100 MB', async () => {
+      mkdirSync(spritesDir(), { recursive: true });
+      const filler = join(spritesDir(), 'sprite-filler.png');
+      writeFileSync(filler, '');
+      const bytes = new Uint8Array(makePngBytes());
+      truncateSync(filler, 100 * 1024 * 1024 - bytes.byteLength);
+      registerSpriteHandlers(win);
+
+      const result = (await invoke('overlay:add-sprite-from-bytes', bytes)) as { ok: boolean };
+
+      expect(result.ok).toBe(true);
     });
 
     it('refuses a filesystem path instead of bytes (schema)', async () => {
