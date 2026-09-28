@@ -2,7 +2,7 @@
 // (e.g., BackgroundOverlay.tsx, SettingsView.tsx, App.tsx)
 import { create } from 'zustand';
 import { maybeDevtools } from '@/stores/utils/maybeDevtools';
-import { createLogger } from '@shiroani/shared';
+import { createLogger, type ImageBytesUploadResult } from '@shiroani/shared';
 import { electronStoreGet, electronStoreSet, electronStoreDelete } from '@/lib/electron-store';
 
 const logger = createLogger('BackgroundStore');
@@ -47,6 +47,11 @@ interface BackgroundState {
 interface BackgroundActions {
   /** Pick and set a custom background via native file dialog */
   pickBackground: () => Promise<void>;
+  /**
+   * Store dropped image bytes and make them the active background, the same
+   * way {@link pickBackground} does. Returns main's verdict; IPC failures throw.
+   */
+  addBackgroundFromBytes: (bytes: Uint8Array) => Promise<ImageBytesUploadResult>;
   /** Remove the current custom background */
   removeBackground: () => Promise<void>;
   /** Set background opacity */
@@ -161,6 +166,51 @@ function applyBackgroundProperty(
 }
 
 /**
+ * Make a freshly stored file the active background: delete the previous file,
+ * update the store, apply it to the DOM and persist it. Shared by the picker
+ * and the dropped-bytes flow.
+ */
+async function activateStoredBackground(
+  get: () => BackgroundStore,
+  set: (partial: Partial<BackgroundState>, replace?: false, action?: string) => void,
+  stored: { fileName: string; url: string },
+  action: string
+): Promise<void> {
+  const state = get();
+  const opacity = state.backgroundOpacity;
+  const blur = state.backgroundBlur;
+  const dim = state.backgroundDim;
+
+  // If there was a previous background, remove its file
+  if (state.customBackgroundFileName) {
+    try {
+      await window.electronAPI?.background?.remove(state.customBackgroundFileName);
+    } catch (err) {
+      logger.warn('Failed to remove previous background file:', err);
+    }
+  }
+
+  set(
+    {
+      customBackground: stored.url,
+      customBackgroundFileName: stored.fileName,
+    },
+    undefined,
+    action
+  );
+
+  applyBackgroundToDOM(stored.url, opacity, blur, dim);
+
+  await persistBackgroundSettings({
+    fileName: stored.fileName,
+    url: stored.url,
+    opacity,
+    blur,
+    dim,
+  });
+}
+
+/**
  * Background store using Zustand
  */
 export const useBackgroundStore = create<BackgroundStore>()(
@@ -181,41 +231,22 @@ export const useBackgroundStore = create<BackgroundStore>()(
           const result = await window.electronAPI?.background?.pick();
           if (!result) return; // User cancelled
 
-          const state = get();
-          const opacity = state.backgroundOpacity;
-          const blur = state.backgroundBlur;
-          const dim = state.backgroundDim;
-
-          // If there was a previous background, remove its file
-          if (state.customBackgroundFileName) {
-            try {
-              await window.electronAPI?.background?.remove(state.customBackgroundFileName);
-            } catch (err) {
-              logger.warn('Failed to remove previous background file:', err);
-            }
-          }
-
-          set(
-            {
-              customBackground: result.url,
-              customBackgroundFileName: result.fileName,
-            },
-            undefined,
-            'background/pick'
-          );
-
-          applyBackgroundToDOM(result.url, opacity, blur, dim);
-
-          await persistBackgroundSettings({
-            fileName: result.fileName,
-            url: result.url,
-            opacity,
-            blur,
-            dim,
-          });
+          await activateStoredBackground(get, set, result, 'background/pick');
         } catch (err) {
           logger.error('Failed to pick custom background:', err);
         }
+      },
+
+      addBackgroundFromBytes: async (bytes: Uint8Array) => {
+        logger.debug('addBackgroundFromBytes', bytes.byteLength);
+        const api = window.electronAPI?.background;
+        if (!api) throw new Error('Background API is unavailable');
+
+        const result = await api.addFromBytes(bytes);
+        if (result.ok) {
+          await activateStoredBackground(get, set, result, 'background/addFromBytes');
+        }
+        return result;
       },
 
       removeBackground: async () => {

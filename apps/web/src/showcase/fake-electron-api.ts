@@ -102,6 +102,8 @@ export function createFakeElectronApi(): ElectronAPI {
       pick: () => resolved(null),
       remove: () => resolved(undefined),
       getUrl: () => resolved(null),
+      // The showcase stores nothing: a dropped image is refused like a non-image.
+      addFromBytes: () => resolved({ ok: false, reason: 'not-an-image' }),
     },
     app: {
       getPath: () => resolved(''),
@@ -201,6 +203,7 @@ export function createFakeElectronApi(): ElectronAPI {
       setAnimationEnabled: (enabled: boolean) => resolved({ success: true, enabled }),
       isAnimationEnabled: () => resolved(true),
       pickSprite: () => resolved(null),
+      addSpriteFromBytes: () => resolved({ ok: false, reason: 'not-an-image' }),
       removeSprite: () => resolved(undefined),
       getSpriteUrl: () => resolved(null),
       setSpriteScale: mode => resolved({ success: true, mode }),

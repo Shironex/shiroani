@@ -2,7 +2,11 @@
 // (e.g., MascotPreview.tsx, MascotSection.tsx).
 import { create } from 'zustand';
 import { maybeDevtools } from '@/stores/utils/maybeDevtools';
-import { createLogger, type MascotSpriteScaleMode } from '@shiroani/shared';
+import {
+  createLogger,
+  type ImageBytesUploadResult,
+  type MascotSpriteScaleMode,
+} from '@shiroani/shared';
 import { electronStoreGet, electronStoreSet, electronStoreDelete } from '@/lib/electron-store';
 
 const logger = createLogger('MascotSpriteStore');
@@ -42,6 +46,12 @@ interface MascotSpriteState {
 interface MascotSpriteActions {
   /** Pick and set a custom sprite via native file dialog. Live overlay updates main-side. */
   pickSprite: () => Promise<void>;
+  /**
+   * Store dropped image bytes as the custom sprite (main applies it to the live
+   * overlay), then mirror it like {@link pickSprite}. Returns main's verdict;
+   * IPC failures throw.
+   */
+  addSpriteFromBytes: (bytes: Uint8Array) => Promise<ImageBytesUploadResult>;
   /** Remove the current custom sprite — deletes the file from disk and resets to default. */
   removeSprite: () => Promise<void>;
   /** Set the scale mode + push it to the live overlay. */
@@ -71,6 +81,36 @@ async function persistSpriteSettings(settings: MascotSpriteSettings | null): Pro
 }
 
 /**
+ * Mirror a sprite main has already stored and activated: update the store and
+ * persist it. Main has already cleaned up the previous file, persisted the new
+ * filename and pushed the sprite to the live overlay. Shared by the picker and
+ * the dropped-bytes flow.
+ */
+async function mirrorActiveSprite(
+  get: () => MascotSpriteStore,
+  set: (partial: Partial<MascotSpriteState>, replace?: false, action?: string) => void,
+  stored: { fileName: string; url: string },
+  action: string
+): Promise<void> {
+  const { scaleMode } = get();
+
+  set(
+    {
+      customSpriteUrl: stored.url,
+      customSpriteFileName: stored.fileName,
+    },
+    undefined,
+    action
+  );
+
+  await persistSpriteSettings({
+    fileName: stored.fileName,
+    url: stored.url,
+    scaleMode,
+  });
+}
+
+/**
  * Mascot sprite store using Zustand
  */
 export const useMascotSpriteStore = create<MascotSpriteStore>()(
@@ -89,29 +129,23 @@ export const useMascotSpriteStore = create<MascotSpriteStore>()(
           const result = await window.electronAPI?.overlay?.pickSprite();
           if (!result) return; // User cancelled
 
-          const { scaleMode } = get();
-
-          set(
-            {
-              customSpriteUrl: result.url,
-              customSpriteFileName: result.fileName,
-            },
-            undefined,
-            'mascotSprite/pick'
-          );
-
-          // The main process already cleaned up the previous file, persisted
-          // the new filename, and pushed the sprite to the live overlay.
-          // The renderer just needs to remember the URL for its preview.
-          await persistSpriteSettings({
-            fileName: result.fileName,
-            url: result.url,
-            scaleMode,
-          });
+          await mirrorActiveSprite(get, set, result, 'mascotSprite/pick');
         } catch (err) {
           logger.error('Failed to pick custom sprite:', err);
           throw err;
         }
+      },
+
+      addSpriteFromBytes: async (bytes: Uint8Array) => {
+        logger.debug('addSpriteFromBytes', bytes.byteLength);
+        const api = window.electronAPI?.overlay;
+        if (!api) throw new Error('Overlay API is unavailable');
+
+        const result = await api.addSpriteFromBytes(bytes);
+        if (result.ok) {
+          await mirrorActiveSprite(get, set, result, 'mascotSprite/addFromBytes');
+        }
+        return result;
       },
 
       removeSprite: async () => {
