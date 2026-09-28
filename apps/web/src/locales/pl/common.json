@@ -119,6 +119,7 @@
         "notAnImage": "Ten plik nie jest obsługiwanym obrazem.",
         "dimensionsTooLarge": "Obraz jest za duży na maskotkę (maksymalnie {{maxPx}}×{{maxPx}} px).",
         "invalidDimensions": "Obraz ma nieprawidłowe wymiary.",
+        "storageFull": "Brak miejsca na kolejne obrazy. Usuń obecne tło lub sprite maskotki w Ustawieniach i spróbuj ponownie.",
         "failed": "Nie udało się zapisać obrazu. Spróbuj ponownie."
       }
     }

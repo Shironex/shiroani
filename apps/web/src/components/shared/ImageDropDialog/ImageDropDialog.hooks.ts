@@ -31,6 +31,7 @@ const REJECTION_KEYS = {
   'not-an-image': 'drop.image.errors.notAnImage',
   'dimensions-too-large': 'drop.image.errors.dimensionsTooLarge',
   'invalid-dimensions': 'drop.image.errors.invalidDimensions',
+  'storage-full': 'drop.image.errors.storageFull',
 } as const satisfies Record<ImageBytesRejection, string>;
 
 /** Object URL for a preview thumbnail, revoked when the file changes or unmounts. */

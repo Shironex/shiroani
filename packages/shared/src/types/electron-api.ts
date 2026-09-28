@@ -53,7 +53,8 @@ export type ImageBytesRejection =
   | 'too-large'
   | 'not-an-image'
   | 'dimensions-too-large'
-  | 'invalid-dimensions';
+  | 'invalid-dimensions'
+  | 'storage-full';
 
 /** Result of storing renderer-supplied image bytes as a background or sprite. */
 export type ImageBytesUploadResult =

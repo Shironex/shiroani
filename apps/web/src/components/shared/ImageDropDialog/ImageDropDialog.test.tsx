@@ -102,6 +102,23 @@ describe('ImageDropDialog', () => {
     expect(onClose).not.toHaveBeenCalled();
   });
 
+  it('explains that the image folder is full', async () => {
+    addBackgroundFromBytes.mockResolvedValue({ ok: false, reason: 'storage-full' });
+    const onClose = vi.fn();
+    const { user } = render(
+      <ImageDropDialog file={pngFile()} onClose={onClose} showMascotOption />
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Set as background' }));
+
+    await waitFor(() =>
+      expect(toast.error).toHaveBeenCalledWith(
+        "There's no room for more images. Remove the current background or mascot sprite in Settings, then try again."
+      )
+    );
+    expect(onClose).not.toHaveBeenCalled();
+  });
+
   it('refuses an oversized file before reading or sending it', async () => {
     const { user } = render(
       <ImageDropDialog file={pngFile('big.png', 11 * MB)} onClose={() => {}} showMascotOption />

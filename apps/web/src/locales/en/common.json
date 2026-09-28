@@ -119,6 +119,7 @@
         "notAnImage": "This file isn't a supported image.",
         "dimensionsTooLarge": "The image is too large for the mascot (max {{maxPx}}×{{maxPx}} px).",
         "invalidDimensions": "The image has invalid dimensions.",
+        "storageFull": "There's no room for more images. Remove the current background or mascot sprite in Settings, then try again.",
         "failed": "Couldn't save the image. Please try again."
       }
     }
