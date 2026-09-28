@@ -45,6 +45,7 @@ import {
 import { ipcMain, app, dialog, BrowserWindow } from 'electron';
 import { registerSpriteHandlers, cleanupSpriteHandlers } from '../sprite';
 import { applyActiveSprite } from '../../mascot/overlay';
+import { resolveSpritePath } from '../../mascot/overlay-state';
 
 /** Typed access to the electron mock's test-only invoke hook. */
 const invoke = (channel: string, ...args: unknown[]): Promise<unknown> =>
@@ -434,9 +435,15 @@ describe('registerSpriteHandlers', () => {
         ['a parent-relative name', () => '../outside.png', () => join(tmpDir, 'outside.png')],
         ['a backslash name', () => '..\\outside.png', () => join(spritesDir(), '..\\outside.png')],
         [
-          'an absolute path',
-          () => join(tmpDir, 'absolute.png'),
-          () => join(tmpDir, 'absolute.png'),
+          // On POSIX, `path.join`/`path.resolve` treat `\` as an ordinary
+          // character, so this literal filename stays inside the sprites
+          // folder and only the shape check (not resolve()+sep containment)
+          // rejects it. See the direct `resolveSpritePath` assertions below
+          // for cases the resolve()+sep check alone could not catch on this
+          // host.
+          'a Windows drive-absolute name',
+          () => 'C:\\outside.png',
+          () => join(spritesDir(), 'C:\\outside.png'),
         ],
         [
           'a nested name',
@@ -465,6 +472,22 @@ describe('registerSpriteHandlers', () => {
 
         expect(existsSync(join(spritesDir(), 'sprite-old.png'))).toBe(false);
       });
+    });
+
+    // The cases above prove nothing outside the folder is deleted, but on
+    // POSIX several of those names never actually leave the sandbox through
+    // `path.join`/`path.resolve` (a backslash or a leading `/` is just an
+    // ordinary character there), so they cannot exercise the containment
+    // check by themselves. Assert the shared guard rejects these shapes
+    // directly, on every host, regardless of what the filesystem would do
+    // with them.
+    it.each([
+      ['a Windows drive-absolute name', 'C:\\x.png'],
+      ['a UNC path', '\\\\srv\\share\\x.png'],
+      ['a POSIX absolute path', '/abs/x.png'],
+      ['a parent-relative name with a backslash', '..\\x.png'],
+    ])('resolveSpritePath rejects %s', (_label, name) => {
+      expect(resolveSpritePath(name)).toBeNull();
     });
   });
 
