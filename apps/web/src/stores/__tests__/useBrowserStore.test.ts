@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import type { BrowserLeafNode, BrowserNode } from '@shiroani/shared';
-import { useBrowserStore } from '../useBrowserStore';
+import { syncPaneWebview, useBrowserStore } from '../useBrowserStore';
+import { getWebview } from '@/components/browser/webviewRefs';
 import i18n from '@/lib/i18n';
 
 // Mock webviewRefs — must be before importing the store
@@ -66,6 +67,7 @@ describe('useBrowserStore', () => {
       isFullScreen: false,
       favorites: [],
       favoritesBarVisible: true,
+      zoomLevels: {},
     });
     electronStoreData.clear();
     uuidCounter = 0;
@@ -756,6 +758,274 @@ describe('useBrowserStore', () => {
         };
         expect(settings.favoritesBarVisible).toBe(false);
       });
+    });
+  });
+  // ── Tab audio (mute) ──────────────────────────────────────────
+
+  describe('tab audio', () => {
+    /** Fake webviews keyed by pane id, served through the mocked getWebview. */
+    const webviews = new Map<string, { setAudioMuted: ReturnType<typeof vi.fn> }>();
+
+    beforeEach(() => {
+      webviews.clear();
+      vi.mocked(getWebview).mockImplementation(
+        paneId => webviews.get(paneId) as unknown as ReturnType<typeof getWebview> | undefined
+      );
+    });
+
+    afterEach(() => {
+      vi.mocked(getWebview).mockReset();
+    });
+
+    function fakeWebview(paneId: string) {
+      const el = { setAudioMuted: vi.fn() };
+      webviews.set(paneId, el);
+      return el;
+    }
+
+    /** Open two tabs and split them into one; returns the split tab and its pane ids. */
+    function openSplitTab() {
+      const store = useBrowserStore.getState();
+      store.openTab('https://a.com');
+      store.openTab('https://b.com');
+      const [aId, bId] = useBrowserStore.getState().tabs.map(t => t.id);
+      store.splitTabs(aId, bId);
+      const split = useBrowserStore.getState().tabs[0];
+      return { splitId: split.id, aId, bId };
+    }
+
+    it('mutes a single-pane tab and its webview', () => {
+      useBrowserStore.getState().openTab('https://a.com');
+      const tabId = useBrowserStore.getState().tabs[0].id;
+      const el = fakeWebview(tabId);
+
+      useBrowserStore.getState().toggleTabMuted(tabId);
+
+      expect(expectLeaf(useBrowserStore.getState().tabs[0]).isMuted).toBe(true);
+      expect(el.setAudioMuted).toHaveBeenCalledWith(true);
+    });
+
+    it('unmutes a muted tab on the second toggle', () => {
+      useBrowserStore.getState().openTab('https://a.com');
+      const tabId = useBrowserStore.getState().tabs[0].id;
+      const el = fakeWebview(tabId);
+
+      useBrowserStore.getState().toggleTabMuted(tabId);
+      useBrowserStore.getState().toggleTabMuted(tabId);
+
+      expect(expectLeaf(useBrowserStore.getState().tabs[0]).isMuted).toBe(false);
+      expect(el.setAudioMuted).toHaveBeenLastCalledWith(false);
+    });
+
+    it('mutes every pane of a split tab', () => {
+      const { splitId, aId, bId } = openSplitTab();
+      const a = fakeWebview(aId);
+      const b = fakeWebview(bId);
+
+      useBrowserStore.getState().toggleTabMuted(splitId);
+
+      const split = useBrowserStore.getState().tabs[0];
+      if (split.kind !== 'split') throw new Error('expected split');
+      expect(expectLeaf(split.left).isMuted).toBe(true);
+      expect(expectLeaf(split.right).isMuted).toBe(true);
+      expect(a.setAudioMuted).toHaveBeenCalledWith(true);
+      expect(b.setAudioMuted).toHaveBeenCalledWith(true);
+    });
+
+    it('leaves other tabs alone', () => {
+      const store = useBrowserStore.getState();
+      store.openTab('https://a.com');
+      store.openTab('https://b.com');
+      const [aId, bId] = useBrowserStore.getState().tabs.map(t => t.id);
+      const b = fakeWebview(bId);
+
+      store.toggleTabMuted(aId);
+
+      expect(expectLeaf(useBrowserStore.getState().tabs[1]).isMuted).toBeFalsy();
+      expect(b.setAudioMuted).not.toHaveBeenCalled();
+    });
+
+    it('survives a webview that is not attached yet', () => {
+      useBrowserStore.getState().openTab('https://a.com');
+      const tabId = useBrowserStore.getState().tabs[0].id;
+      webviews.set(tabId, {
+        setAudioMuted: vi.fn(() => {
+          throw new Error('The WebView must be attached to the DOM');
+        }),
+      });
+
+      expect(() => useBrowserStore.getState().toggleTabMuted(tabId)).not.toThrow();
+      expect(expectLeaf(useBrowserStore.getState().tabs[0]).isMuted).toBe(true);
+    });
+
+    it('records per-pane audibility and ignores repeats', () => {
+      useBrowserStore.getState().openTab('https://a.com');
+      const tabId = useBrowserStore.getState().tabs[0].id;
+
+      useBrowserStore.getState().setPaneAudible(tabId, true);
+      const afterFirst = useBrowserStore.getState().tabs;
+      expect(expectLeaf(afterFirst[0]).isAudible).toBe(true);
+
+      useBrowserStore.getState().setPaneAudible(tabId, true);
+      expect(useBrowserStore.getState().tabs).toBe(afterFirst);
+
+      useBrowserStore.getState().setPaneAudible('missing-pane', true);
+      expect(useBrowserStore.getState().tabs).toBe(afterFirst);
+    });
+
+    it('mutes an audible split tab where one pane was already muted', () => {
+      const { splitId, aId, bId } = openSplitTab();
+      useBrowserStore.getState().setPaneAudible(aId, true);
+      // Mute only b by hand: the tab is still audible because of a.
+      useBrowserStore.getState().updateTabState(bId, { isMuted: true });
+
+      useBrowserStore.getState().toggleTabMuted(splitId);
+
+      const split = useBrowserStore.getState().tabs[0];
+      if (split.kind !== 'split') throw new Error('expected split');
+      expect(expectLeaf(split.left).isMuted).toBe(true);
+      expect(expectLeaf(split.right).isMuted).toBe(true);
+    });
+
+    it('keeps mute out of the persisted session', async () => {
+      vi.useFakeTimers();
+      try {
+        useBrowserStore.getState().openTab('https://a.com');
+        const tabId = useBrowserStore.getState().tabs[0].id;
+        useBrowserStore.getState().toggleTabMuted(tabId);
+        useBrowserStore.getState().persistTabs();
+        await vi.runAllTimersAsync();
+
+        const persisted = electronStoreData.get('browser-tabs') as {
+          tabs: Array<Record<string, unknown>>;
+        };
+        expect(persisted.tabs[0]).not.toHaveProperty('isMuted');
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+  });
+
+  // ── Per-site zoom ─────────────────────────────────────────────
+
+  describe('site zoom', () => {
+    type FakeZoomWebview = {
+      setZoomFactor: ReturnType<typeof vi.fn>;
+      setAudioMuted: ReturnType<typeof vi.fn>;
+      getURL: () => string;
+    };
+    const webviews = new Map<string, FakeZoomWebview>();
+
+    beforeEach(() => {
+      vi.useFakeTimers();
+      webviews.clear();
+      vi.mocked(getWebview).mockImplementation(
+        paneId => webviews.get(paneId) as unknown as ReturnType<typeof getWebview> | undefined
+      );
+    });
+
+    afterEach(() => {
+      vi.mocked(getWebview).mockReset();
+      vi.useRealTimers();
+    });
+
+    /** Open a tab on `url` with a fake webview; returns the pane id and the webview. */
+    function openSite(url: string) {
+      useBrowserStore.getState().openTab(url);
+      const { tabs } = useBrowserStore.getState();
+      const paneId = tabs[tabs.length - 1].id;
+      const el: FakeZoomWebview = {
+        setZoomFactor: vi.fn(),
+        setAudioMuted: vi.fn(),
+        getURL: () => url,
+      };
+      webviews.set(paneId, el);
+      return { paneId, el };
+    }
+
+    it('steps the active site zoom and remembers it by hostname', () => {
+      openSite('https://shinden.pl/anime/1');
+      const store = useBrowserStore.getState();
+
+      store.zoomActivePane('in');
+      store.zoomActivePane('in');
+
+      expect(useBrowserStore.getState().zoomLevels).toEqual({ 'shinden.pl': 125 });
+    });
+
+    it('applies the level to every pane on the same site and no other', () => {
+      const first = openSite('https://shinden.pl/a');
+      const other = openSite('https://youtube.com/');
+      const second = openSite('https://shinden.pl/b');
+
+      useBrowserStore.getState().setSiteZoom('shinden.pl', 150);
+
+      expect(first.el.setZoomFactor).toHaveBeenCalledWith(1.5);
+      expect(second.el.setZoomFactor).toHaveBeenCalledWith(1.5);
+      expect(other.el.setZoomFactor).not.toHaveBeenCalled();
+    });
+
+    it('zooms out and resets, dropping the host once it is back at 100%', () => {
+      const { el } = openSite('https://shinden.pl/');
+      const store = useBrowserStore.getState();
+
+      store.zoomActivePane('out');
+      expect(useBrowserStore.getState().zoomLevels).toEqual({ 'shinden.pl': 90 });
+      expect(el.setZoomFactor).toHaveBeenLastCalledWith(0.9);
+
+      store.zoomActivePane('reset');
+      expect(useBrowserStore.getState().zoomLevels).toEqual({});
+      expect(el.setZoomFactor).toHaveBeenLastCalledWith(1);
+    });
+
+    it('does nothing on a page without a site (new tab)', () => {
+      useBrowserStore.getState().openTab();
+      useBrowserStore.getState().zoomActivePane('in');
+      expect(useBrowserStore.getState().zoomLevels).toEqual({});
+    });
+
+    it('persists the zoom map (debounced) and restores it', async () => {
+      openSite('https://shinden.pl/');
+      const store = useBrowserStore.getState();
+      store.zoomActivePane('in');
+      store.zoomActivePane('in');
+      await vi.runAllTimersAsync();
+
+      expect(electronStoreData.get('browser-zoom-levels')).toEqual({ 'shinden.pl': 125 });
+
+      useBrowserStore.setState({ zoomLevels: {} });
+      await useBrowserStore.getState().restoreTabs();
+      expect(useBrowserStore.getState().zoomLevels).toEqual({ 'shinden.pl': 125 });
+    });
+
+    it('restores the zoom map even when session restore is off', async () => {
+      electronStoreData.set('browser-zoom-levels', { 'a.com': 80, 'bad.com': 'x' });
+      useBrowserStore.setState({ restoreTabsOnStartup: false });
+
+      await useBrowserStore.getState().restoreTabs();
+
+      expect(useBrowserStore.getState().zoomLevels).toEqual({ 'a.com': 80 });
+    });
+
+    it('syncPaneWebview re-applies the site zoom and the pane mute flag', () => {
+      const { paneId, el } = openSite('https://shinden.pl/');
+      useBrowserStore.setState({ zoomLevels: { 'shinden.pl': 175 } });
+      useBrowserStore.getState().updateTabState(paneId, { isMuted: true });
+
+      syncPaneWebview(paneId);
+
+      expect(el.setZoomFactor).toHaveBeenCalledWith(1.75);
+      expect(el.setAudioMuted).toHaveBeenCalledWith(true);
+    });
+
+    it('syncPaneWebview resets a pane that moved to a site without a level', () => {
+      const { paneId, el } = openSite('https://youtube.com/');
+      useBrowserStore.setState({ zoomLevels: { 'shinden.pl': 175 } });
+
+      syncPaneWebview(paneId);
+
+      expect(el.setZoomFactor).toHaveBeenCalledWith(1);
+      expect(el.setAudioMuted).toHaveBeenCalledWith(false);
     });
   });
 });

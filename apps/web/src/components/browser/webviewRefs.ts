@@ -25,6 +25,11 @@ export type WebviewElement = HTMLElement & {
   executeJavaScript: (code: string) => Promise<unknown>;
   setAudioMuted: (muted: boolean) => void;
   isAudioMuted: () => boolean;
+  /** Whether the guest is producing sound right now (sync IPC to main). */
+  isCurrentlyAudible: () => boolean;
+  /** Page zoom as a factor (1 = 100%). */
+  setZoomFactor: (factor: number) => void;
+  getZoomFactor: () => number;
   openDevTools: () => void;
   /**
    * Highlight matches of `text` in the guest page. Returns a request id; match

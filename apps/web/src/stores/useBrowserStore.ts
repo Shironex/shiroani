@@ -34,8 +34,10 @@ import {
   findParentSplit,
   findTabContainingPane,
   firstLeaf,
+  mapLeaves,
   replaceNode,
   serializeNode,
+  tabAudioState,
   updateLeaf,
 } from '@/stores/browser/browserTree';
 import {
@@ -45,6 +47,7 @@ import {
   BROWSER_HISTORY_MAX_ENTRIES,
   BROWSER_SETTINGS_KEY,
   BROWSER_TABS_KEY,
+  BROWSER_ZOOM_LEVELS_KEY,
   migratePersistedFavorites,
   migratePersistedHistory,
   migratePersistedTabs,
@@ -53,6 +56,16 @@ import {
   type RawBrowserSettings,
   type SerializedBrowserNode,
 } from '@/stores/browser/browserPersistence';
+import {
+  DEFAULT_ZOOM_PERCENT,
+  migratePersistedZoomLevels,
+  nextZoomStep,
+  setZoomEntry,
+  zoomHostKey,
+  zoomPercentForUrl,
+  type ZoomDirection,
+  type ZoomLevels,
+} from '@/stores/browser/browserZoom';
 
 // Re-exported so existing consumers can keep importing the pure tree lookup
 // from the store module unchanged.
@@ -84,6 +97,8 @@ interface BrowserState {
   favorites: BrowserFavorite[];
   /** Whether the favorites bar is shown (gated additionally by non-empty). */
   favoritesBarVisible: boolean;
+  /** Remembered zoom per site: hostname to percent (100% is never stored). Persisted. */
+  zoomLevels: ZoomLevels;
 }
 
 interface BrowserActions {
@@ -131,6 +146,19 @@ interface BrowserActions {
   renameFavorite: (id: string, title: string) => void;
   reorderFavorites: (activeId: string, overId: string) => void;
   setFavoritesBarVisible: (visible: boolean) => void;
+  // ── Audio ─────────────────────────────────────────────────────
+  /**
+   * Mute or unmute every pane of a top-level tab. A tab showing the muted
+   * indicator is unmuted; any other tab is muted.
+   */
+  toggleTabMuted: (tabId: string) => void;
+  /** Record whether a pane is currently producing sound (drives the tab indicator). */
+  setPaneAudible: (paneId: string, audible: boolean) => void;
+  // ── Zoom ──────────────────────────────────────────────────────
+  /** Step the active pane's site zoom in or out, or reset it to 100%. */
+  zoomActivePane: (direction: ZoomDirection) => void;
+  /** Set the remembered zoom for a hostname and apply it to every pane on that site. */
+  setSiteZoom: (host: string, percent: number) => void;
 }
 
 type BrowserStore = BrowserState & BrowserActions;
@@ -145,6 +173,32 @@ const persistHistoryDebounced = createDebouncedPersist(BROWSER_HISTORY_KEY);
 // Debounced writer for the favorites slice — coalesces rapid reorder drags into
 // a single disk write.
 const persistFavoritesDebounced = createDebouncedPersist(BROWSER_FAVORITES_KEY);
+
+// Debounced writer for the per-site zoom map: coalesces a burst of zoom steps
+// (holding Ctrl and tapping +) into a single disk write.
+const persistZoomLevelsDebounced = createDebouncedPersist(BROWSER_ZOOM_LEVELS_KEY);
+
+/**
+ * Push a pane's mute flag to its webview. Webview methods throw until the guest
+ * has attached, so a failure here is expected for a pane that is still loading;
+ * `syncPaneWebview` re-applies the flag on dom-ready.
+ */
+function applyPaneMuted(paneId: string, muted: boolean): void {
+  try {
+    getWebview(paneId)?.setAudioMuted(muted);
+  } catch {
+    // Guest not attached yet; re-applied on dom-ready.
+  }
+}
+
+/** Push a zoom percentage to a pane's webview (see `applyPaneMuted` on failures). */
+function applyPaneZoom(paneId: string, percent: number): void {
+  try {
+    getWebview(paneId)?.setZoomFactor(percent / 100);
+  } catch {
+    // Guest not attached yet; re-applied on dom-ready / did-navigate.
+  }
+}
 
 export const useBrowserStore = create<BrowserStore>()(
   maybeDevtools(
@@ -163,6 +217,7 @@ export const useBrowserStore = create<BrowserStore>()(
       history: [],
       favorites: [],
       favoritesBarVisible: true,
+      zoomLevels: {},
 
       // ── Tab CRUD (all local now) ────────────────────────────────
 
@@ -682,6 +737,15 @@ export const useBrowserStore = create<BrowserStore>()(
           set({ favorites }, undefined, 'browser/restoreFavorites');
         }
 
+        // Restore the per-site zoom map before any tab mounts, so restored
+        // webviews come up at their site's remembered level.
+        const savedZoomLevels = await electronStoreGet<unknown>(BROWSER_ZOOM_LEVELS_KEY);
+        set(
+          { zoomLevels: migratePersistedZoomLevels(savedZoomLevels) },
+          undefined,
+          'browser/restoreZoomLevels'
+        );
+
         // Restore tabs (unless the user disabled session restore)
         if (!get().restoreTabsOnStartup) return;
 
@@ -844,10 +908,86 @@ export const useBrowserStore = create<BrowserStore>()(
           );
         }
       },
+
+      // ── Audio ─────────────────────────────────────────────────
+
+      toggleTabMuted: (tabId: string) => {
+        const { tabs } = get();
+        const index = tabs.findIndex(t => t.id === tabId);
+        if (index === -1) return;
+        const tab = tabs[index];
+
+        const muted = tabAudioState(tab) !== 'muted';
+        const next = tabs.slice();
+        next[index] = mapLeaves(tab, leaf =>
+          leaf.isMuted === muted ? leaf : { ...leaf, isMuted: muted }
+        );
+        set({ tabs: next }, undefined, 'browser/toggleTabMuted');
+
+        for (const leaf of collectLeaves(tab)) applyPaneMuted(leaf.id, muted);
+      },
+
+      setPaneAudible: (paneId: string, audible: boolean) => {
+        const leaf = findLeafById(get().tabs, paneId);
+        if (!leaf || !!leaf.isAudible === audible) return;
+        set(
+          state => ({
+            tabs: state.tabs.map(tab => updateLeaf(tab, paneId, { isAudible: audible })),
+          }),
+          undefined,
+          'browser/setPaneAudible'
+        );
+      },
+
+      // ── Zoom ──────────────────────────────────────────────────
+
+      zoomActivePane: (direction: ZoomDirection) => {
+        const pane = getActivePane();
+        const host = zoomHostKey(pane?.url);
+        if (!host) return;
+        const current = get().zoomLevels[host] ?? DEFAULT_ZOOM_PERCENT;
+        get().setSiteZoom(host, nextZoomStep(current, direction));
+      },
+
+      setSiteZoom: (host: string, percent: number) => {
+        const zoomLevels = setZoomEntry(get().zoomLevels, host, percent);
+        set({ zoomLevels }, undefined, 'browser/setSiteZoom');
+        persistZoomLevelsDebounced(zoomLevels);
+
+        // Apply to every pane on the same site, like a desktop browser. The
+        // level actually applied is read back from the map, so an out-of-range
+        // request that the map rejected resets the site to 100%.
+        const applied = zoomLevels[host] ?? DEFAULT_ZOOM_PERCENT;
+        for (const tab of get().tabs) {
+          for (const leaf of collectLeaves(tab)) {
+            if (zoomHostKey(leaf.url) === host) applyPaneZoom(leaf.id, applied);
+          }
+        }
+      },
     }),
     { name: 'browser' }
   )
 );
+
+/**
+ * Re-apply a pane's mute flag and its site's remembered zoom to the pane's
+ * webview. Called on dom-ready and after every main-frame navigation, since a
+ * new document (or a new host) may come up at the guest's defaults.
+ */
+export function syncPaneWebview(paneId: string): void {
+  const { tabs, zoomLevels } = useBrowserStore.getState();
+  const leaf = findLeafById(tabs, paneId);
+  if (!leaf) return;
+  applyPaneMuted(paneId, !!leaf.isMuted);
+  const webview = getWebview(paneId);
+  let url = leaf.url;
+  try {
+    url = webview?.getURL() || leaf.url;
+  } catch {
+    // Guest not attached yet; fall back to the stored URL.
+  }
+  applyPaneZoom(paneId, zoomPercentForUrl(zoomLevels, url));
+}
 
 /**
  * Resolve the currently-focused leaf from the store, or `null` when no tab is
