@@ -57,11 +57,12 @@ import {
   type SerializedBrowserNode,
 } from '@/stores/browser/browserPersistence';
 import {
-  DEFAULT_ZOOM_PERCENT,
+  createZoomLevels,
   migratePersistedZoomLevels,
   nextZoomStep,
   setZoomEntry,
   zoomHostKey,
+  zoomPercentForHost,
   zoomPercentForUrl,
   type ZoomDirection,
   type ZoomLevels,
@@ -191,7 +192,11 @@ function applyPaneMuted(paneId: string, muted: boolean): void {
   }
 }
 
-/** Push a zoom percentage to a pane's webview (see `applyPaneMuted` on failures). */
+/**
+ * Push a zoom percentage to a pane's webview (see `applyPaneMuted` on
+ * failures). Callers pass a value read through `zoomPercentForHost` /
+ * `zoomPercentForUrl`, which only ever return a finite in-range percentage.
+ */
 function applyPaneZoom(paneId: string, percent: number): void {
   try {
     getWebview(paneId)?.setZoomFactor(percent / 100);
@@ -217,7 +222,7 @@ export const useBrowserStore = create<BrowserStore>()(
       history: [],
       favorites: [],
       favoritesBarVisible: true,
-      zoomLevels: {},
+      zoomLevels: createZoomLevels(),
 
       // ── Tab CRUD (all local now) ────────────────────────────────
 
@@ -945,7 +950,7 @@ export const useBrowserStore = create<BrowserStore>()(
         const pane = getActivePane();
         const host = zoomHostKey(pane?.url);
         if (!host) return;
-        const current = get().zoomLevels[host] ?? DEFAULT_ZOOM_PERCENT;
+        const current = zoomPercentForHost(get().zoomLevels, host);
         get().setSiteZoom(host, nextZoomStep(current, direction));
       },
 
@@ -957,7 +962,7 @@ export const useBrowserStore = create<BrowserStore>()(
         // Apply to every pane on the same site, like a desktop browser. The
         // level actually applied is read back from the map, so an out-of-range
         // request that the map rejected resets the site to 100%.
-        const applied = zoomLevels[host] ?? DEFAULT_ZOOM_PERCENT;
+        const applied = zoomPercentForHost(zoomLevels, host);
         for (const tab of get().tabs) {
           for (const leaf of collectLeaves(tab)) {
             if (zoomHostKey(leaf.url) === host) applyPaneZoom(leaf.id, applied);

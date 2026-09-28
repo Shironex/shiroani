@@ -5,7 +5,14 @@
  * store composes these into its actions.
  */
 
-/** Map of hostname to zoom percentage. Hosts at 100% are never stored. */
+/**
+ * Map of hostname to zoom percentage. Hosts at 100% are never stored.
+ *
+ * Hostnames come from web content, so a host can be any string, including
+ * `__proto__` or `constructor`. Maps are always built with a null prototype
+ * (`createZoomLevels`) and only read through `zoomPercentForHost`, which looks
+ * at own properties only, so no host ever resolves to an inherited value.
+ */
 export type ZoomLevels = Record<string, number>;
 
 /** The zoom percentage every site starts at. */
@@ -67,13 +74,6 @@ export function zoomHostKey(url: string | null | undefined): string | null {
   return parsed.hostname.toLowerCase() || null;
 }
 
-/** The remembered zoom percentage for `url`, or 100 when none is stored. */
-export function zoomPercentForUrl(levels: ZoomLevels, url: string | null | undefined): number {
-  const host = zoomHostKey(url);
-  if (!host) return DEFAULT_ZOOM_PERCENT;
-  return levels[host] ?? DEFAULT_ZOOM_PERCENT;
-}
-
 function isValidPercent(value: unknown): value is number {
   return (
     typeof value === 'number' &&
@@ -81,6 +81,34 @@ function isValidPercent(value: unknown): value is number {
     value >= MIN_ZOOM_PERCENT &&
     value <= MAX_ZOOM_PERCENT
   );
+}
+
+/**
+ * `value` if it is a finite percentage within the ladder's range, otherwise
+ * 100. Anything handed to a webview's `setZoomFactor` goes through this.
+ */
+export function sanitizeZoomPercent(value: unknown): number {
+  return isValidPercent(value) ? value : DEFAULT_ZOOM_PERCENT;
+}
+
+/** An empty zoom map with a null prototype (see `ZoomLevels`). */
+export function createZoomLevels(): ZoomLevels {
+  return Object.create(null) as ZoomLevels;
+}
+
+/**
+ * The remembered zoom percentage for `host`, or 100 when none is stored. Reads
+ * own properties only and validates the value, so the result is always a
+ * finite percentage on the ladder's range, whatever the host string is.
+ */
+export function zoomPercentForHost(levels: ZoomLevels, host: string | null | undefined): number {
+  if (!host || !Object.hasOwn(levels, host)) return DEFAULT_ZOOM_PERCENT;
+  return sanitizeZoomPercent(levels[host]);
+}
+
+/** The remembered zoom percentage for `url`, or 100 when none is stored. */
+export function zoomPercentForUrl(levels: ZoomLevels, url: string | null | undefined): number {
+  return zoomPercentForHost(levels, zoomHostKey(url));
 }
 
 /**
@@ -94,9 +122,9 @@ export function setZoomEntry(
   percent: number,
   maxEntries: number = BROWSER_ZOOM_MAX_ENTRIES
 ): ZoomLevels {
-  const next: ZoomLevels = {};
+  const next = createZoomLevels();
   for (const [key, value] of Object.entries(levels)) {
-    if (key !== host) next[key] = value;
+    if (key !== host && isValidPercent(value)) next[key] = value;
   }
   if (percent !== DEFAULT_ZOOM_PERCENT && isValidPercent(percent)) {
     next[host] = percent;
@@ -114,8 +142,8 @@ export function setZoomEntry(
  * result is capped (keeping the newest entries).
  */
 export function migratePersistedZoomLevels(raw: unknown): ZoomLevels {
-  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return {};
-  let out: ZoomLevels = {};
+  let out = createZoomLevels();
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return out;
   for (const [host, value] of Object.entries(raw as Record<string, unknown>)) {
     if (!host || !isValidPercent(value)) continue;
     out = setZoomEntry(out, host.toLowerCase(), value);

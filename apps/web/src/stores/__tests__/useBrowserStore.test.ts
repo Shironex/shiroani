@@ -1027,5 +1027,75 @@ describe('useBrowserStore', () => {
       expect(el.setZoomFactor).toHaveBeenCalledWith(1);
       expect(el.setAudioMuted).toHaveBeenCalledWith(false);
     });
+
+    it('keeps going when a webview throws from setZoomFactor', async () => {
+      const broken = openSite('https://shinden.pl/a');
+      const healthy = openSite('https://shinden.pl/b');
+      broken.el.setZoomFactor.mockImplementation(() => {
+        throw new Error('The WebView must be attached to the DOM');
+      });
+
+      expect(() => useBrowserStore.getState().setSiteZoom('shinden.pl', 150)).not.toThrow();
+      expect(() => syncPaneWebview(broken.paneId)).not.toThrow();
+
+      expect(useBrowserStore.getState().zoomLevels).toEqual({ 'shinden.pl': 150 });
+      expect(healthy.el.setZoomFactor).toHaveBeenCalledWith(1.5);
+      await vi.runAllTimersAsync();
+      expect(electronStoreData.get('browser-zoom-levels')).toEqual({ 'shinden.pl': 150 });
+    });
+
+    it('never hands a webview NaN or an out-of-range factor', () => {
+      const { paneId, el } = openSite('https://shinden.pl/');
+      useBrowserStore.setState({ zoomLevels: { 'shinden.pl': Number.NaN } });
+      syncPaneWebview(paneId);
+      useBrowserStore.setState({ zoomLevels: { 'shinden.pl': 9000 } });
+      syncPaneWebview(paneId);
+
+      for (const [factor] of el.setZoomFactor.mock.calls) {
+        expect(factor).toBe(1);
+      }
+      expect(el.setZoomFactor).toHaveBeenCalledTimes(2);
+    });
+
+    describe('prototype-named hosts from web content', () => {
+      it.each(['__proto__', 'constructor', 'toString', 'hasOwnProperty'])(
+        'http://%s/ starts at 100%%, zooms one step and persists safely',
+        async host => {
+          const { paneId, el } = openSite(`http://${host}/`);
+          const key = host.toLowerCase();
+
+          syncPaneWebview(paneId);
+          expect(el.setZoomFactor).toHaveBeenLastCalledWith(1);
+
+          useBrowserStore.getState().zoomActivePane('in');
+          expect(el.setZoomFactor).toHaveBeenLastCalledWith(1.1);
+          const levels = useBrowserStore.getState().zoomLevels;
+          expect(Object.keys(levels)).toEqual([key]);
+          expect(Object.hasOwn(levels, key)).toBe(true);
+
+          await vi.runAllTimersAsync();
+          const persisted = JSON.stringify(electronStoreData.get('browser-zoom-levels'));
+          expect(persisted).toBe(`{"${key}":110}`);
+
+          // Restore from what a JSON store hands back.
+          electronStoreData.set('browser-zoom-levels', JSON.parse(persisted));
+          useBrowserStore.setState({ zoomLevels: {} });
+          await useBrowserStore.getState().restoreTabs();
+          el.setZoomFactor.mockClear();
+          syncPaneWebview(paneId);
+          expect(el.setZoomFactor).toHaveBeenCalledWith(1.1);
+        }
+      );
+
+      it('an ordinary site is unaffected by a zoomed __proto__ host', () => {
+        openSite('http://__proto__/');
+        useBrowserStore.getState().zoomActivePane('in');
+        const { paneId, el } = openSite('https://shinden.pl/');
+
+        syncPaneWebview(paneId);
+
+        expect(el.setZoomFactor).toHaveBeenCalledWith(1);
+      });
+    });
   });
 });
