@@ -43,6 +43,9 @@ describe('parseWebLink', () => {
     'just some words',
     'https://example.com and more',
     '',
+    'https://user:pass@example.com/',
+    'https://anilist.co@evil.example/',
+    'http://:secret@example.com/',
   ])('rejects %s', input => {
     expect(parseWebLink(input)).toBeNull();
   });

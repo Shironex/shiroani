@@ -67,8 +67,10 @@ function isJsonFile(file: IDroppedFileLike): boolean {
 }
 
 /**
- * Accept only absolute `http:` / `https:` URLs. Everything else
- * (`javascript:`, `file:`, `data:`, `shiroani:`, plain text) is rejected.
+ * Accept only absolute `http:` / `https:` URLs without credentials. Everything
+ * else (`javascript:`, `file:`, `data:`, `shiroani:`, plain text) is rejected,
+ * and so is `user:pass@host`, which can disguise the real host
+ * (`https://anilist.co@evil.example/` goes to evil.example).
  * Returns the normalised URL or null.
  */
 export function parseWebLink(text: string): string | null {
@@ -80,7 +82,9 @@ export function parseWebLink(text: string): string | null {
   } catch {
     return null;
   }
-  return url.protocol === 'http:' || url.protocol === 'https:' ? url.href : null;
+  if (url.protocol !== 'http:' && url.protocol !== 'https:') return null;
+  if (url.username || url.password) return null;
+  return url.href;
 }
 
 /** First entry of a `text/uri-list` payload (RFC 2483: `#` lines are comments). */
