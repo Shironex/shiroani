@@ -279,13 +279,16 @@ export function registerBrowserHandlers(
         }
 
         // Page zoom. Alt is excluded so AltGr (Ctrl+Alt on Windows) text
-        // input on international layouts is never swallowed.
+        // input on international layouts is never swallowed. The sender id
+        // lets the renderer zoom the guest that has focus, not whichever
+        // split pane happens to be active.
         if (!input.alt && ZOOM_SHORTCUT_KEYS.has(input.key)) {
           event.preventDefault();
           mainWindow.webContents.send('browser:shortcut', {
             key: input.key,
             ctrl: true,
             shift: input.shift,
+            webContentsId: webContents.id,
           });
           return;
         }
@@ -307,12 +310,15 @@ export function registerBrowserHandlers(
     // did not consume the wheel event itself (and not on macOS, where pinch is
     // the zoom gesture), so it never fights a page that handles Ctrl+wheel.
     // Routed through the same shortcut channel as Ctrl+= / Ctrl+-, so the
-    // renderer applies and remembers the level per site.
+    // renderer applies and remembers the level per site. The wheel does not
+    // move focus, so the sender id is what tells the renderer which split
+    // pane was under the cursor.
     webContents.on('zoom-changed', (_event, zoomDirection) => {
       if (mainWindow.isDestroyed()) return;
       mainWindow.webContents.send('browser:shortcut', {
         key: zoomDirection === 'in' ? '=' : '-',
         ctrl: true,
+        webContentsId: webContents.id,
       });
     });
 
