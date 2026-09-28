@@ -56,6 +56,45 @@ describe('DropOverlay', () => {
 
   afterEach(() => {
     vi.unstubAllGlobals();
+    vi.useRealTimers();
+  });
+
+  describe('idle watchdog', () => {
+    beforeEach(() => {
+      vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'Date'] });
+    });
+
+    it('hides the overlay and re-enables webviews when a drag goes quiet for 1 s', () => {
+      render(<DropOverlay />);
+      fireDrag('dragenter', LINK);
+      expect(document.body).toHaveClass(DROP_ACTIVE_BODY_CLASS);
+
+      // No dragleave or drop ever arrives, as when a drag ends outside Chromium.
+      act(() => {
+        vi.advanceTimersByTime(999);
+      });
+      expect(screen.getByRole('status')).toBeInTheDocument();
+
+      act(() => {
+        vi.advanceTimersByTime(1);
+      });
+      expect(screen.queryByRole('status')).not.toBeInTheDocument();
+      expect(document.body).not.toHaveClass(DROP_ACTIVE_BODY_CLASS);
+    });
+
+    it('keeps the overlay up while dragover keeps arriving', () => {
+      render(<DropOverlay />);
+      fireDrag('dragenter', LINK);
+
+      for (let i = 0; i < 5; i++) {
+        act(() => {
+          vi.advanceTimersByTime(900);
+        });
+        fireDrag('dragover', LINK);
+      }
+
+      expect(screen.getByRole('status')).toBeInTheDocument();
+    });
   });
 
   it('shows nothing until something is dragged over the window', () => {
