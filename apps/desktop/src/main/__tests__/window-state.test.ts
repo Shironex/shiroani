@@ -7,6 +7,7 @@ import {
   resolveInitialBounds,
   type PersistedWindowState,
   type Rect,
+  type WindowStateSaver,
 } from '../window-state';
 
 const PRIMARY: Rect = { x: 0, y: 25, width: 1920, height: 1055 };
@@ -179,7 +180,7 @@ describe('createWindowStateSaver', () => {
     jest.useFakeTimers();
     win = new FakeWindow();
     persist = jest.fn();
-    createWindowStateSaver(win, persist, 500);
+    createWindowStateSaver(win, persist, { debounceMs: 500 });
   });
 
   afterEach(() => {
@@ -260,5 +261,59 @@ describe('createWindowStateSaver', () => {
     win.destroyed = true;
     jest.advanceTimersByTime(500);
     expect(persist).not.toHaveBeenCalled();
+  });
+});
+
+describe('createWindowStateSaver when persisting fails', () => {
+  let win: FakeWindow;
+  let persist: jest.Mock<void, [PersistedWindowState]>;
+  let onPersistError: jest.Mock<void, [unknown]>;
+  let saver: WindowStateSaver;
+  const writeError = new Error('EPERM: operation not permitted');
+
+  beforeEach(() => {
+    jest.useFakeTimers();
+    win = new FakeWindow();
+    persist = jest.fn<void, [PersistedWindowState]>(() => {
+      throw writeError;
+    });
+    onPersistError = jest.fn();
+    saver = createWindowStateSaver(win, persist, { debounceMs: 500, onPersistError });
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  it('does not throw out of the close listener and reports the error', () => {
+    expect(() => win.emit('close')).not.toThrow();
+    expect(persist).toHaveBeenCalledTimes(1);
+    expect(onPersistError).toHaveBeenCalledWith(writeError);
+  });
+
+  it('does not throw out of saveNow (the before-quit path)', () => {
+    expect(() => saver.saveNow()).not.toThrow();
+    expect(onPersistError).toHaveBeenCalledWith(writeError);
+  });
+
+  it('does not throw without an error callback', () => {
+    const bare = createWindowStateSaver(new FakeWindow(), persist);
+    expect(() => bare.saveNow()).not.toThrow();
+  });
+
+  it('retries the same state on the next save after a failed write', () => {
+    win.emit('close');
+    persist.mockImplementation(() => undefined);
+    saver.saveNow();
+
+    expect(persist).toHaveBeenCalledTimes(2);
+    expect(persist).toHaveBeenLastCalledWith({
+      bounds: { x: 100, y: 100, width: 1200, height: 800 },
+      maximized: false,
+    });
+
+    // Once a write succeeds, the unchanged state is not rewritten.
+    saver.saveNow();
+    expect(persist).toHaveBeenCalledTimes(2);
   });
 });

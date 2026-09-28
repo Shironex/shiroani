@@ -157,6 +157,16 @@ export interface TrackedWindow {
   getNormalBounds(): Rect;
 }
 
+export interface WindowStateSaverOptions {
+  debounceMs?: number;
+  /**
+   * Called when `persist` throws (disk full, EACCES, a file locked by an
+   * antivirus). The saver swallows the error so the close and quit paths keep
+   * going, and retries on the next save.
+   */
+  onPersistError?: (error: unknown) => void;
+}
+
 export interface WindowStateSaver {
   /** Persist the current state right away (no-op while minimized or fullscreen). */
   saveNow(): void;
@@ -171,11 +181,12 @@ export interface WindowStateSaver {
  * minimized or fullscreen geometry. While the window is minimized or
  * fullscreen (including HTML5 video fullscreen) nothing is written, so the
  * last normal state survives and fullscreen is never restored on launch.
+ * `saveNow` never throws, even when `persist` does.
  */
 export function createWindowStateSaver(
   win: TrackedWindow,
   persist: (state: PersistedWindowState) => void,
-  debounceMs: number = WINDOW_STATE_SAVE_DEBOUNCE_MS
+  { debounceMs = WINDOW_STATE_SAVE_DEBOUNCE_MS, onPersistError }: WindowStateSaverOptions = {}
 ): WindowStateSaver {
   let timer: ReturnType<typeof setTimeout> | null = null;
   let lastSerialized: string | null = null;
@@ -195,8 +206,14 @@ export function createWindowStateSaver(
     const state: PersistedWindowState = { bounds, maximized: win.isMaximized() };
     const serialized = JSON.stringify(state);
     if (serialized === lastSerialized) return;
-    lastSerialized = serialized;
-    persist(state);
+    // saveNow runs inside the close and before-quit listeners, so a throw here
+    // would abort the quit. Only a successful write counts as saved.
+    try {
+      persist(state);
+      lastSerialized = serialized;
+    } catch (error) {
+      onPersistError?.(error);
+    }
   };
 
   const scheduleSave = (): void => {
