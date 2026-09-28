@@ -32,9 +32,25 @@ jest.mock('../../store', () => ({
 
 import { tmpdir } from 'os';
 import { join } from 'path';
-import { mkdtempSync, rmSync, writeFileSync, existsSync, mkdirSync } from 'fs';
+import {
+  mkdtempSync,
+  rmSync,
+  writeFileSync,
+  existsSync,
+  mkdirSync,
+  readdirSync,
+  readFileSync,
+} from 'fs';
 import { ipcMain, app, dialog, BrowserWindow } from 'electron';
 import { registerSpriteHandlers, cleanupSpriteHandlers } from '../sprite';
+import { applyActiveSprite } from '../../mascot/overlay';
+
+/** Typed access to the electron mock's test-only invoke hook. */
+const invoke = (channel: string, ...args: unknown[]): Promise<unknown> =>
+  (ipcMain as unknown as { __invoke: (ch: string, ...a: unknown[]) => Promise<unknown> }).__invoke(
+    channel,
+    ...args
+  );
 
 /**
  * Compose a minimal valid PNG buffer (1x1 transparent) for happy-path tests.
@@ -247,6 +263,97 @@ describe('registerSpriteHandlers', () => {
     });
   });
 
+  describe('overlay:add-sprite-from-bytes', () => {
+    const spritesDir = () => join(tmpDir, 'mascot-sprites');
+    const storedFiles = () => (existsSync(spritesDir()) ? readdirSync(spritesDir()) : []);
+
+    it('writes valid PNG bytes under a main-generated name and activates them', async () => {
+      const bytes = new Uint8Array(makePngBytes(64, 64));
+      registerSpriteHandlers(win);
+
+      const result = (await invoke('overlay:add-sprite-from-bytes', bytes)) as {
+        ok: true;
+        fileName: string;
+        url: string;
+      };
+
+      expect(result.ok).toBe(true);
+      expect(result.fileName).toMatch(/^sprite-[0-9a-f-]{36}\.png$/);
+      expect(result.url).toBe(`shiroani-mascot://sprites/${result.fileName}`);
+      expect(storedFiles()).toEqual([result.fileName]);
+      expect(new Uint8Array(readFileSync(join(spritesDir(), result.fileName)))).toEqual(bytes);
+      expect(storeState['settings.mascotCustomSprite']).toBe(result.fileName);
+      expect(applyActiveSprite).toHaveBeenCalled();
+    });
+
+    it('deletes the previous custom sprite after activating the new one', async () => {
+      mkdirSync(spritesDir(), { recursive: true });
+      writeFileSync(join(spritesDir(), 'old.png'), makePngBytes());
+      storeState['settings.mascotCustomSprite'] = 'old.png';
+      registerSpriteHandlers(win);
+
+      const result = (await invoke(
+        'overlay:add-sprite-from-bytes',
+        new Uint8Array(makePngBytes())
+      )) as { fileName: string };
+
+      expect(storedFiles()).toEqual([result.fileName]);
+    });
+
+    it('keeps animated formats: GIF bytes are stored as .gif', async () => {
+      // GIF89a header with a 32x32 logical screen.
+      const gif = new Uint8Array([
+        0x47, 0x49, 0x46, 0x38, 0x39, 0x61, 0x20, 0x00, 0x20, 0x00, 0x00, 0x00,
+      ]);
+      registerSpriteHandlers(win);
+      const result = (await invoke('overlay:add-sprite-from-bytes', gif)) as {
+        ok: boolean;
+        fileName: string;
+      };
+      expect(result.ok).toBe(true);
+      expect(result.fileName).toMatch(/\.gif$/);
+    });
+
+    it('rejects bytes over the 10 MB cap and writes nothing', async () => {
+      const bytes = new Uint8Array(10 * 1024 * 1024 + 1);
+      bytes.set(makePngBytes());
+      registerSpriteHandlers(win);
+
+      const result = await invoke('overlay:add-sprite-from-bytes', bytes);
+
+      expect(result).toEqual({ ok: false, reason: 'too-large' });
+      expect(storedFiles()).toEqual([]);
+      expect(storeState['settings.mascotCustomSprite']).toBeUndefined();
+    });
+
+    it('rejects bytes without an image signature and writes nothing', async () => {
+      registerSpriteHandlers(win);
+      const result = await invoke(
+        'overlay:add-sprite-from-bytes',
+        new TextEncoder().encode('I am definitely not a PNG')
+      );
+      expect(result).toEqual({ ok: false, reason: 'not-an-image' });
+      expect(storedFiles()).toEqual([]);
+    });
+
+    it('rejects images larger than the dimension cap', async () => {
+      registerSpriteHandlers(win);
+      const result = await invoke(
+        'overlay:add-sprite-from-bytes',
+        new Uint8Array(makePngBytes(4096, 4096))
+      );
+      expect(result).toEqual({ ok: false, reason: 'dimensions-too-large' });
+      expect(storedFiles()).toEqual([]);
+    });
+
+    it('refuses a filesystem path instead of bytes (schema)', async () => {
+      registerSpriteHandlers(win);
+      await expect(
+        invoke('overlay:add-sprite-from-bytes', join(tmpDir, 'source.png'))
+      ).rejects.toThrow(/Invalid payload for overlay:add-sprite-from-bytes/);
+    });
+  });
+
   describe('overlay:set-sprite-scale', () => {
     it('persists a valid mode and returns success envelope', async () => {
       registerSpriteHandlers(win);
@@ -288,6 +395,7 @@ describe('registerSpriteHandlers', () => {
       cleanupSpriteHandlers();
       [
         'overlay:pick-sprite',
+        'overlay:add-sprite-from-bytes',
         'overlay:remove-sprite',
         'overlay:get-sprite-url',
         'overlay:set-sprite-scale',

@@ -1,14 +1,21 @@
 import { ipcMain, dialog, app, protocol, net } from 'electron';
 import type { BrowserWindow } from 'electron';
 import { existsSync, mkdirSync } from 'fs';
-import { copyFile, unlink, stat } from 'fs/promises';
+import { copyFile, unlink, stat, writeFile } from 'fs/promises';
 import { join, extname, resolve, sep } from 'path';
 import { pathToFileURL } from 'url';
 import { randomUUID } from 'crypto';
 import { createMainLogger } from '../logging/logger';
 import { t } from '../i18n-strings';
 import { handle, handleWithFallback } from './with-ipc-handler';
-import { backgroundPickSchema, backgroundRemoveSchema, backgroundGetUrlSchema } from './schemas';
+import type { ImageBytesUploadResult } from '@shiroani/shared';
+import { detectImageFormat, formatToExtension, MAGIC_PROBE_BYTES } from '../image/probe';
+import {
+  backgroundPickSchema,
+  backgroundRemoveSchema,
+  backgroundGetUrlSchema,
+  backgroundAddFromBytesSchema,
+} from './schemas';
 
 const logger = createMainLogger('IPC:Background');
 
@@ -45,6 +52,21 @@ function getBackgroundsDir(): string {
 function isAllowedExtension(filePath: string): boolean {
   const ext = extname(filePath).toLowerCase().replace('.', '');
   return ALLOWED_EXTENSIONS.has(ext);
+}
+
+/**
+ * Store an already validated image in the backgrounds directory under a name
+ * generated here (never taken from the renderer). Shared by the picker and the
+ * dropped-bytes flow so both produce the same file name and URL shape.
+ */
+async function storeBackground(
+  ext: string,
+  write: (destPath: string) => Promise<void>
+): Promise<{ fileName: string; url: string }> {
+  const uniqueName = `bg-${randomUUID()}.${ext}`;
+  await write(join(getBackgroundsDir(), uniqueName));
+  logger.info(`Background image stored: ${uniqueName}`);
+  return { fileName: uniqueName, url: `shiroani-bg://backgrounds/${uniqueName}` };
 }
 
 /**
@@ -144,19 +166,36 @@ export function registerBackgroundHandlers(mainWindow: BrowserWindow): void {
         throw new Error(t('background.tooLarge'));
       }
 
-      // Generate unique filename to avoid collisions
-      const ext = extname(sourcePath).toLowerCase();
-      const uniqueName = `bg-${randomUUID()}${ext}`;
-      const destPath = join(getBackgroundsDir(), uniqueName);
-
-      // Copy file to backgrounds directory
-      await copyFile(sourcePath, destPath);
-      logger.info(`Background image copied: ${uniqueName}`);
-
-      const url = `shiroani-bg://backgrounds/${uniqueName}`;
-      return { fileName: uniqueName, url };
+      const ext = extname(sourcePath).toLowerCase().replace('.', '');
+      return storeBackground(ext, destPath => copyFile(sourcePath, destPath));
     },
     { schema: backgroundPickSchema }
+  );
+
+  handle(
+    'background:add-from-bytes',
+    async (_event, bytes): Promise<ImageBytesUploadResult> => {
+      logger.debug(`background:add-from-bytes invoked (${bytes.byteLength} bytes)`);
+
+      // Same cap as the picker. Re-checked here because the renderer's own
+      // check is only a courtesy.
+      if (bytes.byteLength > MAX_FILE_SIZE) {
+        return { ok: false, reason: 'too-large' };
+      }
+
+      // The stored extension comes from the file signature, not from the
+      // dropped file's name, and must be one the picker accepts too.
+      const buffer = Buffer.from(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+      const format = detectImageFormat(buffer.subarray(0, MAGIC_PROBE_BYTES));
+      const ext = format ? formatToExtension(format) : null;
+      if (!ext || !ALLOWED_EXTENSIONS.has(ext)) {
+        return { ok: false, reason: 'not-an-image' };
+      }
+
+      const stored = await storeBackground(ext, destPath => writeFile(destPath, buffer));
+      return { ok: true, ...stored };
+    },
+    { schema: backgroundAddFromBytesSchema }
   );
 
   handle(
@@ -210,6 +249,7 @@ export function registerBackgroundHandlers(mainWindow: BrowserWindow): void {
  */
 export function cleanupBackgroundHandlers(): void {
   ipcMain.removeHandler('background:pick');
+  ipcMain.removeHandler('background:add-from-bytes');
   ipcMain.removeHandler('background:remove');
   ipcMain.removeHandler('background:get-url');
 }

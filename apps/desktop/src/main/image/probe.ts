@@ -65,6 +65,14 @@ export function extensionToFormat(ext: string): 'png' | 'jpeg' | 'gif' | 'webp' 
 }
 
 /**
+ * Inverse of {@link extensionToFormat}: the extension (no dot) used when main
+ * names a stored file after the detected format. JPEG is stored as `jpg`.
+ */
+export function formatToExtension(format: 'png' | 'jpeg' | 'gif' | 'webp'): string {
+  return format === 'jpeg' ? 'jpg' : format;
+}
+
+/**
  * Verify that the buffer's magic bytes match the expected format derived
  * from the file extension. Defence-in-depth on top of the extension
  * whitelist — a renamed `.exe` with a `.png` extension is rejected here.

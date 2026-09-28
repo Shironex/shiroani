@@ -1,7 +1,7 @@
 import { ipcMain, dialog, protocol, net } from 'electron';
 import type { BrowserWindow } from 'electron';
 import { existsSync, mkdirSync } from 'fs';
-import { copyFile, unlink, stat, readFile } from 'fs/promises';
+import { copyFile, unlink, stat, readFile, writeFile } from 'fs/promises';
 import { join, extname, resolve, sep } from 'path';
 import { pathToFileURL } from 'url';
 import { randomUUID } from 'crypto';
@@ -13,7 +13,9 @@ import {
   spriteRemoveSchema,
   spriteGetUrlSchema,
   spriteSetScaleModeSchema,
+  spriteAddFromBytesSchema,
 } from './schemas';
+import type { ImageBytesUploadResult } from '@shiroani/shared';
 import {
   getMascotSpritesDir,
   getCustomSpriteFileName,
@@ -25,8 +27,11 @@ import {
 import { applyActiveSprite } from '../mascot/overlay';
 import {
   extensionToFormat,
+  formatToExtension,
   assertContentMatchesExtension,
+  detectImageFormat,
   readImageDimensions,
+  MAGIC_PROBE_BYTES,
 } from '../image/probe';
 
 const logger = createMainLogger('IPC:Sprite');
@@ -106,6 +111,57 @@ function isAllowedExtension(filePath: string): boolean {
 }
 
 /**
+ * Dimension guard shared by the picker and the dropped-bytes flow. Returns
+ * the problem, or null when the image is acceptable (unparseable dimensions
+ * are accepted, see {@link readImageDimensions}).
+ */
+function spriteDimensionProblem(
+  buffer: Buffer,
+  format: 'png' | 'jpeg' | 'gif' | 'webp'
+): 'dimensions-too-large' | 'invalid-dimensions' | null {
+  const dims = readImageDimensions(buffer, format);
+  if (!dims) return null;
+  if (dims.width > MAX_DIMENSION || dims.height > MAX_DIMENSION) return 'dimensions-too-large';
+  if (dims.width <= 0 || dims.height <= 0) return 'invalid-dimensions';
+  return null;
+}
+
+/**
+ * Store an already validated sprite under a name generated here, make it the
+ * active sprite, and delete the previous custom sprite. Shared by the picker
+ * and the dropped-bytes flow.
+ */
+async function activateSprite(
+  ext: string,
+  write: (destPath: string) => Promise<void>
+): Promise<{ fileName: string; url: string }> {
+  const uniqueName = `sprite-${randomUUID()}.${ext}`;
+  await write(join(ensureSpritesDir(), uniqueName));
+  logger.info(`Custom mascot sprite stored: ${uniqueName}`);
+
+  // Order matters: update the active filename + push to the overlay FIRST
+  // so GDI+ swaps to the new image and releases its handle on the previous
+  // file. Only then can we unlink the previous file without EBUSY.
+  const previous = getCustomSpriteFileName();
+  setCustomSpriteFileName(uniqueName);
+
+  try {
+    applyActiveSprite();
+  } catch (err) {
+    logger.warn('Failed to apply new sprite to live overlay:', err);
+  }
+
+  if (previous && previous !== uniqueName) {
+    const previousPath = join(ensureSpritesDir(), previous);
+    if (existsSync(previousPath)) {
+      await unlinkWithRetry(previousPath, `previous sprite ${previous}`);
+    }
+  }
+
+  return { fileName: uniqueName, url: `shiroani-mascot://sprites/${uniqueName}` };
+}
+
+/**
  * Register the `shiroani-mascot://` custom protocol for serving sprite assets.
  *
  * URL form: `shiroani-mascot://sprites/<filename>`. Containment, traversal
@@ -156,6 +212,7 @@ export function registerMascotSpriteProtocol(): void {
  *
  * Channels:
  *   overlay:pick-sprite      — open dialog, validate, copy to userData/mascot-sprites/
+ *   overlay:add-sprite-from-bytes (dropped file): same validation and storage as pick-sprite
  *   overlay:remove-sprite    — delete custom sprite + reset to bundled default
  *   overlay:get-sprite-url   — resolve a fileName to a `shiroani-mascot://` URL
  *   overlay:set-sprite-scale — persist + apply a new scale mode for the live sprite
@@ -204,46 +261,49 @@ export function registerSpriteHandlers(mainWindow: BrowserWindow): void {
       const buffer = await readFile(sourcePath);
       assertContentMatchesExtension(buffer, format);
 
-      const dims = readImageDimensions(buffer, format);
-      if (dims) {
-        if (dims.width > MAX_DIMENSION || dims.height > MAX_DIMENSION) {
-          throw new Error(t('sprite.dimensionsTooLarge', { max: MAX_DIMENSION }));
-        }
-        if (dims.width <= 0 || dims.height <= 0) {
-          throw new Error(t('sprite.invalidDimensions'));
-        }
+      const dimensionProblem = spriteDimensionProblem(buffer, format);
+      if (dimensionProblem === 'dimensions-too-large') {
+        throw new Error(t('sprite.dimensionsTooLarge', { max: MAX_DIMENSION }));
+      }
+      if (dimensionProblem === 'invalid-dimensions') {
+        throw new Error(t('sprite.invalidDimensions'));
       }
 
-      // Generate unique filename to avoid collisions
-      const uniqueName = `sprite-${randomUUID()}.${ext}`;
-      const destPath = join(ensureSpritesDir(), uniqueName);
-
-      await copyFile(sourcePath, destPath);
-      logger.info(`Custom mascot sprite copied: ${uniqueName}`);
-
-      // Order matters: update the active filename + push to the overlay FIRST
-      // so GDI+ swaps to the new image and releases its handle on the previous
-      // file. Only then can we unlink the previous file without EBUSY.
-      const previous = getCustomSpriteFileName();
-      setCustomSpriteFileName(uniqueName);
-
-      try {
-        applyActiveSprite();
-      } catch (err) {
-        logger.warn('Failed to apply new sprite to live overlay:', err);
-      }
-
-      if (previous && previous !== uniqueName) {
-        const previousPath = join(ensureSpritesDir(), previous);
-        if (existsSync(previousPath)) {
-          await unlinkWithRetry(previousPath, `previous sprite ${previous}`);
-        }
-      }
-
-      const url = `shiroani-mascot://sprites/${uniqueName}`;
-      return { fileName: uniqueName, url };
+      return activateSprite(ext, destPath => copyFile(sourcePath, destPath));
     },
     { schema: spritePickSchema }
+  );
+
+  handle(
+    'overlay:add-sprite-from-bytes',
+    async (_event, bytes): Promise<ImageBytesUploadResult> => {
+      logger.debug(`overlay:add-sprite-from-bytes invoked (${bytes.byteLength} bytes)`);
+
+      // Same cap as the picker. Re-checked here because the renderer's own
+      // check is only a courtesy.
+      if (bytes.byteLength > MAX_FILE_SIZE) {
+        return { ok: false, reason: 'too-large' };
+      }
+
+      // The stored extension comes from the file signature, not from the
+      // dropped file's name, and must be one the picker accepts too
+      // (animated GIF and WebP included).
+      const buffer = Buffer.from(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+      const format = detectImageFormat(buffer.subarray(0, MAGIC_PROBE_BYTES));
+      const ext = format ? formatToExtension(format) : null;
+      if (!format || !ext || !ALLOWED_EXTENSIONS.has(ext)) {
+        return { ok: false, reason: 'not-an-image' };
+      }
+
+      const dimensionProblem = spriteDimensionProblem(buffer, format);
+      if (dimensionProblem) {
+        return { ok: false, reason: dimensionProblem };
+      }
+
+      const stored = await activateSprite(ext, destPath => writeFile(destPath, buffer));
+      return { ok: true, ...stored };
+    },
+    { schema: spriteAddFromBytesSchema }
   );
 
   handle(
@@ -333,6 +393,7 @@ export function registerSpriteHandlers(mainWindow: BrowserWindow): void {
  */
 export function cleanupSpriteHandlers(): void {
   ipcMain.removeHandler('overlay:pick-sprite');
+  ipcMain.removeHandler('overlay:add-sprite-from-bytes');
   ipcMain.removeHandler('overlay:remove-sprite');
   ipcMain.removeHandler('overlay:get-sprite-url');
   ipcMain.removeHandler('overlay:set-sprite-scale');

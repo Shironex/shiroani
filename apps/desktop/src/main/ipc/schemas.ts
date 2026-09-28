@@ -188,6 +188,11 @@ export const browserClearSessionSchema = z.tuple([]);
 export const backgroundPickSchema = z.tuple([]);
 export const backgroundRemoveSchema = z.tuple([z.string().min(1)]);
 export const backgroundGetUrlSchema = z.tuple([z.string().min(1)]);
+/**
+ * Raw bytes of a dropped image. The handler owns the size cap and the
+ * signature check so both are enforced in one place; zod only pins the type.
+ */
+export const backgroundAddFromBytesSchema = z.tuple([z.instanceof(Uint8Array)]);
 
 // ============================================================================
 // Sprite channels (custom mascot sprite)
@@ -196,6 +201,8 @@ export const backgroundGetUrlSchema = z.tuple([z.string().min(1)]);
 export const spritePickSchema = z.tuple([]);
 export const spriteRemoveSchema = z.tuple([z.string().min(1)]);
 export const spriteGetUrlSchema = z.tuple([z.string().min(1)]);
+/** Raw bytes of a dropped sprite image, see {@link backgroundAddFromBytesSchema}. */
+export const spriteAddFromBytesSchema = z.tuple([z.instanceof(Uint8Array)]);
 /**
  * Permissive on the IPC boundary; the handler validates the literal value
  * and throws BAD_REQUEST when it's not one of `contain | cover | stretch`.
