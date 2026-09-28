@@ -8,6 +8,11 @@ jest.mock('../../logging/logger', () => ({
   }),
 }));
 
+jest.mock('../../browser/webview-context-menu', () => ({
+  attachWebviewContextMenu: jest.fn(),
+}));
+
+import { EventEmitter } from 'events';
 import { ipcMain, BrowserWindow } from 'electron';
 import {
   registerBrowserHandlers,
@@ -148,6 +153,64 @@ describe('registerBrowserHandlers', () => {
       ].forEach(ch => {
         expect(ipcMain.removeHandler).toHaveBeenCalledWith(ch);
       });
+    });
+  });
+  describe('guest keyboard and zoom forwarding', () => {
+    /** Register handlers, then attach a fake guest and return it plus the main window's send mock. */
+    function attachGuest() {
+      registerBrowserHandlers(win, browserManager);
+      const onMock = win.webContents.on as jest.Mock;
+      const attach = onMock.mock.calls.find(([event]) => event === 'did-attach-webview')?.[1];
+      const guest = Object.assign(new EventEmitter(), {
+        setWindowOpenHandler: jest.fn(),
+        executeJavaScript: jest.fn().mockResolvedValue(undefined),
+        getURL: jest.fn(() => 'https://example.com/'),
+      });
+      attach({}, guest);
+      return { guest, send: win.webContents.send as jest.Mock };
+    }
+
+    function pressKey(guest: EventEmitter, input: Record<string, unknown>) {
+      const event = { preventDefault: jest.fn() };
+      guest.emit('before-input-event', event, {
+        type: 'keyDown',
+        control: false,
+        meta: false,
+        alt: false,
+        shift: false,
+        ...input,
+      });
+      return event;
+    }
+
+    it.each(['=', '+', '-', '0'])('forwards Ctrl+%s as a browser shortcut', key => {
+      const { guest, send } = attachGuest();
+      const event = pressKey(guest, { key, control: true });
+      expect(event.preventDefault).toHaveBeenCalled();
+      expect(send).toHaveBeenCalledWith('browser:shortcut', { key, ctrl: true, shift: false });
+    });
+
+    it('forwards Cmd+= (meta) the same way', () => {
+      const { guest, send } = attachGuest();
+      pressKey(guest, { key: '=', meta: true });
+      expect(send).toHaveBeenCalledWith('browser:shortcut', { key: '=', ctrl: true, shift: false });
+    });
+
+    it('leaves zoom keys without Ctrl, and AltGr (Ctrl+Alt) combos, to the page', () => {
+      const { guest, send } = attachGuest();
+      const plain = pressKey(guest, { key: '-' });
+      const altGr = pressKey(guest, { key: '0', control: true, alt: true });
+      expect(plain.preventDefault).not.toHaveBeenCalled();
+      expect(altGr.preventDefault).not.toHaveBeenCalled();
+      expect(send).not.toHaveBeenCalled();
+    });
+
+    it('turns Ctrl+wheel zoom requests into zoom shortcuts', () => {
+      const { guest, send } = attachGuest();
+      guest.emit('zoom-changed', {}, 'in');
+      guest.emit('zoom-changed', {}, 'out');
+      expect(send).toHaveBeenNthCalledWith(1, 'browser:shortcut', { key: '=', ctrl: true });
+      expect(send).toHaveBeenNthCalledWith(2, 'browser:shortcut', { key: '-', ctrl: true });
     });
   });
 });

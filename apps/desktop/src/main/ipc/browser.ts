@@ -39,6 +39,13 @@ const GUEST_SIDE_BUTTON_NAV_SCRIPT = `
 `;
 
 /**
+ * Page-zoom keys forwarded with Ctrl (Cmd on macOS): `=` and `+` zoom in, `-`
+ * zooms out, `0` resets. `+` covers Shift+= and the numpad plus; the numpad
+ * minus and zero report the same `key` as the main row.
+ */
+const ZOOM_SHORTCUT_KEYS = new Set(['=', '+', '-', '0']);
+
+/**
  * Domains that must always be allowed as popups (OAuth, auth flows, etc.).
  */
 const POPUP_ALLOWLIST = new Set([
@@ -270,6 +277,18 @@ export function registerBrowserHandlers(
             });
             return;
         }
+
+        // Page zoom. Alt is excluded so AltGr (Ctrl+Alt on Windows) text
+        // input on international layouts is never swallowed.
+        if (!input.alt && ZOOM_SHORTCUT_KEYS.has(input.key)) {
+          event.preventDefault();
+          mainWindow.webContents.send('browser:shortcut', {
+            key: input.key,
+            ctrl: true,
+            shift: input.shift,
+          });
+          return;
+        }
       }
 
       // Alt+Arrow navigation
@@ -282,6 +301,19 @@ export function registerBrowserHandlers(
           });
         }
       }
+    });
+
+    // Ctrl+mouse wheel over the guest. Chromium emits this only when the page
+    // did not consume the wheel event itself (and not on macOS, where pinch is
+    // the zoom gesture), so it never fights a page that handles Ctrl+wheel.
+    // Routed through the same shortcut channel as Ctrl+= / Ctrl+-, so the
+    // renderer applies and remembers the level per site.
+    webContents.on('zoom-changed', (_event, zoomDirection) => {
+      if (mainWindow.isDestroyed()) return;
+      mainWindow.webContents.send('browser:shortcut', {
+        key: zoomDirection === 'in' ? '=' : '-',
+        ctrl: true,
+      });
     });
 
     // Mouse side buttons (X1/X2) → back/forward while the guest holds focus.
