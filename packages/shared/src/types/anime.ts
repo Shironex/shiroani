@@ -207,6 +207,10 @@ export interface BrowserLeafNode {
   isLoading: boolean;
   canGoBack: boolean;
   canGoForward: boolean;
+  /** Whether this pane's audio is muted. Runtime only, never persisted. */
+  isMuted?: boolean;
+  /** Whether this pane is currently producing sound. Runtime only, never persisted. */
+  isAudible?: boolean;
 }
 
 export interface BrowserSplitNode {
