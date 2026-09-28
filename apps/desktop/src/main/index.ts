@@ -4,7 +4,7 @@ import { NestFactory } from '@nestjs/core';
 import { type INestApplication } from '@nestjs/common';
 import { CustomIoAdapter } from '../modules/kernel/custom-io-adapter';
 import { AppModule } from '../modules/app.module';
-import { createMainWindow } from './window';
+import { createMainWindow, saveMainWindowState } from './window';
 import { cleanupIpcHandlers } from './ipc/register';
 import { logger, getLogPath, flushLogs, flushLogsSync, fileTransport } from './logging/logger';
 import { initializeAutoUpdater } from './updater';
@@ -539,6 +539,7 @@ app.on('activate', async () => {
 });
 
 app.on('before-quit', event => {
+  saveMainWindowState();
   mainWindow = null;
 
   // Cleanup finished, let the quit proceed
