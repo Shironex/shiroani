@@ -45,6 +45,22 @@ export interface RendererLogWriteEntry {
 export type MascotSpriteScaleMode = 'contain' | 'cover' | 'stretch';
 
 /**
+ * Why main refused image bytes handed over by the renderer (a dropped file).
+ * Returned as data instead of thrown, because error fields do not survive
+ * `ipcRenderer.invoke`.
+ */
+export type ImageBytesRejection =
+  | 'too-large'
+  | 'not-an-image'
+  | 'dimensions-too-large'
+  | 'invalid-dimensions';
+
+/** Result of storing renderer-supplied image bytes as a background or sprite. */
+export type ImageBytesUploadResult =
+  | { ok: true; fileName: string; url: string }
+  | { ok: false; reason: ImageBytesRejection };
+
+/**
  * Snapshot of host/runtime info gathered by the main process for diagnostics.
  * `gpuFeatureStatus` may be an error wrapper if Chromium wasn't ready yet.
  */
@@ -97,6 +113,11 @@ export interface ElectronAPI {
     pick: () => Promise<{ fileName: string; url: string } | null>;
     remove: (fileName: string) => Promise<void>;
     getUrl: (fileName: string) => Promise<string | null>;
+    /**
+     * Store dropped image bytes as a new background. Main checks the size and
+     * the file signature and names the file itself; nothing is activated.
+     */
+    addFromBytes: (bytes: Uint8Array) => Promise<ImageBytesUploadResult>;
   };
   app: {
     getPath: (name: string) => Promise<string>;
@@ -228,6 +249,11 @@ export interface ElectronAPI {
      * happen main-side before this resolves.
      */
     pickSprite: () => Promise<{ fileName: string; url: string } | null>;
+    /**
+     * Store dropped image bytes as the custom sprite and apply it to the live
+     * overlay. Same validation as {@link pickSprite}, plus a size check.
+     */
+    addSpriteFromBytes: (bytes: Uint8Array) => Promise<ImageBytesUploadResult>;
     /** Delete a custom sprite file and revert the overlay to the default. */
     removeSprite: (fileName: string) => Promise<void>;
     /** Resolve a persisted sprite filename to a `shiroani-mascot://` URL, or null when missing. */
