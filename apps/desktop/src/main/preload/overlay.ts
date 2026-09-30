@@ -1,5 +1,5 @@
 import { ipcRenderer } from 'electron';
-import type { ElectronAPI, MascotSpriteScaleMode } from '@shiroani/shared';
+import type { ElectronAPI, ImageBytesUploadResult, MascotSpriteScaleMode } from '@shiroani/shared';
 import { createIpcListener } from './_shared';
 
 export const overlayApi: ElectronAPI['overlay'] = {
@@ -30,6 +30,8 @@ export const overlayApi: ElectronAPI['overlay'] = {
       fileName: string;
       url: string;
     } | null>,
+  addSpriteFromBytes: (bytes: Uint8Array) =>
+    ipcRenderer.invoke('overlay:add-sprite-from-bytes', bytes) as Promise<ImageBytesUploadResult>,
   removeSprite: (fileName: string) =>
     ipcRenderer.invoke('overlay:remove-sprite', fileName) as Promise<void>,
   getSpriteUrl: (fileName: string) =>

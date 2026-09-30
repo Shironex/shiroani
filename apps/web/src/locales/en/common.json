@@ -73,5 +73,55 @@
     "label": "Experimental",
     "tooltip": "This integration is experimental — it isn't fully stable yet and may have rough edges.",
     "hint": "Experimental: this integration isn't fully stable yet and is still being tested. Expect the occasional rough edge."
+  },
+  "drop": {
+    "overlay": {
+      "link": {
+        "title": "Drop to open the link",
+        "hint": "It opens in a new browser tab."
+      },
+      "json": {
+        "title": "Drop to import",
+        "hint": "You will see what the ShiroAni export contains before anything is imported."
+      },
+      "image": {
+        "title": "Drop the image",
+        "hint": "Then choose what it should become."
+      },
+      "unknown": {
+        "title": "Drop it here",
+        "hint": "Links, ShiroAni exports (.json) and images (PNG, JPG, GIF, WebP) work here."
+      },
+      "unsupported": {
+        "title": "This can't be dropped here",
+        "hint": "Links, ShiroAni exports (.json) and images (PNG, JPG, GIF, WebP) work here."
+      }
+    },
+    "unsupported": {
+      "title": "Not sure what to do with that",
+      "multiple": "Drop one file at a time.",
+      "hint": "Links, ShiroAni exports (.json) and images (PNG, JPG, GIF, WebP) work here."
+    },
+    "import": {
+      "tooLarge": "This file is too big to import (max {{maxMb}} MB).",
+      "readFailed": "Couldn't read the dropped file."
+    },
+    "image": {
+      "title": "What should this image be?",
+      "description": "Nothing changes until you pick an option.",
+      "previewAlt": "Preview of the dropped image",
+      "setBackground": "Set as background",
+      "setMascot": "Set as mascot sprite",
+      "backgroundSet": "Background updated.",
+      "mascotSet": "Mascot sprite updated.",
+      "errors": {
+        "tooLarge": "The image is too big (max {{maxMb}} MB).",
+        "notAnImage": "This file isn't a supported image.",
+        "dimensionsTooLarge": "The image is too large for the mascot (max {{maxPx}}×{{maxPx}} px).",
+        "invalidDimensions": "The image has invalid dimensions.",
+        "storageFull": "There's no room for more images. Remove the current background or mascot sprite in Settings, then try again.",
+        "failed": "Couldn't save the image. Please try again."
+      }
+    }
   }
 }

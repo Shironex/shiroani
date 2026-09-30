@@ -13,7 +13,12 @@ import { ProgressBar } from '@/components/shared/ProgressBar';
 import { useImportDialog } from './ImportDialog.hooks';
 import type { IImportDialogProps } from './ImportDialog.types';
 
-export default function ImportDialog({ open, onOpenChange, type }: IImportDialogProps) {
+export default function ImportDialog({
+  open,
+  onOpenChange,
+  type,
+  preloadedContent,
+}: IImportDialogProps) {
   const { t } = useTranslation('nav');
   const {
     state,
@@ -23,7 +28,7 @@ export default function ImportDialog({ open, onOpenChange, type }: IImportDialog
     handleOpenChange,
     progressInfo,
     isImporting,
-  } = useImportDialog({ open, onOpenChange, type });
+  } = useImportDialog({ open, onOpenChange, type, preloadedContent });
 
   const importingPanel =
     state.step === 'importing' && progressInfo ? (

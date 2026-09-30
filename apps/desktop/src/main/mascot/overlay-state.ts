@@ -13,14 +13,12 @@ import { logger } from '../logging/logger';
 const ALLOWED_SPRITE_EXTENSIONS = new Set(['.png', '.jpg', '.jpeg', '.gif', '.webp']);
 
 /**
- * Validate that a sprite file is usable: it exists on disk AND carries a
- * recognized image extension. Corrupt/renamed files would otherwise render
- * as nothing in the overlay.
+ * Check if a stored sprite filename contains path-traversal or otherwise
+ * unsafe characters. Mirrors `ipc/sprite.ts`'s own check (kept independent so
+ * this module has no dependency on `ipc/`).
  */
-function isValidSpriteFile(filePath: string): boolean {
-  const ext = path.extname(filePath).toLowerCase();
-  if (!ALLOWED_SPRITE_EXTENSIONS.has(ext)) return false;
-  return existsSync(filePath);
+function isUnsafeSpriteFileName(name: string): boolean {
+  return name.includes('..') || name.includes('/') || name.includes('\\') || name.includes('\0');
 }
 
 type MascotVisibilityMode = 'always' | 'tray-only';
@@ -189,23 +187,43 @@ export function setActiveSpriteScaleMode(mode: MascotSpriteScaleMode): void {
 }
 
 /**
+ * Resolve a stored sprite file name to its absolute path inside the sprites
+ * folder, or null when the name is not a plain image file name that stays
+ * inside it. The stored name lives in the renderer-writable
+ * `settings.mascotCustomSprite` key, so this is the one guard every read and
+ * delete of it must go through (here, and in `ipc/sprite.ts`'s previous-sprite
+ * cleanup): shape (no traversal, no `/` or `\` segment, so a drive-absolute
+ * or UNC name is rejected on every host), extension, then a `resolve()` +
+ * `path.sep` containment check.
+ */
+export function resolveSpritePath(fileName: string): string | null {
+  if (!fileName || isUnsafeSpriteFileName(fileName)) return null;
+  const ext = path.extname(fileName).toLowerCase();
+  if (!ALLOWED_SPRITE_EXTENSIONS.has(ext)) return null;
+  const spritesDir = getMascotSpritesDir();
+  const filePath = path.resolve(path.join(spritesDir, fileName));
+  return filePath.startsWith(path.resolve(spritesDir) + path.sep) ? filePath : null;
+}
+
+/**
  * Resolve the absolute path to the sprite the overlay should currently render.
  *
- * If a custom sprite filename is persisted AND the file still exists on disk,
- * the absolute path inside `userData/mascot-sprites/` is returned. Otherwise
- * the bundled default sprite path is returned. This is the single source of
- * truth used both at overlay startup and on live sprite swap.
+ * If a custom sprite filename is persisted, passes the guard above, AND the
+ * file still exists on disk, the absolute path inside
+ * `userData/mascot-sprites/` is returned. Otherwise the bundled default
+ * sprite path is returned. This is the single source of truth used both at
+ * overlay startup and on live sprite swap.
  */
 export function getActiveSpritePath(): string {
   const fileName = getCustomSpriteFileName();
   if (fileName) {
-    const candidate = path.join(getMascotSpritesDir(), fileName);
-    if (isValidSpriteFile(candidate)) {
+    const candidate = resolveSpritePath(fileName);
+    if (candidate && existsSync(candidate)) {
       return candidate;
     }
-    // The persisted sprite is missing or has an unrecognized format — render
-    // the bundled default instead of nothing, and warn so the cause is
-    // traceable in logs.
+    // The persisted sprite name is missing, has an unrecognized format, or
+    // fails the containment guard: render the bundled default instead of
+    // nothing, and warn so the cause is traceable in logs.
     logger.warn(
       `Custom mascot sprite "${fileName}" is missing or has an invalid format — falling back to the default sprite`
     );

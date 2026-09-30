@@ -32,9 +32,27 @@ jest.mock('../../store', () => ({
 
 import { tmpdir } from 'os';
 import { join } from 'path';
-import { mkdtempSync, rmSync, writeFileSync, existsSync, mkdirSync } from 'fs';
+import {
+  mkdtempSync,
+  rmSync,
+  writeFileSync,
+  existsSync,
+  mkdirSync,
+  readdirSync,
+  readFileSync,
+  truncateSync,
+} from 'fs';
 import { ipcMain, app, dialog, BrowserWindow } from 'electron';
 import { registerSpriteHandlers, cleanupSpriteHandlers } from '../sprite';
+import { applyActiveSprite } from '../../mascot/overlay';
+import { resolveSpritePath } from '../../mascot/overlay-state';
+
+/** Typed access to the electron mock's test-only invoke hook. */
+const invoke = (channel: string, ...args: unknown[]): Promise<unknown> =>
+  (ipcMain as unknown as { __invoke: (ch: string, ...a: unknown[]) => Promise<unknown> }).__invoke(
+    channel,
+    ...args
+  );
 
 /**
  * Compose a minimal valid PNG buffer (1x1 transparent) for happy-path tests.
@@ -247,6 +265,232 @@ describe('registerSpriteHandlers', () => {
     });
   });
 
+  describe('overlay:add-sprite-from-bytes', () => {
+    const spritesDir = () => join(tmpDir, 'mascot-sprites');
+    const storedFiles = () => (existsSync(spritesDir()) ? readdirSync(spritesDir()) : []);
+
+    it('writes valid PNG bytes under a main-generated name and activates them', async () => {
+      const bytes = new Uint8Array(makePngBytes(64, 64));
+      registerSpriteHandlers(win);
+
+      const result = (await invoke('overlay:add-sprite-from-bytes', bytes)) as {
+        ok: true;
+        fileName: string;
+        url: string;
+      };
+
+      expect(result.ok).toBe(true);
+      expect(result.fileName).toMatch(/^sprite-[0-9a-f-]{36}\.png$/);
+      expect(result.url).toBe(`shiroani-mascot://sprites/${result.fileName}`);
+      expect(storedFiles()).toEqual([result.fileName]);
+      expect(new Uint8Array(readFileSync(join(spritesDir(), result.fileName)))).toEqual(bytes);
+      expect(storeState['settings.mascotCustomSprite']).toBe(result.fileName);
+      expect(applyActiveSprite).toHaveBeenCalled();
+    });
+
+    it('stores only the viewed bytes of a Uint8Array over a larger buffer', async () => {
+      // A view that starts past other data, as a structured-cloned subarray can.
+      const image = new Uint8Array(makePngBytes(64, 64));
+      const backing = new Uint8Array(16 + image.byteLength + 16).fill(0x41);
+      backing.set(image, 16);
+      const view = new Uint8Array(backing.buffer, 16, image.byteLength);
+      registerSpriteHandlers(win);
+
+      const result = (await invoke('overlay:add-sprite-from-bytes', view)) as {
+        ok: true;
+        fileName: string;
+      };
+
+      expect(result.ok).toBe(true);
+      expect(new Uint8Array(readFileSync(join(spritesDir(), result.fileName)))).toEqual(image);
+    });
+
+    it('deletes the previous custom sprite after activating the new one', async () => {
+      mkdirSync(spritesDir(), { recursive: true });
+      writeFileSync(join(spritesDir(), 'old.png'), makePngBytes());
+      storeState['settings.mascotCustomSprite'] = 'old.png';
+      registerSpriteHandlers(win);
+
+      const result = (await invoke(
+        'overlay:add-sprite-from-bytes',
+        new Uint8Array(makePngBytes())
+      )) as { fileName: string };
+
+      expect(storedFiles()).toEqual([result.fileName]);
+    });
+
+    it('keeps animated formats: GIF bytes are stored as .gif', async () => {
+      // GIF89a header with a 32x32 logical screen.
+      const gif = new Uint8Array([
+        0x47, 0x49, 0x46, 0x38, 0x39, 0x61, 0x20, 0x00, 0x20, 0x00, 0x00, 0x00,
+      ]);
+      registerSpriteHandlers(win);
+      const result = (await invoke('overlay:add-sprite-from-bytes', gif)) as {
+        ok: boolean;
+        fileName: string;
+      };
+      expect(result.ok).toBe(true);
+      expect(result.fileName).toMatch(/\.gif$/);
+    });
+
+    it('rejects bytes over the 10 MB cap and writes nothing', async () => {
+      const bytes = new Uint8Array(10 * 1024 * 1024 + 1);
+      bytes.set(makePngBytes());
+      registerSpriteHandlers(win);
+
+      const result = await invoke('overlay:add-sprite-from-bytes', bytes);
+
+      expect(result).toEqual({ ok: false, reason: 'too-large' });
+      expect(storedFiles()).toEqual([]);
+      expect(storeState['settings.mascotCustomSprite']).toBeUndefined();
+    });
+
+    it('rejects bytes without an image signature and writes nothing', async () => {
+      registerSpriteHandlers(win);
+      const result = await invoke(
+        'overlay:add-sprite-from-bytes',
+        new TextEncoder().encode('I am definitely not a PNG')
+      );
+      expect(result).toEqual({ ok: false, reason: 'not-an-image' });
+      expect(storedFiles()).toEqual([]);
+    });
+
+    it('rejects images larger than the dimension cap', async () => {
+      registerSpriteHandlers(win);
+      const result = await invoke(
+        'overlay:add-sprite-from-bytes',
+        new Uint8Array(makePngBytes(4096, 4096))
+      );
+      expect(result).toEqual({ ok: false, reason: 'dimensions-too-large' });
+      expect(storedFiles()).toEqual([]);
+    });
+
+    it('rejects bytes that would take the folder past 100 MB and deletes nothing', async () => {
+      // The stored name no longer matches a file, so the previous-sprite
+      // cleanup cannot keep the folder small; the quota has to.
+      mkdirSync(spritesDir(), { recursive: true });
+      const filler = join(spritesDir(), 'sprite-filler.png');
+      writeFileSync(filler, '');
+      const bytes = new Uint8Array(makePngBytes());
+      truncateSync(filler, 100 * 1024 * 1024 - bytes.byteLength + 1);
+      storeState['settings.mascotCustomSprite'] = 'sprite-filler.png';
+      registerSpriteHandlers(win);
+
+      const result = await invoke('overlay:add-sprite-from-bytes', bytes);
+
+      expect(result).toEqual({ ok: false, reason: 'storage-full' });
+      expect(storedFiles()).toEqual(['sprite-filler.png']);
+      expect(storeState['settings.mascotCustomSprite']).toBe('sprite-filler.png');
+    });
+
+    it('accepts bytes that fill the folder exactly to 100 MB', async () => {
+      mkdirSync(spritesDir(), { recursive: true });
+      const filler = join(spritesDir(), 'sprite-filler.png');
+      writeFileSync(filler, '');
+      const bytes = new Uint8Array(makePngBytes());
+      truncateSync(filler, 100 * 1024 * 1024 - bytes.byteLength);
+      registerSpriteHandlers(win);
+
+      const result = (await invoke('overlay:add-sprite-from-bytes', bytes)) as { ok: boolean };
+
+      expect(result.ok).toBe(true);
+    });
+
+    it('refuses a filesystem path instead of bytes (schema)', async () => {
+      registerSpriteHandlers(win);
+      await expect(
+        invoke('overlay:add-sprite-from-bytes', join(tmpDir, 'source.png'))
+      ).rejects.toThrow(/Invalid payload for overlay:add-sprite-from-bytes/);
+    });
+  });
+
+  // The active sprite name lives in the renderer-writable `settings` key, so
+  // the previous-sprite cleanup must never follow it outside the folder.
+  describe('previous sprite cleanup', () => {
+    const spritesDir = () => join(tmpDir, 'mascot-sprites');
+
+    const doors: Array<[string, () => Promise<unknown>]> = [
+      [
+        'overlay:add-sprite-from-bytes',
+        () => invoke('overlay:add-sprite-from-bytes', new Uint8Array(makePngBytes())),
+      ],
+      [
+        'overlay:pick-sprite',
+        async () => {
+          const sourcePath = join(tmpDir, 'picked.png');
+          writeFileSync(sourcePath, makePngBytes());
+          (dialog.showOpenDialog as jest.Mock).mockResolvedValue({
+            canceled: false,
+            filePaths: [sourcePath],
+          });
+          return invoke('overlay:pick-sprite');
+        },
+      ],
+    ];
+
+    describe.each(doors)('%s', (_channel, activateNewSprite) => {
+      it.each([
+        // [label, stored name, file that must survive]. Functions, because
+        // tmpDir only exists once beforeEach ran.
+        ['a parent-relative name', () => '../outside.png', () => join(tmpDir, 'outside.png')],
+        ['a backslash name', () => '..\\outside.png', () => join(spritesDir(), '..\\outside.png')],
+        [
+          // On POSIX, `path.join`/`path.resolve` treat `\` as an ordinary
+          // character, so this literal filename stays inside the sprites
+          // folder and only the shape check (not resolve()+sep containment)
+          // rejects it. See the direct `resolveSpritePath` assertions below
+          // for cases the resolve()+sep check alone could not catch on this
+          // host.
+          'a Windows drive-absolute name',
+          () => 'C:\\outside.png',
+          () => join(spritesDir(), 'C:\\outside.png'),
+        ],
+        [
+          'a nested name',
+          () => 'nested/inner.png',
+          () => join(spritesDir(), 'nested', 'inner.png'),
+        ],
+      ])('does not delete %s stored as the previous sprite', async (_label, stored, target) => {
+        mkdirSync(join(spritesDir(), 'nested'), { recursive: true });
+        writeFileSync(target(), 'keep me');
+        storeState['settings.mascotCustomSprite'] = stored();
+        registerSpriteHandlers(win);
+
+        await activateNewSprite();
+
+        expect(existsSync(target())).toBe(true);
+        expect(storeState['settings.mascotCustomSprite']).toMatch(/^sprite-.*\.png$/);
+      });
+
+      it('still deletes a legitimate previous sprite', async () => {
+        mkdirSync(spritesDir(), { recursive: true });
+        writeFileSync(join(spritesDir(), 'sprite-old.png'), makePngBytes());
+        storeState['settings.mascotCustomSprite'] = 'sprite-old.png';
+        registerSpriteHandlers(win);
+
+        await activateNewSprite();
+
+        expect(existsSync(join(spritesDir(), 'sprite-old.png'))).toBe(false);
+      });
+    });
+
+    // The cases above prove nothing outside the folder is deleted, but on
+    // POSIX several of those names never actually leave the sandbox through
+    // `path.join`/`path.resolve` (a backslash or a leading `/` is just an
+    // ordinary character there), so they cannot exercise the containment
+    // check by themselves. Assert the shared guard rejects these shapes
+    // directly, on every host, regardless of what the filesystem would do
+    // with them.
+    it.each([
+      ['a Windows drive-absolute name', 'C:\\x.png'],
+      ['a UNC path', '\\\\srv\\share\\x.png'],
+      ['a POSIX absolute path', '/abs/x.png'],
+      ['a parent-relative name with a backslash', '..\\x.png'],
+    ])('resolveSpritePath rejects %s', (_label, name) => {
+      expect(resolveSpritePath(name)).toBeNull();
+    });
+  });
+
   describe('overlay:set-sprite-scale', () => {
     it('persists a valid mode and returns success envelope', async () => {
       registerSpriteHandlers(win);
@@ -288,6 +532,7 @@ describe('registerSpriteHandlers', () => {
       cleanupSpriteHandlers();
       [
         'overlay:pick-sprite',
+        'overlay:add-sprite-from-bytes',
         'overlay:remove-sprite',
         'overlay:get-sprite-url',
         'overlay:set-sprite-scale',

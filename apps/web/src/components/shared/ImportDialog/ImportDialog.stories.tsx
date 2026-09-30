@@ -53,6 +53,9 @@ const meta = {
       description: 'Which dataset the import targets.',
     },
     onOpenChange: { description: 'Fired with the next open state; suppressed mid-import.' },
+    preloadedContent: {
+      description: 'Raw JSON of a dropped file; skips the native picker and goes to preview.',
+    },
   },
 } satisfies Meta<typeof ImportDialog>;
 
@@ -94,5 +97,23 @@ export const SwitchesStrategy: Story = {
     const overwrite = canvas.getByRole('radio', { name: /overwrite/i });
     await userEvent.click(overwrite);
     await expect(overwrite).toBeChecked();
+  },
+};
+
+/**
+ * Preloaded content (a ShiroAni export dropped onto the window): no file picker
+ * and no bridge needed, the dialog goes straight to the same preview.
+ */
+export const PreloadedFromDrop: Story = {
+  args: {
+    open: true,
+    onOpenChange: fn(),
+    type: 'all',
+    preloadedContent: JSON.stringify(VALID_EXPORT),
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement.ownerDocument.body);
+    await expect(await canvas.findByText(/found/i)).toBeInTheDocument();
+    await expect(canvas.getByText('What to do with duplicates?')).toBeInTheDocument();
   },
 };

@@ -4,6 +4,13 @@ export interface IImportDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   type: 'library' | 'diary' | 'all';
+  /**
+   * Raw JSON text already read by the caller (a file dropped onto the window).
+   * When set, the dialog skips the native file picker and goes straight to the
+   * same validation and preview the picker flow uses. The user still picks a
+   * strategy and confirms before anything is imported.
+   */
+  preloadedContent?: string | null;
 }
 
 export type ImportStep =
