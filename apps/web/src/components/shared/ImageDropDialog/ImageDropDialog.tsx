@@ -28,7 +28,7 @@ export default function ImageDropDialog({
 
   return (
     <Dialog open={file !== null} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-md" data-slot="image-drop-dialog">
+      <DialogContent className="max-w-xl" data-slot="image-drop-dialog">
         <DialogHeader>
           <DialogTitle>{t('drop.image.title')}</DialogTitle>
           <DialogDescription>{t('drop.image.description')}</DialogDescription>
@@ -45,7 +45,7 @@ export default function ImageDropDialog({
           {file && <p className="truncate text-xs text-muted-foreground">{file.name}</p>}
         </div>
 
-        <DialogFooter className="gap-2">
+        <DialogFooter className="flex-wrap gap-2">
           <Button variant="ghost" disabled={busy !== null} onClick={() => handleOpenChange(false)}>
             {t('actions.cancel')}
           </Button>
