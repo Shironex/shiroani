@@ -1,4 +1,4 @@
-import { app, BrowserWindow, Menu, shell, session, type WebContents } from 'electron';
+import { app, BrowserWindow, Menu, screen, shell, session, type WebContents } from 'electron';
 import * as path from 'path';
 import { pathToFileURL } from 'url';
 import { registerIpcHandlers } from './ipc/register';
@@ -8,6 +8,17 @@ import { getBackendPort } from './backend-port';
 import { BrowserManager } from './browser/browser-manager';
 import { isExternalUrlAllowed } from './url-utils';
 import { isHardCrashReason } from './cleanup-utils';
+import { store } from './store';
+import {
+  createWindowStateSaver,
+  DEFAULT_WINDOW_SIZE,
+  parseSavedBounds,
+  parseSavedMaximized,
+  resolveInitialBounds,
+  WINDOW_BOUNDS_KEY,
+  WINDOW_MAXIMIZED_KEY,
+  type WindowStateSaver,
+} from './window-state';
 
 // Re-export for callers that still pull it from `./window`. The actual
 // implementation lives in `./url-utils` so IPC modules can import it
@@ -73,6 +84,16 @@ function setupContentSecurityPolicy(isDev: boolean, backendPort: number): void {
   });
 }
 
+let mainWindowStateSaver: WindowStateSaver | null = null;
+
+/**
+ * Persist the main window's size, position and maximized state right away.
+ * Called from `before-quit` so a quit that never closes the window still saves.
+ */
+export function saveMainWindowState(): void {
+  mainWindowStateSaver?.saveNow();
+}
+
 export async function createMainWindow(browserManager: BrowserManager): Promise<BrowserWindow> {
   const isDev = process.env.NODE_ENV === 'development';
 
@@ -135,11 +156,20 @@ export async function createMainWindow(browserManager: BrowserManager): Promise<
     Menu.setApplicationMenu(null);
   }
 
+  const initialBounds = resolveInitialBounds(
+    parseSavedBounds(store.get(WINDOW_BOUNDS_KEY)),
+    screen.getAllDisplays().map(display => display.workArea),
+    screen.getPrimaryDisplay().workArea
+  );
+  const startMaximized = parseSavedMaximized(store.get(WINDOW_MAXIMIZED_KEY));
+
   const mainWindow = new BrowserWindow({
-    width: 1400,
-    height: 900,
-    minWidth: 800,
-    minHeight: 600,
+    ...initialBounds,
+    minWidth: DEFAULT_WINDOW_SIZE.minWidth,
+    minHeight: DEFAULT_WINDOW_SIZE.minHeight,
+    // Created hidden so a saved maximized state is applied before the first
+    // paint; shown right below, so startup timing is unchanged.
+    show: false,
     frame: false,
     titleBarStyle: 'hidden',
     title: 'ShiroAni',
@@ -158,6 +188,22 @@ export async function createMainWindow(browserManager: BrowserManager): Promise<
       webviewTag: true, // Enable <webview> tag for built-in browser
     },
   });
+
+  // maximize() keeps the bounds above as the restore size. It runs before
+  // show() so the window never paints at its normal size first.
+  if (startMaximized) {
+    mainWindow.maximize();
+  }
+  mainWindow.show();
+
+  mainWindowStateSaver?.dispose();
+  mainWindowStateSaver = createWindowStateSaver(
+    mainWindow,
+    ({ bounds, maximized }) => {
+      store.set({ [WINDOW_BOUNDS_KEY]: bounds, [WINDOW_MAXIMIZED_KEY]: maximized });
+    },
+    { onPersistError: error => logger.error('Failed to save window state:', error) }
+  );
 
   // Security: validate and harden <webview> tags before they attach
   mainWindow.webContents.on('will-attach-webview', (_event, webPreferences, _params) => {
