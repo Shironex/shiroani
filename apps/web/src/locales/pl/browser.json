@@ -14,7 +14,11 @@
     "addFavorite": "Dodaj do ulubionych",
     "removeFavorite": "Usuń z ulubionych",
     "addToLibrary": "Dodaj do biblioteki",
-    "history": "Historia"
+    "history": "Historia",
+    "zoom": {
+      "reset": "Przywróć powiększenie 100%",
+      "ariaLabel": "Powiększenie strony {{percent}}%. Przywróć 100%"
+    }
   },
   "favorites": {
     "barLabel": "Pasek ulubionych",
@@ -74,6 +78,12 @@
     "empty": {
       "cta": "Kliknij +, żeby otworzyć nową kartę",
       "action": "Nowa karta"
+    },
+    "audio": {
+      "playing": "Odtwarza dźwięk",
+      "muted": "Wyciszona",
+      "muteHint": "Odtwarza dźwięk. Kliknij lub naciśnij M, aby wyciszyć kartę",
+      "unmuteHint": "Wyciszona. Kliknij lub naciśnij M, aby włączyć dźwięk karty"
     }
   },
   "addDialog": {

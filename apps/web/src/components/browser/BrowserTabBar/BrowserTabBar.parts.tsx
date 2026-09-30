@@ -1,11 +1,12 @@
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Loader2, Globe, X, Columns2 } from 'lucide-react';
+import { Loader2, Globe, X, Columns2, Volume2, VolumeX } from 'lucide-react';
 import { useDroppable } from '@dnd-kit/core';
 import { useSortable, horizontalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { cn } from '@/lib/utils';
 import { MERGE_PREFIX } from './BrowserTabBar.hooks';
+import type { TabAudioState } from '@/stores/browser/browserTree';
 import type { ISortableTabProps, ITabContentProps } from './BrowserTabBar.types';
 
 // Re-export for SortableContext consumers (kept colocated with the sortable).
@@ -51,6 +52,11 @@ function TabFavicon({ tab }: { tab: ITabContentProps['tab'] }) {
   return <Globe className="size-3.5 shrink-0 opacity-70" />;
 }
 
+/** Speaker (audible) or crossed-out speaker (muted) glyph for a tab's audio state. */
+function TabAudioGlyph({ audioState }: { audioState: Exclude<TabAudioState, null> }) {
+  return audioState === 'muted' ? <VolumeX className="w-3 h-3" /> : <Volume2 className="w-3 h-3" />;
+}
+
 /**
  * Presentational tab chip used for the drag overlay. Mirrors the interactive
  * chip's look (favicon + title + split indicator) without the role="tab" /
@@ -62,6 +68,7 @@ export function TabContent({
   isSplit,
   isDragOverlay = false,
   isMergeTarget = false,
+  audioState = null,
 }: ITabContentProps) {
   const { t } = useTranslation('browser');
 
@@ -69,6 +76,17 @@ export function TabContent({
     <div className={cn(CHIP_CLASS, chipStateClass(isActive, isDragOverlay, isMergeTarget))}>
       <TabFavicon tab={tab} />
       <span className="truncate flex-1">{tab.title || t('tabs.newTab')}</span>
+      {audioState && (
+        <span
+          aria-hidden="true"
+          className={cn(
+            'grid size-4 place-items-center shrink-0',
+            audioState === 'muted' ? 'text-muted-foreground' : 'text-primary'
+          )}
+        >
+          <TabAudioGlyph audioState={audioState} />
+        </span>
+      )}
       {isSplit && !isMergeTarget && (
         <Columns2 className="w-3 h-3 shrink-0 text-primary/70" aria-label={t('tabs.split')} />
       )}
@@ -92,6 +110,11 @@ export function TabContent({
  * the focused tab with Delete or Backspace, which `aria-keyshortcuts`
  * advertises; mouse users click the X. The whole chip is also the dnd-kit
  * sortable + drag activator.
+ *
+ * The speaker icon (shown while the tab plays sound or is muted) follows the
+ * same pattern: an aria-hidden click target, with M on the focused tab as the
+ * keyboard path and the audio state exposed through the tab's
+ * `aria-description`.
  */
 export function SortableTab({
   tab,
@@ -99,6 +122,8 @@ export function SortableTab({
   isSplit,
   onSelect,
   onClose,
+  audioState,
+  onToggleMute,
   wasDragging,
   isMergeTarget,
   isDraggingThisTab,
@@ -139,10 +164,27 @@ export function SortableTab({
         // Keyboard-accessible close path — the visible X is presentational.
         e.preventDefault();
         onClose(e);
+      } else if (
+        (e.key === 'm' || e.key === 'M') &&
+        !e.ctrlKey &&
+        !e.metaKey &&
+        !e.altKey &&
+        !e.shiftKey
+      ) {
+        // Keyboard path for the presentational speaker icon.
+        e.preventDefault();
+        onToggleMute(e);
       }
     },
-    [onSelect, onClose]
+    [onSelect, onClose, onToggleMute]
   );
+
+  const audioDescription =
+    audioState === 'audible'
+      ? t('tabs.audio.playing')
+      : audioState === 'muted'
+        ? t('tabs.audio.muted')
+        : undefined;
 
   return (
     <div
@@ -152,7 +194,8 @@ export function SortableTab({
       {...listeners}
       role="tab"
       aria-selected={isActive}
-      aria-keyshortcuts="Delete"
+      aria-keyshortcuts="Delete M"
+      aria-description={audioDescription}
       tabIndex={isActive ? 0 : -1}
       onClick={handleClick}
       onKeyDown={handleKeyDown}
@@ -176,6 +219,30 @@ export function SortableTab({
           aria-hidden="true"
           className="pointer-events-none absolute inset-y-1 left-1/2 w-px bg-primary/70"
         />
+      )}
+      {/*
+       * Speaker icon: presentational like the close X below (same ARIA
+       * constraint). Pointer-down is stopped so pressing it never starts a tab
+       * drag, and the click handler stops propagation so it never selects the
+       * tab either.
+       */}
+      {audioState && (
+        <span
+          role="presentation"
+          aria-hidden="true"
+          data-testid="browser-tab-audio"
+          data-audio-state={audioState}
+          title={audioState === 'muted' ? t('tabs.audio.unmuteHint') : t('tabs.audio.muteHint')}
+          onPointerDown={e => e.stopPropagation()}
+          onClick={onToggleMute}
+          className={cn(
+            'ml-1 grid size-4 place-items-center rounded-sm shrink-0',
+            'transition-colors duration-150 hover:bg-foreground/10',
+            audioState === 'muted' ? 'text-muted-foreground' : 'text-primary'
+          )}
+        >
+          <TabAudioGlyph audioState={audioState} />
+        </span>
       )}
       {/*
        * Kept as a native `title` rather than the Tooltip primitive: this span is

@@ -24,6 +24,10 @@ export interface IBrowserToolbarProps {
   onToggleFavorite: () => void;
   onAddToLibrary: () => void;
   onOpenHistory: () => void;
+  /** Remembered zoom of the active page's site, in percent. The indicator shows when not 100. */
+  zoomPercent?: number;
+  /** Reset the active page's site zoom to 100% (the zoom indicator's action). */
+  onResetZoom?: () => void;
   urlInputRef?: RefObject<HTMLInputElement | null>;
 }
 

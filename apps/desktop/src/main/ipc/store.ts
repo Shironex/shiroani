@@ -58,6 +58,7 @@ const ALLOWED_STORE_KEYS = new Set([
   'browser-history',
   // Browser favorites bar (renderer persists user-curated favorites)
   'browser-favorites',
+  'browser-zoom-levels', // Browser per-site zoom (hostname to percent)
   // Quick access sites and frequent visits
   'quick-access-sites',
   'quick-access-frequent',

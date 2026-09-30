@@ -1,5 +1,5 @@
 import { useEffect, type RefObject } from 'react';
-import { findLeafById, useBrowserStore } from '@/stores/useBrowserStore';
+import { findLeafById, syncPaneWebview, useBrowserStore } from '@/stores/useBrowserStore';
 import { useAppStore } from '@/stores/useAppStore';
 import { useQuickAccessStore } from '@/stores/useQuickAccessStore';
 import {
@@ -8,6 +8,7 @@ import {
   type WebviewElement,
 } from '@/components/browser/webviewRefs';
 import { useWebviewErrorStore } from '@/components/browser/webviewErrors';
+import { createAudibleMonitor } from '@/components/browser/webviewAudio';
 import { updateAnimePresence } from '@/lib/anime-detection';
 
 interface WebviewNavigateEvent extends Event {
@@ -71,18 +72,25 @@ export function useWebviewEvents(webviewRef: RefObject<WebviewElement | null>, p
     const el = webviewRef.current;
     if (!el) return;
 
-    const { updateTabState } = useBrowserStore.getState();
+    const { updateTabState, setPaneAudible } = useBrowserStore.getState();
     const { setError, clearError } = useWebviewErrorStore.getState();
 
     // Register immediately so other code can access the webview ref before dom-ready
     registerWebview(paneId, el);
 
+    // Tab audio indicator: tracks whether this pane is producing sound.
+    const audibleMonitor = createAudibleMonitor(el, audible => setPaneAudible(paneId, audible));
+
     const onDomReady = () => {
       el.executeJavaScript(IFRAME_PATCH_SCRIPT).catch(() => {});
+      // Mute and site zoom belong to the pane, not the document: re-apply them
+      // to every freshly loaded document.
+      syncPaneWebview(paneId);
     };
 
     const onDidNavigate = (e: Event) => {
       const detail = e as WebviewNavigateEvent;
+      audibleMonitor.documentChanged();
       // A successful navigation supersedes any prior failed load on this pane.
       clearError(paneId);
       updateTabState(paneId, {
@@ -90,6 +98,8 @@ export function useWebviewEvents(webviewRef: RefObject<WebviewElement | null>, p
         canGoBack: el.canGoBack(),
         canGoForward: el.canGoForward(),
       });
+      // A navigation to another host must pick up that host's zoom level.
+      syncPaneWebview(paneId);
       updateAnimePresence(paneId, useAppStore.getState().activeView);
     };
 
@@ -162,6 +172,9 @@ export function useWebviewEvents(webviewRef: RefObject<WebviewElement | null>, p
       window.electronAPI?.browser?.setFullscreen?.(false);
     };
 
+    const onMediaStartedPlaying = () => audibleMonitor.mediaStarted();
+    const onMediaPaused = () => audibleMonitor.mediaPaused();
+
     // Attach listeners
     el.addEventListener('dom-ready', onDomReady);
     el.addEventListener('did-navigate', onDidNavigate);
@@ -173,11 +186,14 @@ export function useWebviewEvents(webviewRef: RefObject<WebviewElement | null>, p
     el.addEventListener('did-fail-load', onDidFailLoad);
     el.addEventListener('enter-html-full-screen', onEnterFullscreen);
     el.addEventListener('leave-html-full-screen', onLeaveFullscreen);
+    el.addEventListener('media-started-playing', onMediaStartedPlaying);
+    el.addEventListener('media-paused', onMediaPaused);
 
     // Cleanup
     return () => {
       unregisterWebview(paneId);
       clearError(paneId);
+      audibleMonitor.dispose();
       el.removeEventListener('dom-ready', onDomReady);
       el.removeEventListener('did-navigate', onDidNavigate);
       el.removeEventListener('did-navigate-in-page', onDidNavigateInPage);
@@ -188,6 +204,8 @@ export function useWebviewEvents(webviewRef: RefObject<WebviewElement | null>, p
       el.removeEventListener('did-fail-load', onDidFailLoad);
       el.removeEventListener('enter-html-full-screen', onEnterFullscreen);
       el.removeEventListener('leave-html-full-screen', onLeaveFullscreen);
+      el.removeEventListener('media-started-playing', onMediaStartedPlaying);
+      el.removeEventListener('media-paused', onMediaPaused);
     };
   }, [paneId]);
 }

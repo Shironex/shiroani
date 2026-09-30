@@ -25,6 +25,13 @@ export type WebviewElement = HTMLElement & {
   executeJavaScript: (code: string) => Promise<unknown>;
   setAudioMuted: (muted: boolean) => void;
   isAudioMuted: () => boolean;
+  /** Whether the guest is producing sound right now (sync IPC to main). */
+  isCurrentlyAudible: () => boolean;
+  /** Page zoom as a factor (1 = 100%). */
+  setZoomFactor: (factor: number) => void;
+  getZoomFactor: () => number;
+  /** Id of the guest's main-process WebContents. Throws until the guest has attached. */
+  getWebContentsId: () => number;
   openDevTools: () => void;
   /**
    * Highlight matches of `text` in the guest page. Returns a request id; match
@@ -55,4 +62,20 @@ export function unregisterWebview(paneId: string): void {
 
 export function getWebview(paneId: string): WebviewElement | undefined {
   return webviewRefs.get(paneId);
+}
+
+/**
+ * The pane whose webview hosts the guest WebContents `webContentsId`, or
+ * `null` when no registered webview matches (a pane that closed while an IPC
+ * event was in flight, or a guest that has not attached yet).
+ */
+export function findPaneIdByWebContentsId(webContentsId: number): string | null {
+  for (const [paneId, el] of webviewRefs) {
+    try {
+      if (el.getWebContentsId() === webContentsId) return paneId;
+    } catch {
+      // Guest not attached yet; it cannot be the sender.
+    }
+  }
+  return null;
 }

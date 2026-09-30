@@ -143,7 +143,14 @@ export interface ElectronAPI {
     clearSession: () => Promise<void>;
     onNewWindowRequest: (callback: (url: string) => void) => () => void;
     onShortcut: (
-      callback: (data: { key: string; ctrl?: boolean; shift?: boolean; alt?: boolean }) => void
+      callback: (data: {
+        key: string;
+        ctrl?: boolean;
+        shift?: boolean;
+        alt?: boolean;
+        /** Guest WebContents id that sent a forwarded zoom key or Ctrl+wheel. */
+        webContentsId?: number;
+      }) => void
     ) => () => void;
   };
   updater: {

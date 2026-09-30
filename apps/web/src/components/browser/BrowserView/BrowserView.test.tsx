@@ -1,9 +1,10 @@
 import { act } from 'react';
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { render } from '@/test/test-utils';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { fireEvent, render, screen } from '@/test/test-utils';
 
 // Mock webview registry so the store doesn't try to call into a real webview
 vi.mock('@/components/browser/webviewRefs', () => ({
+  findPaneIdByWebContentsId: vi.fn(),
   getWebview: vi.fn(),
   registerWebview: vi.fn(),
   unregisterWebview: vi.fn(),
@@ -50,6 +51,8 @@ vi.stubGlobal('crypto', {
 });
 
 import { useBrowserStore } from '@/stores/useBrowserStore';
+import { useAppStore } from '@/stores/useAppStore';
+import { findPaneIdByWebContentsId } from '@/components/browser/webviewRefs';
 import { BrowserView } from '@/components/browser/BrowserView';
 
 function getPaneWebview(paneId: string): HTMLElement {
@@ -151,4 +154,159 @@ describe('BrowserView — webview DOM stability', () => {
     const survivorChain = survivorId === aId ? beforeChainA : beforeChainB;
     assertStable('after closeFocusedPane', survivorId, survivorBefore, survivorChain);
   });
+});
+
+type ShortcutPayload = {
+  key: string;
+  ctrl?: boolean;
+  shift?: boolean;
+  alt?: boolean;
+  webContentsId?: number;
+};
+
+describe('BrowserView: page zoom shortcuts', () => {
+  let forwardShortcut: ((data: ShortcutPayload) => void) | null;
+
+  beforeEach(() => {
+    uuidCounter = 0;
+    electronStoreData.clear();
+    forwardShortcut = null;
+    vi.mocked(findPaneIdByWebContentsId).mockReset();
+    (window as unknown as { electronAPI?: unknown }).electronAPI = {
+      browser: {
+        onShortcut: (callback: (data: ShortcutPayload) => void) => {
+          forwardShortcut = callback;
+          return () => {
+            forwardShortcut = null;
+          };
+        },
+      },
+    };
+    useAppStore.setState({ activeView: 'browser' });
+    useBrowserStore.setState({
+      tabs: [],
+      activeTabId: null,
+      activePaneId: null,
+      isAddressBarFocused: false,
+      restoreTabsOnStartup: false,
+      splitTabsEnabled: true,
+      isFullScreen: false,
+      zoomLevels: {},
+    });
+  });
+
+  afterEach(() => {
+    delete (window as unknown as { electronAPI?: unknown }).electronAPI;
+    useAppStore.setState({ activeView: 'browser' });
+  });
+
+  const zoomLevels = () => ({ ...useBrowserStore.getState().zoomLevels });
+  const pressZoomIn = (target: Window | Element = window) =>
+    fireEvent.keyDown(target, { key: '=', ctrlKey: true });
+
+  it('zooms the active page while the browser view is on screen', () => {
+    useBrowserStore.getState().openTab('https://shinden.pl/');
+    render(<BrowserView />);
+
+    pressZoomIn();
+
+    expect(zoomLevels()).toEqual({ 'shinden.pl': 110 });
+  });
+
+  it('ignores zoom keys while another view is active', () => {
+    useBrowserStore.getState().openTab('https://shinden.pl/');
+    render(<BrowserView />);
+
+    for (const view of ['library', 'settings'] as const) {
+      useAppStore.setState({ activeView: view });
+      const event = pressZoomIn();
+      expect(event, `${view}: default not prevented`).toBe(true);
+      fireEvent.keyDown(window, { key: '0', ctrlKey: true });
+      fireEvent.keyDown(window, { key: '-', metaKey: true });
+    }
+
+    expect(zoomLevels()).toEqual({});
+  });
+
+  it('zooms from the address bar, before the editable-target guard', () => {
+    useBrowserStore.getState().openTab('https://shinden.pl/');
+    render(<BrowserView />);
+    const addressBar = screen.getByRole('combobox');
+    addressBar.focus();
+
+    pressZoomIn(addressBar);
+    fireEvent.keyDown(addressBar, { key: '=', metaKey: true });
+
+    expect(zoomLevels()).toEqual({ 'shinden.pl': 125 });
+  });
+
+  it('ignores zoom keys typed inside a dialog over the browser', () => {
+    useBrowserStore.getState().openTab('https://shinden.pl/');
+    render(<BrowserView />);
+    const dialog = document.createElement('div');
+    dialog.setAttribute('role', 'dialog');
+    const field = document.createElement('input');
+    dialog.appendChild(field);
+    document.body.appendChild(dialog);
+
+    try {
+      const notPrevented = pressZoomIn(field);
+      fireEvent.keyDown(dialog, { key: '-', ctrlKey: true });
+
+      expect(notPrevented).toBe(true);
+      expect(zoomLevels()).toEqual({});
+    } finally {
+      dialog.remove();
+    }
+  });
+
+  it('routes a forwarded zoom to the guest that sent it, not the active pane', () => {
+    useBrowserStore.getState().openTab('https://a.com/');
+    useBrowserStore.getState().openTab('https://b.com/');
+    const [tabA, tabB] = useBrowserStore.getState().tabs;
+    useBrowserStore.getState().splitTabs(tabA.id, tabB.id);
+    useBrowserStore.getState().focusPane(tabB.id);
+    render(<BrowserView />);
+    vi.mocked(findPaneIdByWebContentsId).mockImplementation(id => (id === 7 ? tabA.id : null));
+
+    forwardShortcut?.({ key: '=', ctrl: true, webContentsId: 7 });
+
+    expect(findPaneIdByWebContentsId).toHaveBeenCalledWith(7);
+    expect(zoomLevels()).toEqual({ 'a.com': 110 });
+  });
+
+  it('drops a forwarded zoom from a guest that is no longer registered', () => {
+    useBrowserStore.getState().openTab('https://a.com/');
+    render(<BrowserView />);
+    vi.mocked(findPaneIdByWebContentsId).mockReturnValue(null);
+
+    forwardShortcut?.({ key: '=', ctrl: true, webContentsId: 99 });
+
+    expect(forwardShortcut).not.toBeNull();
+    expect(zoomLevels()).toEqual({});
+  });
+
+  it('a forwarded zoom without a sender zooms the active pane', () => {
+    useBrowserStore.getState().openTab('https://a.com/');
+    render(<BrowserView />);
+
+    forwardShortcut?.({ key: '-', ctrl: true });
+
+    expect(findPaneIdByWebContentsId).not.toHaveBeenCalled();
+    expect(zoomLevels()).toEqual({ 'a.com': 90 });
+  });
+
+  it.each(['__proto__', 'constructor', 'toString', 'hasOwnProperty'])(
+    'renders and zooms a page on http://%s/ without crashing',
+    host => {
+      useBrowserStore.getState().openTab(`http://${host}/`);
+
+      expect(() => render(<BrowserView />)).not.toThrow();
+      expect(screen.queryByTestId('browser-zoom-indicator')).toBeNull();
+
+      pressZoomIn();
+
+      expect(screen.getByTestId('browser-zoom-indicator')).toHaveTextContent('110%');
+    }
+  );
 });

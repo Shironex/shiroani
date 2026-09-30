@@ -16,6 +16,8 @@ export const BROWSER_TABS_KEY = 'browser-tabs';
 export const BROWSER_HISTORY_KEY = 'browser-history';
 /** electron-store key for the user-curated favorites bar. */
 export const BROWSER_FAVORITES_KEY = 'browser-favorites';
+/** electron-store key for the per-site zoom map (hostname to percent). */
+export const BROWSER_ZOOM_LEVELS_KEY = 'browser-zoom-levels';
 
 /** Debounce window for tab persistence writes. */
 export const PERSIST_DEBOUNCE_MS = 1000;
