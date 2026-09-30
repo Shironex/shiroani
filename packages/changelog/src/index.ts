@@ -133,10 +133,107 @@ export function localizeReleases(locale: Locale): ResolvedRelease[] {
 
 export const RELEASES: readonly Release[] = [
   {
+    version: '1.5.0',
+    shortDate: '30.09.2026',
+    type: 'minor',
+    latest: true,
+    pl: {
+      date: '30 września 2026',
+      title: 'Przeciągnij i upuść, wyciszanie kart i przybliżanie stron',
+      description:
+        'Na okno aplikacji można teraz przeciągać linki, pliki eksportu i obrazki, a ShiroAni od razu wie, co z nimi zrobić. Wbudowana przeglądarka pozwala wyciszyć pojedynczą kartę i przybliżyć stronę, a przybliżenie zapamiętuje osobno dla każdej witryny. Samo okno aplikacji otwiera się w tym samym miejscu i rozmiarze, co przy ostatnim zamknięciu.',
+      categories: [
+        {
+          kind: 'feature',
+          label: 'Przeciągnij i upuść',
+          entries: [
+            'Upuszczony link otwiera się w nowej karcie wbudowanej przeglądarki',
+            'Upuszczony plik eksportu ShiroAni otwiera okno importu z wczytanymi danymi, a import rusza dopiero po Twoim potwierdzeniu',
+            'Po upuszczeniu obrazka aplikacja pyta, czy ustawić go jako tło, czy (na Windowsie) jako wygląd maskotki',
+            'Podczas przeciągania okno pokazuje, co się stanie po upuszczeniu',
+          ],
+        },
+        {
+          kind: 'feature',
+          label: 'Przeglądarka',
+          entries: [
+            'Karty, które odtwarzają dźwięk, mają ikonę głośnika, a kliknięcie w nią wycisza lub przywraca dźwięk',
+            'Przybliżanie stron skrótami Ctrl/Cmd z plusem, minusem i zerem, a na Windowsie także Ctrl z kółkiem myszy',
+            'Przybliżenie jest zapamiętywane osobno dla każdej strony, również po ponownym uruchomieniu',
+            'Gdy strona jest przybliżona, pasek adresu pokazuje procent, a kliknięcie w niego przywraca 100%',
+          ],
+        },
+        {
+          kind: 'polish',
+          label: 'Drobne dopracowania',
+          entries: [
+            'Okno aplikacji otwiera się w tym samym miejscu i rozmiarze, co przy ostatnim zamknięciu, także zmaksymalizowane',
+            'Jeśli monitor, na którym było okno, jest odłączony, okno pojawia się na głównym ekranie',
+            'Nowa karta przeglądarki ma tytuł w języku interfejsu, a nie zawsze po polsku',
+          ],
+        },
+        {
+          kind: 'security',
+          label: 'Bezpieczeństwo',
+          entries: [
+            'Własne tła i obrazki maskotki są dokładniej sprawdzane, zanim aplikacja ich użyje',
+            'Wymiana obrazka maskotki usuwa tylko poprzedni obrazek z folderu aplikacji i nic poza nim',
+            'Upuszczone linki z loginem lub hasłem w adresie nie są otwierane',
+          ],
+        },
+      ],
+    },
+    en: {
+      date: 'September 30, 2026',
+      title: 'Drag and drop, muting tabs and zooming pages',
+      description:
+        'You can now drag links, export files and images onto the app window, and ShiroAni knows what to do with each of them. The built-in browser lets you mute a single tab and zoom a page, and it remembers the zoom separately for every site. The app window itself opens in the same place and size it had when you last closed it.',
+      categories: [
+        {
+          kind: 'feature',
+          label: 'Drag and drop',
+          entries: [
+            'A dropped link opens in a new tab in the built-in browser',
+            'A dropped ShiroAni export opens the import window with the data already loaded, and nothing is imported until you confirm',
+            'When you drop an image, the app asks whether to use it as the background or (on Windows) as the mascot',
+            'While you drag, the window shows what will happen when you let go',
+          ],
+        },
+        {
+          kind: 'feature',
+          label: 'Browser',
+          entries: [
+            'Tabs that play sound show a speaker icon, and clicking it mutes or unmutes the tab',
+            'Zoom pages with Ctrl/Cmd and plus, minus or zero, and on Windows also with Ctrl and the mouse wheel',
+            'Zoom is remembered separately for each site, even after a restart',
+            'When a page is zoomed, the address bar shows the percentage, and clicking it resets it to 100%',
+          ],
+        },
+        {
+          kind: 'polish',
+          label: 'Small refinements',
+          entries: [
+            'The app window opens in the same place and size as when you last closed it, maximized too',
+            'If the monitor it was on is unplugged, the window opens on your main screen instead',
+            'A new browser tab is titled in the interface language instead of always in Polish',
+          ],
+        },
+        {
+          kind: 'security',
+          label: 'Security',
+          entries: [
+            'Custom backgrounds and mascot images are checked more carefully before the app uses them',
+            'Replacing the mascot image only ever removes the previous image from the app folder, nothing else',
+            'Dropped links that carry a login or password in the address are not opened',
+          ],
+        },
+      ],
+    },
+  },
+  {
     version: '1.4.0',
     shortDate: '12.09.2026',
     type: 'minor',
-    latest: true,
     pl: {
       date: '12 września 2026',
       title: 'Nowszy silnik aplikacji i zmiana w powiadomieniach na macOS',
