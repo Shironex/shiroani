@@ -10,17 +10,17 @@
     "still": "remotion still"
   },
   "dependencies": {
-    "@remotion/bundler": "4.0.468",
-    "@remotion/cli": "4.0.468",
-    "@remotion/google-fonts": "4.0.468",
-    "@remotion/renderer": "4.0.468",
-    "react": "19.2.6",
-    "react-dom": "19.2.6",
-    "remotion": "4.0.468"
+    "@remotion/bundler": "4.0.532",
+    "@remotion/cli": "4.0.532",
+    "@remotion/google-fonts": "4.0.532",
+    "@remotion/renderer": "4.0.532",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "remotion": "4.0.532"
   },
   "devDependencies": {
-    "@types/react": "^19.2.0",
-    "@types/react-dom": "^19.2.0",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
     "sharp": "^0.35.4",
     "typescript": "^5.9.3"
   }
