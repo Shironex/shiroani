@@ -73,7 +73,7 @@
     "@vitest/browser": "^4.1.11",
     "@vitest/browser-playwright": "4.1.11",
     "@vitest/coverage-v8": "^4.1.11",
-    "jsdom": "^29.1.0",
+    "jsdom": "^30.1.1",
     "playwright": "^1.60.0",
     "storybook": "^10.4.5",
     "tailwindcss": "^4.2.4",
