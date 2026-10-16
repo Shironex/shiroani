@@ -82,8 +82,8 @@ importers:
         specifier: ^10.0.1
         version: 10.0.1(eslint@10.5.0(jiti@2.7.0))
       '@noctcore/eslint-plugin-architecture':
-        specifier: ^0.3.2
-        version: 0.3.2(eslint@10.5.0(jiti@2.7.0))(typescript@5.9.3)
+        specifier: ^0.3.4
+        version: 0.3.4(eslint@10.5.0(jiti@2.7.0))(typescript@5.9.3)
       '@noctcore/eslint-plugin-async-safety':
         specifier: ^0.3.2
         version: 0.3.2(eslint@10.5.0(jiti@2.7.0))(typescript@5.9.3)
@@ -94,17 +94,17 @@ importers:
         specifier: ^0.6.1
         version: 0.6.1(eslint@10.5.0(jiti@2.7.0))(typescript@5.9.3)
       '@noctcore/eslint-plugin-monorepo':
-        specifier: ^0.2.2
-        version: 0.2.2(eslint@10.5.0(jiti@2.7.0))(typescript@5.9.3)
+        specifier: ^0.2.4
+        version: 0.2.4(eslint@10.5.0(jiti@2.7.0))(typescript@5.9.3)
       '@noctcore/eslint-plugin-observability':
-        specifier: ^0.3.2
-        version: 0.3.2(eslint@10.5.0(jiti@2.7.0))(typescript@5.9.3)
+        specifier: ^0.3.4
+        version: 0.3.4(eslint@10.5.0(jiti@2.7.0))(typescript@5.9.3)
       '@noctcore/eslint-plugin-prisma':
         specifier: ^0.4.0
         version: 0.4.0(eslint@10.5.0(jiti@2.7.0))(typescript@5.9.3)
       '@noctcore/eslint-plugin-react':
-        specifier: ^0.4.0
-        version: 0.4.0(eslint@10.5.0(jiti@2.7.0))(typescript@5.9.3)
+        specifier: ^0.4.2
+        version: 0.4.2(eslint@10.5.0(jiti@2.7.0))(typescript@5.9.3)
       '@noctcore/eslint-plugin-security':
         specifier: ^0.3.0
         version: 0.3.0(eslint@10.5.0(jiti@2.7.0))(typescript@5.9.3)
@@ -2120,8 +2120,8 @@ packages:
     resolution: {integrity: sha512-IYqDGiTXab6FniAgnSdZwgWbomxpy9FtYvLKs7wCUs2a8RkITG+DFGO1DM9cr+E3/RgADRpFjrKVaJ1z6sjtEg==}
     engines: {node: '>= 20.19.0'}
 
-  '@noctcore/eslint-plugin-architecture@0.3.2':
-    resolution: {integrity: sha512-d8sn+Ct28PPjAQsGnAC7OSsDDsmdDzAU2MjVzKNF79sguYBbd1HADY5mt2P7UhOyYunK/ETO/ptOlhyvKr1WgA==}
+  '@noctcore/eslint-plugin-architecture@0.3.4':
+    resolution: {integrity: sha512-EHIXTFXurqm8jELGOFFK2pUcEcCTu5Lp49uUZDB6Rw3i/aUda7wzzlRpztr6cs/bejLn3xNWimKgdUGuy67g5g==}
     peerDependencies:
       eslint: '>=9.0.0'
       typescript: '>=5.0.0'
@@ -2144,14 +2144,14 @@ packages:
       eslint: '>=9.0.0'
       typescript: '>=5.0.0'
 
-  '@noctcore/eslint-plugin-monorepo@0.2.2':
-    resolution: {integrity: sha512-vPRpwDJUtUQeG5j9u/vY8fWf0AwPIOPHHq3D1KP9hbN87iEkn0lostTPPnSelovDtBuNgrJoy7vIDyNWVrLmUA==}
+  '@noctcore/eslint-plugin-monorepo@0.2.4':
+    resolution: {integrity: sha512-5hj04L+I6HDpF5+dh7X1hfjMzJaCeQrov+HRepmwuXum3cLxIlTeQaG0zkyiKTXPVDDcEMI/GUKdDNnf2uuyLw==}
     peerDependencies:
       eslint: '>=9.0.0'
       typescript: '>=5.0.0'
 
-  '@noctcore/eslint-plugin-observability@0.3.2':
-    resolution: {integrity: sha512-ESQDc8jKsEiQuput5jZb0r69t9BMbhzeb2FWr3NAorBNB5MqHtoi2/4tc6pkIIVaPS32jcLkrBDcg5NOKSq4Mg==}
+  '@noctcore/eslint-plugin-observability@0.3.4':
+    resolution: {integrity: sha512-Rt2IUPPKuMF6ec6DBjjt1qMm3pvMfsUT1TOVKruVG2Q6Ajy5LVtOkYN8Xswpcwo0iBjnyG+riXT6tnXW3eFgFQ==}
     peerDependencies:
       eslint: '>=9.0.0'
       typescript: '>=5.0.0'
@@ -2162,8 +2162,8 @@ packages:
       eslint: '>=9.0.0'
       typescript: '>=5.0.0'
 
-  '@noctcore/eslint-plugin-react@0.4.0':
-    resolution: {integrity: sha512-J/i9hHlimS2rdL9M9slMSOgNDUyTN4E+o/dlygAuR1/rImQYBZVN8b8yKIVQzRUp+wPAygmEuqEm+8Ii6zrysg==}
+  '@noctcore/eslint-plugin-react@0.4.2':
+    resolution: {integrity: sha512-8xoipmvQoLQECYF1aRtSEeEQmRmGeoa1CRA4CWislzUdT7oeGC+4d7ENXKe6IrZrKhD7i8JEOOKRYNHaoquhmQ==}
     peerDependencies:
       eslint: '>=9.0.0'
       typescript: '>=5.0.0'
@@ -2176,6 +2176,12 @@ packages:
 
   '@noctcore/eslint-utils@0.1.1':
     resolution: {integrity: sha512-s46OLf4Gw/XmjiIV2HkzhuTXmNDLFrSnS+uoLMrk0PjkJO1Jfkv4BZ75gJEKHoBQDjHrky7/xhT22aH7+g9hOQ==}
+    peerDependencies:
+      eslint: '>=9.0.0'
+      typescript: '>=5.0.0'
+
+  '@noctcore/eslint-utils@0.1.2':
+    resolution: {integrity: sha512-5v9+Nds5n/bxBdieCXh7sfJF3a59s+p9RZLUSSv2hvZObgeOsV/bYGKulIIRxQOzhBZjNI6yWr16Fz5SPAnL9g==}
     peerDependencies:
       eslint: '>=9.0.0'
       typescript: '>=5.0.0'
@@ -11388,9 +11394,9 @@ snapshots:
 
   '@noble/hashes@2.2.0': {}
 
-  '@noctcore/eslint-plugin-architecture@0.3.2(eslint@10.5.0(jiti@2.7.0))(typescript@5.9.3)':
+  '@noctcore/eslint-plugin-architecture@0.3.4(eslint@10.5.0(jiti@2.7.0))(typescript@5.9.3)':
     dependencies:
-      '@noctcore/eslint-utils': 0.1.1(eslint@10.5.0(jiti@2.7.0))(typescript@5.9.3)
+      '@noctcore/eslint-utils': 0.1.2(eslint@10.5.0(jiti@2.7.0))(typescript@5.9.3)
       '@typescript-eslint/utils': 8.61.1(eslint@10.5.0(jiti@2.7.0))(typescript@5.9.3)
       eslint: 10.5.0(jiti@2.7.0)
       typescript: 5.9.3
@@ -11424,18 +11430,18 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@noctcore/eslint-plugin-monorepo@0.2.2(eslint@10.5.0(jiti@2.7.0))(typescript@5.9.3)':
+  '@noctcore/eslint-plugin-monorepo@0.2.4(eslint@10.5.0(jiti@2.7.0))(typescript@5.9.3)':
     dependencies:
-      '@noctcore/eslint-utils': 0.1.1(eslint@10.5.0(jiti@2.7.0))(typescript@5.9.3)
+      '@noctcore/eslint-utils': 0.1.2(eslint@10.5.0(jiti@2.7.0))(typescript@5.9.3)
       '@typescript-eslint/utils': 8.61.1(eslint@10.5.0(jiti@2.7.0))(typescript@5.9.3)
       eslint: 10.5.0(jiti@2.7.0)
       typescript: 5.9.3
     transitivePeerDependencies:
       - supports-color
 
-  '@noctcore/eslint-plugin-observability@0.3.2(eslint@10.5.0(jiti@2.7.0))(typescript@5.9.3)':
+  '@noctcore/eslint-plugin-observability@0.3.4(eslint@10.5.0(jiti@2.7.0))(typescript@5.9.3)':
     dependencies:
-      '@noctcore/eslint-utils': 0.1.1(eslint@10.5.0(jiti@2.7.0))(typescript@5.9.3)
+      '@noctcore/eslint-utils': 0.1.2(eslint@10.5.0(jiti@2.7.0))(typescript@5.9.3)
       '@typescript-eslint/utils': 8.61.1(eslint@10.5.0(jiti@2.7.0))(typescript@5.9.3)
       eslint: 10.5.0(jiti@2.7.0)
       typescript: 5.9.3
@@ -11451,9 +11457,9 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@noctcore/eslint-plugin-react@0.4.0(eslint@10.5.0(jiti@2.7.0))(typescript@5.9.3)':
+  '@noctcore/eslint-plugin-react@0.4.2(eslint@10.5.0(jiti@2.7.0))(typescript@5.9.3)':
     dependencies:
-      '@noctcore/eslint-utils': 0.1.1(eslint@10.5.0(jiti@2.7.0))(typescript@5.9.3)
+      '@noctcore/eslint-utils': 0.1.2(eslint@10.5.0(jiti@2.7.0))(typescript@5.9.3)
       '@typescript-eslint/utils': 8.61.1(eslint@10.5.0(jiti@2.7.0))(typescript@5.9.3)
       eslint: 10.5.0(jiti@2.7.0)
       typescript: 5.9.3
@@ -11470,6 +11476,14 @@ snapshots:
       - supports-color
 
   '@noctcore/eslint-utils@0.1.1(eslint@10.5.0(jiti@2.7.0))(typescript@5.9.3)':
+    dependencies:
+      '@typescript-eslint/utils': 8.61.1(eslint@10.5.0(jiti@2.7.0))(typescript@5.9.3)
+      eslint: 10.5.0(jiti@2.7.0)
+      typescript: 5.9.3
+    transitivePeerDependencies:
+      - supports-color
+
+  '@noctcore/eslint-utils@0.1.2(eslint@10.5.0(jiti@2.7.0))(typescript@5.9.3)':
     dependencies:
       '@typescript-eslint/utils': 8.61.1(eslint@10.5.0(jiti@2.7.0))(typescript@5.9.3)
       eslint: 10.5.0(jiti@2.7.0)
