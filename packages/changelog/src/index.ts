@@ -37,14 +37,7 @@
  */
 
 export type CategoryKind =
-  | 'feature'
-  | 'fix'
-  | 'polish'
-  | 'security'
-  | 'feed'
-  | 'macos'
-  | 'app'
-  | 'bot';
+  'feature' | 'fix' | 'polish' | 'security' | 'feed' | 'macos' | 'app' | 'bot';
 
 export type Locale = 'pl' | 'en';
 
@@ -133,10 +126,63 @@ export function localizeReleases(locale: Locale): ResolvedRelease[] {
 
 export const RELEASES: readonly Release[] = [
   {
+    version: '1.5.1',
+    shortDate: '16.10.2026',
+    type: 'minor',
+    latest: true,
+    pl: {
+      date: '16 października 2026',
+      title: 'Poprawki bezpieczeństwa i aktualizacje',
+      description:
+        'Mała aktualizacja bez nowych funkcji. Załataliśmy znane luki w bibliotekach, z których korzysta aplikacja, i odświeżyliśmy jej zależności. Wszystko działa tak jak wcześniej, tylko bezpieczniej.',
+      categories: [
+        {
+          kind: 'security',
+          label: 'Bezpieczeństwo',
+          entries: [
+            'Załatane luki bezpieczeństwa w bibliotekach używanych przez aplikację',
+            'Bezpieczniejsze wyświetlanie treści pobieranych z sieci',
+          ],
+        },
+        {
+          kind: 'polish',
+          label: 'Stabilność i porządki',
+          entries: [
+            'Zaktualizowane biblioteki, na których opiera się aplikacja',
+            'Drobne poprawki stabilności w tle',
+          ],
+        },
+      ],
+    },
+    en: {
+      date: 'October 16, 2026',
+      title: 'Security fixes and updates',
+      description:
+        'A small update with no new features. Known vulnerabilities in the libraries the app relies on are patched and its dependencies are refreshed. Everything works the same as before, just safer.',
+      categories: [
+        {
+          kind: 'security',
+          label: 'Security',
+          entries: [
+            'Patched security vulnerabilities in libraries the app uses',
+            'Safer handling of content loaded from the web',
+          ],
+        },
+        {
+          kind: 'polish',
+          label: 'Stability & cleanup',
+          entries: [
+            'Updated the libraries the app is built on',
+            'Small behind-the-scenes stability fixes',
+          ],
+        },
+      ],
+    },
+  },
+  {
     version: '1.5.0',
     shortDate: '30.09.2026',
     type: 'minor',
-    latest: true,
     pl: {
       date: '30 września 2026',
       title: 'Przeciągnij i upuść, wyciszanie kart i przybliżanie stron',
