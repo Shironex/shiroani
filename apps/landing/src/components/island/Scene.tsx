@@ -1,34 +1,43 @@
-import { Stars } from '@react-three/drei';
 import { useFrame } from '@react-three/fiber';
-import { useRef, type ReactNode } from 'react';
-import type { Group } from 'three';
+import { useCallback, useRef, type ReactNode } from 'react';
+import { Color, MeshStandardMaterial, type Group, type Mesh, type Object3D } from 'three';
 import {
   BenchBlockout,
   BoxSetBlockout,
   BrowserFrameBlockout,
   BrowserScreenBlockout,
   CharacterBlockout,
+  FarSpireBlockout,
+  FlowerShrubsBlockout,
   IslandBaseBlockout,
   IsletBlockout,
   LanternPaperBlockout,
   LanternPostBlockout,
   NookBlockout,
   PorchBlockout,
+  SakuraTreeLargeBlockout,
+  SakuraTreeSmallBlockout,
   ShopHouseBlockout,
   ShopSignBlockout,
   ToriiClockBlockout,
   ToriiStaircaseBlockout,
   VendingMachineBlockout,
   ZabutonBlockout,
-  mat,
 } from './blockouts';
+import { Clouds } from './Clouds';
+import { castsShadow, ContactShadow, receivesShadow } from './ContactShadow';
 import type { ModelId } from './manifest';
-import { Model } from './Model';
+import { Model, type OnModel } from './Model';
 import { motion } from './motion';
+import { Petals } from './Petals';
 import { BAKE_LIGHTS, PLACEMENTS, type Placement } from './placements';
 import { island } from './progress';
+import { screenMaterial } from './screen';
+import { ShopBoard } from './ShopBoard';
+import { MOON_AT, Sky } from './Sky';
 import { ISLAND_STOPS, type Vec3 } from './stops';
 import { useCharacterClips } from './useCharacterClips';
+import { Waterfalls } from './Waterfalls';
 
 // The island layout comes from the Blender export (placements.ts): metres,
 // +Y up, the shop front facing +Z, the island top around y = 0 and the porch
@@ -36,10 +45,9 @@ import { useCharacterClips } from './useCharacterClips';
 // reach the character and the props placed more than once.
 
 const SKY = '#120d17';
-/** Where the moon stop camera looks, far out: the moonlight comes from there. */
-const MOON_AT: Vec3 = [16, 70, -55];
-/** Large in the sky, like the concepts: about 14 degrees across from the island. */
-const MOON_RADIUS = 11;
+/** The haze: the sky's horizon violet, so far things sink into it. */
+const HAZE = '#24173a';
+const HAZE_RANGE = [38, 175] as const;
 
 const moonIndex = ISLAND_STOPS.findIndex(stop => stop.id === 'moon');
 const MOON_STOP = moonIndex === -1 ? ISLAND_STOPS.length - 1 : moonIndex;
@@ -61,27 +69,93 @@ const BLOCKOUTS = {
   torii_clock: <ToriiClockBlockout />,
   nook: <NookBlockout />,
   browser_frame: <BrowserFrameBlockout />,
-  browser_screen: <BrowserScreenBlockout />,
+  browser_screen: <BrowserScreenBlockout material={screenMaterial()} />,
   bench: <BenchBlockout />,
   boxset_stack: <BoxSetBlockout />,
   lantern_post: <LanternPostBlockout />,
   lantern_paper: <LanternPaperBlockout />,
   zabuton: <ZabutonBlockout />,
+  sakura_tree_large: <SakuraTreeLargeBlockout />,
+  sakura_tree_small: <SakuraTreeSmallBlockout />,
+  flower_shrubs: <FlowerShrubsBlockout />,
+  far_spire: <FarSpireBlockout />,
 } satisfies Record<Exclude<ModelId, 'islet' | 'character'>, ReactNode>;
 
 const PLACED = Object.keys(BLOCKOUTS) as (keyof typeof BLOCKOUTS)[];
+
+/** The live-lit Tripo materials the scene adjusts once a GLB is in. */
+const meshMaterials = (root: Object3D) => {
+  const out = new Set<MeshStandardMaterial>();
+  root.traverse(child => {
+    const material = (child as Mesh).material;
+    if (material instanceof MeshStandardMaterial) out.add(material);
+  });
+  return out;
+};
+
+/** Sakura and shrubs glow a little from within, like the concepts' blossoms at night. */
+const blossomGlow: OnModel = model => {
+  for (const material of meshMaterials(model)) {
+    if (material.userData.glow) continue;
+    material.userData.glow = true;
+    material.emissive = new Color('#ffffff');
+    material.emissiveMap = material.map;
+    material.emissiveIntensity = 0.2;
+  }
+};
+
+/**
+ * The far spires' windows: the warm texels of the spire's texture are lit
+ * from within, the rest stays dark rock.
+ */
+const spireWindows: OnModel = model => {
+  for (const material of meshMaterials(model)) {
+    if (material.userData.glow) continue;
+    material.userData.glow = true;
+    material.onBeforeCompile = shader => {
+      shader.fragmentShader = shader.fragmentShader.replace(
+        '#include <emissivemap_fragment>',
+        /* glsl */ `#include <emissivemap_fragment>
+        {
+          vec3 albedo = diffuseColor.rgb;
+          float warm = smoothstep(0.08, 0.2, albedo.r - albedo.b) * smoothstep(0.2, 0.45, albedo.r);
+          totalEmissiveRadiance += vec3(1.0, 0.62, 0.3) * warm * 6.0;
+        }`
+      );
+    };
+    material.needsUpdate = true;
+  }
+};
+
+const ON_MODEL: Partial<Record<ModelId, OnModel>> = {
+  sakura_tree_large: blossomGlow,
+  sakura_tree_small: blossomGlow,
+  flower_shrubs: blossomGlow,
+  far_spire: spireWindows,
+  bench: receivesShadow,
+  boxset_stack: model => {
+    castsShadow(model);
+    receivesShadow(model);
+  },
+  browser_screen: model => {
+    model.traverse(child => {
+      if ((child as Mesh).isMesh) (child as Mesh).material = screenMaterial();
+    });
+  },
+};
 
 export function IslandScene() {
   return (
     <>
       <color attach="background" args={[SKY]} />
-      <fog attach="fog" args={[SKY, 45, 140]} />
+      <fog attach="fog" args={[HAZE, ...HAZE_RANGE]} />
       <Lights />
       <Sky />
+      <Clouds />
 
       {PLACED.map(id =>
         PLACEMENTS[id].map((at, i) => (
-          <Model key={`${id}-${i}`} id={id} {...transform(at)}>
+          <Model key={`${id}-${i}`} id={id} {...transform(at)} onModel={ON_MODEL[id]}>
             {BLOCKOUTS[id]}
           </Model>
         ))
@@ -89,7 +163,11 @@ export function IslandScene() {
       {PLACEMENTS.islet.map((at, i) => (
         <Islet key={i} at={at} phase={i * 2.1} />
       ))}
+      <ShopBoard />
+      <Waterfalls />
+      <Petals />
       <Character />
+      <ContactShadow />
     </>
   );
 }
@@ -100,24 +178,24 @@ function transform({ position, rotation, scale }: Placement) {
 
 /** Warm light under each paper lantern and over the porch rail lanterns. */
 const LANTERNS: readonly { at: Vec3; intensity: number; distance: number }[] = [
-  { at: BAKE_LIGHTS.lantern_paper, intensity: 3, distance: 4.5 },
-  { at: BAKE_LIGHTS.lantern_paper_02, intensity: 3, distance: 4.5 },
-  { at: BAKE_LIGHTS.lantern_post_03, intensity: 1.5, distance: 2.5 },
-  { at: BAKE_LIGHTS.lantern_paper_nook, intensity: 2.5, distance: 4 },
+  { at: BAKE_LIGHTS.lantern_paper, intensity: 4, distance: 5 },
+  { at: BAKE_LIGHTS.lantern_paper_02, intensity: 4, distance: 5 },
+  { at: BAKE_LIGHTS.lantern_post_03, intensity: 2, distance: 2.8 },
+  { at: BAKE_LIGHTS.lantern_paper_nook, intensity: 3.2, distance: 4.5 },
 ];
 
 function Lights() {
   return (
     <>
-      <ambientLight color="#4a3a66" intensity={0.7} />
-      {/* Cool pink-violet moonlight, a rim from behind on the right. */}
-      <directionalLight color="#d2a8ff" intensity={1.6} position={[20, 25, -30]} />
+      <ambientLight color="#57406e" intensity={0.75} />
+      {/* Pink moonlight from the moon itself, a rim from behind on the right. */}
+      <directionalLight color="#f0a8e8" intensity={1.7} position={MOON_AT} />
       {/* A faint cool fill from the front left so faces are never black. */}
       <directionalLight color="#8c80ff" intensity={0.35} position={[-20, 10, 30]} />
       {LANTERNS.map(({ at, intensity, distance }) => (
         <pointLight
           key={at.join()}
-          color="#ffa05c"
+          color="#ff9a52"
           intensity={intensity}
           distance={distance}
           decay={1.6}
@@ -136,29 +214,17 @@ function Lights() {
   );
 }
 
-function Sky() {
-  return (
-    <>
-      <mesh position={MOON_AT} material={mat.moon}>
-        <sphereGeometry args={[MOON_RADIUS, 48, 32]} />
-      </mesh>
-      <Stars
-        radius={120}
-        depth={40}
-        count={2400}
-        factor={4}
-        saturation={0}
-        fade
-        speed={motion.reduced ? 0 : 0.4}
-      />
-    </>
-  );
-}
-
 /** Shiro-chan on the bench: seated idle all along, a wave at the moon stop. */
 function Character() {
-  const onModel = useCharacterClips(() =>
+  const onClips = useCharacterClips(() =>
     island.p > MOON_STOP - WAVE_LEAD ? 'wave' : 'seatedIdle'
+  );
+  const onModel = useCallback<OnModel>(
+    (model, actions) => {
+      castsShadow(model);
+      onClips(model, actions);
+    },
+    [onClips]
   );
   return (
     <Model id="character" {...transform(PLACEMENTS.character[0])} onModel={onModel}>

@@ -1,4 +1,4 @@
-import { MeshBasicMaterial, MeshStandardMaterial, type Mesh, type Object3D } from 'three';
+import { Color, MeshBasicMaterial, MeshStandardMaterial, type Mesh, type Object3D } from 'three';
 
 // Baked light. The static props come out of Blender with their night light
 // baked: Cycles irradiance (moonlight, lantern and window pools, contact
@@ -11,6 +11,18 @@ import { MeshBasicMaterial, MeshStandardMaterial, type Mesh, type Object3D } fro
 
 const converted = new WeakMap<MeshStandardMaterial, MeshBasicMaterial>();
 
+/**
+ * The grade on top of the bake, per baked material: the rock takes the
+ * concepts' pinker moonlight, the timber and the shop a warmer lantern glow.
+ */
+const TINTS: Record<string, Color> = {
+  island_base_baked: new Color('#ffd2f4').multiplyScalar(1.12),
+  torii_staircase_baked: new Color('#ffd2f4').multiplyScalar(1.08),
+  shop_house_baked: new Color('#fff0dc').multiplyScalar(1.08),
+  porch_deck_baked: new Color('#ffe6d2').multiplyScalar(1.06),
+  nook_deck_baked: new Color('#ffe6d2').multiplyScalar(1.06),
+};
+
 function unlit(source: MeshStandardMaterial, scale: number): MeshBasicMaterial {
   let material = converted.get(source);
   if (!material) {
@@ -21,6 +33,7 @@ function unlit(source: MeshStandardMaterial, scale: number): MeshBasicMaterial {
       // three divides the light map by pi for unlit materials.
       lightMapIntensity: scale * Math.PI,
       side: source.side,
+      color: TINTS[source.name] ?? new Color(1, 1, 1),
     });
     converted.set(source, material);
   }

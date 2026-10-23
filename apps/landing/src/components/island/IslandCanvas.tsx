@@ -74,6 +74,8 @@ export default function IslandCanvas({ models, onProgress, onReady }: Props) {
       dpr={[1, quality.maxDpr]}
       frameloop={visible || !ready ? 'always' : 'never'}
       camera={CAMERA}
+      // One small shadow map, for Shiro-chan's contact shadow (ContactShadow.tsx).
+      shadows="percentage"
       // The effect composer multisamples (Effects.tsx), so the default
       // framebuffer would only antialias a second time.
       gl={GL_OPTIONS}
@@ -151,6 +153,7 @@ function CameraRig() {
     island.p = readIslandScroll().progress;
     island.t = state.clock.elapsedTime;
     const reducedMotion = motion.reduced;
+    if (!reducedMotion) island.flow += delta;
 
     // Hold on each stop for the middle half of its section, blend between.
     const i = Math.min(Math.floor(island.p), ISLAND_STOPS.length - 2);

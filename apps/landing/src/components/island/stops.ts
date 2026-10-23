@@ -60,12 +60,12 @@ export const ISLAND_STOPS: readonly IslandStop[] = [
   },
   {
     id: 'browser',
-    camera: { position: [-7.15, 1.76, 5.27], target: [-5.55, 1.74, 0.95], fov: 38.7 },
+    camera: { position: [-7.15, 1.76, 5.27], target: [-6.45, 1.74, 1.1], fov: 38.7 },
     align: 'center',
   },
   {
     id: 'moon',
-    camera: { position: [4.21, 1.95, 2.69], target: [6.2, 13.33, -6.88], fov: 50.2 },
+    camera: { position: [2.9, 1.0, 5.4], target: [-5.89, 3.08, 1.11], fov: 46 },
     align: 'bottom',
   },
 ];
