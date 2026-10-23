@@ -128,6 +128,8 @@ export default defineConfig({
     fontPreloadFix(),
     react(),
     sitemap({
+      // The island preview is noindex until it becomes the homepage.
+      filter: page => !/\/island$/.test(page),
       i18n: {
         defaultLocale: 'pl',
         locales: { pl: 'pl', en: 'en' },

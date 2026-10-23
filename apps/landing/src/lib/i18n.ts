@@ -371,6 +371,41 @@ export const translations: Record<SupportedLanguage, Record<string, string>> = {
     'changelog.badge.latest': 'Najnowsza',
     'changelog.end.tag': 'Początek · 2026',
     'changelog.end.quote': '„A co, gdyby śledzenie anime było wygodne?"',
+
+    // Island (3D preview page)
+    'meta.island.title': '白アニ · ShiroAni · wyspa pod księżycem',
+    'meta.island.description':
+      'Przytulny kąt na wszystko, co anime: przeglądarka bez reklam, biblioteka, harmonogram emisji i pamiętnik w jednej darmowej aplikacji.',
+    'island.dots': 'Przystanki na wyspie',
+    'island.porch.label': 'Ganek',
+    'island.porch.title': 'Twój przytulny kąt na wszystko, co anime.',
+    'island.porch.body':
+      'Oglądaj bez reklam, prowadź swoją półkę, łap każdy emitowany odcinek i pisz pamiętnik. Jedna darmowa aplikacja na komputer.',
+    'island.porch.download': 'Pobierz',
+    'island.porch.explore': 'Zwiedź wyspę',
+    'island.pullback.label': 'Wyspa',
+    'island.pullback.title': 'Na wyspie wszystko ma swoje miejsce.',
+    'island.library.label': 'Biblioteka',
+    'island.library.title': 'Każda seria na jednej półce.',
+    'island.library.body':
+      'Oglądane, ukończone, planowane, wstrzymane, porzucone. Filtry, notatki i postęp odcinków dla każdego tytułu.',
+    'island.schedule.label': 'Harmonogram',
+    'island.schedule.title': 'Wiesz, kiedy wyjdzie kolejny odcinek.',
+    'island.schedule.body':
+      'Tydzień emisji z odliczaniem do każdego odcinka, prosto z AniList, i powiadomienie, gdy tylko się pojawi.',
+    'island.diary.label': 'Pamiętnik',
+    'island.diary.title': 'Zapisz, jak to było.',
+    'island.diary.body':
+      'Pamiętnik z nagłówkami, obrazkami i formatowaniem do każdego odcinka. Zostaje na Twoim komputerze.',
+    'island.browser.label': 'Przeglądarka',
+    'island.browser.title': 'Przeglądarka, w której nie przeszkadzają reklamy.',
+    'island.browser.body':
+      'Karty, zakładki i blokada reklam Ghostery w tym samym oknie, w którym oglądasz. Żadnych pop-upów ani przekierowań.',
+    'island.moon.label': 'Księżyc',
+    'island.moon.title': 'Zabierz ją dziś do siebie.',
+    'island.moon.windows': 'Pobierz na Windows',
+    'island.moon.macos': 'Pobierz na macOS',
+    'island.moon.changelog': 'Lista zmian',
   },
   en: {
     // Layout
@@ -720,6 +755,41 @@ export const translations: Record<SupportedLanguage, Record<string, string>> = {
     'changelog.badge.latest': 'Latest',
     'changelog.end.tag': 'Beginning · 2026',
     'changelog.end.quote': '"What if tracking anime were comfortable?"',
+
+    // Island (3D preview page)
+    'meta.island.title': '白アニ · ShiroAni · an island under the moon',
+    'meta.island.description':
+      'Your cozy corner for all things anime: an ad-free browser, library, airing schedule and diary in one free desktop app.',
+    'island.dots': 'Stops on the island',
+    'island.porch.label': 'Porch',
+    'island.porch.title': 'Your cozy corner for all things anime.',
+    'island.porch.body':
+      'Watch without ads, track your shelf, catch every airing episode and keep a diary. One free desktop app.',
+    'island.porch.download': 'Download',
+    'island.porch.explore': 'Explore the island',
+    'island.pullback.label': 'Island',
+    'island.pullback.title': 'Everything has its place on the island.',
+    'island.library.label': 'Library',
+    'island.library.title': 'Every show on one shelf.',
+    'island.library.body':
+      'Watching, completed, planned, on hold, dropped. Filters, notes and episode progress for each title.',
+    'island.schedule.label': 'Schedule',
+    'island.schedule.title': 'Know when the next episode lands.',
+    'island.schedule.body':
+      'The week of airing episodes with a countdown to each one, from AniList, and a notification when it drops.',
+    'island.diary.label': 'Diary',
+    'island.diary.title': 'Write down how it felt.',
+    'island.diary.body':
+      'A journal with headings, images and formatting for every episode. It stays on your computer.',
+    'island.browser.label': 'Browser',
+    'island.browser.title': 'A browser with no ads in the way.',
+    'island.browser.body':
+      'Tabs, bookmarks and Ghostery ad blocking, in the same window you watch in. No pop-ups, no redirects.',
+    'island.moon.label': 'Moon',
+    'island.moon.title': 'Bring her home tonight.',
+    'island.moon.windows': 'Download for Windows',
+    'island.moon.macos': 'Download for macOS',
+    'island.moon.changelog': 'Changelog',
   },
 };
 

@@ -1,0 +1,24 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Navbar from '../components/Navbar.astro';
+import Island from '../components/island/Island.astro';
+import { Footer } from '../components/Footer';
+
+// Preview of the 3D landing. Kept out of search until it becomes the homepage.
+const lang = 'pl';
+---
+
+<BaseLayout
+  title="白アニ · ShiroAni · wyspa pod księżycem"
+  description="Przytulny kąt na wszystko, co anime: przeglądarka bez reklam, biblioteka, harmonogram emisji i pamiętnik w jednej darmowej aplikacji."
+  titleKey="meta.island.title"
+  descriptionKey="meta.island.description"
+  lang={lang}
+  noindex
+>
+  <Navbar lang={lang} />
+  <main id="main">
+    <Island lang={lang} />
+  </main>
+  <Footer client:visible lang={lang} />
+</BaseLayout>
