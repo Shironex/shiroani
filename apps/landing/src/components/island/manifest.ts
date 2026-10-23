@@ -7,7 +7,8 @@
 // GLBs are meshopt-compressed with KTX2 textures (no Draco), origin at the
 // bottom centre, metres, +Y up, front facing +Z. The static props carry
 // baked light (baked.ts); the character, the bench, the lanterns, the
-// cushions, the box sets and the islets are lit in real time.
+// cushions, the box sets, the islets, the sakura trees, the shrubs and the
+// far spires are lit in real time.
 //
 // No three.js imports: the page reads this file at build time.
 
@@ -28,6 +29,10 @@ export const ISLAND_MODELS = [
   'lantern_paper',
   'zabuton',
   'islet',
+  'sakura_tree_large',
+  'sakura_tree_small',
+  'flower_shrubs',
+  'far_spire',
   'character',
 ] as const;
 

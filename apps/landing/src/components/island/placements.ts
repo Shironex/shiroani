@@ -4,7 +4,8 @@
 //
 // glTF coordinates: metres, +Y up, the shop front faces +Z. Rotation is XYZ
 // Euler radians. Linked duplicates in the build share one GLB and get one
-// entry per copy here.
+// entry per copy here. `waterfall` is not a model: each entry is a fall on the
+// island's front lip, its width in scale x and its drop in scale y.
 //
 // No three.js imports: the page reads this file at build time.
 
@@ -67,8 +68,44 @@ export const PLACEMENTS = {
     { position: [14, -11, 38], rotation: [0, 1.0472, 0], scale: [0.7, 0.7, 0.7] },
     { position: [-36, -4, 18], rotation: [0, 2.4435, 0], scale: [1.25, 1.25, 1.25] },
   ],
+  sakura_tree_large: [
+    { position: [-4.1, 0.174, -0.9], rotation: [0, -0.2094, 0], scale: [1, 1, 1] },
+  ],
+  sakura_tree_small: [
+    { position: [7.25, 0.7176, -0.9], rotation: [0, 0.3491, 0], scale: [1, 1, 1] },
+    { position: [7, -0.3253, 1.3], rotation: [0, 2.4435, 0], scale: [0.9, 0.9, 0.9] },
+    { position: [6.9, -0.4214, 2.65], rotation: [0, 1.309, 0], scale: [0.75, 0.75, 0.75] },
+    { position: [-2.5, 0.1583, -3.6], rotation: [0, -0.5236, 0], scale: [0.95, 0.95, 0.95] },
+    { position: [-7.15, 0.343, -0.9], rotation: [0, -2.7925, 0], scale: [1.1, 1.1, 1.1] },
+  ],
+  flower_shrubs: [
+    { position: [-2.25, -0.0047, 5], rotation: [0, 0.1745, 0], scale: [1, 1, 1] },
+    { position: [1.25, -0.4293, 5.35], rotation: [0, -0.4363, 0], scale: [0.9, 0.9, 0.9] },
+    { position: [3.05, -0.2023, 5.75], rotation: [0, 1.0472, 0], scale: [1.15, 1.15, 1.15] },
+    { position: [5.25, 0.0734, 4.05], rotation: [0, 2.2689, 0], scale: [0.85, 0.85, 0.85] },
+    { position: [-5, 0.8434, 3.65], rotation: [0, -2.7925, 0], scale: [1.05, 1.05, 1.05] },
+    { position: [-7.35, 0.7331, 1.3], rotation: [0, 1.6581, 0], scale: [1.25, 1.25, 1.25] },
+    { position: [-6.9, 2.7613, -2.3], rotation: [0, -1.0472, 0], scale: [1.1, 1.1, 1.1] },
+    { position: [7.55, -0.6769, -0.2], rotation: [0, 2.9671, 0], scale: [1, 1, 1] },
+    { position: [3.55, -0.1478, 1.45], rotation: [0, 0.5236, 0], scale: [0.8, 0.8, 0.8] },
+  ],
+  far_spire: [
+    { position: [-20, -15.7, -25], rotation: [0, 0.1745, 0], scale: [0.7, 0.7, 0.7] },
+    { position: [-15, -21.5, -60], rotation: [0, 2.0944, 0], scale: [1.1, 1.1, 1.1] },
+    { position: [28, -17.2, -55], rotation: [0, -2.7925, 0], scale: [1, 1, 1] },
+    { position: [40, -21.2, -80], rotation: [0, 1.0472, 0], scale: [1.3, 1.3, 1.3] },
+    { position: [-45, -20.2, -10], rotation: [0, -1.9199, 0], scale: [1, 1, 1] },
+    { position: [-50, -21.8, -30], rotation: [0, -1.0472, 0], scale: [1.2, 1.2, 1.2] },
+    { position: [60, -20.5, -20], rotation: [0, 2.7925, 0], scale: [1.1, 1.1, 1.1] },
+    { position: [15, -22.5, -95], rotation: [0, 0.5236, 0], scale: [1.4, 1.4, 1.4] },
+  ],
   character: [
     { position: [0.1861, 0.8232, 2.9745], rotation: [0, 0.6632, 0], scale: [1.45, 1.45, 1.45] },
+  ],
+  waterfall: [
+    { position: [-3.85, 0.207, 4.65], rotation: [0, 0, 0], scale: [0.65, 8, 1] },
+    { position: [2.6, -0.6477, 6.5], rotation: [0, 0, 0], scale: [0.8, 8.5, 1] },
+    { position: [-0.3, 0.2347, 5.6], rotation: [0, 0, 0], scale: [1.1, 9.5, 1] },
   ],
 } as const satisfies Record<string, readonly Placement[]>;
 

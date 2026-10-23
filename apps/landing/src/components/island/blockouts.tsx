@@ -1,4 +1,5 @@
-import { Color, DoubleSide, MeshBasicMaterial, MeshStandardMaterial } from 'three';
+import { Color, DoubleSide, MeshStandardMaterial, type Material } from 'three';
+import type { Vec3 } from './stops';
 
 // Primitive stand-ins for every island model, sized like the real GLBs. Each
 // one is what a <Model> shows while its GLB loads or if it fails, drawn at the
@@ -29,19 +30,26 @@ export const mat = {
   sweater: standard('#ee8ab2', { roughness: 0.9 }),
   skin: standard('#f3d9cd', { roughness: 0.7 }),
   boxSet: standard('#8aa4ff', { roughness: 0.5 }),
+  bark: standard('#4a3029', { roughness: 0.95 }),
+  blossom: standard('#f3a6c8', {
+    roughness: 0.9,
+    flatShading: true,
+    emissive: new Color('#f07ab0'),
+    emissiveIntensity: 0.18,
+  }),
+  leaf: standard('#2f5a34', { roughness: 0.9, flatShading: true }),
+  spire: standard('#2a2438', { flatShading: true, roughness: 1 }),
   windowGlow: glow('#ffc78a', 2.2),
   sakuraGlow: glow('#ee8ab2', 2.6),
   lanternGlow: glow('#ffb46e', 3.2),
   clockFace: glow('#fff1e2', 1.4),
-  /** The open-air screen. Takes a video texture as `map` once the capture exists. */
+  /** The open-air screen's stand-in glow, for when the app capture is not given. */
   screen: new MeshStandardMaterial({
     color: '#000000',
     emissive: hdr('#8f7cf0', 1),
     emissiveIntensity: 1.1,
     side: DoubleSide,
   }),
-  // Past white so it blooms, but low enough to keep its pink.
-  moon: new MeshBasicMaterial({ color: hdr('#ffc4e2', 2.4), fog: false }),
 };
 
 /** The floating rock, origin at its bottom tip, grassy top 10.4 m up. */
@@ -275,10 +283,10 @@ export function BrowserFrameBlockout() {
   );
 }
 
-/** The screen itself, origin at its centre. Takes the video later. */
-export function BrowserScreenBlockout() {
+/** The screen itself, origin at its centre, showing `material` (the app capture). */
+export function BrowserScreenBlockout({ material = mat.screen }: { material?: Material }) {
   return (
-    <mesh name="browser_screen" material={mat.screen}>
+    <mesh name="browser_screen" material={material}>
       <planeGeometry args={[2.4, 1.35]} />
     </mesh>
   );
@@ -294,6 +302,115 @@ export function IsletBlockout() {
       <mesh position={[0, 3.24, 0]} material={mat.grass}>
         <cylinderGeometry args={[2.05, 2, 0.08, 14]} />
       </mesh>
+    </group>
+  );
+}
+
+/** One canopy blob: [x, y, z, radius]. */
+type Blob = readonly [number, number, number, number];
+
+function Canopy({ blobs, material }: { blobs: readonly Blob[]; material: MeshStandardMaterial }) {
+  return (
+    <>
+      {blobs.map(([x, y, z, r]) => (
+        <mesh key={`${x},${y},${z}`} position={[x, y, z]} material={material}>
+          <icosahedronGeometry args={[r, 1]} />
+        </mesh>
+      ))}
+    </>
+  );
+}
+
+const LARGE_CANOPY: readonly Blob[] = [
+  [-0.6, 5.6, 0, 2.1],
+  [1.6, 5.2, 0.6, 1.9],
+  [3.6, 4.6, -0.2, 1.6],
+  [-2.8, 5, -0.5, 1.6],
+  [0.4, 6.6, -0.8, 1.5],
+  [-4.6, 4.3, 0.4, 1.1],
+];
+
+/**
+ * The big sakura by the shop, about 8 m tall and 11 m across. Origin at the
+ * middle of its footprint; the trunk stands left of it and the long branch
+ * reaches toward +X, over the shop roof.
+ */
+export function SakuraTreeLargeBlockout() {
+  return (
+    <group>
+      <mesh position={[-1.1, 1.6, 0]} rotation={[0, 0, -0.25]} material={mat.bark}>
+        <cylinderGeometry args={[0.28, 0.5, 3.4, 7]} />
+      </mesh>
+      <mesh position={[0.9, 3.9, 0.2]} rotation={[0, 0, -1.05]} material={mat.bark}>
+        <cylinderGeometry args={[0.12, 0.26, 3.6, 6]} />
+      </mesh>
+      <Canopy blobs={LARGE_CANOPY} material={mat.blossom} />
+    </group>
+  );
+}
+
+const SMALL_CANOPY: readonly Blob[] = [
+  [0, 2.35, 0, 0.62],
+  [-0.62, 1.75, 0.05, 0.48],
+  [0.6, 1.85, -0.05, 0.5],
+];
+
+/** A small sakura, about 2.9 m tall: a slim trunk under three round clusters. */
+export function SakuraTreeSmallBlockout() {
+  return (
+    <group>
+      <mesh position={[0, 0.9, 0]} material={mat.bark}>
+        <cylinderGeometry args={[0.07, 0.13, 1.8, 6]} />
+      </mesh>
+      <Canopy blobs={SMALL_CANOPY} material={mat.blossom} />
+    </group>
+  );
+}
+
+const SHRUB_LEAVES: readonly Blob[] = [
+  [0, 0.28, 0, 0.42],
+  [-0.45, 0.2, 0.15, 0.32],
+  [0.45, 0.22, -0.1, 0.34],
+  [0.1, 0.2, 0.42, 0.28],
+];
+const SHRUB_FLOWERS: readonly Blob[] = [
+  [-0.3, 0.5, 0.3, 0.07],
+  [0.35, 0.52, 0.2, 0.06],
+  [0.05, 0.66, -0.15, 0.07],
+];
+
+/** Ferns and pink flowers round a mossy rock, about 1.6 m across. */
+export function FlowerShrubsBlockout() {
+  return (
+    <group>
+      <Canopy blobs={SHRUB_LEAVES} material={mat.leaf} />
+      <Canopy blobs={SHRUB_FLOWERS} material={mat.sakuraGlow} />
+    </group>
+  );
+}
+
+const SPIRE_WINDOWS: readonly Vec3[] = [
+  [0.9, 17.5, 1.6],
+  [-1.2, 15.2, 1.3],
+  [0.4, 13, 1.95],
+  [1.5, 19.6, 0.4],
+];
+
+/** A distant rock spire, about 23 m tall, origin at its bottom tip, a few lit windows near the top. */
+export function FarSpireBlockout() {
+  return (
+    <group>
+      <mesh position={[0, 11.5, 0]} material={mat.spire}>
+        <cylinderGeometry args={[1.4, 0.4, 23, 7]} />
+      </mesh>
+      <mesh position={[0, 23.6, 0]} material={mat.leaf}>
+        <coneGeometry args={[1.6, 1.4, 7]} />
+      </mesh>
+      {SPIRE_WINDOWS.map(at => (
+        <mesh key={at.join()} position={at} material={mat.windowGlow}>
+          <boxGeometry args={[0.35, 0.45, 0.35]} />
+        </mesh>
+      ))}
     </group>
   );
 }
