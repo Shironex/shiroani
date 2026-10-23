@@ -1,7 +1,7 @@
 // The island page's own controls: the stop dots. Plain DOM, no three.js, so it
 // runs in static mode too.
 import { motion } from './motion';
-import { scrollProgress, stopSections } from './scroll';
+import { subscribeIslandScroll } from './scroll';
 
 /** The dots step away once the island's bottom edge is above this share of the viewport. */
 const AWAY_THRESHOLD = 0.75;
@@ -12,17 +12,13 @@ export function initIslandControls() {
   if (!root || root.dataset.controls !== undefined) return;
   root.dataset.controls = '';
 
-  const sections = stopSections();
+  const sections = [...root.querySelectorAll<HTMLElement>('[data-island-stop]')];
   const dots = [...document.querySelectorAll<HTMLAnchorElement>('[data-island-dot]')];
-  let queued = false;
   let lastActive = -1;
   let lastAway: boolean | null = null;
-  const update = () => {
-    queued = false;
-    // Layout reads first, then the writes.
-    const p = scrollProgress(sections);
-    const active = Math.min(Math.round(p), dots.length - 1);
-    const away = root.getBoundingClientRect().bottom < window.innerHeight * AWAY_THRESHOLD;
+  subscribeIslandScroll(({ progress, bottom }) => {
+    const active = Math.min(Math.round(progress), dots.length - 1);
+    const away = bottom < window.innerHeight * AWAY_THRESHOLD;
 
     if (active !== lastActive) {
       dots.forEach((dot, i) => {
@@ -36,15 +32,7 @@ export function initIslandControls() {
       root.toggleAttribute('data-away', away);
       lastAway = away;
     }
-  };
-  const onScroll = () => {
-    if (queued) return;
-    queued = true;
-    requestAnimationFrame(update);
-  };
-  addEventListener('scroll', onScroll, { passive: true });
-  addEventListener('resize', onScroll, { passive: true });
-  update();
+  });
 
   dots.forEach((dot, i) => {
     dot.addEventListener('click', event => {
@@ -56,15 +44,4 @@ export function initIslandControls() {
       section.focus({ preventScroll: true });
     });
   });
-
-  // The client router swaps pages without a reload: the window listeners go
-  // with the island.
-  document.addEventListener(
-    'astro:before-swap',
-    () => {
-      removeEventListener('scroll', onScroll);
-      removeEventListener('resize', onScroll);
-    },
-    { once: true }
-  );
 }

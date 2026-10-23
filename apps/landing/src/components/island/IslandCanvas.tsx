@@ -15,7 +15,7 @@ import { ModelsContext, settledModels } from './Model';
 import { motion } from './motion';
 import { island } from './progress';
 import { IslandScene } from './Scene';
-import { scrollProgress, stopSections } from './scroll';
+import { connectIslandScroll, readIslandScroll } from './scroll';
 import { ISLAND_STOPS } from './stops';
 
 interface Props {
@@ -116,11 +116,10 @@ const CAMERA_FOLLOW_RATE = 5;
 /** Reads the scroll position each frame and eases the camera toward it. */
 function CameraRig() {
   const camera = useThree(state => state.camera) as PerspectiveCamera;
-  const sections = useRef<HTMLElement[]>([]);
   const started = useRef(false);
 
   useEffect(() => {
-    sections.current = stopSections();
+    connectIslandScroll();
     // Desktop only: the stops sit over the canvas, so listen on the window.
     const onMove = (e: PointerEvent) => {
       if (e.pointerType !== 'mouse') return;
@@ -132,7 +131,7 @@ function CameraRig() {
   }, []);
 
   useFrame((state, delta) => {
-    island.p = scrollProgress(sections.current);
+    island.p = readIslandScroll().progress;
     island.t = state.clock.elapsedTime;
     const reducedMotion = motion.reduced;
 
