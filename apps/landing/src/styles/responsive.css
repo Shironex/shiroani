@@ -139,7 +139,8 @@
   .mascot-r img,
   .hero .blip,
   .hdr .blip,
-  .suite-card.self .here::before {
+  .suite-card.self .here::before,
+  .island-loader-moon {
     animation: none !important;
   }
   /* Retain short transitions for state feedback (hover, focus, open/close) */

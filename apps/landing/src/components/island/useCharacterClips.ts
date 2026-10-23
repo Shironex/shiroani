@@ -1,0 +1,46 @@
+import { useFrame } from '@react-three/fiber';
+import { useCallback, useRef } from 'react';
+import type { AnimationAction } from 'three';
+import { CHARACTER_CLIPS, type ClipRole } from './manifest';
+import { motion } from './motion';
+import type { OnModel } from './Model';
+
+/** Seconds a clip takes to blend into the next. */
+const FADE = 0.45;
+
+/**
+ * Drives the character's skinned clips. `pick` runs every frame and names the
+ * role that should play (read the scroll from progress.ts); the hook
+ * crossfades whenever the role changes. Pass the returned `onModel` to the
+ * character's <Model>: the blockout has no clips, so nothing plays until the
+ * real GLB is in. Under reduced motion the clip holds its first pose.
+ */
+export function useCharacterClips(pick: () => ClipRole | null): OnModel {
+  const actions = useRef<Record<string, AnimationAction | null>>({});
+  const current = useRef<AnimationAction | null>(null);
+  const missing = useRef(new Set<string>());
+
+  const onModel = useCallback<OnModel>((_model, clips) => {
+    actions.current = clips;
+    current.current = null;
+  }, []);
+
+  useFrame(() => {
+    const role = pick();
+    const name = role ? CHARACTER_CLIPS[role] : null;
+    const next = name ? (actions.current[name] ?? null) : null;
+    if (name && !next && !missing.current.has(name) && Object.keys(actions.current).length) {
+      missing.current.add(name);
+      if (import.meta.env.DEV) console.warn(`[island] character has no clip "${name}"`);
+    }
+    if (next === current.current) {
+      if (next) next.paused = motion.reduced;
+      return;
+    }
+    current.current?.fadeOut(FADE);
+    next?.reset().fadeIn(FADE).play();
+    current.current = next;
+  });
+
+  return onModel;
+}

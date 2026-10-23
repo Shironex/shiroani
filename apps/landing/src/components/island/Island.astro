@@ -1,0 +1,219 @@
+---
+import fs from 'node:fs';
+import path from 'node:path';
+import { t, translations, type SupportedLanguage } from '../../lib/i18n';
+import IslandStage from './IslandStage';
+import { isModelId, MODELS_PATH, type ModelId } from './manifest';
+import { ISLAND_STOPS } from './stops';
+import '../../styles/island.css';
+
+interface Props {
+  /** Active SSR language. `/en/island` passes `lang="en"`. */
+  lang?: SupportedLanguage;
+}
+
+const { lang = 'pl' } = Astro.props;
+const tt = (key: string) => t(key, lang);
+const prefix = lang === 'en' ? '/en' : '';
+const localized = (href: string) => `${prefix}${href}`;
+const downloadHref = localized('/download');
+
+// Real models live in public/island/models/<id>.glb. Any id without a file
+// keeps its blockout, so the island is told which files exist. Astro runs dev
+// and build from apps/landing, so the path is relative to that.
+const modelsDir = path.resolve('public', MODELS_PATH.slice(1));
+const models: ModelId[] = fs.existsSync(modelsDir)
+  ? fs
+      .readdirSync(modelsDir)
+      .filter(file => file.endsWith('.glb'))
+      .map(file => file.slice(0, -4))
+      .filter(isModelId)
+  : [];
+
+const POSTER = {
+  src: '/island/poster.webp',
+  srcset: '/island/poster-828.webp 828w, /island/poster.webp 1672w',
+  sizes: '100vw',
+  width: 1672,
+  height: 941,
+};
+const lastStop = ISLAND_STOPS.length - 1;
+const exploreStopId = ISLAND_STOPS[1].id;
+
+// At or below this width (px) the island goes static: poster, no 3D.
+const STATIC_MAX_WIDTH = 820;
+const DESKTOP_MEDIA = `(min-width: ${STATIC_MAX_WIDTH + 1}px)`;
+---
+
+<div class="island" data-island>
+  <script is:inline define:vars={{ staticMaxWidth: STATIC_MAX_WIDTH }}>
+    // Decide before first paint whether the 3D island runs at all. Phones,
+    // reduced motion and missing WebGL 2 get the poster over stacked copy.
+    (function () {
+      var root = document.querySelector('[data-island]');
+      var gl = false;
+      try {
+        var ctx = document.createElement('canvas').getContext('webgl2');
+        gl = !!ctx;
+        var lose = ctx && ctx.getExtension('WEBGL_lose_context');
+        if (lose) lose.loseContext();
+      } catch (e) {}
+      if (
+        !gl ||
+        matchMedia('(prefers-reduced-motion: reduce)').matches ||
+        matchMedia('(max-width: ' + staticMaxWidth + 'px)').matches
+      ) {
+        root.setAttribute('data-static', '');
+      }
+    })();
+  </script>
+
+  <div class="island-stage" data-island-stage aria-hidden="true">
+    <picture>
+      {/* Desktop WebGL never shows the poster: the loader covers the wait.
+          The script below drops this source when the page went static. */}
+      <source
+        media={`${DESKTOP_MEDIA} and (prefers-reduced-motion: no-preference)`}
+        srcset="data:image/gif;base64,R0lGODlhAQABAAAAACw="
+        data-island-blank
+      />
+      <img
+        src={POSTER.src}
+        srcset={POSTER.srcset}
+        sizes={POSTER.sizes}
+        alt=""
+        class="island-poster"
+        width={POSTER.width}
+        height={POSTER.height}
+        loading="eager"
+        fetchpriority="high"
+        decoding="async"
+      />
+    </picture>
+    <script is:inline>
+      if (document.querySelector('[data-island][data-static]'))
+        document.querySelector('[data-island-blank]').remove();
+    </script>
+    <noscript>
+      <style is:inline>
+        .island-loader {
+          display: none;
+        }
+        .island .island-poster {
+          display: block;
+        }
+      </style>
+      <img
+        src={POSTER.src}
+        srcset={POSTER.srcset}
+        sizes={POSTER.sizes}
+        alt=""
+        class="island-poster"
+        width={POSTER.width}
+        height={POSTER.height}
+        decoding="async"
+      />
+    </noscript>
+    <div class="island-loader">
+      <svg class="island-loader-moon" viewBox="0 0 40 40" aria-hidden="true">
+        <circle cx="20" cy="20" r="19" fill="currentColor" opacity="0.14"></circle>
+        <path d="M26 6a15 15 0 1 0 8 20A12 12 0 0 1 26 6z" fill="currentColor" opacity="0.85"
+        ></path>
+      </svg>
+      <div class="island-loader-bar"><span data-island-loader-bar></span></div>
+      <span class="island-loader-pct" data-island-loader-pct>0%</span>
+    </div>
+    {/* Phones always go static, so they skip hydration (and react-dom) entirely.
+        The width matches the static-mode check above. */}
+    <IslandStage client:media={DESKTOP_MEDIA} models={models} />
+  </div>
+
+  <div class="island-stops">
+    {
+      ISLAND_STOPS.map((stop, index) => {
+        const Heading = index === 0 ? 'h1' : 'h2';
+        const key = (field: string) => `island.${stop.id}.${field}`;
+        // Not every stop has a body line (the pullback is a heading alone).
+        const hasBody = key('body') in translations[lang];
+        return (
+          <section
+            class="island-stop"
+            id={`island-${stop.id}`}
+            data-island-stop={stop.id}
+            data-align={stop.align}
+            aria-labelledby={`island-${stop.id}-title`}
+            tabindex="-1"
+          >
+            <div class="island-panel">
+              {index === 0 && (
+                <p class="island-mark">
+                  <span class="island-kanji" lang="ja">
+                    白アニ
+                  </span>
+                  <span>ShiroAni</span>
+                </p>
+              )}
+              <Heading class="island-heading" id={`island-${stop.id}-title`} data-i18n={key('title')}>
+                {tt(key('title'))}
+              </Heading>
+              {hasBody && (
+                <p class="island-body" data-i18n={key('body')}>
+                  {tt(key('body'))}
+                </p>
+              )}
+              {stop.id === 'porch' && (
+                <div class="island-cta">
+                  <a href={downloadHref} class="island-btn island-btn-primary" data-i18n="island.porch.download">
+                    {tt('island.porch.download')}
+                  </a>
+                  <a href={`#island-${exploreStopId}`} class="island-btn island-btn-ghost" data-i18n="island.porch.explore">
+                    {tt('island.porch.explore')}
+                  </a>
+                </div>
+              )}
+              {index === lastStop && (
+                <>
+                  <div class="island-cta">
+                    <a href={downloadHref} class="island-btn island-btn-primary" data-i18n="island.moon.windows">
+                      {tt('island.moon.windows')}
+                    </a>
+                    <a href={downloadHref} class="island-btn island-btn-ghost" data-i18n="island.moon.macos">
+                      {tt('island.moon.macos')}
+                    </a>
+                  </div>
+                  <a href={localized('/changelog')} class="island-link" data-i18n="island.moon.changelog">
+                    {tt('island.moon.changelog')}
+                  </a>
+                </>
+              )}
+            </div>
+          </section>
+        );
+      })
+    }
+  </div>
+
+  {/* Progress through the stops; each dot jumps to its stop. */}
+  <nav class="island-dots" aria-label={tt('island.dots')} data-i18n-aria-label="island.dots">
+    {
+      ISLAND_STOPS.map((stop, index) => (
+        <a
+          href={`#island-${stop.id}`}
+          class="island-dot"
+          data-island-dot={index}
+          aria-current={index === 0 ? 'step' : undefined}
+        >
+          <span class="sr-only" data-i18n={`island.${stop.id}.label`}>
+            {tt(`island.${stop.id}.label`)}
+          </span>
+        </a>
+      ))
+    }
+  </nav>
+</div>
+
+<script>
+  import { initIslandControls } from './controls';
+  initIslandControls();
+  document.addEventListener('astro:page-load', initIslandControls);
+</script>

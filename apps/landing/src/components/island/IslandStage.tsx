@@ -1,0 +1,105 @@
+import {
+  Component,
+  lazy,
+  Suspense,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from 'react';
+import type { ModelId } from './manifest';
+
+// three.js and R3F live behind this dynamic import, in their own chunk.
+const IslandCanvas = lazy(() => import('./IslandCanvas'));
+
+/** Past this the island gives up on 3D and shows the poster instead of a stuck loader. */
+const STATIC_FALLBACK_TIMEOUT_MS = 25_000;
+
+interface Props {
+  /** Models that have a real GLB in public/island/models. */
+  models: ModelId[];
+}
+
+/**
+ * The 3D stage. Mounts the island unless the page decided on static mode
+ * (phone width, reduced motion or no WebGL 2), drives the loader, and marks
+ * the stage ready once the island is complete so the canvas fades in.
+ */
+export default function IslandStage({ models }: Props) {
+  const anchor = useRef<HTMLDivElement>(null);
+  const [run, setRun] = useState(false);
+
+  // The static decision is made by an inline script before first paint, so
+  // it is read from the DOM once the island hydrates.
+  useEffect(() => {
+    const root = anchor.current?.closest('[data-island]');
+    setRun(!!root && !root.hasAttribute('data-static'));
+  }, []);
+
+  // A failed chunk, a scene error or a request that never settles: go static,
+  // which brings back the poster the page skipped for the loader.
+  const fail = useCallback(() => {
+    const root = anchor.current?.closest('[data-island]');
+    if (!root || root.querySelector('[data-island-stage][data-ready]')) return;
+    root.setAttribute('data-static', '');
+    root.querySelector('[data-island-blank]')?.remove();
+    setRun(false);
+  }, []);
+
+  useEffect(() => {
+    if (!run) return;
+    const timer = window.setTimeout(fail, STATIC_FALLBACK_TIMEOUT_MS);
+    return () => window.clearTimeout(timer);
+  }, [run, fail]);
+
+  const pctEl = useRef<Element | null>(null);
+  const barEl = useRef<HTMLElement | null>(null);
+  const onProgress = useCallback((percent: number) => {
+    if (!pctEl.current || !barEl.current) {
+      const stage = anchor.current?.closest('[data-island-stage]');
+      pctEl.current = stage?.querySelector('[data-island-loader-pct]') ?? null;
+      barEl.current = stage?.querySelector<HTMLElement>('[data-island-loader-bar]') ?? null;
+    }
+    const value = Math.round(percent);
+    if (pctEl.current) pctEl.current.textContent = `${value}%`;
+    if (barEl.current) barEl.current.style.transform = `scaleX(${value / 100})`;
+  }, []);
+
+  const onReady = useCallback(() => {
+    const stage = anchor.current?.closest<HTMLElement>('[data-island-stage]');
+    if (stage) stage.dataset.ready = '';
+  }, []);
+
+  return (
+    <>
+      {/* Fills the stage and anchors the closest() lookups above. The island
+          hydrates on desktop widths only, so phones never fetch React. */}
+      <div ref={anchor} className="island-anchor" />
+      {run && (
+        <Guard onError={fail}>
+          <Suspense fallback={null}>
+            <IslandCanvas models={models} onProgress={onProgress} onReady={onReady} />
+          </Suspense>
+        </Guard>
+      )}
+    </>
+  );
+}
+
+class Guard extends Component<{ onError: () => void; children: ReactNode }, { failed: boolean }> {
+  state = { failed: false };
+
+  static getDerivedStateFromError() {
+    return { failed: true };
+  }
+
+  componentDidCatch(error: unknown) {
+    console.warn('[island] 3D failed, showing the poster', error);
+    this.props.onError();
+  }
+
+  render() {
+    return this.state.failed ? null : this.props.children;
+  }
+}
