@@ -11,6 +11,7 @@ import {
 import type { AnimationAction, Object3D, WebGLRenderer } from 'three';
 import { KTX2Loader } from 'three/examples/jsm/loaders/KTX2Loader.js';
 import { clone } from 'three/examples/jsm/utils/SkeletonUtils.js';
+import { applyBakedLight } from './baked';
 import { ErrorBoundary } from './ErrorBoundary';
 import { modelUrl, type ModelId } from './manifest';
 
@@ -132,6 +133,8 @@ function Glb({
   // SkeletonUtils rebinds a skinned mesh to the copy's own bones, so a model
   // can be placed more than once.
   const copy = useMemo(() => clone(scene), [scene]);
+  // Static props carry their night light baked: draw them unlit with it.
+  useLayoutEffect(() => applyBakedLight(copy), [copy]);
   const { actions } = useAnimations(animations, copy);
   useLayoutEffect(() => onModel?.(copy, actions), [copy, actions, onModel]);
   useLayoutEffect(() => {

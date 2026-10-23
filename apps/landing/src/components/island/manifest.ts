@@ -1,24 +1,33 @@
 // Every model the island can load, by id. A model with a file at
 // public/island/models/<id>.glb renders that file; one without keeps its
-// blockout primitive from Scene.tsx. Swapping in a real model is a data
-// change: drop the GLB in, the page picks it up at build time.
+// blockout primitive from blockouts.tsx. Where each one sits comes from the
+// Blender export (placements.ts); a model placed more than once (lanterns,
+// islets, cushions) is one GLB drawn at every placement.
 //
-// GLBs are expected meshopt-compressed with KTX2 textures (no Draco), origin
-// at the bottom centre, metres, +Y up, front facing +Z.
+// GLBs are meshopt-compressed with KTX2 textures (no Draco), origin at the
+// bottom centre, metres, +Y up, front facing +Z. The static props carry
+// baked light (baked.ts); the character, the bench, the lanterns, the
+// cushions, the box sets and the islets are lit in real time.
 //
 // No three.js imports: the page reads this file at build time.
 
 export const ISLAND_MODELS = [
   'island_base',
   'shop_house',
-  'torii_clock',
-  'bench',
+  'shop_sign',
+  'porch',
   'vending_machine',
-  'lanterns',
+  'torii_staircase',
+  'torii_clock',
+  'nook',
+  'browser_frame',
   'browser_screen',
-  'islet_a',
-  'islet_b',
-  'islet_c',
+  'bench',
+  'boxset_stack',
+  'lantern_post',
+  'lantern_paper',
+  'zabuton',
+  'islet',
   'character',
 ] as const;
 

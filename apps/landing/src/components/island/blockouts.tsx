@@ -1,10 +1,9 @@
 import { Color, DoubleSide, MeshBasicMaterial, MeshStandardMaterial } from 'three';
-import type { Vec3 } from './stops';
 
-// [PLACEHOLDER GEOMETRY] Primitive stand-ins for every island model, sized
-// roughly like the concepts. Each one is the fallback a <Model> shows until
-// its GLB lands, so keep their origins where the real models' will be: bottom
-// centre, metres, front facing +Z.
+// Primitive stand-ins for every island model, sized like the real GLBs. Each
+// one is what a <Model> shows while its GLB loads or if it fails, drawn at the
+// same placement, so its origin matches the real model's: bottom centre,
+// metres, front facing +Z.
 
 /** A colour pushed past white, so bloom picks it up. */
 const hdr = (hex: string, k: number) => new Color(hex).multiplyScalar(k);
@@ -41,74 +40,75 @@ export const mat = {
     emissiveIntensity: 1.1,
     side: DoubleSide,
   }),
-  moon: new MeshBasicMaterial({ color: hdr('#ffd8ea', 3), fog: false }),
+  // Past white so it blooms, but low enough to keep its pink.
+  moon: new MeshBasicMaterial({ color: hdr('#ffc4e2', 2.4), fog: false }),
 };
 
-/** The floating rock and its grassy top, top surface at y = 0. */
+/** The floating rock, origin at its bottom tip, grassy top 10.4 m up. */
 export function IslandBaseBlockout() {
   return (
     <group>
-      <mesh position={[0, -2.6, 0]} material={mat.rock}>
-        <cylinderGeometry args={[7.6, 1.4, 5.2, 9]} />
+      <mesh position={[0, 5.2, 0]} rotation={[Math.PI, 0, 0]} material={mat.rock}>
+        <coneGeometry args={[7.6, 10.4, 9]} />
       </mesh>
-      <mesh position={[0, -0.05, 0]} material={mat.grass}>
+      <mesh position={[0, 10.35, 0]} material={mat.grass}>
         <cylinderGeometry args={[7.7, 7.6, 0.1, 36]} />
       </mesh>
     </group>
   );
 }
 
-/** The shop-house with its glowing windows and sign, and the porch deck in front. */
+/** The two-storey shop-house with its glowing windows. Front wall at z = 2. */
 export function ShopHouseBlockout() {
   return (
     <group>
-      {/* Body: front wall at z = 1.5 in this group. */}
-      <mesh position={[0, 1.5, 0]} material={mat.plaster}>
-        <boxGeometry args={[4.2, 3, 3]} />
+      <mesh position={[0, 2.3, 0]} material={mat.plaster}>
+        <boxGeometry args={[5.6, 4.6, 4]} />
       </mesh>
-      <mesh position={[0, 3.1, 0.15]} material={mat.roof}>
-        <boxGeometry args={[4.9, 0.22, 3.7]} />
+      <mesh position={[0, 5.3, 0]} rotation={[0, Math.PI / 4, 0]} material={mat.roof}>
+        <coneGeometry args={[4.4, 1.6, 4]} />
       </mesh>
-      <mesh position={[0, 3.75, 0]} rotation={[0, Math.PI / 4, 0]} material={mat.roof}>
-        <coneGeometry args={[3, 1.1, 4]} />
+      <mesh position={[-1.6, 1.6, 2.01]} material={mat.windowGlow}>
+        <planeGeometry args={[1.4, 1.3]} />
       </mesh>
-      {/* Shop windows, the library stop. */}
-      <mesh name="shop_window_left" position={[-1.25, 1.35, 1.51]} material={mat.windowGlow}>
-        <planeGeometry args={[1.2, 1.3]} />
+      <mesh position={[1.6, 1.6, 2.01]} material={mat.windowGlow}>
+        <planeGeometry args={[1.4, 1.3]} />
       </mesh>
-      <mesh name="shop_window_right" position={[1.45, 1.6, 1.51]} material={mat.windowGlow}>
-        <planeGeometry args={[0.9, 0.8]} />
-      </mesh>
-      <mesh name="door" position={[0.2, 1.05, 1.51]} material={mat.woodDark}>
-        <planeGeometry args={[0.9, 2.1]} />
-      </mesh>
-      <mesh name="sign" position={[0, 2.55, 1.56]} material={mat.sakuraGlow}>
-        <boxGeometry args={[2, 0.42, 0.06]} />
-      </mesh>
-      {/* Porch deck and its posts, from the wall out to z = 3.3 in this group. */}
-      <mesh position={[0, 0.1, 2.4]} material={mat.wood}>
-        <boxGeometry args={[4.8, 0.2, 1.8]} />
-      </mesh>
-      {[-2.25, 2.25].map(x => (
-        <mesh key={x} position={[x, 1.5, 3.2]} material={mat.woodDark}>
-          <boxGeometry args={[0.14, 2.8, 0.14]} />
-        </mesh>
-      ))}
     </group>
   );
 }
 
-/** The porch bench Shiro-chan sits on. Seat top at y = 0.46. */
+/** The signboard over the shop door, its noren hanging below. */
+export function ShopSignBlockout() {
+  return (
+    <mesh position={[0, 1.15, 0]} material={mat.sakuraGlow}>
+      <boxGeometry args={[3, 0.7, 0.1]} />
+    </mesh>
+  );
+}
+
+/** The porch deck in front of the shop and its steps, top at 0.87. */
+export function PorchBlockout() {
+  return (
+    <group>
+      <mesh position={[0, 0.8, 0]} material={mat.wood}>
+        <boxGeometry args={[6.4, 0.12, 2.2]} />
+      </mesh>
+      <mesh position={[0, 0.3, 1.25]} material={mat.woodDark}>
+        <boxGeometry args={[1.4, 0.6, 0.6]} />
+      </mesh>
+    </group>
+  );
+}
+
+/** The porch bench Shiro-chan sits on. Seat top at 0.46. */
 export function BenchBlockout() {
   return (
     <group>
       <mesh position={[0, 0.42, 0]} material={mat.wood}>
-        <boxGeometry args={[1.5, 0.08, 0.46]} />
+        <boxGeometry args={[1.25, 0.08, 0.44]} />
       </mesh>
-      <mesh position={[0, 0.72, -0.21]} material={mat.wood}>
-        <boxGeometry args={[1.5, 0.42, 0.05]} />
-      </mesh>
-      {[-0.65, 0.65].map(x => (
+      {[-0.55, 0.55].map(x => (
         <mesh key={x} position={[x, 0.19, 0]} material={mat.woodDark}>
           <boxGeometry args={[0.08, 0.38, 0.4]} />
         </mesh>
@@ -117,31 +117,38 @@ export function BenchBlockout() {
   );
 }
 
-/** A seated stand-in for Shiro-chan hugging a box set, origin at the seat. */
+/** A stack of anime box sets. */
+export function BoxSetBlockout() {
+  return (
+    <mesh position={[0, 0.13, 0]} material={mat.boxSet}>
+      <boxGeometry args={[0.36, 0.26, 0.24]} />
+    </mesh>
+  );
+}
+
+/**
+ * A seated stand-in for Shiro-chan hugging a box set, in her own units (the
+ * placement scales her by 1.45). Origin at her root, the seat 0.13 above it.
+ */
 export function CharacterBlockout() {
   return (
-    <group>
+    <group position={[0, 0.13, 0]}>
       <mesh position={[0, 0.27, 0]} material={mat.sweater}>
-        <capsuleGeometry args={[0.15, 0.24, 4, 12]} />
+        <capsuleGeometry args={[0.13, 0.2, 4, 12]} />
       </mesh>
-      <mesh position={[0, 0.64, 0.01]} material={mat.skin}>
-        <sphereGeometry args={[0.16, 20, 16]} />
+      <mesh position={[0, 0.6, 0.01]} material={mat.skin}>
+        <sphereGeometry args={[0.15, 20, 16]} />
       </mesh>
-      <mesh position={[0, 0.66, -0.05]} material={mat.hair}>
-        <sphereGeometry args={[0.185, 20, 16]} />
+      <mesh position={[0, 0.62, -0.05]} material={mat.hair}>
+        <sphereGeometry args={[0.17, 20, 16]} />
       </mesh>
-      {/* Twin tails. */}
-      {[-0.2, 0.2].map(x => (
-        <mesh key={x} position={[x, 0.42, -0.06]} material={mat.hair}>
-          <capsuleGeometry args={[0.06, 0.42, 4, 8]} />
+      {[-0.18, 0.18].map(x => (
+        <mesh key={x} position={[x, 0.38, -0.06]} material={mat.hair}>
+          <capsuleGeometry args={[0.05, 0.38, 4, 8]} />
         </mesh>
       ))}
-      {/* Knees drawn up, the box set held against them. */}
-      <mesh position={[0, 0.12, 0.2]} rotation={[0.5, 0, 0]} material={mat.skin}>
-        <boxGeometry args={[0.24, 0.12, 0.34]} />
-      </mesh>
-      <mesh name="box_set" position={[0, 0.28, 0.2]} rotation={[-0.15, 0, 0]} material={mat.boxSet}>
-        <boxGeometry args={[0.26, 0.3, 0.08]} />
+      <mesh position={[0, 0.25, 0.17]} material={mat.boxSet}>
+        <boxGeometry args={[0.22, 0.2, 0.1]} />
       </mesh>
     </group>
   );
@@ -151,72 +158,74 @@ export function CharacterBlockout() {
 export function VendingMachineBlockout() {
   return (
     <group>
-      <mesh position={[0, 0.9, 0]} material={mat.vending}>
-        <boxGeometry args={[0.85, 1.8, 0.7]} />
+      <mesh position={[0, 0.87, 0]} material={mat.vending}>
+        <boxGeometry args={[1.1, 1.74, 0.8]} />
       </mesh>
-      <mesh name="vending_front" position={[0, 1.1, 0.351]} material={mat.sakuraGlow}>
-        <planeGeometry args={[0.66, 1.05]} />
+      <mesh position={[0, 1.05, 0.41]} material={mat.sakuraGlow}>
+        <planeGeometry args={[0.8, 1.0]} />
+      </mesh>
+    </group>
+  );
+}
+
+/** A stone lantern on its post, origin on the ground. */
+export function LanternPostBlockout() {
+  return (
+    <group>
+      <mesh position={[0, 0.25, 0]} material={mat.stone}>
+        <cylinderGeometry args={[0.08, 0.14, 0.5, 8]} />
+      </mesh>
+      <mesh position={[0, 0.6, 0]} material={mat.lanternGlow}>
+        <boxGeometry args={[0.24, 0.22, 0.24]} />
+      </mesh>
+      <mesh position={[0, 0.8, 0]} material={mat.stone}>
+        <coneGeometry args={[0.3, 0.18, 4]} />
       </mesh>
     </group>
   );
 }
 
 /** A paper lantern, origin at its hanging point. */
-function PaperLantern({ position }: { position: Vec3 }) {
+export function LanternPaperBlockout() {
   return (
-    <group position={position}>
-      <mesh position={[0, -0.25, 0]} material={mat.lanternGlow}>
-        <capsuleGeometry args={[0.13, 0.16, 4, 12]} />
-      </mesh>
-    </group>
+    <mesh position={[0, -0.25, 0]} material={mat.lanternGlow}>
+      <capsuleGeometry args={[0.13, 0.2, 4, 12]} />
+    </mesh>
   );
 }
 
-/** A stone garden lantern, origin on the ground. */
-function StoneLantern({ position }: { position: Vec3 }) {
+/** A floor cushion. */
+export function ZabutonBlockout() {
   return (
-    <group position={position}>
-      <mesh position={[0, 0.35, 0]} material={mat.stone}>
-        <cylinderGeometry args={[0.08, 0.14, 0.7, 8]} />
-      </mesh>
-      <mesh position={[0, 0.82, 0]} material={mat.lanternGlow}>
-        <boxGeometry args={[0.22, 0.22, 0.22]} />
-      </mesh>
-      <mesh position={[0, 1.02, 0]} material={mat.stone}>
-        <coneGeometry args={[0.24, 0.2, 4]} />
-      </mesh>
-    </group>
+    <mesh position={[0, 0.07, 0]} material={mat.sweater}>
+      <boxGeometry args={[0.6, 0.14, 0.6]} />
+    </mesh>
   );
 }
 
-/** The lantern nook's writing table, island coordinates (the diary stop). */
-const NOOK_AT: Vec3 = [-3.8, 0.18, -2.3];
-
-/**
- * Every lantern on the island in one model: two paper lanterns under the
- * porch eave and the lantern nook to the left of the shop (the diary stop),
- * with its low writing table. Positions are island coordinates.
- */
-export function LanternsBlockout() {
+/** The lantern nook's deck with its low writing table and the diary on it. */
+export function NookBlockout() {
   return (
     <group>
-      <PaperLantern position={[-1.7, 2.95, 0.55]} />
-      <PaperLantern position={[2.0, 2.95, 0.55]} />
-      <PaperLantern position={[-3.4, 2.1, -1.6]} />
-      <StoneLantern position={[-4.6, 0, -2.6]} />
-      <StoneLantern position={[-3.0, 0, -3.2]} />
-      <mesh name="nook_table" position={NOOK_AT} material={mat.woodDark}>
-        <boxGeometry args={[0.9, 0.06, 0.55]} />
+      <mesh position={[0, 0.16, 0]} material={mat.wood}>
+        <boxGeometry args={[2, 0.32, 2.6]} />
       </mesh>
-      <mesh
-        name="diary"
-        position={[NOOK_AT[0], NOOK_AT[1] + 0.05, NOOK_AT[2]]}
-        rotation={[0, 0.3, 0]}
-        material={mat.sweater}
-      >
-        <boxGeometry args={[0.28, 0.04, 0.2]} />
+      <mesh position={[0, 0.5, 0]} material={mat.woodDark}>
+        <boxGeometry args={[1, 0.06, 1]} />
+      </mesh>
+      <mesh name="diary" position={[0, 0.55, 0]} material={mat.sweater}>
+        <boxGeometry args={[0.4, 0.04, 0.3]} />
       </mesh>
     </group>
+  );
+}
+
+/** The rock plinth with its stairs up to the torii, flat top 2.0 m up. */
+export function ToriiStaircaseBlockout() {
+  return (
+    <mesh position={[0, 1.2, 0]} material={mat.rock}>
+      <boxGeometry args={[4.8, 2.4, 5.9]} />
+    </mesh>
   );
 }
 
@@ -224,60 +233,66 @@ export function LanternsBlockout() {
 export function ToriiClockBlockout() {
   return (
     <group>
-      {[-1.05, 1.05].map(x => (
-        <mesh key={x} position={[x, 1.4, 0]} material={mat.vermilion}>
-          <cylinderGeometry args={[0.1, 0.12, 2.8, 12]} />
+      {[-1.5, 1.5].map(x => (
+        <mesh key={x} position={[x, 1.9, 0]} material={mat.vermilion}>
+          <cylinderGeometry args={[0.12, 0.14, 3.8, 12]} />
         </mesh>
       ))}
-      <mesh position={[0, 2.9, 0]} material={mat.woodDark}>
-        <boxGeometry args={[3, 0.18, 0.32]} />
+      <mesh position={[0, 3.9, 0]} material={mat.woodDark}>
+        <boxGeometry args={[3.8, 0.24, 0.4]} />
       </mesh>
-      <mesh position={[0, 2.75, 0]} material={mat.vermilion}>
-        <boxGeometry args={[2.8, 0.14, 0.26]} />
-      </mesh>
-      <mesh position={[0, 2.35, 0]} material={mat.vermilion}>
-        <boxGeometry args={[2.4, 0.12, 0.16]} />
+      <mesh position={[0, 3.3, 0]} material={mat.vermilion}>
+        <boxGeometry args={[3.2, 0.16, 0.2]} />
       </mesh>
       <mesh
         name="clock_face"
-        position={[0, 1.95, 0]}
+        position={[0, 2.6, 0]}
         rotation={[Math.PI / 2, 0, 0]}
         material={mat.clockFace}
       >
-        <cylinderGeometry args={[0.36, 0.36, 0.06, 32]} />
+        <cylinderGeometry args={[0.5, 0.5, 0.08, 32]} />
       </mesh>
     </group>
   );
 }
 
-/** The open-air screen on its two posts. The `screen` mesh takes the video later. */
-export function BrowserScreenBlockout() {
+/** The open-air screen's posts and frame, and its viewing deck in front. */
+export function BrowserFrameBlockout() {
   return (
     <group>
-      {[-1.15, 1.15].map(x => (
-        <mesh key={x} position={[x, 1.05, -0.06]} material={mat.woodDark}>
-          <boxGeometry args={[0.1, 2.1, 0.1]} />
+      {[-1.3, 1.3].map(x => (
+        <mesh key={x} position={[x, 1.25, 0]} material={mat.woodDark}>
+          <boxGeometry args={[0.14, 2.5, 0.14]} />
         </mesh>
       ))}
-      <mesh position={[0, 1.65, -0.05]} material={mat.woodDark}>
-        <boxGeometry args={[2.5, 1.5, 0.06]} />
+      <mesh position={[0, 1.4, -0.06]} material={mat.woodDark}>
+        <boxGeometry args={[2.6, 1.5, 0.05]} />
       </mesh>
-      <mesh name="screen" position={[0, 1.65, -0.015]} material={mat.screen}>
-        <planeGeometry args={[2.3, 1.3]} />
+      <mesh position={[0, 0.1, 1.1]} material={mat.wood}>
+        <boxGeometry args={[3, 0.3, 1.8]} />
       </mesh>
     </group>
   );
 }
 
-/** A small floating rock with a grassy top. `scale` sizes the whole islet. */
+/** The screen itself, origin at its centre. Takes the video later. */
+export function BrowserScreenBlockout() {
+  return (
+    <mesh name="browser_screen" material={mat.screen}>
+      <planeGeometry args={[2.4, 1.35]} />
+    </mesh>
+  );
+}
+
+/** A small floating rock with a grassy top, origin at its bottom tip. */
 export function IsletBlockout() {
   return (
     <group>
-      <mesh position={[0, -1.1, 0]} rotation={[Math.PI, 0, 0]} material={mat.rock}>
-        <coneGeometry args={[1.4, 2.2, 7]} />
+      <mesh position={[0, 1.6, 0]} rotation={[Math.PI, 0, 0]} material={mat.rock}>
+        <coneGeometry args={[2, 3.2, 7]} />
       </mesh>
-      <mesh position={[0, 0.02, 0]} material={mat.grass}>
-        <cylinderGeometry args={[1.45, 1.4, 0.08, 14]} />
+      <mesh position={[0, 3.24, 0]} material={mat.grass}>
+        <cylinderGeometry args={[2.05, 2, 0.08, 14]} />
       </mesh>
     </group>
   );
