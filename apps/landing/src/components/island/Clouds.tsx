@@ -37,6 +37,8 @@ const SEA_TOP = -7.4;
 /** The sheets fade out before the camera's far plane (220). */
 const SHEET_SIZE = 420;
 const FADE = { near: 70, far: 195 };
+/** Billows keep their shape further out than the sheets, so the far sea stays sculpted. */
+const BILLOW_FADE = { near: 105, far: 215 };
 
 export const CLOUD_LIT = new Color('#e98fd0');
 export const CLOUD_SHADE = new Color('#2a1d48');
@@ -197,7 +199,7 @@ function billowMaterial(opacity: number) {
       opacity: { value: opacity },
       moon: { value: MOON_DIRECTION },
       haze: { value: HAZE },
-      fade: { value: [FADE.near, FADE.far] },
+      fade: { value: [BILLOW_FADE.near, BILLOW_FADE.far] },
       seaTop: { value: SEA_TOP },
     },
     vertexShader: /* glsl */ `
@@ -258,10 +260,10 @@ function billowMaterial(opacity: number) {
         float rimLight = pow(1.0 - n.z, 2.2) * facing * facing;
         color += rim * rimLight * (0.45 + 0.75 * vMoonward);
         color += rim * pow(diffuse, 6.0) * 0.18;
-        color = mix(color, haze, vFar * 0.8);
+        color = mix(color, haze, vFar * 0.55);
         // Feet sink into the sea; soft only right at the outline.
         float foot = smoothstep(seaTop - 0.6, seaTop + 1.4, vWorldY);
-        float a = smoothstep(1.0, 0.9, r) * foot * opacity * (1.0 - vFar * 0.5);
+        float a = smoothstep(1.0, 0.9, r) * foot * opacity * (1.0 - vFar * 0.3);
         gl_FragColor = vec4(color, a);
       }
     `,
@@ -369,6 +371,36 @@ function seaPuffs(): PuffSet['puffs'] {
   return out;
 }
 
+/**
+ * A bank of big, low heaps out toward the horizon, so the far sea keeps rows
+ * of billows instead of fading into flat haze at the pullback.
+ */
+function horizonPuffs(): PuffSet['puffs'] {
+  const rand = seeded(57);
+  const out: [number, number, number, number][] = [];
+  for (let i = 0; i < 30; i++) {
+    const angle = (i / 30) * Math.PI * 2 + rand() * 0.18;
+    const radius = 100 + rand() * 70;
+    const heap = (9 + rand() * 7) * (radius / 60);
+    const cx = Math.cos(angle) * radius;
+    const cz = Math.sin(angle) * radius;
+    const lobes = 5 + Math.floor(rand() * 3);
+    for (let k = 0; k < lobes; k++) {
+      const a = rand() * Math.PI * 2;
+      const d = Math.sqrt(rand()) * heap * 0.8;
+      const rise = 1 - d / heap;
+      const size = heap * (0.36 + rand() * 0.26) * (0.7 + rise * 0.3);
+      out.push([
+        cx + Math.cos(a) * d,
+        SEA_TOP + rise * heap * 0.16 + size * 0.04,
+        cz + Math.sin(a) * d,
+        size,
+      ]);
+    }
+  }
+  return out;
+}
+
 /** Billows round each far spire's waist, where the sheets cut through it. */
 function spirePuffs(): PuffSet['puffs'] {
   const rand = seeded(31);
@@ -390,7 +422,7 @@ function spirePuffs(): PuffSet['puffs'] {
 }
 
 const RING = [...ringPuffs(), ...spirePuffs()];
-const SEA = seaPuffs();
+const SEA = [...seaPuffs(), ...horizonPuffs()];
 
 export function Clouds() {
   const materials = useMemo(
