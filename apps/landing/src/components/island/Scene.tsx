@@ -26,7 +26,7 @@ import {
 } from './blockouts';
 import { Clouds } from './Clouds';
 import { castsShadow, ContactShadow, receivesShadow } from './ContactShadow';
-import type { ModelId } from './manifest';
+import { CHARACTER_CLIPS, type ModelId } from './manifest';
 import { Model, type OnModel } from './Model';
 import { motion } from './motion';
 import { Petals } from './Petals';
@@ -36,7 +36,7 @@ import { screenMaterial } from './screen';
 import { ShopBoard } from './ShopBoard';
 import { MOON_AT, Sky } from './Sky';
 import { ISLAND_STOPS, type Vec3 } from './stops';
-import { useCharacterClips } from './useCharacterClips';
+import { CLIP_FADE, useCharacterClips } from './useCharacterClips';
 import { Waterfalls } from './Waterfalls';
 
 // The island layout comes from the Blender export (placements.ts): metres,
@@ -53,6 +53,8 @@ const moonIndex = ISLAND_STOPS.findIndex(stop => stop.id === 'moon');
 const MOON_STOP = moonIndex === -1 ? ISLAND_STOPS.length - 1 : moonIndex;
 /** Stops before the moon stop at which she starts waving. */
 const WAVE_LEAD = 0.5;
+/** Seconds of hugging between two waves while the moon stop stays on screen. */
+const WAVE_REST = 6;
 
 /** The islets bob this far (metres) up and down, at this many radians per second. */
 const BOB_AMPLITUDE = 0.25;
@@ -202,11 +204,11 @@ function Lights() {
           position={at}
         />
       ))}
-      {/* The vending machine's pink glow on her side of the bench. */}
+      {/* The vending machine's pink glow on her side of the bench, kept low so the timber stays warm. */}
       <pointLight
         color="#ff78c0"
-        intensity={2}
-        distance={2.6}
+        intensity={1.3}
+        distance={2.4}
         decay={1.6}
         position={BAKE_LIGHTS.vending}
       />
@@ -214,14 +216,30 @@ function Lights() {
   );
 }
 
-/** Shiro-chan on the bench: seated idle all along, a wave at the moon stop. */
+/**
+ * Shiro-chan on the bench: seated idle all along. At the moon stop she waves
+ * (a few calm waves, then back to the hug), and again after a rest while the
+ * stop stays on screen.
+ */
 function Character() {
-  const onClips = useCharacterClips(() =>
-    island.p > MOON_STOP - WAVE_LEAD ? 'wave' : 'seatedIdle'
-  );
+  const wave = useRef({ start: -Infinity, length: 0 });
+  const onClips = useCharacterClips(() => {
+    const w = wave.current;
+    if (island.p <= MOON_STOP - WAVE_LEAD || !w.length) {
+      w.start = -Infinity;
+      return 'seatedIdle';
+    }
+    const since = island.t - w.start;
+    if (since > w.length + WAVE_REST) {
+      w.start = island.t;
+      return 'wave';
+    }
+    return since < w.length - CLIP_FADE ? 'wave' : 'seatedIdle';
+  });
   const onModel = useCallback<OnModel>(
     (model, actions) => {
       castsShadow(model);
+      wave.current.length = actions[CHARACTER_CLIPS.wave]?.getClip().duration ?? 0;
       onClips(model, actions);
     },
     [onClips]
