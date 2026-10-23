@@ -1,8 +1,7 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import Ticker from '../../components/Ticker.astro';
 import Navbar from '../../components/Navbar.astro';
-import Hero from '../../components/Hero.astro';
+import Island from '../../components/island/Island.astro';
 import Demo from '../../components/Demo.astro';
 import Chapter from '../../components/Chapter.astro';
 import Features from '../../components/Features.astro';
@@ -24,10 +23,9 @@ const shots = await anatomyShots();
   descriptionKey="meta.home.description"
   lang={lang}
 >
-  <Ticker />
   <Navbar lang={lang} />
   <main id="main">
-    <Hero lang={lang} />
+    <Island lang={lang} />
     <Demo lang={lang} />
 
     <Chapter

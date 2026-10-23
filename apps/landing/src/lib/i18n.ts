@@ -373,9 +373,6 @@ export const translations: Record<SupportedLanguage, Record<string, string>> = {
     'changelog.end.quote': '„A co, gdyby śledzenie anime było wygodne?"',
 
     // Island (3D preview page)
-    'meta.island.title': '白アニ · ShiroAni · wyspa pod księżycem',
-    'meta.island.description':
-      'Przytulny kąt na wszystko, co anime: przeglądarka bez reklam, biblioteka, harmonogram emisji i pamiętnik w jednej darmowej aplikacji.',
     'island.dots': 'Przystanki na wyspie',
     'island.porch.label': 'Ganek',
     'island.porch.title': 'Twój przytulny kąt na wszystko, co anime.',
@@ -757,9 +754,6 @@ export const translations: Record<SupportedLanguage, Record<string, string>> = {
     'changelog.end.quote': '"What if tracking anime were comfortable?"',
 
     // Island (3D preview page)
-    'meta.island.title': '白アニ · ShiroAni · an island under the moon',
-    'meta.island.description':
-      'Your cozy corner for all things anime: an ad-free browser, library, airing schedule and diary in one free desktop app.',
     'island.dots': 'Stops on the island',
     'island.porch.label': 'Porch',
     'island.porch.title': 'Your cozy corner for all things anime.',
