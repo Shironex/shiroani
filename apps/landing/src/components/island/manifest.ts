@@ -44,12 +44,35 @@ export function isModelId(name: string): name is ModelId {
 }
 
 /**
- * The character's animation clips, by role. [PLACEHOLDER CLIP NAMES] Set each
- * value to the clip name baked into character.glb once it exists.
+ * Every clip baked into character.glb: the Mixamo clips retargeted to her rig,
+ * and sitting_wave, the wave's right arm over her seated pose (`waving` itself
+ * stands her up).
  */
+export const CHARACTER_CLIP_NAMES = [
+  'sitting_idle_hug',
+  'sitting_idle',
+  'sitting',
+  'sitting_2',
+  'sitting_hug',
+  'hug_boxes',
+  'sitting_clap',
+  'sitting_clap_2',
+  'sitting_laughing',
+  'sitting_thumbs_up',
+  'sit_to_stand',
+  'happy_idle',
+  'waving',
+  'sitting_wave',
+] as const;
+
+export type CharacterClip = (typeof CHARACTER_CLIP_NAMES)[number];
+
+/** The clip that plays in each role. */
 export const CHARACTER_CLIPS = {
-  seatedIdle: 'seated_idle',
-  wave: 'wave',
-} as const;
+  /** Seated on the porch bench, hugging the box sets: the loop at every stop. */
+  seatedIdle: 'sitting_idle_hug',
+  /** Waving from the bench at the moon stop. */
+  wave: 'sitting_wave',
+} as const satisfies Record<string, CharacterClip>;
 
 export type ClipRole = keyof typeof CHARACTER_CLIPS;
