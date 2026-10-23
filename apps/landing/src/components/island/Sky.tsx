@@ -1,19 +1,31 @@
 import { Billboard, Stars } from '@react-three/drei';
-import { AdditiveBlending, BackSide, Color, ShaderMaterial, Vector3 } from 'three';
+import { useFrame } from '@react-three/fiber';
+import { useRef } from 'react';
+import {
+  AdditiveBlending,
+  BackSide,
+  Color,
+  MathUtils,
+  ShaderMaterial,
+  Vector3,
+  type Group,
+} from 'three';
 import { motion } from './motion';
 import { noiseTexture } from './noise';
-import type { Vec3 } from './stops';
+import { CAMERA_FOLLOW_RATE, island, segment } from './progress';
+import { ISLAND_STOPS, type Vec3 } from './stops';
 
 // The night sky: a gradient dome that warms toward the moon, the big pink
 // moon with its painted surface and soft halo, and the stars. All of it is
 // drawn in code, nothing to download.
 
 /**
- * Where the moon hangs: low in the west over the clouds, past the porch's
- * end, so the moon stop sees it beside Shiro-chan (concept 6b) while the shop
- * hides it at the porch stop, behind the copy. The moonlight comes from there.
+ * Where the moonlight comes from: the moon's place at the first stop, low in
+ * the west over the clouds past the porch's end. The moon itself moves with
+ * the stops (stops.ts, `moon`), behind the torii at the pullback and the
+ * schedule stop, but the live light stays put so the lit props never shift.
  */
-export const MOON_AT: Vec3 = [-77.5, 32.5, -25.2];
+export const MOON_AT: Vec3 = ISLAND_STOPS[0].moon.at;
 /** Large in the sky, like the concepts: about 14 degrees across from the island. */
 const MOON_RADIUS = 11;
 /** The halo's quad, as a multiple of the moon's radius. */
@@ -21,7 +33,12 @@ const HALO_SCALE = 5.2;
 /** The dome sits inside the camera's far plane (220). */
 const DOME_RADIUS = 200;
 
+/** Toward the moon as drawn this frame: the sky's glow and the clouds' rims follow it. */
 export const MOON_DIRECTION = new Vector3(...MOON_AT).normalize();
+
+const moonFrom = new Vector3();
+const moonTo = new Vector3();
+const moonGoal = new Vector3();
 
 const domeMaterial = new ShaderMaterial({
   uniforms: {
@@ -146,14 +163,47 @@ export function Sky() {
         fade
         speed={motion.reduced ? 0 : 0.4}
       />
-      <Billboard position={MOON_AT}>
+      <Moon />
+    </>
+  );
+}
+
+/**
+ * The moon and its halo, gliding between the stops' places: along the sky
+ * (the direction turns, the distance and size blend) and eased like the
+ * camera, so it moves while the view turns rather than on its own.
+ */
+function Moon() {
+  const ref = useRef<Group>(null);
+  const started = useRef(false);
+  useFrame((_, delta) => {
+    const moon = ref.current;
+    if (!moon) return;
+    const { i, blend } = segment(island.p, ISLAND_STOPS.length);
+    const from = ISLAND_STOPS[i].moon;
+    const to = ISLAND_STOPS[i + 1].moon;
+    moonFrom.fromArray(from.at);
+    moonTo.fromArray(to.at);
+    const distance = MathUtils.lerp(moonFrom.length(), moonTo.length(), blend);
+    moonGoal.lerpVectors(moonFrom.normalize(), moonTo.normalize(), blend).setLength(distance);
+    const scale = MathUtils.lerp(from.scale, to.scale, blend);
+    const follow =
+      started.current && !motion.reduced ? 1 - Math.exp(-delta * CAMERA_FOLLOW_RATE) : 1;
+    started.current = true;
+    moon.position.lerp(moonGoal, follow);
+    moon.scale.setScalar(MathUtils.lerp(moon.scale.x, scale, follow));
+    MOON_DIRECTION.copy(moon.position).normalize();
+  });
+  return (
+    <group ref={ref} position={MOON_AT}>
+      <Billboard>
         <mesh material={haloMaterial} renderOrder={1}>
           <planeGeometry args={[MOON_RADIUS * HALO_SCALE * 2, MOON_RADIUS * HALO_SCALE * 2]} />
         </mesh>
       </Billboard>
-      <mesh position={MOON_AT} rotation={[0.3, 2.1, 0]} material={moonMaterial}>
+      <mesh rotation={[0.3, 2.1, 0]} material={moonMaterial}>
         <sphereGeometry args={[MOON_RADIUS, 48, 32]} />
       </mesh>
-    </>
+    </group>
   );
 }

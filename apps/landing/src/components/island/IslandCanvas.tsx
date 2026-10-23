@@ -14,7 +14,7 @@ import { Effects } from './Effects';
 import type { ModelId } from './manifest';
 import { ModelsContext, provideRenderer, settledModels } from './Model';
 import { motion } from './motion';
-import { island } from './progress';
+import { CAMERA_FOLLOW_RATE, island, segment } from './progress';
 import { IslandScene } from './Scene';
 import { connectIslandScroll, readIslandScroll } from './scroll';
 import { ISLAND_STOPS } from './stops';
@@ -124,13 +124,10 @@ const up = new Vector3();
 const pointer = { x: 0, y: 0, sx: 0, sy: 0 };
 /** How far the pointer swings the camera around its target, in radians. */
 const PARALLAX = { yaw: 0.04, pitch: 0.025 };
-/** Each stop holds the camera still while its section is in this window, blending outside it. */
-const HOLD = { from: 0.25, to: 0.75 };
 /** The idle sway of the target: radians per second, and its size as a share of the camera distance. */
 const DRIFT = { speed: 0.25, amount: 0.03 };
-/** Easing rates per second: the pointer follower, and the camera chasing the scroll. */
+/** Easing rate per second of the pointer follower. */
 const POINTER_EASE_RATE = 2.5;
-const CAMERA_FOLLOW_RATE = 5;
 
 /** Reads the scroll position each frame and eases the camera toward it. */
 function CameraRig() {
@@ -156,8 +153,7 @@ function CameraRig() {
     if (!reducedMotion) island.flow += delta;
 
     // Hold on each stop for the middle half of its section, blend between.
-    const i = Math.min(Math.floor(island.p), ISLAND_STOPS.length - 2);
-    const blend = MathUtils.smoothstep(island.p - i, HOLD.from, HOLD.to);
+    const { i, blend } = segment(island.p, ISLAND_STOPS.length);
     const from = ISLAND_STOPS[i].camera;
     const to = ISLAND_STOPS[i + 1].camera;
 
