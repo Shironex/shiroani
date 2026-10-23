@@ -7,6 +7,7 @@ import {
   InstancedBufferGeometry,
   PlaneGeometry,
   ShaderMaterial,
+  Vector3,
 } from 'three';
 import { noiseTexture } from './noise';
 import { PLACEMENTS } from './placements';
@@ -15,26 +16,39 @@ import { MOON_DIRECTION } from './Sky';
 
 // The cloud sea under the island: a few stacked sheets of drifting noise, lit
 // pink on the side the moon is on and violet away from it, fading into the
-// haze toward the horizon. Soft puffs heap up across the sea and gather round
-// the rock and the far spires where the sheets meet them, so no hard line
-// shows. One shader per kind, nothing downloaded.
+// haze toward the horizon. The top sheet is shaded from its own relief, so the
+// sea reads as a surface. Billows heap up out of it across the sea and gather
+// round the rock and the far spires where the sheets meet them: round sprites
+// shaded like lumpy spheres, with a moonlit pink rim and violet undersides,
+// sinking into the sea at their feet. One shader per kind, nothing downloaded.
 
-/** The sheets, top first: height, how much of the sheet is cloud (0 to 1), and opacity. */
+/**
+ * The sheets, top first: height, how much of the sheet is cloud (0 to 1),
+ * opacity, noise scale and how strongly its relief catches the moon.
+ */
 const SHEETS = [
-  { y: -6.8, cover: 0.3, opacity: 0.55, scale: 0.026 },
-  { y: -8, cover: 0.45, opacity: 0.7, scale: 0.019 },
-  { y: -9.6, cover: 0.62, opacity: 0.9, scale: 0.014 },
-  { y: -12.5, cover: 1, opacity: 1, scale: 0.01 },
+  { y: -6.8, cover: 0.34, opacity: 0.7, scale: 0.026, relief: 1 },
+  { y: -8, cover: 0.5, opacity: 0.85, scale: 0.019, relief: 0.7 },
+  { y: -9.6, cover: 0.66, opacity: 0.95, scale: 0.014, relief: 0.4 },
+  { y: -12.5, cover: 1, opacity: 1, scale: 0.01, relief: 0 },
 ] as const;
+/** Where the billows' feet sink into the sea. */
+const SEA_TOP = -7.4;
 /** The sheets fade out before the camera's far plane (220). */
 const SHEET_SIZE = 420;
 const FADE = { near: 70, far: 195 };
 
 export const CLOUD_LIT = new Color('#e98fd0');
 export const CLOUD_SHADE = new Color('#2a1d48');
+/** The billows: the violet body, the moonlit pink rim and the shade underneath. */
+const BILLOW = {
+  body: new Color('#7c5fae'),
+  rim: new Color('#ffb6e6'),
+  shade: new Color('#2e2152'),
+};
 const HAZE = new Color('#2b1a45');
 
-const sheetMaterial = (cover: number, opacity: number, scale: number) =>
+const sheetMaterial = (cover: number, opacity: number, scale: number, relief: number) =>
   new ShaderMaterial({
     uniforms: {
       noise: { value: noiseTexture() },
@@ -42,6 +56,7 @@ const sheetMaterial = (cover: number, opacity: number, scale: number) =>
       cover: { value: cover },
       opacity: { value: opacity },
       scale: { value: scale },
+      relief: { value: relief },
       lit: { value: CLOUD_LIT },
       shade: { value: CLOUD_SHADE },
       haze: { value: HAZE },
@@ -62,22 +77,30 @@ const sheetMaterial = (cover: number, opacity: number, scale: number) =>
       uniform float cover;
       uniform float opacity;
       uniform float scale;
+      uniform float relief;
       uniform vec3 lit;
       uniform vec3 shade;
       uniform vec3 haze;
       uniform vec3 moon;
       uniform vec2 fade;
       varying vec3 vWorld;
-      void main() {
-        vec2 p = vWorld.xz * scale;
+      float density(vec2 p) {
         float a = texture2D(noise, p + vec2(time * 0.004, time * 0.0015)).r;
         float b = texture2D(noise, p * 2.7 - vec2(time * 0.006, -time * 0.002) + 0.37).r;
-        float density = a * 0.62 + b * 0.38;
-        float alpha = smoothstep(1.0 - cover - 0.06, 1.0 - cover + 0.12, density);
+        return a * 0.62 + b * 0.38;
+      }
+      void main() {
+        vec2 p = vWorld.xz * scale;
+        float d = density(p);
+        float alpha = smoothstep(1.0 - cover - 0.06, 1.0 - cover + 0.12, d);
         // Lit toward the moon, and brighter where the cloud is thick.
         vec3 toward = normalize(vec3(vWorld.x, 0.0, vWorld.z) + 1e-4);
-        float moonward = dot(toward, normalize(vec3(moon.x, 0.0, moon.z))) * 0.5 + 0.5;
-        float light = clamp((density - (1.0 - cover)) * 2.4 + 0.15, 0.0, 1.0) * (0.35 + 0.65 * moonward);
+        vec2 moonFlat = normalize(vec2(moon.x, moon.z) + 1e-4);
+        float moonward = dot(toward, vec3(moonFlat.x, 0.0, moonFlat.y)) * 0.5 + 0.5;
+        // The relief: the side of each swell that faces the moon catches it.
+        float slope = (d - density(p + moonFlat * 0.035)) * 9.0;
+        float light = clamp((d - (1.0 - cover)) * 2.4 + 0.15 + slope * relief, 0.0, 1.0);
+        light *= 0.35 + 0.65 * moonward;
         // The island's lanterns warm the cloud right under it.
         float near = exp(-length(vWorld.xz) / 14.0);
         vec3 color = mix(shade, lit, light) + lit * near * 0.25;
@@ -101,6 +124,8 @@ export interface PuffSet {
   shade: Color;
   /** Peak opacity at the middle of a puff. */
   opacity: number;
+  /** Sculpted billows (a lumpy sphere with a moonlit rim, sorted far to near) instead of soft mist. */
+  billow?: boolean;
 }
 
 function puffMaterial(lit: Color, shade: Color, opacity: number) {
@@ -161,6 +186,92 @@ function puffMaterial(lit: Color, shade: Color, opacity: number) {
   });
 }
 
+function billowMaterial(opacity: number) {
+  return new ShaderMaterial({
+    uniforms: {
+      noise: { value: noiseTexture() },
+      time: { value: 0 },
+      body: { value: BILLOW.body },
+      rim: { value: BILLOW.rim },
+      shade: { value: BILLOW.shade },
+      opacity: { value: opacity },
+      moon: { value: MOON_DIRECTION },
+      haze: { value: HAZE },
+      fade: { value: [FADE.near, FADE.far] },
+      seaTop: { value: SEA_TOP },
+    },
+    vertexShader: /* glsl */ `
+      uniform vec3 moon;
+      uniform vec2 fade;
+      attribute vec4 puff;
+      varying vec2 vUv;
+      varying float vSeed;
+      varying float vMoonward;
+      varying float vFar;
+      varying vec3 vMoonView;
+      varying float vWorldY;
+      void main() {
+        vUv = uv;
+        vSeed = fract(puff.x * 0.137 + puff.z * 0.071);
+        vec2 flat_ = normalize(puff.xz + 1e-4);
+        vMoonward = dot(flat_, normalize(moon.xz)) * 0.5 + 0.5;
+        vFar = smoothstep(fade.x, fade.y, distance(puff.xyz, cameraPosition));
+        vMoonView = normalize(mat3(viewMatrix) * moon);
+        vec4 view = viewMatrix * vec4(puff.xyz, 1.0);
+        view.xy += position.xy * puff.w;
+        vWorldY = puff.y + position.y * puff.w;
+        gl_Position = projectionMatrix * view;
+      }
+    `,
+    fragmentShader: /* glsl */ `
+      uniform sampler2D noise;
+      uniform float time;
+      uniform vec3 body;
+      uniform vec3 rim;
+      uniform vec3 shade;
+      uniform vec3 haze;
+      uniform float opacity;
+      uniform float seaTop;
+      varying vec2 vUv;
+      varying float vSeed;
+      varying float vMoonward;
+      varying float vFar;
+      varying vec3 vMoonView;
+      varying float vWorldY;
+      void main() {
+        vec2 c = (vUv - 0.5) * 2.0;
+        vec2 drift = vec2(time * 0.004, 0.0);
+        float n1 = texture2D(noise, vUv * 0.7 + vSeed + drift).r;
+        float n2 = texture2D(noise, vUv * 1.9 + vSeed * 1.7 - drift).r;
+        // A lumpy outline: cauliflower lobes round the edge.
+        float edge = 0.86 + (n1 - 0.5) * 0.32 + (n2 - 0.5) * 0.18;
+        float r = length(c) / edge;
+        if (r > 1.0) discard;
+        vec3 n = vec3(c / edge, sqrt(max(1.0 - r * r, 0.0)));
+        n = normalize(n + vec3(n2 - 0.5, n1 - 0.5, 0.0) * 0.7);
+        vec3 l = normalize(vMoonView);
+        float diffuse = clamp(dot(n, l) * 0.55 + 0.45, 0.0, 1.0);
+        float top = clamp(n.y * 0.6 + 0.4, 0.0, 1.0);
+        vec3 color = mix(shade, body, top * 0.55 + diffuse * 0.45);
+        // The moonlit rim, on the edge that faces the moon.
+        float facing = clamp(dot(normalize(n.xy + 1e-4), normalize(l.xy + 1e-4)) * 0.5 + 0.5, 0.0, 1.0);
+        float rimLight = pow(1.0 - n.z, 2.2) * facing * facing;
+        color += rim * rimLight * (0.45 + 0.75 * vMoonward);
+        color += rim * pow(diffuse, 6.0) * 0.18;
+        color = mix(color, haze, vFar * 0.8);
+        // Feet sink into the sea; soft only right at the outline.
+        float foot = smoothstep(seaTop - 0.6, seaTop + 1.4, vWorldY);
+        float a = smoothstep(1.0, 0.9, r) * foot * opacity * (1.0 - vFar * 0.5);
+        gl_FragColor = vec4(color, a);
+      }
+    `,
+    transparent: true,
+    depthWrite: false,
+  });
+}
+
+const sortScratch = new Vector3();
+
 /** A quad of `width` by `height` as instanced geometry, to draw `count` copies at once. */
 export function instancedQuad(width: number, height: number, count: number) {
   const quad = new PlaneGeometry(width, height);
@@ -172,15 +283,30 @@ export function instancedQuad(width: number, height: number, count: number) {
   return g;
 }
 
-export function Puffs({ puffs, lit, shade, opacity }: PuffSet) {
+export function Puffs({ puffs, lit, shade, opacity, billow = false }: PuffSet) {
   const geometry = useMemo(() => {
     const g = instancedQuad(1, 1, puffs.length);
     g.setAttribute('puff', new InstancedBufferAttribute(new Float32Array(puffs.flat()), 4));
     return g;
   }, [puffs]);
-  const material = useMemo(() => puffMaterial(lit, shade, opacity), [lit, shade, opacity]);
-  useFrame(() => {
+  const material = useMemo(
+    () => (billow ? billowMaterial(opacity) : puffMaterial(lit, shade, opacity)),
+    [billow, lit, shade, opacity]
+  );
+  const order = useMemo(() => puffs.map((_, i) => i), [puffs]);
+  useFrame(({ camera }) => {
     material.uniforms.time.value = island.flow;
+    if (!billow) return;
+    // Billows are near opaque: draw them far to near so the nearer ones cover.
+    const depth = (i: number) => {
+      const [x, y, z] = puffs[i];
+      return sortScratch.set(x, y, z).distanceToSquared(camera.position);
+    };
+    order.sort((a, b) => depth(b) - depth(a));
+    const attribute = geometry.getAttribute('puff') as InstancedBufferAttribute;
+    const array = attribute.array as Float32Array;
+    order.forEach((from, to) => array.set(puffs[from], to * 4));
+    attribute.needsUpdate = true;
   });
   return <mesh geometry={geometry} material={material} frustumCulled={false} />;
 }
@@ -194,44 +320,56 @@ export function seeded(seed: number) {
   };
 }
 
-/** Puffs ringed round the rock where the top sheets cut through it. */
+/** Billows ringed round the rock where the top sheets cut through it. */
 function ringPuffs(): PuffSet['puffs'] {
   const rand = seeded(7);
   const out: [number, number, number, number][] = [];
-  for (let i = 0; i < 30; i++) {
-    const angle = (i / 30) * Math.PI * 2 + rand() * 0.3;
-    const radius = 5.5 + rand() * 5;
+  for (let i = 0; i < 34; i++) {
+    const angle = (i / 34) * Math.PI * 2 + rand() * 0.3;
+    const radius = 6 + rand() * 5;
+    const size = 3.2 + rand() * 3.4;
     out.push([
       Math.cos(angle) * radius,
-      -6.8 - rand() * 3,
+      SEA_TOP + size * 0.18 - rand() * 1.2,
       Math.sin(angle) * radius,
-      4.5 + rand() * 4.5,
+      size,
     ]);
   }
   return out;
 }
 
 /**
- * Big puffs across the whole sea, larger with distance, so the sheets read as
- * heaped cloud rather than a flat layer at a grazing view.
+ * Heaps of billows across the whole sea, larger with distance: a few lobes
+ * each, the middle ones tallest, so the tops read as sculpted cloud rising out
+ * of the sea rather than a flat layer at a grazing view.
  */
 function seaPuffs(): PuffSet['puffs'] {
   const rand = seeded(23);
   const out: [number, number, number, number][] = [];
-  for (let i = 0; i < 110; i++) {
+  for (let i = 0; i < 40; i++) {
     const angle = rand() * Math.PI * 2;
-    const radius = 14 + Math.pow(rand(), 0.8) * 140;
-    out.push([
-      Math.cos(angle) * radius,
-      -7.4 - rand() * 2.4,
-      Math.sin(angle) * radius,
-      (8 + rand() * 10) * (0.6 + radius / 60),
-    ]);
+    const radius = 16 + Math.pow(rand(), 0.8) * 140;
+    const heap = (5 + rand() * 6) * (0.6 + radius / 60);
+    const cx = Math.cos(angle) * radius;
+    const cz = Math.sin(angle) * radius;
+    const lobes = 4 + Math.floor(rand() * 3);
+    for (let k = 0; k < lobes; k++) {
+      const a = rand() * Math.PI * 2;
+      const d = Math.sqrt(rand()) * heap * 0.75;
+      const rise = 1 - d / heap;
+      const size = heap * (0.42 + rand() * 0.3) * (0.7 + rise * 0.3);
+      out.push([
+        cx + Math.cos(a) * d,
+        SEA_TOP + rise * heap * 0.22 + size * 0.05,
+        cz + Math.sin(a) * d,
+        size,
+      ]);
+    }
   }
   return out;
 }
 
-/** Puffs round each far spire's waist, where the sheets cut through it. */
+/** Billows round each far spire's waist, where the sheets cut through it. */
 function spirePuffs(): PuffSet['puffs'] {
   const rand = seeded(31);
   const out: [number, number, number, number][] = [];
@@ -242,9 +380,9 @@ function spirePuffs(): PuffSet['puffs'] {
       const reach = 2.5 * scale[0];
       out.push([
         x + Math.cos(angle) * reach,
-        -6.6 - rand() * 2.2,
+        SEA_TOP + 0.6 - rand() * 1.4,
         z + Math.sin(angle) * reach,
-        (9 + rand() * 6) * scale[0],
+        (6 + rand() * 4) * scale[0],
       ]);
     }
   }
@@ -256,7 +394,7 @@ const SEA = seaPuffs();
 
 export function Clouds() {
   const materials = useMemo(
-    () => SHEETS.map(sheet => sheetMaterial(sheet.cover, sheet.opacity, sheet.scale)),
+    () => SHEETS.map(sheet => sheetMaterial(sheet.cover, sheet.opacity, sheet.scale, sheet.relief)),
     []
   );
   useFrame(() => {
@@ -275,8 +413,8 @@ export function Clouds() {
           <planeGeometry args={[SHEET_SIZE, SHEET_SIZE]} />
         </mesh>
       ))}
-      <Puffs puffs={SEA} lit={CLOUD_LIT} shade={CLOUD_SHADE} opacity={0.5} />
-      <Puffs puffs={RING} lit={CLOUD_LIT} shade={CLOUD_SHADE} opacity={0.45} />
+      <Puffs puffs={SEA} lit={CLOUD_LIT} shade={CLOUD_SHADE} opacity={0.95} billow />
+      <Puffs puffs={RING} lit={CLOUD_LIT} shade={CLOUD_SHADE} opacity={0.9} billow />
     </>
   );
 }
