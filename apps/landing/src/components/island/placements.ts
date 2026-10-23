@@ -83,7 +83,7 @@ export const PLACEMENTS = {
     { position: [1.25, -0.4293, 5.35], rotation: [0, -0.4363, 0], scale: [0.9, 0.9, 0.9] },
     { position: [3.05, -0.2023, 5.75], rotation: [0, 1.0472, 0], scale: [1.15, 1.15, 1.15] },
     { position: [5.25, 0.0734, 4.05], rotation: [0, 2.2689, 0], scale: [0.85, 0.85, 0.85] },
-    { position: [-5, 0.8434, 3.65], rotation: [0, -2.7925, 0], scale: [1.05, 1.05, 1.05] },
+    { position: [-3.95, 0.2245, 2.55], rotation: [0, -2.7925, 0], scale: [0.9, 0.9, 0.9] },
     { position: [-7.35, 0.7331, 1.3], rotation: [0, 1.6581, 0], scale: [1.25, 1.25, 1.25] },
     { position: [-6.9, 2.7613, -2.3], rotation: [0, -1.0472, 0], scale: [1.1, 1.1, 1.1] },
     { position: [7.55, -0.6769, -0.2], rotation: [0, 2.9671, 0], scale: [1, 1, 1] },
@@ -100,7 +100,7 @@ export const PLACEMENTS = {
     { position: [15, -22.5, -95], rotation: [0, 0.5236, 0], scale: [1.4, 1.4, 1.4] },
   ],
   character: [
-    { position: [0.1861, 0.8232, 2.9745], rotation: [0, 0.6632, 0], scale: [1.45, 1.45, 1.45] },
+    { position: [0.2223, 0.8232, 3.1097], rotation: [0, 0.6632, 0], scale: [1.45, 1.45, 1.45] },
   ],
   waterfall: [
     { position: [-3.85, 0.207, 4.65], rotation: [0, 0, 0], scale: [0.65, 8, 1] },
