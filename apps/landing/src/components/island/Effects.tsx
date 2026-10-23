@@ -7,10 +7,10 @@ import { BlendFunction, ToneMappingMode } from 'postprocessing';
  * (the composer takes it over from the renderer), a soft vignette and a little
  * moving grain under the page's own static grain.
  */
-export function Effects() {
+export function Effects({ multisampling }: { multisampling: number }) {
   return (
     // Multisampled here, so the canvas itself runs without antialiasing.
-    <EffectComposer multisampling={4}>
+    <EffectComposer multisampling={multisampling}>
       {/* Only HDR values bloom: emissive parts are pushed past 1, the rest stays under. */}
       <Bloom
         mipmapBlur

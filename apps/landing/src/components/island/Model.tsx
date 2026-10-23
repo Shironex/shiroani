@@ -1,5 +1,5 @@
 import { useAnimations, useGLTF } from '@react-three/drei';
-import { useThree, type ThreeElements } from '@react-three/fiber';
+import type { ThreeElements } from '@react-three/fiber';
 import {
   Component,
   createContext,
@@ -70,11 +70,46 @@ export function Model({ id, children, onModel, ...group }: ModelProps) {
 
 let ktx2: KTX2Loader | null = null;
 
-function ktx2Loader(gl: WebGLRenderer): KTX2Loader {
-  // three resolves its own basis transcoder next to the loader (hashed into
-  // /_astro by the build), so it always matches this three version.
-  ktx2 ??= new KTX2Loader().detectSupport(gl);
-  return ktx2;
+let setRenderer: (gl: WebGLRenderer) => void = () => {};
+const renderer = new Promise<WebGLRenderer>(resolve => (setRenderer = resolve));
+
+/** Hands the canvas's renderer to the KTX2 loader. Called once the canvas has one. */
+export function provideRenderer(gl: WebGLRenderer) {
+  setRenderer(gl);
+}
+
+/**
+ * KTX2 needs the renderer to pick a texture format, but the models start
+ * loading before the canvas exists. So a texture waits for the renderer here.
+ */
+class DeferredKTX2Loader extends KTX2Loader {
+  private detected = false;
+
+  load(...args: Parameters<KTX2Loader['load']>) {
+    void renderer.then(gl => {
+      if (!this.detected) {
+        this.detectSupport(gl);
+        this.detected = true;
+      }
+      super.load(...args);
+    });
+  }
+}
+
+// three resolves its own basis transcoder next to the loader (hashed into
+// /_astro by the build), so it always matches this three version.
+const ktx2Loader = () => (ktx2 ??= new DeferredKTX2Loader());
+
+// Meshopt and no Draco, so nothing is fetched from a decoder CDN. drei's
+// GLTFLoader comes from three-stdlib, typed against its own KTX2Loader;
+// three's own loader fits it at runtime.
+type GltfLoader = Parameters<NonNullable<Parameters<typeof useGLTF>[3]>>[0];
+const withKtx2 = (loader: GltfLoader) =>
+  loader.setKTX2Loader(ktx2Loader() as unknown as Parameters<GltfLoader['setKTX2Loader']>[0]);
+
+/** Starts fetching the models that have files, before the canvas mounts. */
+export function preloadModels(ids: readonly ModelId[]) {
+  for (const id of ids) useGLTF.preload(modelUrl(id), false, true, withKtx2);
 }
 
 function Glb({
@@ -86,13 +121,7 @@ function Glb({
   expected: ReadonlySet<ModelId>;
   onModel?: OnModel;
 }) {
-  const gl = useThree(state => state.gl);
-  // Meshopt and no Draco, so nothing is fetched from a decoder CDN. drei's
-  // GLTFLoader comes from three-stdlib, typed against its own KTX2Loader;
-  // three's own loader fits it at runtime.
-  const { scene, animations } = useGLTF(modelUrl(id), false, true, loader =>
-    loader.setKTX2Loader(ktx2Loader(gl) as unknown as Parameters<typeof loader.setKTX2Loader>[0])
-  );
+  const { scene, animations } = useGLTF(modelUrl(id), false, true, withKtx2);
   // SkeletonUtils rebinds a skinned mesh to the copy's own bones, so a model
   // can be placed more than once.
   const copy = useMemo(() => clone(scene), [scene]);

@@ -11,12 +11,14 @@ import {
 } from 'three';
 import { Effects } from './Effects';
 import type { ModelId } from './manifest';
-import { ModelsContext, settledModels } from './Model';
+import { ModelsContext, provideRenderer, settledModels } from './Model';
 import { motion } from './motion';
 import { island } from './progress';
 import { IslandScene } from './Scene';
 import { connectIslandScroll, readIslandScroll } from './scroll';
 import { ISLAND_STOPS } from './stops';
+
+export { preloadModels } from './Model';
 
 interface Props {
   models: readonly ModelId[];
@@ -36,14 +38,24 @@ const CAMERA = {
   far: 220,
 };
 
-/** Pixel ratio cap until the frame rate shows the GPU cannot keep up. */
-const MAX_DPR = 1.5;
+/**
+ * What the island renders at, best first. Each time the frame rate shows the
+ * GPU cannot keep up it takes the next step: the pixel ratio drops to 1, then
+ * the composer stops multisampling.
+ */
+const QUALITY_STEPS = [
+  { maxDpr: 1.5, multisampling: 4 },
+  { maxDpr: 1, multisampling: 4 },
+  { maxDpr: 1, multisampling: 0 },
+] as const;
+const LOWEST_QUALITY = QUALITY_STEPS.length - 1;
 const TONE_EXPOSURE = 1.2;
 
 export default function IslandCanvas({ models, onProgress, onReady }: Props) {
   const [visible, setVisible] = useState(true);
   const [ready, setReady] = useState(false);
-  const [maxDpr, setMaxDpr] = useState(MAX_DPR);
+  const [step, setStep] = useState(0);
+  const quality = QUALITY_STEPS[step];
   const available = useMemo(() => new Set(models), [models]);
 
   // Stop rendering once the island has scrolled out of view.
@@ -58,7 +70,7 @@ export default function IslandCanvas({ models, onProgress, onReady }: Props) {
   return (
     <Canvas
       style={CANVAS_STYLE}
-      dpr={[1, maxDpr]}
+      dpr={[1, quality.maxDpr]}
       frameloop={visible || !ready ? 'always' : 'never'}
       camera={CAMERA}
       // The effect composer multisamples (Effects.tsx), so the default
@@ -67,12 +79,13 @@ export default function IslandCanvas({ models, onProgress, onReady }: Props) {
       onCreated={({ gl }) => {
         gl.toneMapping = AgXToneMapping;
         gl.toneMappingExposure = TONE_EXPOSURE;
+        provideRenderer(gl);
       }}
     >
       <ModelsContext.Provider value={available}>
         <CameraRig />
         <IslandScene />
-        <Effects />
+        <Effects multisampling={quality.multisampling} />
         {!ready && (
           <LoadGate
             models={models}
@@ -84,9 +97,12 @@ export default function IslandCanvas({ models, onProgress, onReady }: Props) {
           />
         )}
         {/* Sampled only once the island is in (loading stalls every frame),
-            and one way: a slow GPU drops to 1x once and the monitor goes away,
-            so the resolution never flips back and forth. */}
-        {ready && maxDpr > 1 && <PerformanceMonitor onDecline={() => setMaxDpr(1)} />}
+            and one way: a slow GPU steps down and never back up, so the image
+            never flips back and forth. A fresh monitor judges each step, and
+            it goes away at the lowest one. */}
+        {ready && step < LOWEST_QUALITY && (
+          <PerformanceMonitor key={step} onDecline={() => setStep(step + 1)} />
+        )}
       </ModelsContext.Provider>
     </Canvas>
   );

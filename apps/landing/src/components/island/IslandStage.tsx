@@ -10,8 +10,17 @@ import {
 } from 'react';
 import type { ModelId } from './manifest';
 
-// three.js and R3F live behind this dynamic import, in their own chunk.
-const IslandCanvas = lazy(() => import('./IslandCanvas'));
+// three.js and R3F live behind this dynamic import, in their own chunk. It
+// starts as soon as this module runs on a page that will show the 3D island,
+// in parallel with hydration rather than after it.
+const loadCanvas = () => import('./IslandCanvas');
+const canvasChunk =
+  typeof document !== 'undefined' && document.querySelector('[data-island]:not([data-static])')
+    ? loadCanvas()
+    : null;
+// A failed chunk surfaces through the lazy component, not as an unhandled rejection.
+canvasChunk?.catch(() => {});
+const IslandCanvas = lazy(() => canvasChunk ?? loadCanvas());
 
 /** Past this the island gives up on 3D and shows the poster instead of a stuck loader. */
 const STATIC_FALLBACK_TIMEOUT_MS = 25_000;
@@ -34,8 +43,17 @@ export default function IslandStage({ models }: Props) {
   // it is read from the DOM once the island hydrates.
   useEffect(() => {
     const root = anchor.current?.closest('[data-island]');
-    setRun(!!root && !root.hasAttribute('data-static'));
-  }, []);
+    const show = !!root && !root.hasAttribute('data-static');
+    setRun(show);
+    // The models start downloading as soon as the chunk is in, before the
+    // canvas mounts. A failure here is left to the canvas to report.
+    if (show) {
+      (canvasChunk ?? loadCanvas()).then(
+        chunk => chunk.preloadModels(models),
+        () => {}
+      );
+    }
+  }, [models]);
 
   // A failed chunk, a scene error or a request that never settles: go static,
   // which brings back the poster the page skipped for the loader.
