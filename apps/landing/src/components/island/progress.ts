@@ -1,9 +1,12 @@
 /**
  * Shared per-frame state, written by the camera rig and read by the scene's
  * animations. `p` is the scroll position in stops: 0 at the porch, 1 at the
- * pullback, and so on up to the last stop (the moon). No three.js imports.
+ * pullback, and so on up to the last stop (the moon). `t` is the clock in
+ * seconds; `flow` is the clock that drives the ambient motion (water, clouds,
+ * petals, the signboard) and stands still under reduced motion. No three.js
+ * imports.
  */
-export const island = { p: 0, t: 0 };
+export const island = { p: 0, t: 0, flow: 0 };
 
 /** 1 while the scroll sits on stop `k`, easing to 0 by `reach` stops away. */
 export function near(k: number, reach = 0.75): number {
