@@ -3,8 +3,8 @@
 // in lib/i18n.ts under `island.<id>.*`.
 //
 // Island coordinates are metres. +X runs right along the shop front, +Y is up
-// (the porch deck at 0.2, the island top at 0) and +Z points from the shop out
-// over the porch toward the viewer. Scene.tsx places every model.
+// (the porch deck at 0.55, the island top around 0) and +Z points from the
+// shop out over the porch toward the viewer. placements.ts places every model.
 //
 // No three.js imports here: the page and the canvas both read this file, and
 // it must not pull three into the page bundle.
@@ -27,43 +27,45 @@ export interface IslandStop {
   align: 'center' | 'top' | 'bottom';
 }
 
-// [PLACEHOLDER CAMERAS] Framed on the blockout primitives in Scene.tsx. Retune
-// every pose once the real island GLBs land; the subject sits right of centre
-// at each stop so the copy keeps the left side.
+// Each pose is the matching stop_* camera of the Blender build, converted to
+// glTF coordinates: its position, a target where its view meets the island
+// (pullback: turned 7 degrees left for that camera's lens shift) and the
+// vertical fov that keeps its horizontal view at 16:10. The subject sits right
+// of centre at each stop so the copy keeps the left side.
 export const ISLAND_STOPS: readonly IslandStop[] = [
   {
     id: 'porch',
-    camera: { position: [-1.0, 1.45, 5.0], target: [-0.4, 1.0, -0.8], fov: 36 },
+    camera: { position: [2.75, 1.1, 4.45], target: [-11.4, 2.42, -0.34], fov: 43.8 },
     align: 'center',
   },
   {
     id: 'pullback',
-    camera: { position: [7.5, 6.5, 15], target: [0.5, 0.2, -0.5], fov: 42 },
+    camera: { position: [-9.0, 6.0, 30.0], target: [-5.53, 2.22, 12.75], fov: 35.6 },
     align: 'top',
   },
   {
     id: 'library',
-    camera: { position: [-2.4, 1.5, 2.2], target: [-2.0, 1.4, -1.1], fov: 38 },
+    camera: { position: [-1.2, 1.8, 7.14], target: [-0.72, 1.64, 2.64], fov: 41.1 },
     align: 'center',
   },
   {
     id: 'schedule',
-    camera: { position: [-6.6, 1.9, 6.4], target: [-4.6, 1.9, 1.6], fov: 38 },
+    camera: { position: [2.9, 1.2, 4.38], target: [5.25, 3.81, -1.68], fov: 41.1 },
     align: 'center',
   },
   {
     id: 'diary',
-    camera: { position: [-5.4, 1.3, 1.2], target: [-3.8, 0.8, -2.2], fov: 40 },
+    camera: { position: [4.9, 1.34, 6.4], target: [3.9, 0.13, 0.98], fov: 46.8 },
     align: 'center',
   },
   {
     id: 'browser',
-    camera: { position: [1.0, 1.8, 5.6], target: [2.6, 1.6, 1.0], fov: 38 },
+    camera: { position: [-7.15, 1.76, 5.27], target: [-5.55, 1.74, 0.95], fov: 38.7 },
     align: 'center',
   },
   {
     id: 'moon',
-    camera: { position: [-2.0, 1.8, 6.5], target: [5, 8, -14], fov: 46 },
+    camera: { position: [4.21, 1.95, 2.69], target: [6.2, 13.33, -6.88], fov: 50.2 },
     align: 'bottom',
   },
 ];
