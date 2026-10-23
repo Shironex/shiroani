@@ -11,10 +11,10 @@ const { lang, downloadHref, changelogHref } = Astro.props;
 ---
 
 <div class="island-cta">
-  <a href={downloadHref} class="island-btn island-btn-primary" data-i18n="island.moon.windows">
+  <a href={downloadHref} class="btn btn-primary" data-i18n="island.moon.windows">
     {t('island.moon.windows', lang)}
   </a>
-  <a href={downloadHref} class="island-btn island-btn-ghost" data-i18n="island.moon.macos">
+  <a href={downloadHref} class="btn btn-ghost" data-i18n="island.moon.macos">
     {t('island.moon.macos', lang)}
   </a>
 </div>

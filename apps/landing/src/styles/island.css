@@ -229,44 +229,33 @@ h2.island-heading {
   gap: 12px;
 }
 
-/* Pills for every action. */
-.island-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
+/* The site's buttons (sections/hero.css), as pills in the island's colours. */
+.island .btn {
   min-height: 48px;
-  padding: 0 26px;
   border-radius: 999px;
-  font-weight: 600;
-  font-size: 15px;
-  transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease,
-    background 0.2s ease;
 }
 
-.island-btn-primary {
+.island .btn-primary {
   background: var(--island-sakura);
   color: var(--island-on-sakura);
   box-shadow: 0 10px 30px oklch(from var(--island-sakura) l c h / 0.3);
 }
 
-.island-btn-primary:hover {
-  transform: translateY(-2px);
+.island .btn-primary:hover {
   box-shadow: 0 16px 40px oklch(from var(--island-sakura) l c h / 0.35);
 }
 
-.island-btn-ghost {
+.island .btn-ghost {
   background: oklch(from var(--island-raised) l c h / 0.88);
   color: var(--island-ink);
-  border: 1px solid oklch(1 0 0 / 0.14);
+  border-color: oklch(1 0 0 / 0.14);
 }
 
-.island-btn-ghost:hover {
+.island .btn-ghost:hover {
   background: var(--island-raised);
 }
 
-.island-btn:focus-visible,
+.island .btn:focus-visible,
 .island-link:focus-visible {
   outline: 2px solid var(--island-sakura);
   outline-offset: 3px;

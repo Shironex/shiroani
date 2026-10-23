@@ -1,7 +1,7 @@
 ---
 import fs from 'node:fs';
 import path from 'node:path';
-import { t, type SupportedLanguage } from '../../lib/i18n';
+import { localizedPath, t, type SupportedLanguage } from '../../lib/i18n';
 import IslandMoonCta from './IslandMoonCta.astro';
 import IslandPorchCta from './IslandPorchCta.astro';
 import IslandStage from './IslandStage';
@@ -17,9 +17,7 @@ interface Props {
 
 const { lang = 'pl' } = Astro.props;
 const tt = (key: string) => t(key, lang);
-const prefix = lang === 'en' ? '/en' : '';
-const localized = (href: string) => `${prefix}${href}`;
-const downloadHref = localized('/download');
+const downloadHref = localizedPath(lang, '/download');
 
 // Real models live in public/island/models/<id>.glb. Any id without a file
 // keeps its blockout, so the island is told which files exist. Astro runs dev
@@ -139,7 +137,7 @@ const DESKTOP_MEDIA = `(min-width: ${STATIC_MAX_WIDTH + 1}px)`;
             <IslandPorchCta lang={lang} downloadHref={downloadHref} exploreHref={`#island-${exploreStopId}`} />
           )}
           {index === lastStop && (
-            <IslandMoonCta lang={lang} downloadHref={downloadHref} changelogHref={localized('/changelog')} />
+            <IslandMoonCta lang={lang} downloadHref={downloadHref} changelogHref={localizedPath(lang, '/changelog')} />
           )}
         </IslandStop>
       ))

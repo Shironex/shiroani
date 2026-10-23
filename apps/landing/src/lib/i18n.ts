@@ -815,6 +815,14 @@ for (const dict of Object.values(translations)) {
 }
 
 /**
+ * Keeps an in-site link inside the language's route tree: PL is the default
+ * locale and un-prefixed, EN pages live under `/en/...`.
+ */
+export function localizedPath(lang: SupportedLanguage, href: string): string {
+  return lang === 'en' ? `/en${href}` : href;
+}
+
+/**
  * Synchronously read the stored language. Falls back to {@link DEFAULT_LANGUAGE}
  * when nothing is persisted yet or the value is unrecognized. Safe to call
  * during SSR — returns the default when `localStorage` is unavailable.

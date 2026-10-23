@@ -1,5 +1,5 @@
 import mascotWave from '../assets/mascot-wave.png';
-import { translations, DEFAULT_LANGUAGE, type SupportedLanguage } from '../lib/i18n';
+import { translations, DEFAULT_LANGUAGE, localizedPath, type SupportedLanguage } from '../lib/i18n';
 import { currentVersion } from '../lib/releases';
 import { useLandingLang } from '../lib/useLandingLang';
 
@@ -15,10 +15,9 @@ export function Footer({ lang: initialLang }: FooterProps = {}) {
   const lang = useLandingLang(initialLang);
   const t = (key: string) =>
     translations[lang]?.[key] ?? translations[DEFAULT_LANGUAGE]?.[key] ?? key;
-  // Keep in-site links inside the active locale's route tree (PL is un-prefixed,
-  // EN lives under `/en/...`) so crawlers and no-JS visitors can traverse it.
-  const prefix = lang === 'en' ? '/en' : '';
-  const href = (path: string) => `${prefix}${path}`;
+  // Keep in-site links inside the active locale's route tree so crawlers and
+  // no-JS visitors can traverse it.
+  const href = (path: string) => localizedPath(lang, path);
   const year = new Date().getFullYear();
   return (
     <footer className="ft">

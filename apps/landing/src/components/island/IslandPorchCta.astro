@@ -12,10 +12,10 @@ const { lang, downloadHref, exploreHref } = Astro.props;
 ---
 
 <div class="island-cta">
-  <a href={downloadHref} class="island-btn island-btn-primary" data-i18n="island.porch.download">
+  <a href={downloadHref} class="btn btn-primary" data-i18n="island.porch.download">
     {t('island.porch.download', lang)}
   </a>
-  <a href={exploreHref} class="island-btn island-btn-ghost" data-i18n="island.porch.explore">
+  <a href={exploreHref} class="btn btn-ghost" data-i18n="island.porch.explore">
     {t('island.porch.explore', lang)}
   </a>
 </div>
