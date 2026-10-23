@@ -1,8 +1,11 @@
 ---
 import fs from 'node:fs';
 import path from 'node:path';
-import { t, translations, type SupportedLanguage } from '../../lib/i18n';
+import { t, type SupportedLanguage } from '../../lib/i18n';
+import IslandMoonCta from './IslandMoonCta.astro';
+import IslandPorchCta from './IslandPorchCta.astro';
 import IslandStage from './IslandStage';
+import IslandStop from './IslandStop.astro';
 import { isModelId, MODELS_PATH, type ModelId } from './manifest';
 import { ISLAND_STOPS } from './stops';
 import '../../styles/island.css';
@@ -130,66 +133,16 @@ const DESKTOP_MEDIA = `(min-width: ${STATIC_MAX_WIDTH + 1}px)`;
 
   <div class="island-stops">
     {
-      ISLAND_STOPS.map((stop, index) => {
-        const Heading = index === 0 ? 'h1' : 'h2';
-        const key = (field: string) => `island.${stop.id}.${field}`;
-        // Not every stop has a body line (the pullback is a heading alone).
-        const hasBody = key('body') in translations[lang];
-        return (
-          <section
-            class="island-stop"
-            id={`island-${stop.id}`}
-            data-island-stop={stop.id}
-            data-align={stop.align}
-            aria-labelledby={`island-${stop.id}-title`}
-            tabindex="-1"
-          >
-            <div class="island-panel">
-              {index === 0 && (
-                <p class="island-mark">
-                  <span class="island-kanji" lang="ja">
-                    白アニ
-                  </span>
-                  <span>ShiroAni</span>
-                </p>
-              )}
-              <Heading class="island-heading" id={`island-${stop.id}-title`} data-i18n={key('title')}>
-                {tt(key('title'))}
-              </Heading>
-              {hasBody && (
-                <p class="island-body" data-i18n={key('body')}>
-                  {tt(key('body'))}
-                </p>
-              )}
-              {stop.id === 'porch' && (
-                <div class="island-cta">
-                  <a href={downloadHref} class="island-btn island-btn-primary" data-i18n="island.porch.download">
-                    {tt('island.porch.download')}
-                  </a>
-                  <a href={`#island-${exploreStopId}`} class="island-btn island-btn-ghost" data-i18n="island.porch.explore">
-                    {tt('island.porch.explore')}
-                  </a>
-                </div>
-              )}
-              {index === lastStop && (
-                <>
-                  <div class="island-cta">
-                    <a href={downloadHref} class="island-btn island-btn-primary" data-i18n="island.moon.windows">
-                      {tt('island.moon.windows')}
-                    </a>
-                    <a href={downloadHref} class="island-btn island-btn-ghost" data-i18n="island.moon.macos">
-                      {tt('island.moon.macos')}
-                    </a>
-                  </div>
-                  <a href={localized('/changelog')} class="island-link" data-i18n="island.moon.changelog">
-                    {tt('island.moon.changelog')}
-                  </a>
-                </>
-              )}
-            </div>
-          </section>
-        );
-      })
+      ISLAND_STOPS.map((stop, index) => (
+        <IslandStop stop={stop} index={index} lang={lang}>
+          {stop.id === 'porch' && (
+            <IslandPorchCta lang={lang} downloadHref={downloadHref} exploreHref={`#island-${exploreStopId}`} />
+          )}
+          {index === lastStop && (
+            <IslandMoonCta lang={lang} downloadHref={downloadHref} changelogHref={localized('/changelog')} />
+          )}
+        </IslandStop>
+      ))
     }
   </div>
 

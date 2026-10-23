@@ -1,13 +1,5 @@
-import {
-  Component,
-  lazy,
-  Suspense,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-  type ReactNode,
-} from 'react';
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react';
+import { ErrorBoundary } from './ErrorBoundary';
 import type { ModelId } from './manifest';
 
 // three.js and R3F live behind this dynamic import, in their own chunk. It
@@ -65,6 +57,14 @@ export default function IslandStage({ models }: Props) {
     setRun(false);
   }, []);
 
+  const onCanvasError = useCallback(
+    (error: unknown) => {
+      console.warn('[island] 3D failed, showing the poster', error);
+      fail();
+    },
+    [fail]
+  );
+
   useEffect(() => {
     if (!run) return;
     const timer = window.setTimeout(fail, STATIC_FALLBACK_TIMEOUT_MS);
@@ -95,29 +95,12 @@ export default function IslandStage({ models }: Props) {
           hydrates on desktop widths only, so phones never fetch React. */}
       <div ref={anchor} className="island-anchor" />
       {run && (
-        <Guard onError={fail}>
+        <ErrorBoundary fallback={null} onError={onCanvasError}>
           <Suspense fallback={null}>
             <IslandCanvas models={models} onProgress={onProgress} onReady={onReady} />
           </Suspense>
-        </Guard>
+        </ErrorBoundary>
       )}
     </>
   );
-}
-
-class Guard extends Component<{ onError: () => void; children: ReactNode }, { failed: boolean }> {
-  state = { failed: false };
-
-  static getDerivedStateFromError() {
-    return { failed: true };
-  }
-
-  componentDidCatch(error: unknown) {
-    console.warn('[island] 3D failed, showing the poster', error);
-    this.props.onError();
-  }
-
-  render() {
-    return this.state.failed ? null : this.props.children;
-  }
 }

@@ -6,6 +6,7 @@ import {
   MathUtils,
   PerspectiveCamera,
   Vector3,
+  type Material,
   type Mesh,
   type Object3D,
 } from 'three';
@@ -209,6 +210,15 @@ function lockedFov(fov: number, aspect: number): number {
 }
 
 /**
+ * Where the load gate is: waiting for every model to settle, warming one
+ * material per frame, then settling for a few frames with everything drawn.
+ */
+type LoadPhase = 'waiting' | 'warming' | 'settling';
+
+/** Frames rendered with every material in before the island counts as ready. */
+const FRAMES_AFTER_WARM_UP = 2;
+
+/**
  * Reports load progress and fires once the island is complete: every model
  * has settled (loaded, or failed and kept its blockout), the loading manager
  * is idle, every material has drawn once, and two frames have rendered since.
@@ -218,7 +228,8 @@ function lockedFov(fov: number, aspect: number): number {
 function LoadGate({ models, onProgress, onReady }: Props) {
   const { active, progress } = useProgress();
   const shown = useRef(0);
-  const frames = useRef(-1);
+  const phase = useRef<LoadPhase>('waiting');
+  const settlingFrames = useRef(0);
 
   useEffect(() => {
     // The manager's total grows as GLBs discover their textures: never step back.
@@ -230,7 +241,7 @@ function LoadGate({ models, onProgress, onReady }: Props) {
   // drawn all on one frame that blocks the main thread for most of a second.
   // So the island stays hidden while it loads, then shows one material per frame.
   const scene = useThree(state => state.scene);
-  const warming = useRef<Object3D[][]>([]);
+  const warming = useRef<Mesh[][]>([]);
   useLayoutEffect(() => {
     scene.visible = false;
     return () => {
@@ -239,32 +250,42 @@ function LoadGate({ models, onProgress, onReady }: Props) {
   }, [scene]);
 
   useFrame(() => {
-    if (frames.current === -2) {
-      const next = warming.current.shift();
-      if (next) for (const mesh of next) mesh.visible = true;
-      else frames.current = 0;
-      return;
-    }
-    if (frames.current < 0) {
-      const settled = models.every(id => settledModels.has(id));
-      if (!settled || active) return;
-      const byMaterial = new Map<unknown, Object3D[]>();
-      scene.traverse(child => {
-        const mesh = child as Mesh;
-        if (!mesh.isMesh || !mesh.visible) return;
-        const key = Array.isArray(mesh.material) ? mesh.material[0] : mesh.material;
-        byMaterial.set(key, [...(byMaterial.get(key) ?? []), mesh]);
-        mesh.visible = false;
-      });
-      warming.current = [...byMaterial.values()];
-      scene.visible = true;
-      frames.current = -2;
-      return;
-    }
-    if (++frames.current === 2) {
-      onProgress(100);
-      onReady();
+    switch (phase.current) {
+      case 'waiting': {
+        const settled = models.every(id => settledModels.has(id));
+        if (!settled || active) return;
+        warming.current = groupMeshesByMaterial(scene);
+        for (const group of warming.current) for (const mesh of group) mesh.visible = false;
+        scene.visible = true;
+        phase.current = 'warming';
+        return;
+      }
+      case 'warming': {
+        const next = warming.current.shift();
+        if (next) for (const mesh of next) mesh.visible = true;
+        else phase.current = 'settling';
+        return;
+      }
+      case 'settling':
+        if (++settlingFrames.current === FRAMES_AFTER_WARM_UP) {
+          onProgress(100);
+          onReady();
+        }
     }
   });
   return null;
+}
+
+/** The visible meshes under `root`, grouped by their (first) material. */
+function groupMeshesByMaterial(root: Object3D): Mesh[][] {
+  const groups = new Map<Material, Mesh[]>();
+  root.traverse(child => {
+    const mesh = child as Mesh;
+    if (!mesh.isMesh || !mesh.visible) return;
+    const key = Array.isArray(mesh.material) ? mesh.material[0] : mesh.material;
+    const group = groups.get(key);
+    if (group) group.push(mesh);
+    else groups.set(key, [mesh]);
+  });
+  return [...groups.values()];
 }

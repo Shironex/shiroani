@@ -1,7 +1,6 @@
 import { useAnimations, useGLTF } from '@react-three/drei';
 import type { ThreeElements } from '@react-three/fiber';
 import {
-  Component,
   createContext,
   Suspense,
   useContext,
@@ -12,6 +11,7 @@ import {
 import type { AnimationAction, Object3D, WebGLRenderer } from 'three';
 import { KTX2Loader } from 'three/examples/jsm/loaders/KTX2Loader.js';
 import { clone } from 'three/examples/jsm/utils/SkeletonUtils.js';
+import { ErrorBoundary } from './ErrorBoundary';
 import { modelUrl, type ModelId } from './manifest';
 
 /** Model ids with a real file under /island/models. Filled by the page. */
@@ -56,11 +56,18 @@ export function Model({ id, children, onModel, ...group }: ModelProps) {
   return (
     <group name={id} {...group}>
       {hasModel ? (
-        <Fallback id={id} expected={expected} fallback={children}>
+        // A GLB that fails to load or parse keeps the blockout.
+        <ErrorBoundary
+          fallback={children}
+          onError={error => {
+            settle(id, expected);
+            console.warn('[island] model failed, keeping the blockout', error);
+          }}
+        >
           <Suspense fallback={children}>
             <Glb id={id} expected={expected} onModel={onModel} />
           </Suspense>
-        </Fallback>
+        </ErrorBoundary>
       ) : (
         children
       )}
@@ -131,25 +138,4 @@ function Glb({
     settle(id, expected);
   }, [id, expected]);
   return <primitive object={copy} />;
-}
-
-/** Falls back to the blockout when a GLB fails to load or parse. */
-class Fallback extends Component<
-  { id: ModelId; expected: ReadonlySet<ModelId>; fallback: ReactNode; children: ReactNode },
-  { failed: boolean }
-> {
-  state = { failed: false };
-
-  static getDerivedStateFromError() {
-    return { failed: true };
-  }
-
-  componentDidCatch(error: unknown) {
-    settle(this.props.id, this.props.expected);
-    console.warn('[island] model failed, keeping the blockout', error);
-  }
-
-  render() {
-    return this.state.failed ? this.props.fallback : this.props.children;
-  }
 }
