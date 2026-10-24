@@ -2,7 +2,7 @@
 import { Image } from 'astro:assets';
 import mascotWave from '../assets/mascot-wave.png';
 import { currentVersion } from '../lib/releases';
-import { t, type SupportedLanguage } from '../lib/i18n';
+import { localizedPath, t, type SupportedLanguage } from '../lib/i18n';
 
 interface Props {
   /** href of the currently-active link, in PL form (e.g. `/changelog`,
@@ -17,18 +17,18 @@ const { activeHref, lang = 'pl' } = Astro.props;
 const tt = (key: string) => t(key, lang);
 const version = currentVersion();
 
-// In-site links must stay within the active locale's route tree. PL is the
-// default locale (un-prefixed); EN pages live under `/en/...`. The client-side
-// language toggle re-applies labels on swap, but the SSR href has to be right
-// so crawlers and no-JS visitors can reach the matching `/en` pages.
-const prefix = lang === 'en' ? '/en' : '';
-const localized = (href: string) => `${prefix}${href}`;
-const homeHref = lang === 'en' ? '/en/' : '/';
+// In-site links must stay within the active locale's route tree. The
+// client-side language toggle re-applies labels on swap, but the SSR href has
+// to be right so crawlers and no-JS visitors can reach the matching `/en` pages.
+const localized = (href: string) => localizedPath(lang, href);
+const homeHref = localized('/');
 
 const links = [
   { num: '01', href: localized('/#funkcje'), i18nKey: 'nav.features' },
-  { num: '02', href: localized('/#podglad'), i18nKey: 'nav.preview' },
-  { num: '03', href: localized('/#suite'), i18nKey: 'nav.suite' },
+  { num: '02', href: localized('/#maskotka'), i18nKey: 'nav.mascot' },
+  { num: '03', href: localized('/#faq'), i18nKey: 'nav.faq' },
+  // The download line after the FAQ, not the moon stop, so the jump doesn't
+  // drop the reader into the middle of the island's scroll tour.
   { num: '04', href: localized('/#pobierz'), i18nKey: 'nav.download' },
   { num: '05', href: localized('/changelog'), i18nKey: 'nav.changelog' },
 ];

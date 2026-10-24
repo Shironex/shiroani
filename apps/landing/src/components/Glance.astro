@@ -1,0 +1,26 @@
+---
+import { t, type SupportedLanguage } from '../lib/i18n';
+
+interface Props {
+  /** Active SSR language. Defaults to PL; `/en/*` pages pass `lang="en"`. */
+  lang?: SupportedLanguage;
+}
+
+const { lang = 'pl' } = Astro.props;
+const tt = (key: string) => t(key, lang);
+
+// Four short facts before the download line. Keep them true to the app:
+// the platforms match the /download page, the rest the FAQ answers.
+const facts = ['free', 'platforms', 'account', 'anilist'];
+---
+
+<section class="glance" aria-label={tt('glance.label')} data-i18n-aria-label="glance.label">
+  <div class="glance-grid">
+    {facts.map((fact) => (
+      <div class="glance-fact">
+        <p class="glance-t" data-i18n={`glance.${fact}.title`}>{tt(`glance.${fact}.title`)}</p>
+        <p class="glance-b" data-i18n={`glance.${fact}.body`}>{tt(`glance.${fact}.body`)}</p>
+      </div>
+    ))}
+  </div>
+</section>

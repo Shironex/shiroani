@@ -1,0 +1,21 @@
+---
+import { t, type SupportedLanguage } from '../../lib/i18n';
+
+interface Props {
+  lang: SupportedLanguage;
+  downloadHref: string;
+  /** The stop the explore button scrolls to. */
+  exploreHref: string;
+}
+
+const { lang, downloadHref, exploreHref } = Astro.props;
+---
+
+<div class="island-cta">
+  <a href={downloadHref} class="btn btn-primary" data-i18n="island.porch.download">
+    {t('island.porch.download', lang)}
+  </a>
+  <a href={exploreHref} class="btn btn-ghost" data-i18n="island.porch.explore">
+    {t('island.porch.explore', lang)}
+  </a>
+</div>

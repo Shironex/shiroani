@@ -48,10 +48,6 @@
   color: var(--text-2);
   text-transform: uppercase;
 }
-.fc .tag.on {
-  color: var(--accent);
-  background: oklch(from var(--accent) l c h / 0.1);
-}
 .fc h3 {
   padding: 14px 22px 0;
   font-family: var(--font-display);
@@ -92,11 +88,9 @@
 .fc.col-4 {
   grid-column: span 4;
 }
-.fc.col-6 {
-  grid-column: span 6;
-}
-.fc.col-3 {
-  grid-column: span 3;
+/* Text-only cards next to the themes card: two of them stack beside it. */
+.fc.ft-short {
+  min-height: 0;
 }
 
 .fc.hl {
@@ -104,9 +98,21 @@
   border-color: oklch(from var(--accent) l c h / 0.2);
 }
 
+/* The Discord card's preview is short and wide: it sits centred in the space
+   its taller neighbour leaves instead of hugging the bottom edge. */
+.fc.ft-rpc .fimg {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  padding: 0 22px 22px;
+  background: none;
+  border-top: 0;
+}
+
 /* ── Themes preview (card № 07) ── */
 .fc.ft-themes {
   min-height: 380px;
+  grid-row: span 2;
 }
 .fc .fthemes {
   margin-top: auto;

@@ -2,6 +2,24 @@
   "trailingSlash": false,
   "headers": [
     {
+      "source": "**",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "**/*.@(png|jpg|jpeg|ico|webp|avif)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=86400"
+        }
+      ]
+    },
+    {
       "source": "_astro/**",
       "headers": [
         {
@@ -11,7 +29,7 @@
       ]
     },
     {
-      "source": "demo/**",
+      "source": "island/**",
       "headers": [
         {
           "key": "Cache-Control",

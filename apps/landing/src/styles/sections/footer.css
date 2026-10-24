@@ -8,7 +8,7 @@
   max-width: 1440px;
   margin: 0 auto;
   display: grid;
-  grid-template-columns: 1.4fr repeat(3, 1fr);
+  grid-template-columns: 2fr repeat(2, 1fr);
   gap: 40px;
   padding-bottom: 40px;
   border-bottom: 1px solid var(--hairline);
@@ -60,6 +60,19 @@
   color: var(--text-2);
   max-width: 30ch;
   font-size: 14px;
+}
+.ft-brand .ft-family {
+  margin-top: 12px;
+}
+.ft-brand .ft-family a {
+  color: var(--text);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: oklch(from var(--accent) l c h / 0.5);
+  transition: color 0.2s;
+}
+.ft-brand .ft-family a:hover {
+  color: var(--accent);
 }
 .ft-brand .s {
   margin-top: 20px;

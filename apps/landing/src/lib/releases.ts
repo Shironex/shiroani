@@ -8,10 +8,8 @@
  * names the landing UI was built against (`dateShort`, `slug`).
  *
  * `currentVersion()` returns the locale-neutral version string and stays
- * argument-free (used by the hero, navbar, footer and suite tagline).
- * `getReleases(locale)` is the localized list; `releases` is the PL list
- * kept for callers that only need locale-neutral fields (e.g. `Download.astro`
- * reads `releases[0].version` / `.dateShort`).
+ * argument-free (used by the navbar, footer and download page).
+ * `getReleases(locale)` is the localized list.
  */
 import { localizeReleases, RELEASES, type CategoryKind, type Locale } from '@shiroani/changelog';
 
@@ -54,11 +52,5 @@ export function getReleases(locale: Locale = 'pl'): Release[] {
   }));
 }
 
-/** PL release list — kept for callers that only need locale-neutral fields. */
-export const releases: Release[] = getReleases('pl');
-
 /** Locale-neutral version of the topmost release. */
 export const currentVersion = (): string => RELEASES[0].version;
-
-/** PL view of the topmost release. */
-export const latestRelease: Release = releases[0];

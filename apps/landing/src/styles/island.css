@@ -1,0 +1,401 @@
+/* The moon island, the 3D landing preview. Imported by Island.astro only, so
+   the other pages never load it. */
+
+/* The island keeps its own night-plum tokens on purpose: it does not follow
+   the theme switcher. */
+.island {
+  --island-ink: #f1ecf4;
+  --island-ink-quiet: #b6aac2;
+  --island-ground: #120d17;
+  --island-raised: #1e1626;
+  --island-sakura: oklch(0.74 0.15 355);
+  --island-on-sakura: #1c0f18;
+  position: relative;
+  z-index: 1;
+  color: var(--island-ink);
+}
+
+.island-anchor {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* The stage pins behind the stops while they scroll past, then unpins when
+   the last stop ends. */
+.island-stage {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  height: 100lvh;
+  overflow: hidden;
+  background: var(--island-ground);
+}
+
+.island-poster,
+.island-stage canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.island-poster {
+  max-width: none;
+  object-fit: cover;
+  /* Shiro-chan sits right of centre in the poster. */
+  object-position: 68% 50%;
+}
+
+.island:not([data-static]) .island-poster {
+  display: none;
+}
+
+/* The canvas stays hidden until every model is in and a frame has rendered,
+   then fades in over the loader. */
+.island-stage canvas {
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+
+.island-stage[data-ready] canvas {
+  opacity: 1;
+}
+
+.island-loader {
+  position: absolute;
+  top: 50%;
+  left: 64%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  color: var(--island-ink-quiet);
+  transform: translate(-50%, -50%);
+  transition: opacity 0.6s ease;
+}
+
+.island-stage[data-ready] .island-loader,
+.island[data-static] .island-loader {
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 0.6s ease,
+    visibility 0s 0.6s;
+}
+
+.island-loader-moon {
+  width: 40px;
+  height: 40px;
+  color: var(--island-sakura);
+  /* The same soft bloom the island gives its lanterns. */
+  filter: drop-shadow(0 0 6px oklch(from var(--island-sakura) l c h / 0.7))
+    drop-shadow(0 0 18px oklch(from var(--island-sakura) l c h / 0.35));
+  animation: island-breathe 2.4s ease-in-out infinite alternate;
+}
+
+.island-stage[data-ready] .island-loader-moon,
+.island[data-static] .island-loader-moon {
+  animation: none;
+}
+
+.island-loader-bar {
+  width: 120px;
+  height: 1px;
+  background: oklch(from var(--island-ink-quiet) l c h / 0.25);
+}
+
+.island-loader-bar span {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: var(--island-sakura);
+  box-shadow: 0 0 8px oklch(from var(--island-sakura) l c h / 0.8);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s ease;
+}
+
+.island-loader-pct {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  font-variant-numeric: tabular-nums;
+}
+
+@keyframes island-breathe {
+  from {
+    opacity: 0.55;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Keeps the copy on the left legible over the island. */
+.island-stage::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    oklch(from var(--island-ground) l c h / 0.78) 0%,
+    oklch(from var(--island-ground) l c h / 0.4) 34%,
+    transparent 58%
+  );
+}
+
+.island-stops {
+  position: relative;
+  margin-top: -100vh;
+  margin-top: -100lvh;
+}
+
+.island-stop {
+  min-height: 100vh;
+  min-height: 100lvh;
+  display: flex;
+  align-items: center;
+  padding: 96px clamp(24px, 6vw, 80px) 64px;
+  outline: none;
+}
+
+.island-stop[data-align='top'] {
+  align-items: flex-start;
+  padding-top: 16vh;
+}
+
+.island-stop[data-align='bottom'] {
+  align-items: flex-end;
+  padding-bottom: 12vh;
+}
+
+/* Fade the last stop into the page background as the stage unpins. The fade
+   starts low enough to keep her on the bench clear at the moon stop and eases
+   in, so the scene sinks into the ground instead of meeting a line. */
+.island-stop:last-child {
+  background: linear-gradient(
+    to bottom,
+    transparent 66%,
+    oklch(from var(--bg) l c h / 0.18) 74%,
+    oklch(from var(--bg) l c h / 0.5) 83%,
+    oklch(from var(--bg) l c h / 0.85) 93%,
+    var(--bg)
+  );
+}
+
+/* The first chapter after the island: the island already fades into the page
+   background, so its heading sits closer and a faint glow rises out of that
+   ground instead of starting on a hard edge. A general sibling, since the
+   island's script tag sits between them; the :not() keeps it to the first
+   chapter. */
+.island ~ .divider:not(.divider ~ .divider) {
+  position: relative;
+  padding-top: 56px;
+}
+
+.island ~ .divider:not(.divider ~ .divider)::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 260px;
+  pointer-events: none;
+  background: radial-gradient(
+    60% 100% at 50% 0%,
+    oklch(from var(--accent) l c h / 0.09),
+    transparent 70%
+  );
+}
+
+.island ~ .divider:not(.divider ~ .divider) > * {
+  position: relative;
+}
+
+@media (max-width: 640px) {
+  .island ~ .divider:not(.divider ~ .divider) {
+    padding-top: 40px;
+  }
+}
+
+.island-panel {
+  max-width: 34rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 22px;
+}
+
+.island-mark {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--island-ink-quiet);
+}
+
+.island-kanji {
+  font-family: var(--font-mincho);
+  font-weight: 800;
+  font-size: 22px;
+  letter-spacing: 0.04em;
+  color: var(--island-sakura);
+}
+
+.island-heading {
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: clamp(36px, 4.6vw, 64px);
+  line-height: 1.06;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+h2.island-heading {
+  font-size: clamp(30px, 3.6vw, 52px);
+}
+
+.island-body {
+  max-width: 44ch;
+  font-size: 18px;
+  line-height: 1.6;
+  color: var(--island-ink-quiet);
+}
+
+.island-cta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+/* The site's buttons (sections/controls.css), as pills in the island's colours. */
+.island .btn {
+  min-height: 48px;
+  border-radius: 999px;
+}
+
+.island .btn-primary {
+  background: var(--island-sakura);
+  color: var(--island-on-sakura);
+  box-shadow: 0 10px 30px oklch(from var(--island-sakura) l c h / 0.3);
+}
+
+.island .btn-primary:hover {
+  box-shadow: 0 16px 40px oklch(from var(--island-sakura) l c h / 0.35);
+}
+
+.island .btn-ghost {
+  background: oklch(from var(--island-raised) l c h / 0.88);
+  color: var(--island-ink);
+  border-color: oklch(1 0 0 / 0.14);
+}
+
+.island .btn-ghost:hover {
+  background: var(--island-raised);
+}
+
+.island .btn:focus-visible,
+.island-link:focus-visible {
+  outline: 2px solid var(--island-sakura);
+  outline-offset: 3px;
+  border-radius: 999px;
+}
+
+.island-link {
+  font-size: 15px;
+  color: var(--island-ink-quiet);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  text-decoration-color: oklch(from var(--island-ink-quiet) l c h / 0.5);
+}
+
+.island-link:hover {
+  color: var(--island-ink);
+}
+
+/* ------------------------------------------------------------- stop dots */
+
+.island-dots {
+  position: fixed;
+  right: clamp(16px, 2.4vw, 32px);
+  top: 50%;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transform: translateY(-50%);
+  transition: opacity 0.4s ease;
+}
+
+.island[data-away] .island-dots,
+.island[data-static] .island-dots {
+  opacity: 0;
+  pointer-events: none;
+  /* Hidden from the keyboard too, once the fade is over. */
+  visibility: hidden;
+  transition:
+    opacity 0.4s ease,
+    visibility 0s 0.4s;
+}
+
+.island-dot {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+}
+
+.island-dot::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  border: 1px solid oklch(from var(--island-ink) l c h / 0.55);
+  transition:
+    background 0.3s ease,
+    transform 0.3s ease;
+}
+
+.island-dot:hover::before {
+  background: oklch(from var(--island-ink) l c h / 0.4);
+}
+
+.island-dot[aria-current]::before {
+  background: var(--island-sakura);
+  border-color: var(--island-sakura);
+  transform: scale(1.35);
+}
+
+.island-dot:focus-visible {
+  outline: 2px solid var(--island-sakura);
+  outline-offset: 2px;
+}
+
+/* Static mode: phones, reduced motion, no WebGL. The poster sits on top and
+   the copy stacks under it. */
+.island[data-static] .island-stage {
+  position: relative;
+  height: auto;
+  aspect-ratio: 16 / 9;
+}
+
+.island[data-static] .island-stage::after {
+  display: none;
+}
+
+.island[data-static] .island-stops {
+  margin-top: 0;
+}
+
+.island[data-static] .island-stop {
+  min-height: 0;
+  padding-block: 40px;
+}
+
+.island[data-static] .island-stop:last-child {
+  background: none;
+}

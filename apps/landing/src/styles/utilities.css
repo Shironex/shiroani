@@ -23,9 +23,6 @@ html[data-theme='paper'] .grain {
 body.no-grain .grain {
   display: none;
 }
-body.no-ticker .ticker-wrap {
-  display: none;
-}
 
 main,
 header,

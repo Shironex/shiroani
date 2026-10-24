@@ -1,0 +1,50 @@
+---
+import { t, translations, type SupportedLanguage } from '../../lib/i18n';
+import type { IslandStop } from './stops';
+
+interface Props {
+  stop: IslandStop;
+  /** Position in scroll order. The first stop carries the page's h1 and the mark. */
+  index: number;
+  lang: SupportedLanguage;
+}
+
+const { stop, index, lang } = Astro.props;
+const Heading = index === 0 ? 'h1' : 'h2';
+const key = (field: string) => `island.${stop.id}.${field}`;
+// Not every stop has a body line (the pullback is a heading alone).
+const hasBody = key('body') in translations[lang];
+---
+
+<section
+  class="island-stop"
+  id={`island-${stop.id}`}
+  data-island-stop={stop.id}
+  data-align={stop.align}
+  aria-labelledby={`island-${stop.id}-title`}
+  tabindex="-1"
+>
+  <div class="island-panel">
+    {
+      index === 0 && (
+        <p class="island-mark">
+          <span class="island-kanji" lang="ja">
+            白アニ
+          </span>
+          <span>ShiroAni</span>
+        </p>
+      )
+    }
+    <Heading class="island-heading" id={`island-${stop.id}-title`} data-i18n={key('title')}>
+      {t(key('title'), lang)}
+    </Heading>
+    {
+      hasBody && (
+        <p class="island-body" data-i18n={key('body')}>
+          {t(key('body'), lang)}
+        </p>
+      )
+    }
+    <slot />
+  </div>
+</section>

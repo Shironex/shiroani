@@ -1,0 +1,23 @@
+---
+import { t, type SupportedLanguage } from '../../lib/i18n';
+
+interface Props {
+  lang: SupportedLanguage;
+  downloadHref: string;
+  changelogHref: string;
+}
+
+const { lang, downloadHref, changelogHref } = Astro.props;
+---
+
+<div class="island-cta">
+  <a href={downloadHref} class="btn btn-primary" data-i18n="island.moon.windows">
+    {t('island.moon.windows', lang)}
+  </a>
+  <a href={downloadHref} class="btn btn-ghost" data-i18n="island.moon.macos">
+    {t('island.moon.macos', lang)}
+  </a>
+</div>
+<a href={changelogHref} class="island-link" data-i18n="island.moon.changelog">
+  {t('island.moon.changelog', lang)}
+</a>

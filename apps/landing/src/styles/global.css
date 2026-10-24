@@ -12,15 +12,13 @@
 @import './utilities.css';
 
 /* Section styles */
-@import './sections/ticker.css';
 @import './sections/navbar.css';
-@import './sections/hero.css';
+@import './sections/controls.css';
 @import './sections/chapter.css';
 @import './sections/features.css';
-@import './sections/anatomy.css';
-@import './sections/suite.css';
 @import './sections/changelog.css';
 @import './sections/mascot.css';
+@import './sections/glance.css';
 @import './sections/download.css';
 @import './sections/download-page.css';
 @import './sections/faq.css';
