@@ -13,6 +13,7 @@ import { noiseTexture } from './noise';
 import { PLACEMENTS } from './placements';
 import { island } from './progress';
 import { MOON_DIRECTION } from './Sky';
+import { ISLAND_STOPS } from './stops';
 
 // The cloud sea under the island: a few stacked sheets of drifting noise, lit
 // pink on the side the moon is on and violet away from it, fading into the
@@ -128,6 +129,8 @@ export interface PuffSet {
   opacity: number;
   /** Sculpted billows (a lumpy sphere with a moonlit rim, sorted far to near) instead of soft mist. */
   billow?: boolean;
+  /** Billows only: the distances over which they fade into the haze. */
+  fade?: { near: number; far: number };
 }
 
 function puffMaterial(lit: Color, shade: Color, opacity: number) {
@@ -188,7 +191,7 @@ function puffMaterial(lit: Color, shade: Color, opacity: number) {
   });
 }
 
-function billowMaterial(opacity: number) {
+function billowMaterial(opacity: number, fade = BILLOW_FADE) {
   return new ShaderMaterial({
     uniforms: {
       noise: { value: noiseTexture() },
@@ -199,7 +202,7 @@ function billowMaterial(opacity: number) {
       opacity: { value: opacity },
       moon: { value: MOON_DIRECTION },
       haze: { value: HAZE },
-      fade: { value: [BILLOW_FADE.near, BILLOW_FADE.far] },
+      fade: { value: [fade.near, fade.far] },
       seaTop: { value: SEA_TOP },
     },
     vertexShader: /* glsl */ `
@@ -285,15 +288,15 @@ export function instancedQuad(width: number, height: number, count: number) {
   return g;
 }
 
-export function Puffs({ puffs, lit, shade, opacity, billow = false }: PuffSet) {
+export function Puffs({ puffs, lit, shade, opacity, billow = false, fade }: PuffSet) {
   const geometry = useMemo(() => {
     const g = instancedQuad(1, 1, puffs.length);
     g.setAttribute('puff', new InstancedBufferAttribute(new Float32Array(puffs.flat()), 4));
     return g;
   }, [puffs]);
   const material = useMemo(
-    () => (billow ? billowMaterial(opacity) : puffMaterial(lit, shade, opacity)),
-    [billow, lit, shade, opacity]
+    () => (billow ? billowMaterial(opacity, fade) : puffMaterial(lit, shade, opacity)),
+    [billow, lit, shade, opacity, fade]
   );
   const order = useMemo(() => puffs.map((_, i) => i), [puffs]);
   useFrame(({ camera }) => {
@@ -401,6 +404,54 @@ function horizonPuffs(): PuffSet['puffs'] {
   return out;
 }
 
+/**
+ * The pullback looks out over the sea, and its left edge sees only the far
+ * horizon bank, deep in the haze. A short bank of heaps along that edge, out on
+ * the horizon but hazed less than the rest, gives the far left a defined
+ * skyline behind the spires.
+ * Angles in degrees left of the pullback's view, distances from its camera.
+ */
+const LEFT_BANK = { from: 12, to: 30, near: 135, far: 185, heaps: 7 };
+/** The bank's own haze: it fades in later than the rest, so it keeps its shape that far out. */
+const LEFT_BANK_FADE = { near: 175, far: 260 };
+
+function leftBankPuffs(): PuffSet['puffs'] {
+  const stop = ISLAND_STOPS.find(s => s.id === 'pullback');
+  if (!stop) return [];
+  const [px, , pz] = stop.camera.position;
+  const [tx, , tz] = stop.camera.target;
+  const flat = Math.hypot(tx - px, tz - pz);
+  const fx = (tx - px) / flat;
+  const fz = (tz - pz) / flat;
+  const rand = seeded(83);
+  const out: [number, number, number, number][] = [];
+  for (let i = 0; i < LEFT_BANK.heaps; i++) {
+    const t = (i + rand() * 0.6) / LEFT_BANK.heaps;
+    const yaw = ((LEFT_BANK.from + (LEFT_BANK.to - LEFT_BANK.from) * t) * Math.PI) / 180;
+    const dist = LEFT_BANK.near + rand() * (LEFT_BANK.far - LEFT_BANK.near);
+    // Turning left of the view: the forward and its left, (fz, -fx), on the ground.
+    const dx = fx * Math.cos(yaw) + fz * Math.sin(yaw);
+    const dz = fz * Math.cos(yaw) - fx * Math.sin(yaw);
+    const heap = (7 + rand() * 4) * (dist / 60);
+    const cx = px + dx * dist;
+    const cz = pz + dz * dist;
+    const lobes = 5 + Math.floor(rand() * 3);
+    for (let k = 0; k < lobes; k++) {
+      const a = rand() * Math.PI * 2;
+      const d = Math.sqrt(rand()) * heap * 0.8;
+      const rise = 1 - d / heap;
+      const size = heap * (0.38 + rand() * 0.26) * (0.7 + rise * 0.3);
+      out.push([
+        cx + Math.cos(a) * d,
+        SEA_TOP + rise * heap * 0.2 + size * 0.05,
+        cz + Math.sin(a) * d,
+        size,
+      ]);
+    }
+  }
+  return out;
+}
+
 /** Billows round each far spire's waist, where the sheets cut through it. */
 function spirePuffs(): PuffSet['puffs'] {
   const rand = seeded(31);
@@ -423,6 +474,7 @@ function spirePuffs(): PuffSet['puffs'] {
 
 const RING = [...ringPuffs(), ...spirePuffs()];
 const SEA = [...seaPuffs(), ...horizonPuffs()];
+const LEFT_BANK_PUFFS = leftBankPuffs();
 
 export function Clouds() {
   const materials = useMemo(
@@ -447,6 +499,14 @@ export function Clouds() {
       ))}
       <Puffs puffs={SEA} lit={CLOUD_LIT} shade={CLOUD_SHADE} opacity={0.95} billow />
       <Puffs puffs={RING} lit={CLOUD_LIT} shade={CLOUD_SHADE} opacity={0.9} billow />
+      <Puffs
+        puffs={LEFT_BANK_PUFFS}
+        lit={CLOUD_LIT}
+        shade={CLOUD_SHADE}
+        opacity={0.95}
+        billow
+        fade={LEFT_BANK_FADE}
+      />
     </>
   );
 }
