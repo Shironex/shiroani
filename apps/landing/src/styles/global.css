@@ -12,9 +12,8 @@
 @import './utilities.css';
 
 /* Section styles */
-@import './sections/ticker.css';
 @import './sections/navbar.css';
-@import './sections/hero.css';
+@import './sections/controls.css';
 @import './sections/chapter.css';
 @import './sections/features.css';
 @import './sections/anatomy.css';

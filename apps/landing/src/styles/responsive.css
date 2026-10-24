@@ -1,8 +1,5 @@
 /* ============ RESPONSIVE ============ */
 @media (max-width: 1100px) {
-  .hero-grid {
-    grid-template-columns: 1fr;
-  }
   .ana-stage {
     grid-template-columns: 1fr;
   }
@@ -90,12 +87,6 @@
   .logo .name small {
     display: none;
   }
-  .hero {
-    padding: 32px 18px 48px;
-  }
-  .hero-strip {
-    font-size: 13px;
-  }
   .divider {
     padding: 64px 18px 20px;
   }
@@ -107,14 +98,6 @@
   .themes {
     padding-left: 18px;
     padding-right: 18px;
-  }
-  .lib-grid {
-    grid-template-columns: repeat(4, 1fr);
-  }
-  .mock-chibi {
-    width: 60px;
-    right: 12px;
-    bottom: 12px;
   }
   .themes-grid {
     grid-template-columns: 1fr;
@@ -133,11 +116,8 @@
     scroll-behavior: auto;
   }
   /* Silence decorative/looping animations only */
-  .ticker,
   .ana-pin::before,
-  .mock-chibi,
   .mascot-r img,
-  .hero .blip,
   .hdr .blip,
   .suite-card.self .here::before,
   .island-loader-moon {

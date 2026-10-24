@@ -1,0 +1,59 @@
+/* Shared pill eyebrow and site buttons. */
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--accent);
+  padding: 6px 12px;
+  border: 1px solid oklch(from var(--accent) l c h / 0.3);
+  border-radius: 999px;
+  background: oklch(from var(--accent) l c h / 0.08);
+}
+.eyebrow .blip {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 8px var(--accent-glow);
+  animation: pulse 1.6s ease-in-out infinite;
+}
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 15px 24px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 14.5px;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s,
+    background 0.2s;
+}
+.btn-primary {
+  background: var(--accent);
+  color: var(--bg);
+  box-shadow: 0 10px 30px var(--accent-glow);
+}
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 40px var(--accent-glow);
+}
+.btn-ghost {
+  background: var(--bg-3);
+  color: var(--text);
+  border: 1px solid var(--hairline-2);
+}
+.btn-ghost:hover {
+  background: var(--bg-4);
+}
+@keyframes pulse {
+  50% {
+    opacity: 0.35;
+    transform: scale(0.85);
+  }
+}

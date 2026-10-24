@@ -63,20 +63,7 @@ export const translations: Record<SupportedLanguage, Record<string, string>> = {
     'nav.switchLanguageToPl': 'Przełącz na polski',
     'nav.switchLanguageToEn': 'Przełącz na angielski',
 
-    // Ticker
-    'ticker.onAir': 'NA ŻYWO',
-
-    // Hero
-    'hero.headline.lead': 'Oglądaj i śledź w',
-    'hero.headline.kanji': 'jednym',
-    'hero.headline.mark': 'spokojnym miejscu',
-    'hero.headline.tail': '.',
-    'hero.sub.lead':
-      'to aplikacja na komputer: przeglądarka bez reklam, biblioteka, harmonogram emisji i pamiętnik. Cała półka anime w jednym przytulnym oknie.',
-    'hero.cta.download': 'Pobierz ShiroAni',
-    'hero.cta.os': '· Windows / macOS',
-    'hero.cta.see': 'Zobacz jak działa',
-    // Demo reel section (between Hero and Chapter 01)
+    // Demo reel section (before Chapter 01)
     'demo.eyebrow': 'Spacer · 30 sekund',
     'demo.title.lead': 'Zobacz całą półkę w ',
     'demo.title.em': 'jednym ujęciu',
@@ -84,25 +71,6 @@ export const translations: Record<SupportedLanguage, Record<string, string>> = {
     'demo.foot':
       'Biblioteka, harmonogram, odkrywanie, przeglądarka, aktualności, pamiętnik, profil i ustawienia — wszystko w jednym przytulnym oknie.',
     'demo.video.label': 'Krótki spacer po widokach ShiroAni',
-    'hero.strip.themes': 'motywów',
-    'hero.strip.statuses': 'statusów biblioteki',
-    'hero.strip.adfree': 'bez reklam',
-    'hero.strip.price': 'wiecznie',
-    'hero.strip.priceValue': '0 zł',
-    'hero.mock.library': 'Moja biblioteka',
-    'hero.mock.titlesSuffix': 'TYTUŁÓW',
-    'hero.mock.search': 'Szukaj w bibliotece...',
-    'hero.mock.tab.all': 'Wszystkie',
-    'hero.mock.tab.watching': 'Oglądam',
-    'hero.mock.tab.completed': 'Ukończone',
-    'hero.mock.tab.planned': 'Planowane',
-    'hero.mock.tab.paused': 'Wstrzymane',
-    'hero.mock.tab.dropped': 'Porzucone',
-    'hero.dock.library': 'Biblioteka',
-    'hero.dock.schedule': 'Harmonogram',
-    'hero.dock.diary': 'Pamiętnik',
-    'hero.dock.browser': 'Przeglądarka',
-    'hero.dock.settings': 'Ustawienia',
 
     // Chapters
     'chapter.01.eyebrow': 'Chapter one · Co jest w środku',
@@ -444,20 +412,7 @@ export const translations: Record<SupportedLanguage, Record<string, string>> = {
     'nav.switchLanguageToPl': 'Switch to Polish',
     'nav.switchLanguageToEn': 'Switch to English',
 
-    // Ticker
-    'ticker.onAir': 'ON AIR',
-
-    // Hero
-    'hero.headline.lead': 'Watch and track in',
-    'hero.headline.kanji': 'one',
-    'hero.headline.mark': 'quiet place',
-    'hero.headline.tail': '.',
-    'hero.sub.lead':
-      'is a desktop app: an ad-free browser, a library, an airing schedule and a diary. Your whole anime shelf in one cozy window.',
-    'hero.cta.download': 'Download ShiroAni',
-    'hero.cta.os': '· Windows / macOS',
-    'hero.cta.see': 'See how it works',
-    // Demo reel section (between Hero and Chapter 01)
+    // Demo reel section (before Chapter 01)
     'demo.eyebrow': 'A 30-second tour',
     'demo.title.lead': 'See the whole shelf in ',
     'demo.title.em': 'one take',
@@ -465,25 +420,6 @@ export const translations: Record<SupportedLanguage, Record<string, string>> = {
     'demo.foot':
       'Library, schedule, discover, browser, news, diary, profile, and settings — all in one cozy window.',
     'demo.video.label': 'A quick walkthrough of ShiroAni views',
-    'hero.strip.themes': 'themes',
-    'hero.strip.statuses': 'library statuses',
-    'hero.strip.adfree': 'ad-free',
-    'hero.strip.price': 'forever',
-    'hero.strip.priceValue': 'Free',
-    'hero.mock.library': 'My library',
-    'hero.mock.titlesSuffix': 'TITLES',
-    'hero.mock.search': 'Search the library...',
-    'hero.mock.tab.all': 'All',
-    'hero.mock.tab.watching': 'Watching',
-    'hero.mock.tab.completed': 'Completed',
-    'hero.mock.tab.planned': 'Planned',
-    'hero.mock.tab.paused': 'On hold',
-    'hero.mock.tab.dropped': 'Dropped',
-    'hero.dock.library': 'Library',
-    'hero.dock.schedule': 'Schedule',
-    'hero.dock.diary': 'Diary',
-    'hero.dock.browser': 'Browser',
-    'hero.dock.settings': 'Settings',
 
     // Chapters
     'chapter.01.eyebrow': 'Chapter one · What’s inside',
