@@ -18,9 +18,14 @@ env:
   # skip husky install on CI
   HUSKY: 0
 
+# Every job below is gated on `github.actor != 'dependabot[bot]'`. Dependabot PRs
+# are informational (deps are bumped by hand), so running CI on them only burns
+# Actions minutes. A skipped job reports as passing, so no required check is left
+# waiting. Regular pushes and pull requests are unaffected.
 jobs:
   changes:
     name: Detect Changes
+    if: ${{ github.actor != 'dependabot[bot]' }}
     runs-on: ubuntu-latest
     outputs:
       code: ${{ steps.filter.outputs.root == 'true' || steps.filter.outputs.ci == 'true' || steps.filter.outputs.shared == 'true' || steps.filter.outputs.web == 'true' || steps.filter.outputs.desktop == 'true' || steps.filter.outputs.bot == 'true' }}
@@ -67,7 +72,7 @@ jobs:
   lint:
     name: Lint
     needs: [changes]
-    if: needs.changes.outputs.code == 'true' || needs.changes.outputs.landing == 'true'
+    if: ${{ github.actor != 'dependabot[bot]' && (needs.changes.outputs.code == 'true' || needs.changes.outputs.landing == 'true') }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -82,7 +87,7 @@ jobs:
   typecheck:
     name: Type Check
     needs: [changes]
-    if: needs.changes.outputs.code == 'true'
+    if: ${{ github.actor != 'dependabot[bot]' && (needs.changes.outputs.code == 'true') }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -103,7 +108,7 @@ jobs:
   test-web:
     name: Test Web
     needs: [changes]
-    if: needs.changes.outputs.web == 'true'
+    if: ${{ github.actor != 'dependabot[bot]' && (needs.changes.outputs.web == 'true') }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -121,7 +126,7 @@ jobs:
   test-storybook:
     name: Test Storybook
     needs: [changes]
-    if: needs.changes.outputs.web == 'true'
+    if: ${{ github.actor != 'dependabot[bot]' && (needs.changes.outputs.web == 'true') }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -144,7 +149,7 @@ jobs:
   check-locales:
     name: Check Locale Parity
     needs: [changes]
-    if: needs.changes.outputs.web == 'true'
+    if: ${{ github.actor != 'dependabot[bot]' && (needs.changes.outputs.web == 'true') }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -161,7 +166,7 @@ jobs:
   test-desktop:
     name: Test Desktop
     needs: [changes]
-    if: needs.changes.outputs.desktop == 'true'
+    if: ${{ github.actor != 'dependabot[bot]' && (needs.changes.outputs.desktop == 'true') }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -179,7 +184,7 @@ jobs:
   test-bot:
     name: Test Bot
     needs: [changes]
-    if: needs.changes.outputs.bot == 'true'
+    if: ${{ github.actor != 'dependabot[bot]' && (needs.changes.outputs.bot == 'true') }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -200,7 +205,7 @@ jobs:
   landing:
     name: Landing Check
     needs: [changes]
-    if: needs.changes.outputs.landing == 'true'
+    if: ${{ github.actor != 'dependabot[bot]' && (needs.changes.outputs.landing == 'true') }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -220,7 +225,7 @@ jobs:
 
   ci-result:
     name: CI Result
-    if: always()
+    if: ${{ always() && github.actor != 'dependabot[bot]' }}
     needs:
       [lint, typecheck, test-web, test-storybook, check-locales, test-desktop, test-bot, landing]
     runs-on: ubuntu-latest
