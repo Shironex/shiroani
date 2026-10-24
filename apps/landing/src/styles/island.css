@@ -171,9 +171,46 @@
   padding-bottom: 12vh;
 }
 
-/* Fade the last stop into the page background as the stage unpins. */
+/* Fade the last stop into the page background as the stage unpins. The fade
+   starts low enough to keep her on the bench clear at the moon stop and eases
+   in, so the scene sinks into the ground instead of meeting a line. */
 .island-stop:last-child {
-  background: linear-gradient(to bottom, transparent 70%, var(--bg));
+  background: linear-gradient(
+    to bottom,
+    transparent 66%,
+    oklch(from var(--bg) l c h / 0.18) 74%,
+    oklch(from var(--bg) l c h / 0.5) 83%,
+    oklch(from var(--bg) l c h / 0.85) 93%,
+    var(--bg)
+  );
+}
+
+/* The tour after the island: its glow rises out of the ground the island
+   fades into, instead of starting at full strength on the section's top
+   edge, and its heading sits a little closer since the fade already gives
+   the break. A general sibling, since the island's script tag sits between
+   them; section beats the tour's own scoped rules on specificity. */
+.island ~ section.demo {
+  padding-top: 72px;
+}
+
+.island ~ section.demo::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 320px;
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    var(--bg),
+    oklch(from var(--bg) l c h / 0.7) 35%,
+    oklch(from var(--bg) l c h / 0.25) 70%,
+    transparent
+  );
+}
+
+.island ~ section.demo > * {
+  position: relative;
 }
 
 .island-panel {
@@ -229,7 +266,7 @@ h2.island-heading {
   gap: 12px;
 }
 
-/* The site's buttons (sections/hero.css), as pills in the island's colours. */
+/* The site's buttons (sections/controls.css), as pills in the island's colours. */
 .island .btn {
   min-height: 48px;
   border-radius: 999px;
