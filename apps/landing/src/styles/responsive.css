@@ -1,18 +1,11 @@
 /* ============ RESPONSIVE ============ */
 @media (max-width: 1100px) {
-  .ana-stage {
-    grid-template-columns: 1fr;
-  }
-  .mascot-wrap,
-  .dl {
+  .mascot-wrap {
     grid-template-columns: 1fr;
     padding: 40px 32px;
   }
   .faq-wrap {
     grid-template-columns: 1fr;
-  }
-  .ft-inner {
-    grid-template-columns: 1fr 1fr;
   }
   .nav-links {
     display: none;
@@ -29,9 +22,6 @@
   }
   .themes-grid {
     grid-template-columns: repeat(2, 1fr);
-  }
-  .suite-grid {
-    grid-template-columns: 1fr;
   }
   .dlp-grid,
   .dlp-notes {
@@ -66,14 +56,16 @@
   .end::before {
     left: 18px;
   }
+  /* Five cards on a tablet: the two image cards full width, then the themes
+     card and the two stacked text cards share a row, half each. */
   .fc.col-7,
-  .fc.col-5,
-  .fc.col-8,
-  .fc.col-4,
-  .fc.col-6,
-  .fc.col-3 {
+  .fc.col-5 {
     grid-column: span 12;
     min-height: 300px;
+  }
+  .fc.ft-themes,
+  .fc.ft-short {
+    grid-column: span 6;
   }
 }
 @media (max-width: 640px) {
@@ -91,16 +83,21 @@
     padding: 64px 18px 20px;
   }
   .features,
-  .anatomy,
   .mascot,
-  .dl-wrap,
   .faq-wrap,
+  .glance,
+  .dl-line-wrap,
   .themes {
     padding-left: 18px;
     padding-right: 18px;
   }
   .themes-grid {
     grid-template-columns: 1fr;
+  }
+  .fc.ft-themes,
+  .fc.ft-short {
+    grid-column: span 12;
+    grid-row: auto;
   }
   .ft-inner {
     grid-template-columns: 1fr;
@@ -116,10 +113,8 @@
     scroll-behavior: auto;
   }
   /* Silence decorative/looping animations only */
-  .ana-pin::before,
   .mascot-r img,
   .hdr .blip,
-  .suite-card.self .here::before,
   .island-loader-moon {
     animation: none !important;
   }

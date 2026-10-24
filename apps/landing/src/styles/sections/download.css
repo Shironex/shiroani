@@ -1,105 +1,69 @@
-/* ============ DOWNLOAD ============ */
-.dl-wrap {
+/* ============ DOWNLOAD LINE ============ */
+/* One compact row at the end of the homepage. The island's moon stop is the
+   main download call; this one catches readers who scrolled past it. */
+.dl-line-wrap {
   max-width: 1440px;
   margin: 0 auto;
-  padding: 0 32px 60px;
+  padding: 0 32px 80px;
 }
-.dl {
+.dl-line {
   position: relative;
   background: var(--bg-2);
   border: 1px solid var(--hairline-2);
   border-radius: 22px;
-  padding: 64px 56px;
+  padding: 32px 40px;
   overflow: hidden;
-  display: grid;
-  grid-template-columns: 1.2fr 1fr;
-  gap: 48px;
+  display: flex;
+  flex-wrap: wrap;
   align-items: center;
+  justify-content: space-between;
+  gap: 24px 40px;
 }
-.dl::before {
+.dl-line::before {
   content: '';
   position: absolute;
   inset: 0;
-  background: radial-gradient(ellipse 60% 60% at 20% 100%, var(--accent-glow), transparent 60%);
-  opacity: 0.5;
+  background: radial-gradient(ellipse 50% 90% at 0% 100%, var(--accent-glow), transparent 60%);
+  opacity: 0.45;
   pointer-events: none;
 }
-.dl-l {
+.dl-line-l,
+.dl-line-r {
   position: relative;
-  z-index: 2;
 }
-.dl-l h2 {
+.dl-line-l h2 {
   font-family: var(--font-display);
   font-weight: 900;
-  font-size: var(--fs-display-lg);
-  line-height: 0.95;
-  letter-spacing: -0.03em;
+  font-size: var(--fs-display-sm);
+  line-height: 1.05;
+  letter-spacing: -0.028em;
 }
-/* Shrink headline at narrow viewports so the `&nbsp;` between
-   "dwóch" and "kliknięciach" doesn't force horizontal overflow. */
-@media (max-width: 640px) {
-  .dl-l h2 {
-    font-size: clamp(30px, 8.5vw, 40px);
-  }
-}
-.dl-l h2 em {
-  font-family: var(--font-mincho);
-  font-style: italic;
-  color: var(--accent);
-  font-weight: 800;
-}
-.dl-l p {
-  margin-top: 22px;
-  font-size: 16px;
-  color: var(--text-2);
-  max-width: 44ch;
-}
-.dl-l .minor {
-  margin-top: 18px;
+.dl-line-l .minor {
+  margin-top: 10px;
   font-family: var(--font-mono);
   font-size: 11px;
   letter-spacing: 0.15em;
   color: var(--text-3);
   text-transform: uppercase;
 }
-.dl-r {
-  position: relative;
-  z-index: 2;
+.dl-line-r {
   display: flex;
-  flex-direction: column;
-  gap: 10px;
+  flex-wrap: wrap;
+  gap: 12px;
 }
-.dl-row {
-  display: grid;
-  grid-template-columns: 36px 1fr auto;
-  gap: 18px;
-  align-items: center;
-  padding: 18px 22px;
-  background: var(--bg-3);
-  border: 1px solid var(--hairline);
-  border-radius: 14px;
-  transition: all 0.2s;
+.dl-line-r .btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
 }
-.dl-row:hover {
-  transform: translateX(4px);
-  border-color: var(--accent);
-  background: var(--bg-4);
-}
-.dl-row .pl {
-  font-family: var(--font-mono);
-  font-size: 10.5px;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--text-3);
-}
-.dl-row .pv {
-  font-family: var(--font-display);
-  font-weight: 800;
-  font-size: 17px;
-  margin-top: 2px;
-}
-.dl-row .arr {
-  font-family: var(--font-mono);
-  font-size: 18px;
-  color: var(--accent);
+@media (max-width: 640px) {
+  .dl-line {
+    padding: 28px 22px;
+  }
+  .dl-line-r,
+  .dl-line-r .btn {
+    width: 100%;
+  }
+  .dl-line-r .btn {
+    justify-content: center;
+  }
 }

@@ -51,8 +51,8 @@ export const translations: Record<SupportedLanguage, Record<string, string>> = {
     // Navbar
     'nav.primary': 'Nawigacja główna',
     'nav.features': 'Funkcje',
-    'nav.preview': 'Podgląd',
-    'nav.suite': 'Rodzina',
+    'nav.mascot': 'Shiro-chan',
+    'nav.faq': 'FAQ',
     'nav.download': 'Pobierz',
     'nav.changelog': 'Zmiany',
     'nav.home': 'Start',
@@ -63,71 +63,24 @@ export const translations: Record<SupportedLanguage, Record<string, string>> = {
     'nav.switchLanguageToPl': 'Przełącz na polski',
     'nav.switchLanguageToEn': 'Przełącz na angielski',
 
-    // Demo reel section (before Chapter 01)
-    'demo.eyebrow': 'Spacer · 30 sekund',
-    'demo.title.lead': 'Zobacz całą półkę w ',
-    'demo.title.em': 'jednym ujęciu',
-    'demo.title.tail': '.',
-    'demo.foot':
-      'Biblioteka, harmonogram, odkrywanie, przeglądarka, aktualności, pamiętnik, profil i ustawienia — wszystko w jednym przytulnym oknie.',
-    'demo.video.label': 'Krótki spacer po widokach ShiroAni',
-
     // Chapters
-    'chapter.01.eyebrow': 'Chapter one · Co jest w środku',
-    'chapter.01.title': 'Jedna aplikacja. ',
-    'chapter.01.em': 'Sześć przestrzeni.',
-    'chapter.01.meta': '9 funkcji<br />str. 04–09',
-    'chapter.02.eyebrow': 'Chapter two · Anatomia aplikacji',
-    'chapter.02.title': 'Kliknij pinezkę, żeby ',
-    'chapter.02.em': 'zobaczyć szczegóły',
+    'chapter.01.eyebrow': 'Chapter one · Poza wyspą',
+    'chapter.01.title': 'I jeszcze ',
+    'chapter.01.em': 'kilka rzeczy',
+    'chapter.01.titleSuffix': '.',
+    'chapter.01.meta': '5 funkcji<br />№ 05 do 09',
+    'chapter.02.eyebrow': 'Chapter two · Mała towarzyszka',
+    'chapter.02.title': 'Poznaj ',
+    'chapter.02.em': 'Shiro-chan',
     'chapter.02.titleSuffix': '.',
-    'chapter.02.meta': '4 widoki · 12 pinów<br />str. 10–11',
-    'chapter.03.eyebrow': 'Chapter three · Mała towarzyszka',
-    'chapter.03.title': 'Poznaj ',
-    'chapter.03.em': 'Shiro-chan',
+    'chapter.02.meta': '8+ póz',
+    'chapter.03.eyebrow': 'Chapter three · Pytania',
+    'chapter.03.title': 'Krótko i ',
+    'chapter.03.em': 'na temat',
     'chapter.03.titleSuffix': '.',
-    'chapter.03.meta': '8+ póz<br />str. 13',
-    'chapter.04.eyebrow': 'Chapter four · Rodzina',
-    'chapter.04.title': 'Jedna cicha półka na ',
-    'chapter.04.em': 'anime, mangę i muzykę',
-    'chapter.04.titleSuffix': '.',
-    'chapter.04.meta': '3 aplikacje<br />1 język wizualny',
-    'chapter.05.eyebrow': 'Chapter five · Zainstaluj',
-    'chapter.05.title': 'Zabierz ją ',
-    'chapter.05.em': 'do siebie',
-    'chapter.05.titleSuffix': '.',
-    'chapter.05.meta': '2 platformy · 48 MB<br />str. 14',
-    'chapter.06.eyebrow': 'Chapter six · Pytania',
-    'chapter.06.title': 'Krótko i ',
-    'chapter.06.em': 'na temat',
-    'chapter.06.titleSuffix': '.',
-    'chapter.06.meta': '6 pytań<br />str. 15',
+    'chapter.03.meta': '6 pytań',
 
     // Features
-    'features.01.no': '№ 01 · BROWSER',
-    'features.01.tag': 'AD-BLOCK · GHOSTERY',
-    'features.01.title': 'Wbudowana przeglądarka bez reklam.',
-    'features.01.desc':
-      'Karty, sesje, zakładki i blokada reklam Ghostery — wszystko w tym samym oknie, w którym oglądasz. Żadnych pop-upów ani przekierowań.',
-    'features.01.alt': 'Wbudowana przeglądarka',
-    'features.02.no': '№ 02 · LIBRARY',
-    'features.02.tag': '5 STATUSÓW',
-    'features.02.title': 'Biblioteka po Twojemu.',
-    'features.02.desc':
-      'Oglądane, ukończone, planowane, wstrzymane, porzucone. Filtry, notatki, odcinki.',
-    'features.02.alt': 'Biblioteka anime',
-    'features.03.no': '№ 03 · SCHEDULE',
-    'features.03.tag': 'ANILIST · LIVE',
-    'features.03.title': 'Harmonogram emisji z odliczaniem do premiery.',
-    'features.03.desc':
-      'Widok tygodniowy, dzienny i tabelaryczny. Dane prosto z AniList. Powiadomienie, gdy wchodzi nowy odcinek.',
-    'features.03.alt': 'Harmonogram emisji',
-    'features.04.no': '№ 04 · DIARY',
-    'features.04.tag': 'TIPTAP',
-    'features.04.title': 'Pamiętnik z formatowaniem.',
-    'features.04.desc':
-      'Zapisuj wrażenia po każdym odcinku: tekst z formatowaniem, obrazki, nagłówki — wszystko lokalnie.',
-    'features.04.alt': 'Pamiętnik',
     'features.05.no': '№ 05 · DISCORD RPC',
     'features.05.tag': 'TEMPLATE EDITOR',
     'features.05.title': 'Pokaż znajomym, co oglądasz.',
@@ -158,29 +111,20 @@ export const translations: Record<SupportedLanguage, Record<string, string>> = {
       'Shiro-chan siedzi w rogu okna i dotrzymuje Ci towarzystwa. Przeciągnij ją, gdzie chcesz — i tam zostanie. Kolejne pozy i reakcje dojdą w następnych wydaniach.',
     'mascot.alt': 'Shiro-chan',
 
-    // Suite
-    'suite.shiroani.role': 'Tracker anime',
-    'suite.shiroani.desc':
-      'Biblioteka, harmonogram, pamiętnik i wbudowana przeglądarka bez reklam.',
-    'suite.shiroani.here': 'Tutaj jesteś',
-    'suite.shiranami.role': 'Przystań dla muzyki',
-    'suite.shiranami.desc': 'Odtwarzacz z playlistami, który gra w tle, gdy czytasz lub oglądasz.',
-    'suite.kireimanga.role': 'Czytnik mangi',
-    'suite.kireimanga.desc': 'Wygodny czytnik z biblioteką rozdziałów, zakładkami i trybem nocnym.',
+    // At a glance (end of the homepage)
+    'glance.label': 'W skrócie',
+    'glance.free.title': 'Za darmo',
+    'glance.free.body': 'Bez wersji premium i okresu próbnego.',
+    'glance.platforms.title': 'Dwa systemy',
+    'glance.platforms.body': 'Windows i macOS.',
+    'glance.account.title': 'Bez konta',
+    'glance.account.body': 'Biblioteka zostaje na Twoim komputerze.',
+    'glance.anilist.title': 'AniList w środku',
+    'glance.anilist.body': 'Harmonogram i odkrywanie nowych serii.',
 
-    // Download CTA
-    'download.title.lead': 'Twoja półka anime',
-    'download.title.mid': 'w',
-    'download.title.em': 'dwóch kliknięciach',
-    'download.title.tail': '.',
-    'download.body':
-      'Za darmo, bez konta i bez reklam. Na Windowsie auto-aktualizacja. Na macOS po każdym pobraniu trzeba wpisać jedną komendę w terminalu, bo aplikacja nie jest podpisana.',
+    // Download line (end of the homepage)
+    'download.title': 'Pobierz ShiroAni',
     'download.minor.released': 'wydanie z',
-    'download.minor.openSource': 'open source',
-    'download.row.win.platform': 'Windows · 64-bit · .exe',
-    'download.row.win.file': 'ShiroAni.Setup.exe',
-    'download.row.mac.platform': 'macOS · Universal · .dmg',
-    'download.row.mac.file': 'ShiroAni.dmg',
 
     // FAQ
     'faq.heading.lead': 'Najczęstsze ',
@@ -211,75 +155,17 @@ export const translations: Record<SupportedLanguage, Record<string, string>> = {
       'Shiro-chan dorosła. Stabilna, dopracowana i bezpłatna — a z każdym wydaniem robi się przytulniej.',
     'footer.col.product': 'Produkt',
     'footer.col.resources': 'Zasoby',
-    'footer.col.suite': 'Rodzina',
     'footer.link.features': 'Funkcje',
-    'footer.link.preview': 'Podgląd',
     'footer.link.download': 'Pobierz',
     'footer.link.changelog': 'Lista zmian',
     'footer.link.faq': 'FAQ',
     'footer.link.github': 'GitHub',
     'footer.link.discord': 'Discord',
+    'footer.family.lead': 'Część małej rodziny z ',
+    'footer.family.music': ' do muzyki i ',
+    'footer.family.manga': ' do mangi.',
     'footer.copyright': 'Wszelkie prawa zastrzeżone',
     'footer.tagline': '白 · アニ · Made with ♥ in Poland',
-
-    // Anatomy (React island)
-    'anatomy.aria.tablist': 'Anatomia widoków aplikacji',
-    'anatomy.tab.library': 'Biblioteka',
-    'anatomy.tab.schedule': 'Harmonogram',
-    'anatomy.tab.newtab': 'Nowa karta',
-    'anatomy.tab.settings': 'Ustawienia',
-    'anatomy.viewLabel.library': 'Widok · Biblioteka',
-    'anatomy.viewLabel.schedule': 'Widok · Harmonogram',
-    'anatomy.viewLabel.newtab': 'Widok · Nowa karta',
-    'anatomy.viewLabel.settings': 'Widok · Ustawienia',
-    'anatomy.title.library': 'Twoja półka z tytułami. Statusy, postęp, okładki.',
-    'anatomy.title.schedule': 'Harmonogram emisji prosto z AniList.',
-    'anatomy.title.newtab': 'Nowa karta z powitaniem i ulubionymi stronami pod ręką.',
-    'anatomy.title.settings': 'Ustawienia: czytelność, motywy, integracje.',
-    'anatomy.pin': 'Pin',
-    // library pins
-    'anatomy.library.pin1.title': 'Nagłówek',
-    'anatomy.library.pin1.text': 'Nazwa widoku i licznik pozycji.',
-    'anatomy.library.pin2.title': 'Akcje',
-    'anatomy.library.pin2.text':
-      'Sortowanie, import, eksport, statystyki oraz przełącznik siatki i listy.',
-    'anatomy.library.pin3.title': 'Filtry statusu',
-    'anatomy.library.pin3.text':
-      'Pięć statusów plus filtr Wszystkie: Oglądam, Ukończone, Planowane, Wstrzymane, Porzucone.',
-    'anatomy.library.pin4.title': 'Karty serii',
-    'anatomy.library.pin4.text':
-      'Okładki z biblioteki, postęp (Odc. 8/12), badge statusu. Klik otwiera szczegóły i pamiętnik.',
-    // schedule pins
-    'anatomy.schedule.pin1.title': 'Zakres tygodnia',
-    'anatomy.schedule.pin1.text': 'Zakres dat u góry widoku. Dane lecą na żywo z AniList.',
-    'anatomy.schedule.pin2.title': 'Dzień aktywny',
-    'anatomy.schedule.pin2.text':
-      'Dzisiejszy dzień wyróżniony kolorem. Obok numer dnia i skrót nazwy tygodnia.',
-    'anatomy.schedule.pin3.title': 'Karta odcinka',
-    'anatomy.schedule.pin3.text':
-      'Plakat, numer odcinka i godzina emisji. Podświetlenie dla serii z biblioteki oraz z subskrypcji.',
-    // newtab pins
-    'anatomy.newtab.pin1.title': 'Powitanie',
-    'anatomy.newtab.pin1.text':
-      'Powitanie z imieniem i podsumowaniem dnia: odcinki dzisiaj oraz nowości w subskrypcjach.',
-    'anatomy.newtab.pin2.title': 'Emitowane dzisiaj',
-    'anatomy.newtab.pin2.text':
-      'Poziomy pasek z odcinkami, które emitują się dzisiaj, wraz z godziną premiery.',
-    'anatomy.newtab.pin3.title': 'Szybki dostęp',
-    'anatomy.newtab.pin3.text':
-      'Kafelki z ulubionymi stronami. Ikona, nazwa i konfiguracja w jednym kliknięciu.',
-    // settings pins
-    'anatomy.settings.pin1.title': 'Kategorie',
-    'anatomy.settings.pin1.text':
-      'Pięć grup ustawień: Aplikacja, Wygląd, Integracje, Dane, Zaawansowane.',
-    'anatomy.settings.pin2.title': 'Czytelność',
-    'anatomy.settings.pin2.text': 'Skala tekstu i interfejsu. Pięć poziomów od 95% do 115%.',
-    'anatomy.settings.pin3.title': 'Motywy kolorystyczne',
-    'anatomy.settings.pin3.text':
-      '{themeCount} wbudowanych palet: {darkCount} ciemnych i {lightCount} jasne. Kliknięcie zastosuje motyw od razu.',
-    'anatomy.settings.pin4.title': 'Import własnego motywu',
-    'anatomy.settings.pin4.text':
-      'Zaimportuj motyw z pliku lub zbuduj własny w edytorze z podglądem na żywo.',
 
     // Download page (React island)
     'dlp.eyebrow.released': 'wydanie z',
@@ -400,8 +286,8 @@ export const translations: Record<SupportedLanguage, Record<string, string>> = {
     // Navbar
     'nav.primary': 'Primary navigation',
     'nav.features': 'Features',
-    'nav.preview': 'Preview',
-    'nav.suite': 'Suite',
+    'nav.mascot': 'Shiro-chan',
+    'nav.faq': 'FAQ',
     'nav.download': 'Download',
     'nav.changelog': 'Changelog',
     'nav.home': 'Home',
@@ -412,70 +298,24 @@ export const translations: Record<SupportedLanguage, Record<string, string>> = {
     'nav.switchLanguageToPl': 'Switch to Polish',
     'nav.switchLanguageToEn': 'Switch to English',
 
-    // Demo reel section (before Chapter 01)
-    'demo.eyebrow': 'A 30-second tour',
-    'demo.title.lead': 'See the whole shelf in ',
-    'demo.title.em': 'one take',
-    'demo.title.tail': '.',
-    'demo.foot':
-      'Library, schedule, discover, browser, news, diary, profile, and settings — all in one cozy window.',
-    'demo.video.label': 'A quick walkthrough of ShiroAni views',
-
     // Chapters
-    'chapter.01.eyebrow': 'Chapter one · What’s inside',
-    'chapter.01.title': 'One app. ',
-    'chapter.01.em': 'Six spaces.',
-    'chapter.01.meta': '9 features<br />p. 04–09',
-    'chapter.02.eyebrow': 'Chapter two · App anatomy',
-    'chapter.02.title': 'Click a pin to ',
-    'chapter.02.em': 'see the details',
+    'chapter.01.eyebrow': 'Chapter one · Beyond the island',
+    'chapter.01.title': 'And a few ',
+    'chapter.01.em': 'more things',
+    'chapter.01.titleSuffix': '.',
+    'chapter.01.meta': '5 features<br />№ 05 to 09',
+    'chapter.02.eyebrow': 'Chapter two · A small companion',
+    'chapter.02.title': 'Meet ',
+    'chapter.02.em': 'Shiro-chan',
     'chapter.02.titleSuffix': '.',
-    'chapter.02.meta': '4 views · 12 pins<br />p. 10–11',
-    'chapter.03.eyebrow': 'Chapter three · A small companion',
-    'chapter.03.title': 'Meet ',
-    'chapter.03.em': 'Shiro-chan',
+    'chapter.02.meta': '8+ poses',
+    'chapter.03.eyebrow': 'Chapter three · Questions',
+    'chapter.03.title': 'Short and ',
+    'chapter.03.em': 'to the point',
     'chapter.03.titleSuffix': '.',
-    'chapter.03.meta': '8+ poses<br />p. 13',
-    'chapter.04.eyebrow': 'Chapter four · The family',
-    'chapter.04.title': 'One quiet shelf for ',
-    'chapter.04.em': 'anime, manga and music',
-    'chapter.04.titleSuffix': '.',
-    'chapter.04.meta': '3 apps<br />1 visual language',
-    'chapter.05.eyebrow': 'Chapter five · Install',
-    'chapter.05.title': 'Take it ',
-    'chapter.05.em': 'home',
-    'chapter.05.titleSuffix': '.',
-    'chapter.05.meta': '2 platforms · 48 MB<br />p. 14',
-    'chapter.06.eyebrow': 'Chapter six · Questions',
-    'chapter.06.title': 'Short and ',
-    'chapter.06.em': 'to the point',
-    'chapter.06.titleSuffix': '.',
-    'chapter.06.meta': '6 questions<br />p. 15',
+    'chapter.03.meta': '6 questions',
 
     // Features
-    'features.01.no': '№ 01 · BROWSER',
-    'features.01.tag': 'AD-BLOCK · GHOSTERY',
-    'features.01.title': 'A built-in, ad-free browser.',
-    'features.01.desc':
-      'Tabs, sessions, bookmarks and Ghostery ad-blocking — all in the same window where you watch. No popups, no redirects.',
-    'features.01.alt': 'Built-in browser',
-    'features.02.no': '№ 02 · LIBRARY',
-    'features.02.tag': '5 STATUSES',
-    'features.02.title': 'A library that bends to you.',
-    'features.02.desc': 'Watching, completed, planned, on hold, dropped. Filters, notes, episodes.',
-    'features.02.alt': 'Anime library',
-    'features.03.no': '№ 03 · SCHEDULE',
-    'features.03.tag': 'ANILIST · LIVE',
-    'features.03.title': 'Airing schedule with countdowns to each premiere.',
-    'features.03.desc':
-      'Weekly, daily and table views. Data straight from AniList. A nudge when a new episode lands.',
-    'features.03.alt': 'Airing schedule',
-    'features.04.no': '№ 04 · DIARY',
-    'features.04.tag': 'TIPTAP',
-    'features.04.title': 'A diary with rich formatting.',
-    'features.04.desc':
-      'Write down your thoughts after every episode: rich text, images, headings — all stored locally.',
-    'features.04.alt': 'Diary',
     'features.05.no': '№ 05 · DISCORD RPC',
     'features.05.tag': 'TEMPLATE EDITOR',
     'features.05.title': 'Show your friends what you’re watching.',
@@ -506,30 +346,20 @@ export const translations: Record<SupportedLanguage, Record<string, string>> = {
       'Shiro-chan sits in the corner of the window and keeps you company. Drag her wherever you like — she stays. More poses and reactions are coming in future releases.',
     'mascot.alt': 'Shiro-chan',
 
-    // Suite
-    'suite.shiroani.role': 'Anime tracker',
-    'suite.shiroani.desc': 'Library, schedule, diary, and a built-in ad-free browser.',
-    'suite.shiroani.here': 'You are here',
-    'suite.shiranami.role': 'A sanctuary for music',
-    'suite.shiranami.desc':
-      'A playlist player that hums in the background while you read or watch.',
-    'suite.kireimanga.role': 'Manga reader',
-    'suite.kireimanga.desc':
-      'A comfortable reader with a chapter library, bookmarks and a night mode.',
+    // At a glance (end of the homepage)
+    'glance.label': 'At a glance',
+    'glance.free.title': 'Free',
+    'glance.free.body': 'No tiers, no trial.',
+    'glance.platforms.title': 'Two desktops',
+    'glance.platforms.body': 'Windows and macOS.',
+    'glance.account.title': 'No account',
+    'glance.account.body': 'Your library stays local.',
+    'glance.anilist.title': 'AniList inside',
+    'glance.anilist.body': 'Schedules and discovery.',
 
-    // Download CTA
-    'download.title.lead': 'Your anime shelf',
-    'download.title.mid': 'in',
-    'download.title.em': 'two clicks',
-    'download.title.tail': '.',
-    'download.body':
-      'Free, no account, no ads. Auto-updates on Windows. On macOS you have to run one Terminal command after each download because the app isn’t signed.',
+    // Download line (end of the homepage)
+    'download.title': 'Get ShiroAni',
     'download.minor.released': 'released on',
-    'download.minor.openSource': 'open source',
-    'download.row.win.platform': 'Windows · 64-bit · .exe',
-    'download.row.win.file': 'ShiroAni.Setup.exe',
-    'download.row.mac.platform': 'macOS · Universal · .dmg',
-    'download.row.mac.file': 'ShiroAni.dmg',
 
     // FAQ
     'faq.heading.lead': 'Frequently asked ',
@@ -560,75 +390,17 @@ export const translations: Record<SupportedLanguage, Record<string, string>> = {
       'Shiro-chan is all grown up. Stable, polished, and free — and every release makes it cozier.',
     'footer.col.product': 'Product',
     'footer.col.resources': 'Resources',
-    'footer.col.suite': 'Family',
     'footer.link.features': 'Features',
-    'footer.link.preview': 'Preview',
     'footer.link.download': 'Download',
     'footer.link.changelog': 'Changelog',
     'footer.link.faq': 'FAQ',
     'footer.link.github': 'GitHub',
     'footer.link.discord': 'Discord',
+    'footer.family.lead': 'Part of a small family with ',
+    'footer.family.music': ' for music and ',
+    'footer.family.manga': ' for manga.',
     'footer.copyright': 'All rights reserved',
     'footer.tagline': '白 · アニ · Made with ♥ in Poland',
-
-    // Anatomy
-    'anatomy.aria.tablist': 'App view anatomy',
-    'anatomy.tab.library': 'Library',
-    'anatomy.tab.schedule': 'Schedule',
-    'anatomy.tab.newtab': 'New tab',
-    'anatomy.tab.settings': 'Settings',
-    'anatomy.viewLabel.library': 'View · Library',
-    'anatomy.viewLabel.schedule': 'View · Schedule',
-    'anatomy.viewLabel.newtab': 'View · New tab',
-    'anatomy.viewLabel.settings': 'View · Settings',
-    'anatomy.title.library': 'Your shelf of titles. Statuses, progress, covers.',
-    'anatomy.title.schedule': 'Airing schedule straight from AniList.',
-    'anatomy.title.newtab': 'A new tab with a greeting and your favorite sites at hand.',
-    'anatomy.title.settings': 'Settings: readability, themes, integrations.',
-    'anatomy.pin': 'Pin',
-    // library
-    'anatomy.library.pin1.title': 'Header',
-    'anatomy.library.pin1.text': 'View name and item counter.',
-    'anatomy.library.pin2.title': 'Actions',
-    'anatomy.library.pin2.text': 'Sort, import, export, statistics and a grid/list switcher.',
-    'anatomy.library.pin3.title': 'Status filters',
-    'anatomy.library.pin3.text':
-      'Five statuses plus an All filter: Watching, Completed, Planned, On hold, Dropped.',
-    'anatomy.library.pin4.title': 'Series cards',
-    'anatomy.library.pin4.text':
-      'Library covers, progress (Ep. 8/12), status badge. Click opens details and the diary.',
-    // schedule
-    'anatomy.schedule.pin1.title': 'Week range',
-    'anatomy.schedule.pin1.text':
-      'Date range at the top of the view. Data flows live from AniList.',
-    'anatomy.schedule.pin2.title': 'Active day',
-    'anatomy.schedule.pin2.text':
-      'Today highlighted in color. Day number and weekday short name next to it.',
-    'anatomy.schedule.pin3.title': 'Episode card',
-    'anatomy.schedule.pin3.text':
-      'Poster, episode number and airing time. Highlighted for series in your library and subscriptions.',
-    // newtab
-    'anatomy.newtab.pin1.title': 'Greeting',
-    'anatomy.newtab.pin1.text':
-      'A greeting with your name and a recap of the day: episodes today and new entries in your subscriptions.',
-    'anatomy.newtab.pin2.title': 'Airing today',
-    'anatomy.newtab.pin2.text':
-      'A horizontal strip of episodes airing today, with their premiere times.',
-    'anatomy.newtab.pin3.title': 'Quick access',
-    'anatomy.newtab.pin3.text':
-      'Tiles of favorite sites. Icon, name and configuration in one click.',
-    // settings
-    'anatomy.settings.pin1.title': 'Categories',
-    'anatomy.settings.pin1.text':
-      'Five groups of settings: App, Appearance, Integrations, Data, Advanced.',
-    'anatomy.settings.pin2.title': 'Readability',
-    'anatomy.settings.pin2.text': 'Text and interface scale. Five levels from 95% to 115%.',
-    'anatomy.settings.pin3.title': 'Color themes',
-    'anatomy.settings.pin3.text':
-      '{themeCount} built-in palettes: {darkCount} dark and {lightCount} light. A click applies the theme instantly.',
-    'anatomy.settings.pin4.title': 'Import a custom theme',
-    'anatomy.settings.pin4.text':
-      'Import a theme from a file or build your own in the editor with a live preview.',
 
     // Download page
     'dlp.eyebrow.released': 'released on',
@@ -727,7 +499,7 @@ export const translations: Record<SupportedLanguage, Record<string, string>> = {
  * Theme counts are the single source of truth in `BUILT_IN_THEME_METADATA`.
  * Strings reference them through `{themeCount}` / `{darkCount}` / `{lightCount}`
  * placeholders so adding a built-in theme can never desync the marketing copy
- * (hero strip, features.07, anatomy settings pin) from the actual app.
+ * (features.07) from the actual app.
  */
 const THEME_COUNTS: Record<string, string> = {
   themeCount: String(BUILT_IN_THEME_METADATA.length),

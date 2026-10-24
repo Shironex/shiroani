@@ -40,6 +40,17 @@ export function Footer({ lang: initialLang }: FooterProps = {}) {
             </div>
           </div>
           <p>{t('footer.blurb')}</p>
+          <p className="ft-family">
+            {t('footer.family.lead')}
+            <a href="https://shiranami.app" target="_blank" rel="noopener noreferrer">
+              Shiranami
+            </a>
+            {t('footer.family.music')}
+            <a href="https://kireimanga.app" target="_blank" rel="noopener noreferrer">
+              Kirei Manga
+            </a>
+            {t('footer.family.manga')}
+          </p>
           <div className="s">
             <a
               href="https://github.com/Shironex/shiroani"
@@ -56,7 +67,6 @@ export function Footer({ lang: initialLang }: FooterProps = {}) {
         <div className="ft-col">
           <p className="ft-h">{t('footer.col.product')}</p>
           <a href={href('/#funkcje')}>{t('footer.link.features')}</a>
-          <a href={href('/#podglad')}>{t('footer.link.preview')}</a>
           <a href={href('/#pobierz')}>{t('footer.link.download')}</a>
         </div>
         <div className="ft-col">
@@ -65,16 +75,6 @@ export function Footer({ lang: initialLang }: FooterProps = {}) {
           <a href={href('/#faq')}>{t('footer.link.faq')}</a>
           <a href="https://github.com/Shironex/shiroani" target="_blank" rel="noopener noreferrer">
             {t('footer.link.github')}
-          </a>
-        </div>
-        <div className="ft-col">
-          <p className="ft-h">{t('footer.col.suite')}</p>
-          <a href={href('/#suite')}>ShiroAni</a>
-          <a href="https://shiranami.app" target="_blank" rel="noopener noreferrer">
-            Shiranami ↗
-          </a>
-          <a href="https://kireimanga.app" target="_blank" rel="noopener noreferrer">
-            KireiManga ↗
           </a>
         </div>
       </div>

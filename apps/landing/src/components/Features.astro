@@ -2,10 +2,6 @@
 import { Image } from 'astro:assets';
 import type { ImageMetadata } from 'astro';
 import { BUILT_IN_THEME_METADATA, type BuiltInThemeMeta } from '@shiroani/shared';
-import browserView from '../assets/browser_view.webp';
-import libraryView from '../assets/library_view.webp';
-import scheduleView from '../assets/schedule_view.webp';
-import diaryView from '../assets/diary_view.webp';
 import discordRpc from '../assets/discord_rpc.webp';
 import onboarding from '../assets/onboarding.webp';
 import { t, type SupportedLanguage } from '../lib/i18n';
@@ -29,7 +25,6 @@ type Feature = {
   noFallback: string;
   tagKey?: string;
   tagFallback?: string;
-  tagOn?: boolean;
   titleKey: string;
   titleFallback: string;
   descKey: string;
@@ -45,75 +40,13 @@ type Feature = {
 const SHOT = { w: 3420, h: 2214 };
 const RPC = { w: 1116, h: 378 };
 
+// Only what the island tour doesn't already show (library, schedule, diary and
+// browser live on its stops), so the numbering picks up at № 05. Two image
+// cards on top; below, the tall themes card beside the two short text cards
+// stacked, so every row fills the 12-column grid.
 const features: Feature[] = [
   {
-    cls: 'col-7 hl',
-    noKey: 'features.01.no',
-    noFallback: '№ 01 · BROWSER',
-    tagKey: 'features.01.tag',
-    tagFallback: 'AD-BLOCK · GHOSTERY',
-    tagOn: true,
-    titleKey: 'features.01.title',
-    titleFallback: 'Wbudowana przeglądarka bez reklam.',
-    descKey: 'features.01.desc',
-    descFallback:
-      'Karty, sesje, zakładki i blokada reklam Ghostery — wszystko w tym samym oknie, w którym oglądasz. Żadnych pop-upów ani przekierowań.',
-    img: browserView,
-    altKey: 'features.01.alt',
-    altFallback: 'Wbudowana przeglądarka',
-    ...SHOT,
-  },
-  {
-    cls: 'col-5 hl',
-    noKey: 'features.02.no',
-    noFallback: '№ 02 · LIBRARY',
-    tagKey: 'features.02.tag',
-    tagFallback: '5 STATUSÓW',
-    titleKey: 'features.02.title',
-    titleFallback: 'Biblioteka po Twojemu.',
-    descKey: 'features.02.desc',
-    descFallback:
-      'Oglądane, ukończone, planowane, wstrzymane, porzucone. Filtry, notatki, odcinki.',
-    img: libraryView,
-    altKey: 'features.02.alt',
-    altFallback: 'Biblioteka anime',
-    ...SHOT,
-  },
-  {
-    cls: 'col-8 hl',
-    noKey: 'features.03.no',
-    noFallback: '№ 03 · SCHEDULE',
-    tagKey: 'features.03.tag',
-    tagFallback: 'ANILIST · LIVE',
-    tagOn: true,
-    titleKey: 'features.03.title',
-    titleFallback: 'Harmonogram emisji z odliczaniem do premiery.',
-    descKey: 'features.03.desc',
-    descFallback:
-      'Widok tygodniowy, dzienny i tabelaryczny. Dane prosto z AniList. Powiadomienie, gdy wchodzi nowy odcinek.',
-    img: scheduleView,
-    altKey: 'features.03.alt',
-    altFallback: 'Harmonogram emisji',
-    ...SHOT,
-  },
-  {
-    cls: 'col-4',
-    noKey: 'features.04.no',
-    noFallback: '№ 04 · DIARY',
-    tagKey: 'features.04.tag',
-    tagFallback: 'TIPTAP',
-    titleKey: 'features.04.title',
-    titleFallback: 'Pamiętnik z formatowaniem.',
-    descKey: 'features.04.desc',
-    descFallback:
-      'Zapisuj wrażenia po każdym odcinku: tekst z formatowaniem, obrazki, nagłówki — wszystko lokalnie.',
-    img: diaryView,
-    altKey: 'features.04.alt',
-    altFallback: 'Pamiętnik',
-    ...SHOT,
-  },
-  {
-    cls: 'col-4',
+    cls: 'col-5 hl ft-rpc',
     noKey: 'features.05.no',
     noFallback: '№ 05 · DISCORD RPC',
     tagKey: 'features.05.tag',
@@ -129,7 +62,7 @@ const features: Feature[] = [
     ...RPC,
   },
   {
-    cls: 'col-4',
+    cls: 'col-7 hl',
     noKey: 'features.06.no',
     noFallback: '№ 06 · NEW TAB',
     titleKey: 'features.06.title',
@@ -152,7 +85,7 @@ const features: Feature[] = [
     themes: BUILT_IN_THEME_METADATA,
   },
   {
-    cls: 'col-4',
+    cls: 'col-8 ft-short',
     noKey: 'features.08.no',
     noFallback: '№ 08 · NOTIFICATIONS',
     titleKey: 'features.08.title',
@@ -162,7 +95,7 @@ const features: Feature[] = [
       'Powiadomienia systemowe, gdy tylko któraś seria z biblioteki dostaje nowy odcinek.',
   },
   {
-    cls: 'col-4',
+    cls: 'col-8 ft-short',
     noKey: 'features.09.no',
     noFallback: '№ 09 · IMPORT / EXPORT',
     titleKey: 'features.09.title',
@@ -180,7 +113,7 @@ const features: Feature[] = [
       <article class={`fc ${f.cls}`}>
         <div class="fc-head">
           <span class="no" data-i18n={f.noKey}>{tt(f.noKey)}</span>
-          {f.tagKey && <span class={`tag ${f.tagOn ? 'on' : ''}`} data-i18n={f.tagKey}>{tt(f.tagKey)}</span>}
+          {f.tagKey && <span class="tag" data-i18n={f.tagKey}>{tt(f.tagKey)}</span>}
         </div>
         <h3 data-i18n={f.titleKey}>{tt(f.titleKey)}</h3>
         <p data-i18n={f.descKey}>{tt(f.descKey)}</p>

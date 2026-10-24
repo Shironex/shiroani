@@ -1,0 +1,39 @@
+/* ============ AT A GLANCE ============ */
+.glance {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 24px 32px 48px;
+}
+.glance-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 32px;
+  padding-top: 32px;
+  border-top: 1px solid var(--hairline-2);
+}
+.glance-t {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 22px;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+.glance-b {
+  margin-top: 6px;
+  font-size: 15px;
+  color: var(--text-2);
+}
+@media (max-width: 1100px) {
+  .glance-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px 16px;
+  }
+}
+@media (max-width: 640px) {
+  .glance-t {
+    font-size: 19px;
+  }
+  .glance-b {
+    font-size: 14px;
+  }
+}

@@ -185,32 +185,37 @@
   );
 }
 
-/* The tour after the island: its glow rises out of the ground the island
-   fades into, instead of starting at full strength on the section's top
-   edge, and its heading sits a little closer since the fade already gives
-   the break. A general sibling, since the island's script tag sits between
-   them; section beats the tour's own scoped rules on specificity. */
-.island ~ section.demo {
-  padding-top: 72px;
+/* The first chapter after the island: the island already fades into the page
+   background, so its heading sits closer and a faint glow rises out of that
+   ground instead of starting on a hard edge. A general sibling, since the
+   island's script tag sits between them; the :not() keeps it to the first
+   chapter. */
+.island ~ .divider:not(.divider ~ .divider) {
+  position: relative;
+  padding-top: 56px;
 }
 
-.island ~ section.demo::before {
+.island ~ .divider:not(.divider ~ .divider)::before {
   content: '';
   position: absolute;
   inset: 0 0 auto;
-  height: 320px;
+  height: 260px;
   pointer-events: none;
-  background: linear-gradient(
-    to bottom,
-    var(--bg),
-    oklch(from var(--bg) l c h / 0.7) 35%,
-    oklch(from var(--bg) l c h / 0.25) 70%,
-    transparent
+  background: radial-gradient(
+    60% 100% at 50% 0%,
+    oklch(from var(--accent) l c h / 0.09),
+    transparent 70%
   );
 }
 
-.island ~ section.demo > * {
+.island ~ .divider:not(.divider ~ .divider) > * {
   position: relative;
+}
+
+@media (max-width: 640px) {
+  .island ~ .divider:not(.divider ~ .divider) {
+    padding-top: 40px;
+  }
 }
 
 .island-panel {
