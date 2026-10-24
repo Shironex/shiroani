@@ -65,7 +65,7 @@ const domeMaterial = new ShaderMaterial({
     void main() {
       vec3 dir = normalize(vDir);
       vec3 color = mix(horizon, zenith, smoothstep(0.0, 0.6, dir.y));
-      color = mix(color, below, smoothstep(0.0, -0.35, dir.y));
+      color = mix(color, below, 1.0 - smoothstep(-0.35, 0.0, dir.y));
       float m = max(dot(dir, moon), 0.0);
       color += glow * (pow(m, 12.0) * 0.06 + pow(m, 60.0) * 0.22);
       gl_FragColor = vec4(color, 1.0);
@@ -138,7 +138,7 @@ const haloMaterial = new ShaderMaterial({
       // Radius in moon radii: the disc ends at 1.
       float r = length(vUv - 0.5) * 2.0 * ${HALO_SCALE.toFixed(1)};
       float a = exp(-(r - 1.0) * 1.6) * 0.5 + exp(-(r - 1.0) * 0.45) * 0.16;
-      a *= smoothstep(0.85, 1.05, r) * smoothstep(${HALO_SCALE.toFixed(1)}, ${(HALO_SCALE * 0.7).toFixed(1)}, r);
+      a *= smoothstep(0.85, 1.05, r) * (1.0 - smoothstep(${(HALO_SCALE * 0.7).toFixed(1)}, ${HALO_SCALE.toFixed(1)}, r));
       gl_FragColor = vec4(color * a, 1.0);
     }
   `,

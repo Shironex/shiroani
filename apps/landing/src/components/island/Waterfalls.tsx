@@ -103,7 +103,7 @@ const waterMaterial = new ShaderMaterial({
       float streak = smoothstep(0.38, 0.78, s1) * 0.65 + smoothstep(0.45, 0.85, s2) * 0.55;
       // Ragged edges: the sheet frays into strands along its sides.
       float fray = texture2D(noise, vec2(vUv.x * 3.0 + 0.7, along * 0.05 - time * 0.3)).r;
-      float edge = smoothstep(0.0, 0.22 + fray * 0.18, vUv.x) * smoothstep(1.0, 0.78 - fray * 0.18, vUv.x);
+      float edge = smoothstep(0.0, 0.22 + fray * 0.18, vUv.x) * (1.0 - smoothstep(0.78 - fray * 0.18, 1.0, vUv.x));
       float bottom = 1.0 - smoothstep(0.55, 1.0, vUv.y);
       // White water where it tips over the lip and where it breaks on the ledge.
       float lip = 1.0 - smoothstep(0.0, 0.08, vUv.y);

@@ -179,7 +179,7 @@ function puffMaterial(lit: Color, shade: Color, opacity: number) {
         vec2 c = vUv - 0.5;
         float n = texture2D(noise, vUv * 0.6 + vSeed + vec2(time * 0.01, 0.0)).r;
         float r = length(c) * 2.0 + (n - 0.5) * 0.55;
-        float a = smoothstep(1.0, 0.15, r) * opacity * (1.0 - vFar * 0.6);
+        float a = (1.0 - smoothstep(0.15, 1.0, r)) * opacity * (1.0 - vFar * 0.6);
         // Lit from above and from the moon's side, darker underneath.
         float light = clamp(vUv.y * 0.9 + (n - 0.5) * 0.6, 0.0, 1.0) * (0.35 + 0.65 * vMoonward);
         vec3 color = mix(mix(shade, lit, light), haze, vFar * 0.8);
@@ -266,7 +266,7 @@ function billowMaterial(opacity: number, fade = BILLOW_FADE) {
         color = mix(color, haze, vFar * 0.55);
         // Feet sink into the sea; soft only right at the outline.
         float foot = smoothstep(seaTop - 0.6, seaTop + 1.4, vWorldY);
-        float a = smoothstep(1.0, 0.9, r) * foot * opacity * (1.0 - vFar * 0.3);
+        float a = (1.0 - smoothstep(0.9, 1.0, r)) * foot * opacity * (1.0 - vFar * 0.3);
         gl_FragColor = vec4(color, a);
       }
     `,
