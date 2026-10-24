@@ -19,14 +19,14 @@ runs:
     # never gets populated for install-skipping jobs (e.g. check-locales).
     - name: Setup Node.js (with pnpm cache)
       if: inputs.install == 'true'
-      uses: actions/setup-node@v6
+      uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
       with:
         node-version-file: .nvmrc
         cache: pnpm
 
     - name: Setup Node.js (no cache)
       if: inputs.install != 'true'
-      uses: actions/setup-node@v6
+      uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
       with:
         node-version-file: .nvmrc
 
