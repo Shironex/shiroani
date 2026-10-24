@@ -49,26 +49,11 @@ export function isModelId(name: string): name is ModelId {
 }
 
 /**
- * Every clip baked into character.glb: the Mixamo clips retargeted to her rig,
- * and sitting_wave, the wave's right arm over her seated pose (`waving` itself
- * stands her up).
+ * Every clip baked into character.glb. The export keeps only the clips the
+ * page plays: her seated hug loop and sitting_wave, the wave's right arm over
+ * her seated pose. Keep this list in sync with the export's clip list.
  */
-export const CHARACTER_CLIP_NAMES = [
-  'sitting_idle_hug',
-  'sitting_idle',
-  'sitting',
-  'sitting_2',
-  'sitting_hug',
-  'hug_boxes',
-  'sitting_clap',
-  'sitting_clap_2',
-  'sitting_laughing',
-  'sitting_thumbs_up',
-  'sit_to_stand',
-  'happy_idle',
-  'waving',
-  'sitting_wave',
-] as const;
+export const CHARACTER_CLIP_NAMES = ['sitting_idle_hug', 'sitting_wave'] as const;
 
 export type CharacterClip = (typeof CHARACTER_CLIP_NAMES)[number];
 
