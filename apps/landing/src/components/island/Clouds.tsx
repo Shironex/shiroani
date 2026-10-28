@@ -260,7 +260,7 @@ function billowMaterial(opacity: number, fade = BILLOW_FADE) {
         vec3 color = mix(shade, body, top * 0.55 + diffuse * 0.45);
         // The moonlit rim, on the edge that faces the moon.
         float facing = clamp(dot(normalize(n.xy + 1e-4), normalize(l.xy + 1e-4)) * 0.5 + 0.5, 0.0, 1.0);
-        float rimLight = pow(1.0 - n.z, 2.2) * facing * facing;
+        float rimLight = pow(max(1.0 - n.z, 0.0), 2.2) * facing * facing;
         color += rim * rimLight * (0.45 + 0.75 * vMoonward);
         color += rim * pow(diffuse, 6.0) * 0.18;
         color = mix(color, haze, vFar * 0.55);

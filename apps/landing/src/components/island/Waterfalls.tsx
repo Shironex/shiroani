@@ -108,7 +108,8 @@ const waterMaterial = new ShaderMaterial({
       // White water where it tips over the lip and where it breaks on the ledge.
       float lip = 1.0 - smoothstep(0.0, 0.08, vUv.y);
       float churn = texture2D(noise, vec2(x * vSize.x * 3.0, along * 0.12 - time * 0.6)).r;
-      float breakFoam = exp(-pow((vUv.y - ledge) * 11.0, 2.0)) * (0.5 + churn);
+      float k = (vUv.y - ledge) * 11.0;
+      float breakFoam = exp(-k * k) * (0.5 + churn);
       float foam = clamp(lip * 0.45 + breakFoam * 0.55, 0.0, 1.0);
       float a = (0.05 + streak * 0.5 + foam) * edge * bottom;
       gl_FragColor = vec4(color * a * (1.0 + streak * 0.45 + foam * 0.6), 1.0);
