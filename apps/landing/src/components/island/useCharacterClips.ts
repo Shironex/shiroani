@@ -69,9 +69,6 @@ const TURN_CHAIN = [
   ['mixamorigNeck', 0.35],
   ['mixamorigHead', 0.45],
 ] as const;
-/** The twin tails hang from her head: their roots turn back this share so they keep hanging. */
-const TAILS = ['hair_tail_L_01', 'hair_tail_R_01'] as const;
-const TAIL_HOLD = 0.8;
 /** How fast (per second) the turn eases toward its weight for the stop. */
 const TURN_RATE = 2.5;
 
@@ -82,7 +79,6 @@ const scratch = {
   head: new Vector3(),
   aim: new Vector3(),
   turn: new Quaternion(),
-  back: new Quaternion(),
   share: new Quaternion(),
   parent: new Quaternion(),
   local: new Quaternion(),
@@ -134,7 +130,7 @@ function turnBone(bone: Object3D, world: Quaternion) {
  * the character's <Model>.
  */
 export function useHeadTurn(weight: () => number): OnModel {
-  const rig = useRef<{ root: Object3D; chain: Turned[]; tails: Turned[] } | null>(null);
+  const rig = useRef<{ root: Object3D; chain: Turned[] } | null>(null);
   const eased = useRef(0);
 
   const onModel = useCallback<OnModel>(model => {
@@ -142,11 +138,7 @@ export function useHeadTurn(weight: () => number): OnModel {
       const bone = model.getObjectByName(name);
       return bone ? [turned(bone, share)] : [];
     });
-    const tails = TAILS.flatMap(name => {
-      const bone = model.getObjectByName(name);
-      return bone ? [turned(bone, TAIL_HOLD)] : [];
-    });
-    rig.current = chain.length === TURN_CHAIN.length ? { root: model, chain, tails } : null;
+    rig.current = chain.length === TURN_CHAIN.length ? { root: model, chain } : null;
   }, []);
 
   useFrame(({ camera }, delta) => {
@@ -156,14 +148,13 @@ export function useHeadTurn(weight: () => number): OnModel {
       : eased.current + (want - eased.current) * (1 - Math.exp(-delta * TURN_RATE));
     const k = eased.current;
     if (!rig.current) return;
-    const { root, chain, tails } = rig.current;
+    const { root, chain } = rig.current;
     for (const t of chain) restore(t);
-    for (const t of tails) restore(t);
     if (k < 1e-3) {
-      for (const t of [...chain, ...tails]) t.applied.set(NaN, NaN, NaN, NaN);
+      for (const t of chain) t.applied.set(NaN, NaN, NaN, NaN);
       return;
     }
-    const { forward, toCamera, head, aim, turn, back, share } = scratch;
+    const { forward, toCamera, head, aim, turn, share } = scratch;
 
     // Her body's forward on the ground, and the clamped direction toward the camera.
     root.getWorldQuaternion(share);
@@ -182,10 +173,10 @@ export function useHeadTurn(weight: () => number): OnModel {
       .addScaledVector(UP, Math.sin(pitch));
     turn.setFromUnitVectors(forward, aim).slerp(IDENTITY, 1 - k);
 
-    for (const t of chain) turnBone(t.bone, share.copy(IDENTITY).slerp(turn, t.share));
-    back.copy(turn).invert();
-    for (const t of tails) turnBone(t.bone, share.copy(IDENTITY).slerp(back, t.share));
-    for (const t of [...chain, ...tails]) t.applied.copy(t.bone.quaternion);
+    for (const t of chain) {
+      turnBone(t.bone, share.copy(IDENTITY).slerp(turn, t.share));
+      t.applied.copy(t.bone.quaternion);
+    }
   }, 0.5);
 
   return onModel;

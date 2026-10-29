@@ -99,9 +99,7 @@ export const PLACEMENTS = {
     { position: [60, -20.5, -20], rotation: [0, 2.7925, 0], scale: [1.1, 1.1, 1.1] },
     { position: [15, -22.5, -95], rotation: [0, 0.5236, 0], scale: [1.4, 1.4, 1.4] },
   ],
-  character: [
-    { position: [0.2223, 0.8232, 3.1097], rotation: [0, 0.6632, 0], scale: [1.45, 1.45, 1.45] },
-  ],
+  character: [{ position: [0.2027, 0.7032, 3.0034], rotation: [0, 0.6632, 0], scale: [1, 1, 1] }],
   waterfall: [
     { position: [-3.85, 0.207, 4.65], rotation: [0, 0, 0], scale: [0.65, 8, 1] },
     { position: [2.6, -0.6477, 6.5], rotation: [0, 0, 0], scale: [0.8, 8.5, 1] },
