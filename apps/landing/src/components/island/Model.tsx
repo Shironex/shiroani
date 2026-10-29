@@ -13,10 +13,10 @@ import { KTX2Loader } from 'three/examples/jsm/loaders/KTX2Loader.js';
 import { clone } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { applyBakedLight } from './baked';
 import { ErrorBoundary } from './ErrorBoundary';
-import { modelUrl, type ModelId } from './manifest';
+import type { ModelId, ModelUrls } from './manifest';
 
-/** Model ids with a real file under /island/models. Filled by the page. */
-export const ModelsContext = createContext<ReadonlySet<ModelId>>(new Set());
+/** Model ids with a real file under /island/models, each with its URL. Filled by the page. */
+export const ModelsContext = createContext<ReadonlyMap<ModelId, string>>(new Map());
 
 /**
  * Model ids that are in the scene or have failed (and kept their blockout).
@@ -28,9 +28,9 @@ export const settledModels = new Set<ModelId>();
  * Marks a model as settled. Once every model that has a file has, the KTX2
  * loader (and its transcoder workers) is no longer needed.
  */
-function settle(id: ModelId, expected: ReadonlySet<ModelId>) {
+function settle(id: ModelId, expected: ReadonlyMap<ModelId, string>) {
   settledModels.add(id);
-  if (ktx2 && [...expected].every(model => settledModels.has(model))) {
+  if (ktx2 && [...expected.keys()].every(model => settledModels.has(model))) {
     ktx2.dispose();
     ktx2 = null;
   }
@@ -53,10 +53,10 @@ type ModelProps = Omit<ThreeElements['group'], 'id'> & {
  */
 export function Model({ id, children, onModel, ...group }: ModelProps) {
   const expected = useContext(ModelsContext);
-  const hasModel = expected.has(id);
+  const url = expected.get(id);
   return (
     <group name={id} {...group}>
-      {hasModel ? (
+      {url ? (
         // A GLB that fails to load or parse keeps the blockout.
         <ErrorBoundary
           fallback={children}
@@ -66,7 +66,7 @@ export function Model({ id, children, onModel, ...group }: ModelProps) {
           }}
         >
           <Suspense fallback={children}>
-            <Glb id={id} expected={expected} onModel={onModel} />
+            <Glb id={id} url={url} expected={expected} onModel={onModel} />
           </Suspense>
         </ErrorBoundary>
       ) : (
@@ -116,20 +116,22 @@ const withKtx2 = (loader: GltfLoader) =>
   loader.setKTX2Loader(ktx2Loader() as unknown as Parameters<GltfLoader['setKTX2Loader']>[0]);
 
 /** Starts fetching the models that have files, before the canvas mounts. */
-export function preloadModels(ids: readonly ModelId[]) {
-  for (const id of ids) useGLTF.preload(modelUrl(id), false, true, withKtx2);
+export function preloadModels(models: ModelUrls) {
+  for (const url of Object.values(models)) useGLTF.preload(url, false, true, withKtx2);
 }
 
 function Glb({
   id,
+  url,
   expected,
   onModel,
 }: {
   id: ModelId;
-  expected: ReadonlySet<ModelId>;
+  url: string;
+  expected: ReadonlyMap<ModelId, string>;
   onModel?: OnModel;
 }) {
-  const { scene, animations } = useGLTF(modelUrl(id), false, true, withKtx2);
+  const { scene, animations } = useGLTF(url, false, true, withKtx2);
   // SkeletonUtils rebinds a skinned mesh to the copy's own bones, so a model
   // can be placed more than once.
   const copy = useMemo(() => clone(scene), [scene]);

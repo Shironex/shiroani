@@ -1,4 +1,5 @@
 ---
+import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { localizedPath, t, type SupportedLanguage } from '../../lib/i18n';
@@ -6,7 +7,7 @@ import IslandMoonCta from './IslandMoonCta.astro';
 import IslandPorchCta from './IslandPorchCta.astro';
 import IslandStage from './IslandStage';
 import IslandStop from './IslandStop.astro';
-import { isModelId, MODELS_PATH, type ModelId } from './manifest';
+import { isModelId, modelUrl, MODELS_PATH, type ModelUrls } from './manifest';
 import { ISLAND_STOPS } from './stops';
 import '../../styles/island.css';
 
@@ -20,16 +21,19 @@ const tt = (key: string) => t(key, lang);
 const downloadHref = localizedPath(lang, '/download');
 
 // Real models live in public/island/models/<id>.glb. Any id without a file
-// keeps its blockout, so the island is told which files exist. Astro runs dev
-// and build from apps/landing, so the path is relative to that.
+// keeps its blockout, so the island is told which files exist, each under a
+// URL that carries a hash of its bytes (see modelUrl). Astro runs dev and
+// build from apps/landing, so the path is relative to that.
 const modelsDir = path.resolve('public', MODELS_PATH.slice(1));
-const models: ModelId[] = fs.existsSync(modelsDir)
-  ? fs
-      .readdirSync(modelsDir)
-      .filter(file => file.endsWith('.glb'))
-      .map(file => file.slice(0, -4))
-      .filter(isModelId)
-  : [];
+const models: ModelUrls = {};
+if (fs.existsSync(modelsDir)) {
+  for (const file of fs.readdirSync(modelsDir)) {
+    const id = file.slice(0, -'.glb'.length);
+    if (!file.endsWith('.glb') || !isModelId(id)) continue;
+    const bytes = fs.readFileSync(path.join(modelsDir, file));
+    models[id] = modelUrl(id, createHash('sha256').update(bytes).digest('hex').slice(0, 10));
+  }
+}
 
 const POSTER = {
   src: '/island/poster.webp',

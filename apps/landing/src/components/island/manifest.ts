@@ -40,9 +40,17 @@ export type ModelId = (typeof ISLAND_MODELS)[number];
 
 export const MODELS_PATH = '/island/models';
 
-export function modelUrl(id: ModelId): string {
-  return `${MODELS_PATH}/${id}.glb`;
+/**
+ * The URL a model loads from. `version` is a hash of the file's bytes: the
+ * host caches public/island for a week, so a GLB swapped under the same name
+ * would otherwise keep loading its old copy against the new placements.
+ */
+export function modelUrl(id: ModelId, version: string): string {
+  return `${MODELS_PATH}/${id}.glb?v=${version}`;
 }
+
+/** The models that have a file, each with the URL it loads from. */
+export type ModelUrls = Partial<Record<ModelId, string>>;
 
 export function isModelId(name: string): name is ModelId {
   return (ISLAND_MODELS as readonly string[]).includes(name);

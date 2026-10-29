@@ -11,7 +11,7 @@ import {
   type Object3D,
 } from 'three';
 import { Effects } from './Effects';
-import type { ModelId } from './manifest';
+import type { ModelId, ModelUrls } from './manifest';
 import { ModelsContext, provideRenderer, settledModels } from './Model';
 import { motion } from './motion';
 import { CAMERA_FOLLOW_RATE, island, segment } from './progress';
@@ -22,7 +22,7 @@ import { ISLAND_STOPS } from './stops';
 export { preloadModels } from './Model';
 
 interface Props {
-  models: readonly ModelId[];
+  models: ModelUrls;
   /** Load progress, 0 to 100. */
   onProgress: (percent: number) => void;
   /** Every model and texture is in and a frame has rendered with them. */
@@ -57,7 +57,7 @@ export default function IslandCanvas({ models, onProgress, onReady }: Props) {
   const [ready, setReady] = useState(false);
   const [step, setStep] = useState(0);
   const quality = QUALITY_STEPS[step];
-  const available = useMemo(() => new Set(models), [models]);
+  const available = useMemo(() => new Map(Object.entries(models) as [ModelId, string][]), [models]);
 
   // Stop rendering once the island has scrolled out of view.
   useEffect(() => {
@@ -251,7 +251,7 @@ function LoadGate({ models, onProgress, onReady }: Props) {
   useFrame(() => {
     switch (phase.current) {
       case 'waiting': {
-        const settled = models.every(id => settledModels.has(id));
+        const settled = (Object.keys(models) as ModelId[]).every(id => settledModels.has(id));
         if (!settled || active) return;
         warming.current = groupMeshesByMaterial(scene);
         for (const group of warming.current) for (const mesh of group) mesh.visible = false;

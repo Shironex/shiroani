@@ -1,6 +1,6 @@
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { ErrorBoundary } from './ErrorBoundary';
-import type { ModelId } from './manifest';
+import type { ModelUrls } from './manifest';
 
 // three.js and R3F live behind this dynamic import, in their own chunk. It
 // starts as soon as this module runs on a page that will show the 3D island,
@@ -18,8 +18,8 @@ const IslandCanvas = lazy(() => canvasChunk ?? loadCanvas());
 const STATIC_FALLBACK_TIMEOUT_MS = 25_000;
 
 interface Props {
-  /** Models that have a real GLB in public/island/models. */
-  models: ModelId[];
+  /** Models that have a real GLB in public/island/models, with their URLs. */
+  models: ModelUrls;
 }
 
 /**
