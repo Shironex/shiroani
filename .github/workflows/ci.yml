@@ -18,41 +18,65 @@ env:
   # skip husky install on CI
   HUSKY: 0
 
+# Every job below is gated on `github.actor != 'dependabot[bot]'`. Dependabot PRs
+# are informational (deps are bumped by hand), so running CI on them only burns
+# Actions minutes. A skipped job reports as passing, so no required check is left
+# waiting. Regular pushes and pull requests are unaffected.
 jobs:
   changes:
     name: Detect Changes
+    if: ${{ github.actor != 'dependabot[bot]' }}
     runs-on: ubuntu-latest
     outputs:
-      code: ${{ steps.filter.outputs.root == 'true' || steps.filter.outputs.ci == 'true' || steps.filter.outputs.shared == 'true' || steps.filter.outputs.web == 'true' || steps.filter.outputs.desktop == 'true' || steps.filter.outputs.bot == 'true' }}
-      web: ${{ steps.filter.outputs.root == 'true' || steps.filter.outputs.ci == 'true' || steps.filter.outputs.shared == 'true' || steps.filter.outputs.web == 'true' }}
-      desktop: ${{ steps.filter.outputs.root == 'true' || steps.filter.outputs.ci == 'true' || steps.filter.outputs.shared == 'true' || steps.filter.outputs.desktop == 'true' }}
-      bot: ${{ steps.filter.outputs.root == 'true' || steps.filter.outputs.ci == 'true' || steps.filter.outputs.shared == 'true' || steps.filter.outputs.bot == 'true' }}
-      landing: ${{ steps.filter.outputs.root == 'true' || steps.filter.outputs.ci == 'true' || steps.filter.outputs.shared == 'true' || steps.filter.outputs.landing == 'true' }}
+      lint: ${{ steps.suites.outputs.lint }}
+      typecheck: ${{ steps.suites.outputs.typecheck }}
+      web: ${{ steps.suites.outputs.web }}
+      desktop: ${{ steps.suites.outputs.desktop }}
+      bot: ${{ steps.suites.outputs.bot }}
+      landing: ${{ steps.suites.outputs.landing }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
 
+      # Paths that match no filter (README.md, docs/**, LICENSE, assets/**,
+      # issue templates, dependabot.yml) run no suite at all.
       - name: Detect changed paths
         id: filter
         uses: dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d # v4.0.1
         with:
           filters: |
-            root:
+            # Root config and CI itself: anything here runs every suite.
+            all:
               - 'package.json'
-              - 'pnpm-lock.yaml'
               - 'pnpm-workspace.yaml'
               - 'tsconfig.base.json'
               - 'eslint.config.mjs'
               - '.prettierrc'
               - '.prettierignore'
-            ci:
-              - '.github/**'
+              - '.nvmrc'
+              - '.github/workflows/**'
+              - '.github/actions/**'
               - 'scripts/set-version-ci.sh'
               - 'scripts/bump-version.mjs'
+            lockfile:
+              - 'pnpm-lock.yaml'
+            manifests:
+              - 'apps/*/package.json'
+              - 'packages/*/package.json'
+            # Anything eslint looks at, so tools/, scripts/ and apps/landing-demo
+            # are still linted.
+            lintable:
+              - '**/*.{ts,tsx,mts,cts,js,jsx,mjs,cjs}'
+            # Consumed by web, desktop, bot and landing.
             shared:
               - 'packages/shared/**'
+            # Consumed by web and landing.
+            changelog:
+              - 'packages/changelog/**'
             web:
               - 'apps/web/**'
+              - 'Dockerfile.storybook'
+              - 'scripts/check-locale-parity.mjs'
             desktop:
               - 'apps/desktop/**'
             bot:
@@ -61,17 +85,59 @@ jobs:
               - 'docker-compose.yml'
             landing:
               - 'apps/landing/**'
-              - 'packages/changelog/**'
               - 'Dockerfile.landing'
+
+      # Map changed paths to suites. A lockfile change is attributed to the
+      # workspaces whose package.json changed with it (their own filter already
+      # matched). Only a lockfile change with no workspace manifest change
+      # (pnpm update, dedupe) runs lint and typecheck: it cannot be tied to one
+      # app, and running every suite for it was what made landing-only PRs run
+      # everything.
+      - name: Decide suites
+        id: suites
+        env:
+          ALL: ${{ steps.filter.outputs.all }}
+          LOCKFILE: ${{ steps.filter.outputs.lockfile }}
+          MANIFESTS: ${{ steps.filter.outputs.manifests }}
+          LINTABLE: ${{ steps.filter.outputs.lintable }}
+          SHARED: ${{ steps.filter.outputs.shared }}
+          CHANGELOG: ${{ steps.filter.outputs.changelog }}
+          WEB: ${{ steps.filter.outputs.web }}
+          DESKTOP: ${{ steps.filter.outputs.desktop }}
+          BOT: ${{ steps.filter.outputs.bot }}
+          LANDING: ${{ steps.filter.outputs.landing }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          any() { for v in "$@"; do [[ "$v" == "true" ]] && { echo true; return; }; done; echo false; }
+          lockfile_only=false
+          if [[ "$LOCKFILE" == "true" && "$MANIFESTS" != "true" ]]; then lockfile_only=true; fi
+
+          web=$(any "$ALL" "$SHARED" "$CHANGELOG" "$WEB")
+          desktop=$(any "$ALL" "$SHARED" "$DESKTOP")
+          bot=$(any "$ALL" "$SHARED" "$BOT")
+          landing=$(any "$ALL" "$SHARED" "$CHANGELOG" "$LANDING")
+          # pnpm typecheck covers web, desktop and bot (landing has its own check).
+          typecheck=$(any "$lockfile_only" "$web" "$desktop" "$bot")
+          lint=$(any "$lockfile_only" "$LINTABLE" "$web" "$desktop" "$bot" "$landing")
+
+          {
+            echo "lint=$lint"
+            echo "typecheck=$typecheck"
+            echo "web=$web"
+            echo "desktop=$desktop"
+            echo "bot=$bot"
+            echo "landing=$landing"
+          } | tee -a "$GITHUB_OUTPUT"
 
   lint:
     name: Lint
     needs: [changes]
-    if: needs.changes.outputs.code == 'true' || needs.changes.outputs.landing == 'true'
+    if: ${{ github.actor != 'dependabot[bot]' && needs.changes.outputs.lint == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
 
       - name: Setup
         uses: ./.github/actions/setup
@@ -82,11 +148,11 @@ jobs:
   typecheck:
     name: Type Check
     needs: [changes]
-    if: needs.changes.outputs.code == 'true'
+    if: ${{ github.actor != 'dependabot[bot]' && needs.changes.outputs.typecheck == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
 
       - name: Setup
         uses: ./.github/actions/setup
@@ -103,11 +169,11 @@ jobs:
   test-web:
     name: Test Web
     needs: [changes]
-    if: needs.changes.outputs.web == 'true'
+    if: ${{ github.actor != 'dependabot[bot]' && needs.changes.outputs.web == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
 
       - name: Setup
         uses: ./.github/actions/setup
@@ -121,11 +187,11 @@ jobs:
   test-storybook:
     name: Test Storybook
     needs: [changes]
-    if: needs.changes.outputs.web == 'true'
+    if: ${{ github.actor != 'dependabot[bot]' && needs.changes.outputs.web == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
 
       - name: Setup
         uses: ./.github/actions/setup
@@ -144,11 +210,11 @@ jobs:
   check-locales:
     name: Check Locale Parity
     needs: [changes]
-    if: needs.changes.outputs.web == 'true'
+    if: ${{ github.actor != 'dependabot[bot]' && needs.changes.outputs.web == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
 
       - name: Setup
         uses: ./.github/actions/setup
@@ -161,11 +227,11 @@ jobs:
   test-desktop:
     name: Test Desktop
     needs: [changes]
-    if: needs.changes.outputs.desktop == 'true'
+    if: ${{ github.actor != 'dependabot[bot]' && needs.changes.outputs.desktop == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
 
       - name: Setup
         uses: ./.github/actions/setup
@@ -179,11 +245,11 @@ jobs:
   test-bot:
     name: Test Bot
     needs: [changes]
-    if: needs.changes.outputs.bot == 'true'
+    if: ${{ github.actor != 'dependabot[bot]' && needs.changes.outputs.bot == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
 
       - name: Setup
         uses: ./.github/actions/setup
@@ -200,11 +266,11 @@ jobs:
   landing:
     name: Landing Check
     needs: [changes]
-    if: needs.changes.outputs.landing == 'true'
+    if: ${{ github.actor != 'dependabot[bot]' && needs.changes.outputs.landing == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
 
       - name: Setup
         uses: ./.github/actions/setup
@@ -220,9 +286,21 @@ jobs:
 
   ci-result:
     name: CI Result
-    if: always()
+    if: ${{ always() && github.actor != 'dependabot[bot]' }}
+    # changes is listed so a failed path detection (which skips every suite)
+    # fails the result instead of passing as "all skipped".
     needs:
-      [lint, typecheck, test-web, test-storybook, check-locales, test-desktop, test-bot, landing]
+      [
+        changes,
+        lint,
+        typecheck,
+        test-web,
+        test-storybook,
+        check-locales,
+        test-desktop,
+        test-bot,
+        landing,
+      ]
     runs-on: ubuntu-latest
     steps:
       - name: Check CI outcome

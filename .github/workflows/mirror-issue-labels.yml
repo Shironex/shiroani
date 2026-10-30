@@ -9,9 +9,11 @@ permissions:
   issues: read
   pull-requests: write
 
+# Dependabot PRs never link an issue, so the job is skipped for them.
 jobs:
   mirror:
     name: Copy linked-issue labels onto PR
+    if: ${{ github.actor != 'dependabot[bot]' }}
     runs-on: ubuntu-latest
     steps:
       - name: Mirror labels from linked issues
