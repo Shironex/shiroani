@@ -60,9 +60,6 @@ jobs:
               - 'scripts/bump-version.mjs'
             lockfile:
               - 'pnpm-lock.yaml'
-            manifests:
-              - 'apps/*/package.json'
-              - 'packages/*/package.json'
             # Anything eslint looks at, so tools/, scripts/ and apps/landing-demo
             # are still linted.
             lintable:
@@ -89,16 +86,15 @@ jobs:
 
       # Map changed paths to suites. A lockfile change is attributed to the
       # workspaces whose package.json changed with it (their own filter already
-      # matched). Only a lockfile change with no workspace manifest change
-      # (pnpm update, dedupe) runs lint and typecheck: it cannot be tied to one
-      # app, and running every suite for it was what made landing-only PRs run
-      # everything.
+      # matched). A lockfile change that matched no suite (pnpm update, dedupe,
+      # or a workspace with no suite such as apps/landing-demo) runs lint and
+      # typecheck, so the frozen-lockfile install still happens. Running every
+      # suite for it was what made landing-only PRs run everything.
       - name: Decide suites
         id: suites
         env:
           ALL: ${{ steps.filter.outputs.all }}
           LOCKFILE: ${{ steps.filter.outputs.lockfile }}
-          MANIFESTS: ${{ steps.filter.outputs.manifests }}
           LINTABLE: ${{ steps.filter.outputs.lintable }}
           SHARED: ${{ steps.filter.outputs.shared }}
           CHANGELOG: ${{ steps.filter.outputs.changelog }}
@@ -110,16 +106,18 @@ jobs:
         run: |
           set -euo pipefail
           any() { for v in "$@"; do [[ "$v" == "true" ]] && { echo true; return; }; done; echo false; }
-          lockfile_only=false
-          if [[ "$LOCKFILE" == "true" && "$MANIFESTS" != "true" ]]; then lockfile_only=true; fi
 
           web=$(any "$ALL" "$SHARED" "$CHANGELOG" "$WEB")
           desktop=$(any "$ALL" "$SHARED" "$DESKTOP")
           bot=$(any "$ALL" "$SHARED" "$BOT")
           landing=$(any "$ALL" "$SHARED" "$CHANGELOG" "$LANDING")
+          lockfile_unmatched=false
+          if [[ "$LOCKFILE" == "true" && $(any "$web" "$desktop" "$bot" "$landing") == "false" ]]; then
+            lockfile_unmatched=true
+          fi
           # pnpm typecheck covers web, desktop and bot (landing has its own check).
-          typecheck=$(any "$lockfile_only" "$web" "$desktop" "$bot")
-          lint=$(any "$lockfile_only" "$LINTABLE" "$web" "$desktop" "$bot" "$landing")
+          typecheck=$(any "$lockfile_unmatched" "$web" "$desktop" "$bot")
+          lint=$(any "$lockfile_unmatched" "$LINTABLE" "$web" "$desktop" "$bot" "$landing")
 
           {
             echo "lint=$lint"
