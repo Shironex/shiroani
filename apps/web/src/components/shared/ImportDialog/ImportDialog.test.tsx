@@ -120,11 +120,11 @@ describe('ImportDialog', () => {
   });
 
   it('refuses a picked file over the size cap before parsing it', async () => {
-    stubFileBridge('x'.repeat(50 * 1024 * 1024 + 1));
+    stubFileBridge('x'.repeat(100 * 1024 * 1024 + 1));
     render(<ImportDialog open onOpenChange={() => {}} type="all" />);
 
     expect(
-      await screen.findByText('This file is too big to import (max 50 MB).')
+      await screen.findByText('This file is too big to import (max 100 MB).')
     ).toBeInTheDocument();
   });
 

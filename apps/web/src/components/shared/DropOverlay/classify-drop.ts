@@ -36,11 +36,11 @@ export type DropClassification<F extends IDroppedFileLike = IDroppedFileLike> =
 export type DragPreview = 'link' | 'json' | 'image' | 'unknown' | 'unsupported';
 
 /**
- * Largest import file. A drop checks it before `file.text()` so a huge file is
- * never pulled into memory. A 100 MB import over IPC worked without stalling the
- * main process, so this margin is deliberate; it is far above a large real export.
+ * Largest import file, the size a 100 MB import over IPC was tested at. A drop
+ * checks it before `file.text()` so a huge file is never pulled into memory, and
+ * the export dialog warns when a file it writes could not be imported back.
  */
-export const MAX_IMPORT_JSON_BYTES = 50 * 1024 * 1024;
+export const MAX_IMPORT_JSON_BYTES = 100 * 1024 * 1024;
 
 /** Image types both the background and the sprite pickers accept. */
 const IMAGE_MIME_TYPES = new Set(['image/png', 'image/jpeg', 'image/gif', 'image/webp']);

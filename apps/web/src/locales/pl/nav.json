@@ -59,6 +59,7 @@
     "saving": "Zapisywanie pliku...",
     "saved": "Zapisano plik",
     "saveAs": "Zapisz jako...",
+    "tooLargeToImport": "Ten eksport przekracza {{maxMb}} MB, więc aplikacja nie zaimportuje go z powrotem. Wyeksportuj mniej danych naraz, aby mieć plik, który da się przywrócić.",
     "close": "Zamknij",
     "errors": {
       "unknown": "Nieznany błąd",

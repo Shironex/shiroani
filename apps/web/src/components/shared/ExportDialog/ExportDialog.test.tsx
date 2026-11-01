@@ -43,6 +43,29 @@ describe('ExportDialog', () => {
     expect(screen.getByText('Save data to a JSON file.')).toBeInTheDocument();
   });
 
+  it('warns when the file would be too big to import back', async () => {
+    const notes = 'x'.repeat(100 * 1024 * 1024 + 1);
+    resolveExport({
+      ...EXPORT_RESPONSE,
+      data: { ...EXPORT_RESPONSE.data, data: { library: [{ notes } as never], diary: [] } },
+    });
+    render(<ExportDialog open onOpenChange={() => {}} type="library" />);
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'This export is over 100 MB, so the app will not be able to import it back.'
+    );
+    // Still offers the save: a big backup beats no backup.
+    expect(screen.getByRole('button', { name: /save as/i })).toBeInTheDocument();
+  });
+
+  it('does not warn for a file that can be imported back', async () => {
+    resolveExport();
+    render(<ExportDialog open onOpenChange={() => {}} type="library" />);
+
+    await screen.findByRole('button', { name: /save as/i });
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
+
   it('renders nothing when closed', () => {
     render(<ExportDialog open={false} onOpenChange={() => {}} type="library" />);
     expect(screen.queryByText('Export data')).not.toBeInTheDocument();

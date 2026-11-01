@@ -168,12 +168,12 @@ describe('DropOverlay', () => {
   it('refuses an oversized JSON file before reading it', () => {
     render(<DropOverlay />);
     const huge = new File(['{}'], 'huge.json', { type: 'application/json' });
-    Object.defineProperty(huge, 'size', { value: 51 * 1024 * 1024 });
+    Object.defineProperty(huge, 'size', { value: 101 * 1024 * 1024 });
     const text = vi.spyOn(huge, 'text');
 
     fireDrag('drop', { files: [huge] });
 
-    expect(toast.error).toHaveBeenCalledWith('This file is too big to import (max 50 MB).');
+    expect(toast.error).toHaveBeenCalledWith('This file is too big to import (max 100 MB).');
     expect(text).not.toHaveBeenCalled();
   });
 

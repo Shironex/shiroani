@@ -59,6 +59,7 @@
     "saving": "Saving file...",
     "saved": "File saved",
     "saveAs": "Save as...",
+    "tooLargeToImport": "This export is over {{maxMb}} MB, so the app will not be able to import it back. Export less data at once to keep a file you can restore.",
     "close": "Close",
     "errors": {
       "unknown": "Unknown error",
