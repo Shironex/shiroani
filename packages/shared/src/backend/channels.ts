@@ -9,7 +9,13 @@
  * These lists are also the routing switch: a request channel listed here goes
  * over IPC in the renderer, and anything else stays on the socket.
  */
-import { BackendEvents, DiaryEvents, LibraryEvents, ScheduleEvents } from '../constants/events';
+import {
+  BackendEvents,
+  DiaryEvents,
+  FeedEvents,
+  LibraryEvents,
+  ScheduleEvents,
+} from '../constants/events';
 
 export const BACKEND_REQUEST_CHANNELS = [
   BackendEvents.PING,
@@ -26,6 +32,20 @@ export const BACKEND_REQUEST_CHANNELS = [
   LibraryEvents.GET_STATS,
   LibraryEvents.REMOVE,
   LibraryEvents.REMOVE_MANY,
+  FeedEvents.GET_ITEMS,
+  FeedEvents.GET_SOURCES,
+  FeedEvents.TOGGLE_SOURCE,
+  FeedEvents.GET_ARTICLE,
+  FeedEvents.MARK_READ,
+  FeedEvents.GET_READ_IDS,
+  FeedEvents.SET_LAST_VISITED,
+  FeedEvents.GET_LAST_VISITED,
+  FeedEvents.REFRESH,
 ] as const;
 
-export const BACKEND_EVENT_CHANNELS = [DiaryEvents.UPDATED, LibraryEvents.UPDATED] as const;
+export const BACKEND_EVENT_CHANNELS = [
+  DiaryEvents.UPDATED,
+  LibraryEvents.UPDATED,
+  FeedEvents.NEW_ITEMS,
+  FeedEvents.SOURCES_RESULT,
+] as const;

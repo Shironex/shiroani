@@ -7,9 +7,17 @@ import type {
   BackendEvents,
   CrudActions,
   DiaryEvents,
+  FeedEvents,
   LibraryEvents,
   ScheduleEvents,
 } from '../constants/events';
+import type {
+  feedGetArticlePayloadSchema,
+  feedGetItemsPayloadSchema,
+  feedMarkReadPayloadSchema,
+  feedSetLastVisitedPayloadSchema,
+  feedToggleSourcePayloadSchema,
+} from '../schemas/feed';
 import type {
   libraryAddPayloadSchema,
   libraryGetAllPayloadSchema,
@@ -29,6 +37,13 @@ import type {
 } from '../schemas/schedule';
 import type { AiringAnime, AnimeEntry, LibraryStatsResult } from '../types/anime';
 import type { DiaryEntry } from '../types/diary';
+import type {
+  FeedGetArticleResult,
+  FeedGetItemsResult,
+  FeedGetLastVisitedResult,
+  FeedGetReadIdsResult,
+  FeedGetSourcesResult,
+} from '../types/feed';
 import type { BACKEND_EVENT_CHANNELS, BACKEND_REQUEST_CHANNELS } from './channels';
 
 export type BackendRequestChannel = (typeof BACKEND_REQUEST_CHANNELS)[number];
@@ -89,6 +104,31 @@ export interface BackendRoutes {
     req: z.infer<typeof libraryRemoveManyPayloadSchema>;
     res: { ids: number[] };
   };
+
+  [FeedEvents.GET_ITEMS]: {
+    req: z.infer<typeof feedGetItemsPayloadSchema>;
+    res: FeedGetItemsResult;
+  };
+  [FeedEvents.GET_SOURCES]: { req: NoPayload; res: FeedGetSourcesResult };
+  [FeedEvents.TOGGLE_SOURCE]: {
+    req: z.infer<typeof feedToggleSourcePayloadSchema>;
+    res: FeedGetSourcesResult;
+  };
+  [FeedEvents.GET_ARTICLE]: {
+    req: z.infer<typeof feedGetArticlePayloadSchema>;
+    res: FeedGetArticleResult;
+  };
+  [FeedEvents.MARK_READ]: {
+    req: z.infer<typeof feedMarkReadPayloadSchema>;
+    res: { ok: boolean };
+  };
+  [FeedEvents.GET_READ_IDS]: { req: NoPayload; res: FeedGetReadIdsResult };
+  [FeedEvents.SET_LAST_VISITED]: {
+    req: z.infer<typeof feedSetLastVisitedPayloadSchema>;
+    res: { ok: boolean };
+  };
+  [FeedEvents.GET_LAST_VISITED]: { req: NoPayload; res: FeedGetLastVisitedResult };
+  [FeedEvents.REFRESH]: { req: NoPayload; res: { started: boolean } };
 }
 
 /** Payload of every event channel. */
@@ -103,6 +143,8 @@ export interface BackendEventMap {
     | { entries: AnimeEntry[]; action: typeof CrudActions.UPDATED_MANY }
     | { ids: number[]; action: typeof CrudActions.REMOVED_MANY }
     | { action: typeof CrudActions.IMPORTED };
+  [FeedEvents.NEW_ITEMS]: { newItemsCount: number };
+  [FeedEvents.SOURCES_RESULT]: FeedGetSourcesResult;
 }
 
 export type BackendReq<C extends BackendRequestChannel> = BackendRoutes[C]['req'];
