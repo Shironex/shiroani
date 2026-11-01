@@ -116,8 +116,6 @@ export default defineConfig({
           if (id.includes('/@radix-ui/')) return 'vendor-radix';
           // Drag-and-drop toolkit
           if (id.includes('/@dnd-kit/')) return 'vendor-dndkit';
-          // WebSocket client (socket.io-client + related parsers)
-          if (id.includes('/socket.io')) return 'vendor-socket';
           // Icon library
           if (id.includes('/lucide-react/')) return 'vendor-icons';
         },

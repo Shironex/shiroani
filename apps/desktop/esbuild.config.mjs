@@ -1,7 +1,6 @@
 import { build } from 'esbuild';
 import { existsSync, readFileSync, rmSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
-import { esbuildDecorators } from '@anatine/esbuild-decorators';
 import { assertPreloadImports } from './scripts/assert-preload-imports.mjs';
 
 const pkg = JSON.parse(readFileSync('./package.json', 'utf-8'));
@@ -54,11 +53,6 @@ const result = await build({
     'process.env.ANILIST_CLIENT_ID': JSON.stringify(process.env.ANILIST_CLIENT_ID ?? ''),
     'process.env.MAL_CLIENT_ID': JSON.stringify(process.env.MAL_CLIENT_ID ?? ''),
   },
-  plugins: [
-    esbuildDecorators({
-      tsconfig: './tsconfig.build.json',
-    }),
-  ],
   logLevel: 'info',
   metafile: true,
 });
