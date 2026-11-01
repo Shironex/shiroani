@@ -120,7 +120,6 @@ export interface ElectronAPI {
     getPath: (name: string) => Promise<string>;
     getVersion: () => Promise<string>;
     getSystemInfo: () => Promise<SystemInfoSnapshot>;
-    getBackendPort: () => Promise<number>;
     clipboardWrite: (text: string) => Promise<void>;
     clipboardWriteImage: (pngBase64: string) => Promise<void>;
     saveFileBinary: (filePath: string, base64Data: string) => Promise<{ success: boolean }>;

@@ -5,7 +5,6 @@ export const appApi: ElectronAPI['app'] = {
   getPath: (name: string) => ipcRenderer.invoke('app:get-path', name),
   getVersion: () => ipcRenderer.invoke('app:get-version'),
   getSystemInfo: () => ipcRenderer.invoke('app:get-system-info') as Promise<SystemInfoSnapshot>,
-  getBackendPort: () => ipcRenderer.invoke('app:get-backend-port') as Promise<number>,
   clipboardWrite: (text: string) => ipcRenderer.invoke('app:clipboard-write', text),
   clipboardWriteImage: (pngBase64: string) =>
     ipcRenderer.invoke('app:clipboard-write-image', pngBase64) as Promise<void>,

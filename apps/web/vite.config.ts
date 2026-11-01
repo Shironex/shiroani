@@ -21,6 +21,20 @@ function themeInjectionPlugin(): Plugin {
 }
 
 /**
+ * The meta CSP needs localhost in `connect-src` for Vite's dev server and HMR, and
+ * is enforced in dev too, so the sources live in index.html and builds remove them.
+ */
+function stripDevConnectSources(): Plugin {
+  return {
+    name: 'shiroani-strip-dev-connect-sources',
+    apply: 'build',
+    transformIndexHtml(html) {
+      return html.replace(/ (?:http|ws):\/\/(?:localhost|127\.0\.0\.1):\*/g, '');
+    },
+  };
+}
+
+/**
  * `vite build --mode showcase` only: boots the renderer through
  * `src/showcase/entry.ts`, which installs a fake `window.electronAPI` answering
  * from fixtures, and replaces the built-in new-tab shortcuts with invented ones. Every other mode (dev, production,
@@ -61,7 +75,13 @@ function showcaseFixturePlugin(): Plugin {
 }
 
 export default defineConfig({
-  plugins: [tailwindcss(), react(), themeInjectionPlugin(), showcaseFixturePlugin()],
+  plugins: [
+    tailwindcss(),
+    react(),
+    themeInjectionPlugin(),
+    stripDevConnectSources(),
+    showcaseFixturePlugin(),
+  ],
   base: './', // Use relative paths for Electron compatibility
   resolve: {
     alias: {

@@ -3,21 +3,14 @@
 import './user-data-override';
 import { app, BrowserWindow, powerMonitor, protocol } from 'electron';
 import { join } from 'path';
-import { NestFactory } from '@nestjs/core';
-import { type INestApplication } from '@nestjs/common';
-import { CustomIoAdapter } from '../modules/kernel/custom-io-adapter';
-import { AppModule } from '../modules/app.module';
 import { createBackend, type Backend } from './backend';
 import { createMainWindow, getRendererUrl, saveMainWindowState } from './window';
 import { createIpcEventPublisher, registerBackendIpc } from './ipc/backend';
 import { cleanupIpcHandlers } from './ipc/register';
-import { logger, getLogPath, flushLogs, flushLogsSync, fileTransport } from './logging/logger';
+import { logger, getLogPath, flushLogs, flushLogsSync } from './logging/logger';
 import { initializeAutoUpdater } from './updater';
 import { initializeAdblock, shutdownAdblock } from './adblock';
-import { corsOriginCallback } from '../modules/kernel/cors.config';
-import { NestLoggerAdapter } from '../modules/kernel/nest-logger';
-import { BackendEvents, LOCALHOST, setLoggerContext, makeCorrelationId } from '@shiroani/shared';
-import { setBackendPort } from './backend-port';
+import { BackendEvents, setLoggerContext, makeCorrelationId } from '@shiroani/shared';
 import { BrowserManager } from './browser/browser-manager';
 import { stripEmbedderTokens } from './user-agent';
 import { registerBackgroundProtocol } from './ipc/background';
@@ -121,7 +114,6 @@ if (app.isPackaged) {
 
 export let mainWindow: BrowserWindow | null = null;
 let backend: Backend | null = null;
-let nestApp: INestApplication | null = null;
 let bootstrapped = false;
 let isShuttingDown = false;
 let cleanupDone = false;
@@ -164,51 +156,6 @@ function unregisterAppStatsPowerListeners(): void {
   powerMonitor.off('resume', appStatsPowerHandlers.resume);
   powerMonitor.off('lock-screen', appStatsPowerHandlers.lockScreen);
   powerMonitor.off('unlock-screen', appStatsPowerHandlers.unlockScreen);
-}
-
-async function bootstrapNestApp(): Promise<void> {
-  try {
-    logger.info('Creating NestJS application...');
-    nestApp = await NestFactory.create(AppModule, {
-      logger: new NestLoggerAdapter(fileTransport),
-      bufferLogs: true,
-    });
-    nestApp.flushLogs();
-    logger.info('NestJS application created');
-
-    nestApp.useWebSocketAdapter(new CustomIoAdapter(nestApp));
-
-    nestApp.enableCors({
-      origin: corsOriginCallback,
-      credentials: true,
-    });
-
-    logger.info('Starting to listen on dynamic port...');
-    await nestApp.listen(0, LOCALHOST);
-    const addr = nestApp.getHttpServer().address();
-    if (!addr || typeof addr === 'string') {
-      throw new Error(`Failed to get server port: address() returned ${JSON.stringify(addr)}`);
-    }
-    const port = addr.port;
-    if (!port || port === 0) {
-      throw new Error('OS assigned port 0 — server did not bind successfully');
-    }
-    setBackendPort(port);
-    logger.info(`NestJS server running on port ${port}`);
-    logger.info('Log file location:', getLogPath());
-  } catch (error) {
-    logger.error('Failed to bootstrap NestJS:', error);
-    throw error;
-  }
-}
-
-async function shutdownNestApp(): Promise<void> {
-  if (nestApp) {
-    logger.info('Shutting down NestJS...');
-    await nestApp.close();
-    nestApp = null;
-    logger.info('NestJS shutdown complete');
-  }
 }
 
 /** Set up services and event listeners that depend on the main window */
@@ -292,7 +239,7 @@ async function bootstrap(): Promise<void> {
   registerBackendIpc(backend, { getMainWindow, rendererUrl: getRendererUrl() });
   bindNotificationService(backend.notifications, backend.notificationHost);
 
-  await bootstrapNestApp();
+  logger.info('Log file location:', getLogPath());
   browserManager.init();
   mainWindow = await createMainWindow(browserManager);
   setMascotMainWindow(mainWindow);
@@ -550,7 +497,6 @@ app.on('before-quit', event => {
     await safeCleanup('discord rpc', () => cleanupDiscordRpc(), logger);
     // Must precede the backend: quit-time toasts read library data from the DB.
     await safeCleanup('notification service', () => cleanupNotificationService(), logger);
-    await safeCleanup('nest server', () => shutdownNestApp(), logger);
     await safeCleanup('backend', () => backend?.shutdown(), logger);
     // Last, so every line logged by the steps above reaches the file.
     await safeCleanup('log flush', () => flushLogs(), logger);

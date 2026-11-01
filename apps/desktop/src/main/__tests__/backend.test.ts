@@ -6,7 +6,7 @@ import { FeedService } from '../../modules/feed/feed.service';
 import { FeedSchedulerService } from '../../modules/feed/feed-scheduler.service';
 import { ElectronMalTokenAdapter } from '../auth/mal-token.adapter';
 import { ElectronAniListTokenAdapter } from '../auth/anilist-token.adapter';
-import { createBackend, type Backend } from '../backend';
+import { createBackend } from '../backend';
 
 jest.mock('electron');
 jest.mock('../../modules/anime/anilist-client');
@@ -60,35 +60,6 @@ describe('createBackend', () => {
     const aniPort = jest.mocked(ElectronAniListTokenAdapter).mock.instances[0];
     for (const [port] of jest.mocked(MalClient).mock.calls) expect(port).toBe(malPort);
     for (const [port] of jest.mocked(AniListClient).mock.calls) expect(port).toBe(aniPort);
-  });
-
-  it('gives gateway-facing services no method Nest would call on a useValue provider', () => {
-    const { backend } = buildBackend();
-    const hooks = [
-      'onModuleInit',
-      'onApplicationBootstrap',
-      'onModuleDestroy',
-      'beforeApplicationShutdown',
-      'onApplicationShutdown',
-    ];
-    const services: Array<keyof Backend> = [
-      'anime',
-      'animeProfile',
-      'animeSocial',
-      'animeRecommendations',
-      'library',
-      'diary',
-      'schedule',
-      'importExport',
-      'feed',
-      'aniListSync',
-      'malSync',
-    ];
-    for (const name of services) {
-      for (const hook of hooks) {
-        expect((backend[name] as unknown as Record<string, unknown>)[hook]).toBeUndefined();
-      }
-    }
   });
 
   it('stops the scheduler before closing the database', async () => {

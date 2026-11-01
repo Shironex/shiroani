@@ -19,8 +19,6 @@ import { frequentSites } from './fixtures/browser';
 import { aniListStatus, appStatsSnapshot } from './fixtures/profile';
 import { respond } from './fixtures/responses';
 
-const FAKE_PORT = 58090;
-
 /** localStorage flags the app mirrors into electron-store; mirrored here too. */
 const MIRRORED_FLAGS = ['onboarding-completed', 'support-banner-seen'];
 
@@ -146,7 +144,6 @@ export function createFakeElectronApi(): ElectronAPI {
           logsPath: 'C:\\showcase\\logs',
           gpuFeatureStatus: {},
         }),
-      getBackendPort: () => resolved(FAKE_PORT),
       clipboardWrite: () => resolved(undefined),
       clipboardWriteImage: () => resolved(undefined),
       saveFileBinary: () => resolved({ success: false }),

@@ -8,10 +8,6 @@ jest.mock('../../logging/logger', () => ({
   }),
   getLogsDir: jest.fn(() => '/tmp/shiroani-test-logs'),
 }));
-jest.mock('../../backend-port', () => ({
-  getBackendPort: jest.fn(() => 3000),
-}));
-
 import { ipcMain, app, clipboard, nativeImage } from 'electron';
 import { registerAppHandlers, cleanupAppHandlers } from '../app';
 
@@ -150,15 +146,6 @@ describe('registerAppHandlers', () => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (ipcMain as any).__invoke('app:set-auto-launch', 'yes')
       ).rejects.toMatchObject({ code: 'BAD_REQUEST' });
-    });
-  });
-
-  describe('app:get-backend-port', () => {
-    it('returns the backend port', async () => {
-      registerAppHandlers();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const result = await (ipcMain as any).__invoke('app:get-backend-port');
-      expect(result).toBe(3000);
     });
   });
 

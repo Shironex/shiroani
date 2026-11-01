@@ -4,7 +4,6 @@ import { pathToFileURL } from 'url';
 import { registerIpcHandlers } from './ipc/register';
 import { VITE_DEV_PORT } from '@shiroani/shared';
 import { logger } from './logging/logger';
-import { getBackendPort } from './backend-port';
 import { BrowserManager } from './browser/browser-manager';
 import { isExternalUrlAllowed } from './url-utils';
 import { isHardCrashReason } from './cleanup-utils';
@@ -30,7 +29,7 @@ export { isExternalUrlAllowed };
  * Set Content Security Policy for the renderer process
  * This helps prevent XSS attacks and other injection vulnerabilities
  */
-function setupContentSecurityPolicy(isDev: boolean, backendPort: number): void {
+function setupContentSecurityPolicy(isDev: boolean): void {
   // Only apply CSP to the main renderer's own pages, not to webview content.
   // Packaged Windows paths look like `file:///C:/...` — the two-slash glob
   // (`file://*`) does NOT reliably match those, which would silently disable
@@ -56,10 +55,11 @@ function setupContentSecurityPolicy(isDev: boolean, backendPort: number): void {
       "img-src 'self' data: blob: shiroani-bg: shiroani-mascot: https:",
       // Allow fonts from same origin
       "font-src 'self' data:",
-      // Allow connections to localhost (WebSocket and API) and AniList GraphQL
+      // The renderer reaches the backend over IPC, so it opens no local connections:
+      // AniList GraphQL, plus the Vite server in dev.
       isDev
-        ? `connect-src 'self' http://localhost:${VITE_DEV_PORT} ws://localhost:${VITE_DEV_PORT} http://localhost:${backendPort} ws://localhost:${backendPort} http://127.0.0.1:${backendPort} ws://127.0.0.1:${backendPort} https://graphql.anilist.co`
-        : `connect-src 'self' http://localhost:${backendPort} ws://localhost:${backendPort} http://127.0.0.1:${backendPort} ws://127.0.0.1:${backendPort} https://graphql.anilist.co`,
+        ? `connect-src 'self' http://localhost:${VITE_DEV_PORT} ws://localhost:${VITE_DEV_PORT} https://graphql.anilist.co`
+        : "connect-src 'self' https://graphql.anilist.co",
       // Restrict object/embed sources
       "object-src 'none'",
       // Allow frames from same origin only (webview tags use their own session)
@@ -105,7 +105,7 @@ export async function createMainWindow(browserManager: BrowserManager): Promise<
   const isDev = process.env.NODE_ENV === 'development';
 
   // Set up Content Security Policy before creating the window
-  setupContentSecurityPolicy(isDev, getBackendPort());
+  setupContentSecurityPolicy(isDev);
 
   // Allow clipboard access, deny all other permission requests (camera, mic, geolocation, etc.)
   const allowedPermissions = new Set(['clipboard-read', 'clipboard-sanitized-write']);
