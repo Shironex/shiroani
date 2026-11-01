@@ -9,8 +9,14 @@
  * These lists are also the routing switch: a request channel listed here goes
  * over IPC in the renderer, and anything else stays on the socket.
  */
-import { BackendEvents } from '../constants/events';
+import { BackendEvents, DiaryEvents } from '../constants/events';
 
-export const BACKEND_REQUEST_CHANNELS = [BackendEvents.PING] as const;
+export const BACKEND_REQUEST_CHANNELS = [
+  BackendEvents.PING,
+  DiaryEvents.GET_ALL,
+  DiaryEvents.CREATE,
+  DiaryEvents.UPDATE,
+  DiaryEvents.REMOVE,
+] as const;
 
-export const BACKEND_EVENT_CHANNELS = [] as const;
+export const BACKEND_EVENT_CHANNELS = [DiaryEvents.UPDATED] as const;

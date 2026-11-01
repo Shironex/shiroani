@@ -12,6 +12,7 @@ import { AnimeSocialService } from '../modules/anime/anime-social.service';
 import { AnimeRecommendationsService } from '../modules/anime/anime-recommendations.service';
 import { AniListSyncService } from '../modules/anilist-sync/anilist-sync.service';
 import { DatabaseService } from '../modules/database/database.service';
+import { createDiaryHandlers } from '../modules/diary/diary.handlers';
 import { DiaryService } from '../modules/diary/diary.service';
 import { ArticleExtractorService } from '../modules/feed/article-extractor.service';
 import { FeedCacheService } from '../modules/feed/feed-cache.service';
@@ -41,6 +42,7 @@ export interface CreateBackendOptions {
 
 export interface Backend extends GatewayServices {
   database: DatabaseService;
+  diary: DiaryService;
   notifications: NotificationsService;
   notificationHost: ElectronNotificationHost;
   events: BackendEventPublisher;
@@ -151,7 +153,10 @@ export function createBackend({
       notifications,
       notificationHost,
       events,
-      handlers: { ...createSystemHandlers() },
+      handlers: {
+        ...createSystemHandlers(),
+        ...createDiaryHandlers(diary, events),
+      },
       inflight,
       addDisposer,
       shutdown,

@@ -7,8 +7,6 @@ import { AnimeSocialService } from './anime/anime-social.service';
 import { AnimeRecommendationsService } from './anime/anime-recommendations.service';
 import { AniListSyncGateway } from './anilist-sync/anilist-sync.gateway';
 import { AniListSyncService } from './anilist-sync/anilist-sync.service';
-import { DiaryGateway } from './diary/diary.gateway';
-import { DiaryService } from './diary/diary.service';
 import { FeedGateway } from './feed/feed.gateway';
 import { FeedService } from './feed/feed.service';
 import { ImportExportGateway } from './import-export/import-export.gateway';
@@ -27,7 +25,6 @@ export interface GatewayServices {
   animeSocial: AnimeSocialService;
   animeRecommendations: AnimeRecommendationsService;
   library: LibraryService;
-  diary: DiaryService;
   schedule: ScheduleService;
   importExport: ImportExportService;
   feed: FeedService;
@@ -66,7 +63,6 @@ export class AppModule {
         { provide: AnimeSocialService, useValue: services.animeSocial },
         { provide: AnimeRecommendationsService, useValue: services.animeRecommendations },
         { provide: LibraryService, useValue: services.library },
-        { provide: DiaryService, useValue: services.diary },
         { provide: ScheduleService, useValue: services.schedule },
         { provide: ImportExportService, useValue: services.importExport },
         { provide: FeedService, useValue: services.feed },
@@ -74,7 +70,6 @@ export class AppModule {
         { provide: MalSyncService, useValue: services.malSync },
         AnimeGateway,
         AniListSyncGateway,
-        DiaryGateway,
         FeedGateway,
         ImportExportGateway,
         LibraryGateway,

@@ -6,6 +6,7 @@
  */
 import {
   AnimeEvents,
+  BackendEvents,
   DiaryEvents,
   FeedEvents,
   LibraryEvents,
@@ -37,6 +38,7 @@ function field<T>(payload: unknown, key: string, fallback: T): T {
 }
 
 const RESPONDERS: Record<string, Responder> = {
+  [BackendEvents.PING]: () => ({ ack: { ok: true } }),
   [LibraryEvents.GET_ALL]: () => ({ ack: { entries: libraryEntries() } }),
   [DiaryEvents.GET_ALL]: () => ({ ack: { entries: diaryEntries() } }),
 

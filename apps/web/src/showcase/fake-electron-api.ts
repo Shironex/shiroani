@@ -8,6 +8,7 @@ import {
   DEFAULT_UPDATE_CHANNEL,
   LANGUAGE_STORAGE_KEY,
   UI_LANGUAGE_SETTING_KEY,
+  type BackendBridge,
   type DiscordRpcSettings,
   type ElectronAPI,
   type MalAuthStatus,
@@ -16,6 +17,7 @@ import {
 import { version as APP_VERSION } from '../../package.json';
 import { frequentSites } from './fixtures/browser';
 import { aniListStatus, appStatsSnapshot } from './fixtures/profile';
+import { respond } from './fixtures/responses';
 
 const FAKE_PORT = 58090;
 
@@ -60,6 +62,39 @@ const malStatus: MalAuthStatus = { connected: false };
 const noop = () => {};
 const unsubscribe = () => noop;
 const resolved = <T>(value: T) => Promise.resolve(value);
+
+/** Answers migrated backend channels from the same fixtures as the fake socket. */
+function createFakeBackend(): BackendBridge {
+  const listeners = new Map<string, Set<(data: never) => void>>();
+
+  const invoke = (channel: string, payload: unknown): Promise<unknown> => {
+    const reply = respond(channel, payload);
+    if (!reply) {
+      const unhandled = (window.__showcaseUnhandled ??= []);
+      if (!unhandled.includes(channel)) unhandled.push(channel);
+      console.warn(`[showcase] no fixture for backend channel "${channel}"`);
+      return new Promise(() => {});
+    }
+    return new Promise(resolve => {
+      setTimeout(() => {
+        resolve(reply.ack);
+        for (const [event, data] of reply.broadcasts ?? []) {
+          listeners.get(event)?.forEach(listener => listener(data as never));
+        }
+      }, 0);
+    });
+  };
+
+  return {
+    invoke: invoke as BackendBridge['invoke'],
+    on: (event, callback) => {
+      const set = listeners.get(event) ?? new Set();
+      listeners.set(event, set);
+      set.add(callback as (data: never) => void);
+      return () => set.delete(callback as (data: never) => void);
+    },
+  };
+}
 
 export function createFakeElectronApi(): ElectronAPI {
   const store = seedStore();
@@ -227,10 +262,7 @@ export function createFakeElectronApi(): ElectronAPI {
         cancel: noop,
       }),
     },
-    backend: {
-      invoke: () => resolved({ ok: true }),
-      on: () => () => {},
-    },
+    backend: createFakeBackend(),
     platform: 'win32',
   };
 }

@@ -2,19 +2,47 @@
  * Compile-time contract for the backend IPC bridge. Types only. Runtime channel
  * lists live in `./channels` so the sandboxed preload can import them.
  */
-import type { BackendEvents } from '../constants/events';
+import type { z } from 'zod';
+import type { BackendEvents, CrudActions, DiaryEvents } from '../constants/events';
+import type {
+  diaryCreatePayloadSchema,
+  diaryRemovePayloadSchema,
+  diaryUpdatePayloadSchema,
+} from '../schemas/diary';
+import type { DiaryEntry } from '../types/diary';
 import type { BACKEND_EVENT_CHANNELS, BACKEND_REQUEST_CHANNELS } from './channels';
 
 export type BackendRequestChannel = (typeof BACKEND_REQUEST_CHANNELS)[number];
 export type BackendEventChannel = (typeof BACKEND_EVENT_CHANNELS)[number];
 
+/** A request with nothing to send. The renderer's list fetches pass an empty object. */
+type NoPayload = Record<string, never> | undefined;
+
 /** Request and response shape of every request channel. */
 export interface BackendRoutes {
   [BackendEvents.PING]: { req: undefined; res: { ok: true } };
+
+  [DiaryEvents.GET_ALL]: { req: NoPayload; res: { entries: DiaryEntry[] } };
+  [DiaryEvents.CREATE]: {
+    req: z.infer<typeof diaryCreatePayloadSchema>;
+    res: { entry: DiaryEntry | null };
+  };
+  [DiaryEvents.UPDATE]: {
+    req: z.infer<typeof diaryUpdatePayloadSchema>;
+    res: { entry: DiaryEntry | null };
+  };
+  [DiaryEvents.REMOVE]: {
+    req: z.infer<typeof diaryRemovePayloadSchema>;
+    res: { success: boolean };
+  };
 }
 
-/** Payload of every event channel. Grows with `BACKEND_EVENT_CHANNELS`. */
-export type BackendEventMap = Record<BackendEventChannel, never>;
+/** Payload of every event channel. */
+export interface BackendEventMap {
+  [DiaryEvents.UPDATED]:
+    | { entry: DiaryEntry; action: typeof CrudActions.CREATED | typeof CrudActions.UPDATED }
+    | { id: number; action: typeof CrudActions.REMOVED };
+}
 
 export type BackendReq<C extends BackendRequestChannel> = BackendRoutes[C]['req'];
 export type BackendRes<C extends BackendRequestChannel> = BackendRoutes[C]['res'];
