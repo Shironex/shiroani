@@ -21,7 +21,7 @@ function normalizeHost(host: string | undefined | null): string {
  *
  * Responsibilities:
  * - Initialize the `persist:browser` session (user agent, permissions)
- * - Register composite webRequest handlers (iframe unblocking + adblock)
+ * - Register composite webRequest handlers (Permissions-Policy + adblock)
  * - Toggle adblock on/off (network + cosmetic filtering)
  *
  * Tab lifecycle is entirely handled by the renderer process via <webview> DOM elements.
@@ -62,32 +62,6 @@ export class BrowserManager {
       return normalizeHost(new URL(currentUrl).hostname);
     } catch {
       return '';
-    }
-  }
-
-  /**
-   * Whether the top-frame for this request is an http/https page — i.e. the
-   * in-app browser tab is showing a real web site, not a local/app page
-   * (`file://`, `app://`, `shiroani-bg://`, `chrome://`, etc.).
-   *
-   * Used to scope iframe-unblocking: stripping `X-Frame-Options` and
-   * `frame-ancestors` only makes sense when the top-frame is a streaming-style
-   * site that wants to embed external video players. For any other top-frame
-   * (including the app's own renderer) we leave upstream framing protections
-   * intact, so a local/privileged page can't be silently framed by a subframe
-   * response.
-   */
-  private isWebTopFrame(webContentsId: number | undefined): boolean {
-    if (typeof webContentsId !== 'number' || webContentsId < 0) return false;
-    try {
-      const contents = webContents.fromId(webContentsId);
-      if (!contents || contents.isDestroyed()) return false;
-      const currentUrl = contents.getURL();
-      if (!currentUrl) return false;
-      const parsed = new URL(currentUrl);
-      return parsed.protocol === 'http:' || parsed.protocol === 'https:';
-    } catch {
-      return false;
     }
   }
 
@@ -224,39 +198,15 @@ export class BrowserManager {
 
   /**
    * Register composite webRequest handlers on the browser session.
-   * Always strips iframe-blocking headers and injects permissive Permissions-Policy.
+   * Always injects a permissive Permissions-Policy.
    * When adblock is enabled, also runs adblocker network filtering.
    */
   private registerCompositeWebRequestHandlers(): void {
     const sess = this.getSession();
 
-    // Composite onHeadersReceived: strip iframe restrictions + optional adblocker CSP
+    // Composite onHeadersReceived: Permissions-Policy + optional adblocker CSP
     sess.webRequest.onHeadersReceived({ urls: ['<all_urls>'] }, (details, callback) => {
       const responseHeaders = { ...details.responseHeaders } as Record<string, string[]>;
-
-      // Only strip framing restrictions for subframe responses whose top-frame
-      // is a real http/https web page. This scopes the iframe-unblocking to
-      // streaming sites (the reason the override exists) and avoids weakening
-      // clickjacking protection for local/app pages (`file://`, `app://`, etc.)
-      // that could otherwise be silently framed by a subframe response.
-      const scopeFramingOverride =
-        details.resourceType === 'subFrame' && this.isWebTopFrame(details.webContentsId);
-
-      if (scopeFramingOverride) {
-        for (const key of Object.keys(responseHeaders)) {
-          const lower = key.toLowerCase();
-          if (lower === 'x-frame-options') {
-            delete responseHeaders[key];
-          } else if (lower === 'content-security-policy') {
-            responseHeaders[key] = responseHeaders[key].map(policy =>
-              policy
-                .split(';')
-                .filter(directive => !directive.trim().toLowerCase().startsWith('frame-ancestors'))
-                .join(';')
-            );
-          }
-        }
-      }
 
       // Permissions-Policy override — fullscreen=* is required because the
       // HTTP-level Permissions-Policy header takes precedence over iframe
