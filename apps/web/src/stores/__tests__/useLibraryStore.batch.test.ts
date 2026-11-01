@@ -22,9 +22,9 @@ function makeEntry(id: number, overrides: Partial<AnimeEntry> = {}): AnimeEntry 
 }
 
 /**
- * Regression for the WS-throttler bug: the batch action bar used to fire ONE
- * socket emit per selected id, so a large selection tripped the 100/s,
- * 500/10s throttler and the batch silently failed. These pin the fix at the
+ * Regression for the old rate-limiter bug: the batch action bar used to fire ONE
+ * backend call per selected id, so a large selection tripped the 100/s,
+ * 500/10s rate limiter and the batch silently failed. These pin the fix at the
  * call site that broke (the store actions) — 150 selected entries (above the
  * 100/s limit) must produce exactly ONE batched emit, regardless of size.
  */

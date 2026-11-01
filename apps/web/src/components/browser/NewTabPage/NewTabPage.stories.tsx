@@ -13,7 +13,7 @@ const meta = {
   },
   beforeEach: () => {
     // Non-empty schedule slot for today → AiringTodaySection's fetch effect
-    // short-circuits → no socket opened against the dead test backend.
+    // short-circuits → no request.
     useScheduleStore.setState({ schedule: { [toLocalDate(new Date())]: [] }, isLoading: false });
   },
 } satisfies Meta<typeof NewTabPage>;

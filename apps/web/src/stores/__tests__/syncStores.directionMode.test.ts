@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { AniListSyncEvents, MalSyncEvents, type SyncResult } from '@shiroani/shared';
 
 // The sync stores reach the desktop over `@/lib/backend`. Mock it so we can assert
-// the exact full-sync payload each direction mode emits without a real socket.
+// the exact full-sync payload each direction mode emits without a real backend.
 const { emitMock } = vi.hoisted(() => ({ emitMock: vi.fn() }));
 vi.mock('@/lib/backend', () => ({
   onBackendEvent: vi.fn(() => () => {}),

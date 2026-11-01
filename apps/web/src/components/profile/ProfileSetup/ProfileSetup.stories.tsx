@@ -8,7 +8,7 @@ import ProfileSetup from './ProfileSetup';
  * AniList connect form shown when no username is stored — a centered card with a
  * username input and a submit button that stays disabled until a non-blank value
  * is typed. Submitting calls `useProfileStore.setUsername`, which (with a value)
- * kicks off the profile fetch; stories stub it so no socket call runs.
+ * kicks off the profile fetch; stories stub it so no backend call runs.
  */
 const meta = {
   title: 'profile/ProfileSetup',
@@ -20,7 +20,7 @@ const meta = {
   },
   decorators: [withFullHeight],
   beforeEach: () => {
-    // Stub setUsername so a submit never triggers the (socket-backed) fetch.
+    // Stub setUsername so a submit never triggers the backend fetch.
     useProfileStore.setState({
       username: '',
       isLoading: false,

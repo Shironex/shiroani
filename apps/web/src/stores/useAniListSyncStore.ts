@@ -28,7 +28,7 @@ const logger = createLogger('AniListSyncStore');
 function requestForMode(mode: FullSyncDirection): FullSyncRequest {
   // `mode` is rehydrated from localStorage, so a stale/corrupted value could
   // reach here — default anything unrecognised to two-way rather than emit an
-  // invalid `direction` the gateway schema would reject.
+  // invalid `direction` the backend schema would reject.
   if (mode === 'push') return { direction: 'push', pushMode: 'overwrite' };
   if (mode === 'pull') return { direction: 'pull' };
   return { direction: 'two-way' };
@@ -94,7 +94,7 @@ interface AniListSyncActions {
    * Reconcile a SINGLE library entry against AniList in a forced direction
    * (`push`/`pull`) or `auto`. Resolves with the outcome action (or `'error'`
    * on failure) so the caller can surface a result toast — this thunk stays
-   * i18n-agnostic, mirroring {@link sync}. The desktop gateway broadcasts
+   * i18n-agnostic, mirroring {@link sync}. The desktop backend broadcasts
    * `LibraryEvents.UPDATED` on success, so the library store re-fetches and the
    * per-entry sync badge refreshes automatically (no manual refetch here).
    */

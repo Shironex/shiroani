@@ -5,16 +5,16 @@ import type { ShiroaniExportFormat, ImportItemResult, ImportResponse } from '@sh
 // Control both the backend call and the progress listener so the
 // dialog's state machine can be driven deterministically through its branches.
 const invokeBackend = vi.fn();
-const socketOn = vi.fn();
-const socketOff = vi.fn();
+const backendOn = vi.fn();
+const backendOff = vi.fn();
 let progressHandler: ((p: ImportItemResult) => void) | undefined;
 
 vi.mock('@/lib/backend', () => ({
   invokeBackend: (...args: unknown[]) => invokeBackend(...args),
   onBackendEvent: (event: string, handler: (p: ImportItemResult) => void) => {
-    socketOn(event, handler);
+    backendOn(event, handler);
     progressHandler = handler;
-    return () => socketOff(event, handler);
+    return () => backendOff(event, handler);
   },
 }));
 
@@ -48,8 +48,8 @@ function stubFileBridge(raw: string | null = JSON.stringify(VALID_EXPORT)) {
 describe('ImportDialog', () => {
   beforeEach(() => {
     invokeBackend.mockReset();
-    socketOn.mockReset();
-    socketOff.mockReset();
+    backendOn.mockReset();
+    backendOff.mockReset();
     progressHandler = undefined;
     // Default: the import emit never resolves, parking the dialog on importing.
     invokeBackend.mockImplementation(() => new Promise(() => {}));
@@ -161,7 +161,7 @@ describe('ImportDialog', () => {
     expect(await screen.findByText('Importing data...')).toBeInTheDocument();
   });
 
-  it('updates progress as the socket emits item updates', async () => {
+  it('updates progress as the backend calls item updates', async () => {
     stubFileBridge();
     const { user } = render(<ImportDialog open onOpenChange={() => {}} type="all" />);
 

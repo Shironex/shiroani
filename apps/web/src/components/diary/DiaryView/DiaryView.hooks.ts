@@ -44,9 +44,8 @@ export function useDiaryView(): IDiaryViewView {
   const isLoading = useDiaryStore(s => s.isLoading);
   const error = useDiaryStore(s => s.error);
 
-  // Read the socket-lifecycle actions from the store so they can be stubbed in
-  // tests via `setState` — they touch the socket on mount and would otherwise
-  // throw without a connection.
+  // Read the lifecycle actions from the store so they can be stubbed in
+  // tests via `setState`: they call the backend on mount.
   const initListeners = useDiaryStore(s => s.initListeners);
   const fetchEntries = useDiaryStore(s => s.fetchEntries);
   const cleanupListeners = useDiaryStore(s => s.cleanupListeners);

@@ -11,7 +11,7 @@ import ProfileSidebar from './ProfileSidebar';
  * (only when connected) and the refresh / export / disconnect actions.
  *
  * The sidebar starts the local app-stats poll on mount, which no-ops outside
- * Electron, so stories stay socket-free. The sync widget reads
+ * Electron, so stories stay backend-free. The sync widget reads
  * `useAniListAuthStore.status.connected`; stories seed it explicitly.
  */
 const meta = {

@@ -27,7 +27,7 @@ import type { IEntrySyncSectionProps } from './AnimeDetailModal.types';
  * main-side). The two providers are independent — an AniList sync never disables
  * the MAL controls and vice versa. Both stores are subscribed unconditionally
  * (rules of hooks) and the active one is selected by `provider`. On success the
- * gateway broadcasts `LibraryEvents.UPDATED`, so the library store re-fetches and
+ * backend broadcasts `LibraryEvents.UPDATED`, so the library store re-fetches and
  * the card/row sync badge refreshes automatically — no manual refetch here.
  */
 export function EntrySyncSection({ entryId, provider }: IEntrySyncSectionProps) {

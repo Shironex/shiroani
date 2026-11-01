@@ -37,7 +37,7 @@ pnpm package:mac   # Package for macOS
 ```
 shiroani/
 ├── apps/
-│   ├── desktop/          # Electron + NestJS backend
+│   ├── desktop/          # Electron, backend services in the main process
 │   └── web/              # React + Vite frontend
 ├── packages/
 │   ├── shared/           # Shared types, constants, utilities
@@ -52,13 +52,12 @@ shiroani/
 |           |                                              |
 | --------- | -------------------------------------------- |
 | Desktop   | Electron 41                                  |
-| Backend   | NestJS 11 (embedded)                         |
+| Backend   | Plain services in main, typed IPC            |
 | Frontend  | React 18, Vite 8, Tailwind CSS 4             |
 | i18n      | i18next 26, react-i18next 17                 |
 | Database  | better-sqlite3                               |
 | Rich Text | TipTap 3                                     |
 | UI        | Radix UI, Lucide Icons, DnD Kit              |
-| Real-time | Socket.IO 4                                  |
 | State     | Zustand 5                                    |
 | Native    | C++ overlay module (node-addon-api, Windows) |
 | Updates   | electron-updater (Windows)                   |

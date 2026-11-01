@@ -23,7 +23,7 @@ const anime = {
  * for one anime, reading membership from `useNotificationStore`. It renders the
  * outline bell when not subscribed and the filled bell when subscribed; the
  * tooltip copy flips to match. The store's `subscribe`/`unsubscribe` actions are
- * stubbed per story so the toggle never touches IPC or the socket.
+ * stubbed per story so the toggle never touches IPC.
  */
 const meta = {
   title: 'shared/SubscribeBellButton',

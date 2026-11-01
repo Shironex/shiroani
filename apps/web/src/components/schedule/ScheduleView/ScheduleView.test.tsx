@@ -32,7 +32,7 @@ beforeAll(() => {
 });
 
 beforeEach(() => {
-  // Stub the fetch actions so navigation/mode changes never open a socket; the
+  // Stub the fetch actions so navigation/mode changes never call the backend; the
   // store's selectDay/setViewMode read these via get() at call time.
   useScheduleStore.setState({
     isLoading: false,

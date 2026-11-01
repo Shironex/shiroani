@@ -118,7 +118,7 @@ export const useProfileStore = create<ProfileStore>()(
         logger.info('Fetching connected viewer profile');
         set({ isLoading: true, mode: 'viewer', error: null }, undefined, 'profile/fetchingViewer');
 
-        // The access token never crosses the socket — the handler resolves the
+        // The access token never reaches the renderer: the handler resolves the
         // viewer entirely main-side and returns only the mapped profile.
         invokeBackend<Record<string, never>, { profile: UserProfile | null }>(
           AnimeEvents.GET_VIEWER_PROFILE,

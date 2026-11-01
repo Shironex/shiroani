@@ -80,7 +80,7 @@ export function useImportDialog({
   // a chance to settle. Reset when the dialog closes.
   const autoTriggeredRef = useRef(false);
 
-  // Clean up socket listener on unmount
+  // Clean up the event listener on unmount
   useEffect(() => {
     return () => {
       listenerCleanupRef.current?.();

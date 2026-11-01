@@ -18,11 +18,11 @@ const logger = createLogger('AniListNotificationsStore');
  * notifications bell.
  *
  * NOTE: distinct from {@link useNotificationStore} (the local airing-reminder
- * subscription store) — this one talks to AniList over the socket, not the
+ * subscription store): this one talks to AniList through the backend, not the
  * Electron notifications bridge.
  *
  * Token-relative: every op is gated on `status.connected` (the access token
- * never crosses the socket; the backend resolves the viewer from it main-side)
+ * never reaches the renderer; the backend resolves the viewer from it main-side)
  * and short-circuits when disconnected.
  */
 interface AniListNotificationsState {

@@ -5,9 +5,6 @@
  * require `electron`. Keep the only import below free of runtime dependencies:
  * `apps/desktop/esbuild.config.mjs` fails the build if zod or anything else
  * reaches the preload bundle.
- *
- * These lists are also the routing switch: a request channel listed here goes
- * over IPC in the renderer, and anything else stays on the socket.
  */
 import {
   AniListSyncEvents,

@@ -2,7 +2,7 @@ import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, waitFor } from '@/test/test-utils';
 import type { ExportResponse } from '@shiroani/shared';
 
-// The export flow emits over the socket; control the transport so we can drive
+// The export flow emits over IPC; control the transport so we can drive
 // the dialog's state machine through its meaningful branches deterministically.
 const invokeBackend = vi.fn();
 vi.mock('@/lib/backend', () => ({
@@ -94,10 +94,10 @@ describe('ExportDialog', () => {
   });
 
   it('shows the error message when the export rejects', async () => {
-    invokeBackend.mockRejectedValueOnce(new Error('Socket boom'));
+    invokeBackend.mockRejectedValueOnce(new Error('Backend boom'));
     render(<ExportDialog open onOpenChange={() => {}} type="library" />);
 
-    expect(await screen.findByText('Socket boom')).toBeInTheDocument();
+    expect(await screen.findByText('Backend boom')).toBeInTheDocument();
     // Error state offers a footer close button (its label is a real text node,
     // distinct from the dialog's icon-only "X" close whose label is sr-only).
     expect(screen.getByText('Close', { selector: 'button' })).toBeInTheDocument();

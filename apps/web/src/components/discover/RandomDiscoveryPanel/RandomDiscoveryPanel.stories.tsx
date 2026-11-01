@@ -20,7 +20,7 @@ const pool: DiscoverMedia[] = Array.from({ length: 4 }, (_, i) => ({
  * Random discovery tab — a genre filter panel above a hero showcase card with
  * prev/next peek chips. Reads `useDiscoverStore` (the shuffled pool, genre
  * selections, loading and error). The panel runs no fetch on mount; seeding the
- * store in `beforeEach` keeps stories socket-free.
+ * store in `beforeEach` keeps stories backend-free.
  */
 const meta = {
   title: 'discover/RandomDiscoveryPanel',

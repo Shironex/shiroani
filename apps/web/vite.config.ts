@@ -37,9 +37,9 @@ function stripDevConnectSources(): Plugin {
 /**
  * `vite build --mode showcase` only: boots the renderer through
  * `src/showcase/entry.ts`, which installs a fake `window.electronAPI` answering
- * from fixtures, and replaces the built-in new-tab shortcuts with invented ones. Every other mode (dev, production,
- * Storybook, Vitest) is untouched, so the packaged app never contains any of
- * `src/showcase`.
+ * from fixtures, and replaces the built-in new-tab shortcuts with invented ones.
+ * Every other mode (dev, production, Storybook, Vitest) is untouched, so the
+ * packaged app never contains any of `src/showcase`.
  */
 function showcaseFixturePlugin(): Plugin {
   let enabled = false;

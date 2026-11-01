@@ -11,12 +11,8 @@ import LibraryView from './LibraryView';
  * bar, and the detail/confirm/import/export dialogs.
  *
  * Stories seed `useLibraryStore` AND `useScheduleStore` so the view is fully
- * socket-free: `useNextAiringMap` only calls `fetchWeekly` when the schedule is
- * empty, and that emit opens the socket (autoConnect on the emit helper), which
- * then reconnects forever against the dead test backend — pegging the headless
- * Chromium page until it crashes. Seeding a non-empty schedule short-circuits
- * the effect, so no connection is ever attempted. See the root-cause note in
- * the README/handoff.
+ * backend-free: `useNextAiringMap` only calls `fetchWeekly` when the schedule is
+ * empty, so seeding a non-empty schedule short-circuits the effect.
  */
 const meta = {
   title: 'library/LibraryView',
@@ -28,7 +24,7 @@ const meta = {
   },
   decorators: [withFullHeight],
   beforeEach: () => {
-    // Non-empty schedule → useNextAiringMap's effect short-circuits → no socket.
+    // Non-empty schedule → useNextAiringMap's effect short-circuits, so no request.
     useScheduleStore.setState({ schedule: { '2025-01-01': [] }, isLoading: false });
   },
 } satisfies Meta<typeof LibraryView>;

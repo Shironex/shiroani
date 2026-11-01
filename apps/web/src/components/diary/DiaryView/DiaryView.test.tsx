@@ -5,8 +5,8 @@ import { useDiaryStore } from '@/stores/useDiaryStore';
 import DiaryView from './DiaryView';
 
 /**
- * Seed the diary store with a clean slice and stub the socket-lifecycle actions
- * so the mount effect doesn't reach for an (absent) socket connection.
+ * Seed the diary store with a clean slice and stub the lifecycle actions
+ * so the mount effect doesn't reach for an absent backend.
  */
 function seedStore(overrides: Partial<ReturnType<typeof useDiaryStore.getState>> = {}) {
   useDiaryStore.setState({

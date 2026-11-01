@@ -209,7 +209,7 @@ export const useFeedStore = create<FeedStore>()(
           listeners: [
             {
               // Broadcast after a source is toggled (in this or another window).
-              // Previously emitted by the gateway but consumed by nobody, so a
+              // Previously emitted by the backend but consumed by nobody, so a
               // toggle wouldn't propagate; wire it to keep source state in sync.
               event: FeedEvents.SOURCES_RESULT,
               handler: data => {

@@ -1,5 +1,5 @@
 /**
- * Zod schemas for import/export gateway payloads.
+ * Zod schemas for import/export backend payloads.
  *
  * Mirrors:
  *   - `ExportRequest`

@@ -17,7 +17,7 @@ interface AnimeDetailState {
 interface AnimeDetailActions {
   /**
    * Kick off fetches for any ids that aren't already cached, in-flight, or
-   * known-failed. Fires in parallel — no batching required since the socket
+   * known-failed. Fires in parallel: no batching required since the
    * backend handles concurrent calls.
    */
   ensureDetails: (ids: readonly number[]) => void;

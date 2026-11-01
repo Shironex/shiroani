@@ -29,7 +29,7 @@ export class AniListSyncService {
   /**
    * The provider-agnostic orchestration engine, wired to the AniList adapter. The
    * adapter owns the merge + AniList I/O; the engine owns dedup / snapshot /
-   * optimistic re-read / loop / tally. Constructed with plain `new` (not Nest DI)
+   * optimistic re-read / loop / tally. Constructed with plain `new` (no DI container)
    * so this service keeps its `(client, library, tokenPort)` constructor — the one
    * the unit tests construct directly.
    */
@@ -106,7 +106,7 @@ export class AniListSyncService {
 
       // The engine treats a missing row as a soft skip; the AniList contract throws
       // SYNC_ENTRY_NOT_FOUND_ERROR — so resolve the row presence here first to keep
-      // that behaviour (the gateway/tests rely on the throw).
+      // that behaviour (the backend/tests rely on the throw).
       if (!this.libraryService.getSyncRowById(localId)) {
         throw new Error(SYNC_ENTRY_NOT_FOUND_ERROR);
       }

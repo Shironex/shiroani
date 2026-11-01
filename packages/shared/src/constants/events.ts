@@ -1,7 +1,7 @@
 /**
- * WebSocket Socket.io Event Constants
+ * Backend channel and event names
  *
- * Single source of truth for all socket event names used between
+ * Single source of truth for the channel names used over IPC between
  * the frontend (apps/web) and backend (apps/desktop).
  *
  * Naming convention: 'domain:action' (colon separator)
@@ -144,7 +144,7 @@ export const LibraryEvents = {
   UPDATE_MANY: 'library:update-many',
   /**
    * Remove many entries in ONE request (one DB transaction). The bulk twin of
-   * {@link LibraryEvents.REMOVE}; same throttler-avoidance rationale as
+   * {@link LibraryEvents.REMOVE}; same one-call-per-selection rationale as
    * {@link LibraryEvents.UPDATE_MANY}. Payload: `LibraryRemoveManyPayload { ids }`.
    * Resolves with `{ ids }` — the ids actually deleted (rows that existed).
    */
@@ -288,7 +288,7 @@ export const BackendEvents = {
 /**
  * The `action` discriminator carried by `*:updated` broadcasts so the client
  * knows how to reconcile its list. Single source of truth shared by the
- * library/diary gateways (producers) and {@link createCrudResource} (consumer)
+ * library/diary handlers (producers) and {@link createCrudResource} (consumer)
  * to prevent the `'added'` vs `'created'` drift from re-appearing.
  */
 export const CrudActions = {

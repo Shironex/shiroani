@@ -24,7 +24,7 @@ interface MalProfileState {
 interface MalProfileActions {
   /**
    * Fetch the connected MAL viewer's THIN profile via {@link MalEvents.GET_VIEWER_PROFILE}.
-   * The access token never crosses the socket — the handler resolves the viewer
+   * The access token never reaches the renderer: the handler resolves the viewer
    * entirely main-side and returns only the mapped stats. Resolves with `null`
    * when no MAL account is connected (cleared quietly, NOT surfaced as an error).
    */

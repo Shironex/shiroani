@@ -216,8 +216,8 @@ function makeCrud(initial: Partial<TestState> = {}) {
 }
 
 // The regression these guard: the library batch action bar used to fire ONE
-// socket emit per selected id (batchRemove/batchUpdateStatus/batchUpdateScore),
-// tripping the WS throttler on a large selection. The bulk primitives coalesce
+// backend call per selected id (batchRemove/batchUpdateStatus/batchUpdateScore),
+// tripping the old rate limiter on a large selection. The bulk primitives coalesce
 // the whole selection into a single emit.
 describe('createCrudResource — optimisticRemoveMany (bulk delete)', () => {
   beforeEach(() => {
@@ -362,7 +362,7 @@ describe('createCrudResource — optimisticUpdateMany (bulk update)', () => {
   });
 });
 
-// The producer/consumer contract: the gateway broadcasts `removed-many` /
+// The producer/consumer contract: the backend broadcasts `removed-many` /
 // `updated-many` and OTHER clients must reconcile their lists — or silently
 // desync after a bulk op.
 describe('createCrudResource — createUpdatedListener bulk broadcasts', () => {

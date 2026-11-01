@@ -76,7 +76,7 @@ export * from './constants';
 // Logger
 export * from './logger';
 
-// Zod schemas (runtime validation for gateway payloads)
+// Zod schemas (runtime validation for backend payloads)
 export * from './schemas';
 
 // AniList error classification

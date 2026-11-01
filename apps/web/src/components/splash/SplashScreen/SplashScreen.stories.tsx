@@ -14,8 +14,8 @@ import SplashScreen from './SplashScreen';
  * Every story uses `ready: false` so the overlay stays mounted for the render +
  * a11y pass (a ready splash would dismiss itself after the min-display timer).
  * The `beforeEach` seeds `useUpdateStore` to a deterministic, non-installing
- * baseline so the variant is driven purely by the story's props; no backend or
- * socket is touched.
+ * baseline so the variant is driven purely by the story's props; no backend is
+ * touched.
  */
 const meta = {
   title: 'splash/SplashScreen',

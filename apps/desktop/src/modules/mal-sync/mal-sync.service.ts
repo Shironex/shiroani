@@ -35,7 +35,7 @@ export class MalSyncService {
   /**
    * Provider-agnostic orchestration engine wired to the MAL adapter. The adapter
    * owns the MAL merge + MAL I/O + the `mal_*` baseline; the engine owns dedup /
-   * snapshot / optimistic re-read / loop / tally. Plain `new` (not Nest DI) so
+   * snapshot / optimistic re-read / loop / tally. Plain `new` (no DI container) so
    * this service keeps a `(client, library, tokenPort)` constructor the unit
    * tests construct directly — mirroring {@link AniListSyncService}.
    */

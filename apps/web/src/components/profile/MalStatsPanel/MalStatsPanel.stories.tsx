@@ -10,7 +10,7 @@ import MalStatsPanel from './MalStatsPanel';
  * "MyAnimeList" tab body — a sidebar (avatar + summary + sync status + open
  * action) beside a scrollable column of status rings, headline stats and a
  * time-invested breakdown. Fed by `useMalProfileStore`, which the panel fetches
- * on mount; stories seed the store and stub `fetchProfile` so no socket call
+ * on mount; stories seed the store and stub `fetchProfile` so no backend call
  * runs.
  */
 const meta = {
@@ -78,7 +78,7 @@ export const NotConnected: Story = {
       notConnected: true,
       fetchProfile: fn(),
     });
-    // The not-connected effect re-resolves auth status; stub it socket-free.
+    // The not-connected effect re-resolves auth status; stub it backend-free.
     useMalAuthStore.setState({ fetchStatus: fn().mockResolvedValue(undefined) });
   },
   play: async ({ canvasElement }) => {

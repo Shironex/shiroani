@@ -88,7 +88,7 @@ describe('wipeAllData', () => {
     });
 
     it('aborts before touching local state if the DB wipe resolves unsuccessfully', async () => {
-      // Distinct from the reject path above: the gateway can *resolve* with
+      // Distinct from the reject path above: the backend can *resolve* with
       // { success: false } (handleGatewayRequest catches handler errors and
       // returns the default result rather than throwing).
       const api = makeElectronApi();

@@ -13,7 +13,7 @@ interface CrudEntity {
 }
 
 /**
- * The slice of socket-store state {@link createCrudResource} reads and writes.
+ * The slice of backend-store state {@link createCrudResource} reads and writes.
  * Stores extend this with their own filter/sort/selection fields.
  */
 interface CrudResourceState<TItem> {
@@ -34,7 +34,7 @@ interface CreateCrudResourceOptions<
   storeName: string;
   /** Store logger used for fetch/mutation error reporting. */
   logger: Logger;
-  /** Socket event names for the read + mutation operations. */
+  /** Backend channel names for the read + mutation operations. */
   events: {
     /** Request-all event, replied to with `{ entries }`. */
     getAll: string;
@@ -42,7 +42,7 @@ interface CreateCrudResourceOptions<
 }
 
 interface OptimisticUpdateConfig<TItem, TPayload> {
-  /** Socket mutation event, e.g. `LibraryEvents.UPDATE`. */
+  /** Mutation channel, e.g. `LibraryEvents.UPDATE`. */
   event: string;
   /** Mutation payload (also carries the target `id`). */
   payload: TPayload;
@@ -55,7 +55,7 @@ interface OptimisticUpdateConfig<TItem, TPayload> {
 }
 
 interface OptimisticRemoveConfig<TState> {
-  /** Socket mutation event, e.g. `LibraryEvents.REMOVE`. */
+  /** Mutation channel, e.g. `LibraryEvents.REMOVE`. */
   event: string;
   /** Target entity id to remove. */
   id: number;
@@ -69,7 +69,7 @@ interface OptimisticRemoveConfig<TState> {
 }
 
 interface OptimisticUpdateManyConfig<TItem, TPayload> {
-  /** Bulk socket mutation event, e.g. `LibraryEvents.UPDATE_MANY`. */
+  /** Bulk mutation channel, e.g. `LibraryEvents.UPDATE_MANY`. */
   event: string;
   /** Wire payload — carries the `ids` and the changed fields; emitted as-is. */
   payload: TPayload;
@@ -85,7 +85,7 @@ interface OptimisticUpdateManyConfig<TItem, TPayload> {
 }
 
 interface OptimisticRemoveManyConfig<TState> {
-  /** Bulk socket mutation event, e.g. `LibraryEvents.REMOVE_MANY`. */
+  /** Bulk mutation channel, e.g. `LibraryEvents.REMOVE_MANY`. */
   event: string;
   /** Target entity ids to remove. */
   ids: number[];
@@ -128,7 +128,7 @@ interface CrudUpdatedListenerConfig<TItem extends CrudEntity, TState> {
 }
 
 /**
- * Build the shared socket-CRUD action set (`fetchAll`, `optimisticUpdate`,
+ * Build the shared backend CRUD action set (`fetchAll`, `optimisticUpdate`,
  * `optimisticRemove`) plus the broadcast `UPDATED` listener handler used by the
  * library and diary stores. Behaviour is identical to the hand-rolled
  * versions: same loading/error transitions, same optimistic-then-rollback
@@ -279,8 +279,8 @@ export function createCrudResource<
   /**
    * Optimistically patch MANY rows with a single mutation emit, re-fetching on
    * failure to restore authoritative state. The bulk twin of
-   * {@link optimisticUpdate}: one socket round-trip for the whole selection
-   * (avoids the per-id throttler trip), same loading/seq semantics. The local
+   * {@link optimisticUpdate}: one IPC round-trip for the whole selection
+   * (not one call per id), same loading/seq semantics. The local
    * patch is pre-bound via `apply` so the wire `payload` (which carries `ids`)
    * never leaks onto an entity.
    */

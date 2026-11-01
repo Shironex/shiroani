@@ -286,7 +286,7 @@ export const useLibraryStore = create<LibraryStore>()(
         batchUpdateStatus: (status: AnimeStatus) => {
           const ids = [...get().selectedIds];
           // One batched emit for the whole selection — N individual UPDATE
-          // emits used to trip the WS throttler on a large selection.
+          // emits used to trip the old rate limiter on a large selection.
           crud.optimisticUpdateMany({
             event: LibraryEvents.UPDATE_MANY,
             payload: { ids, status },

@@ -39,7 +39,7 @@ interface SocialGraphState {
  * exposes an optimistic {@link SocialGraphState.toggleFollow}.
  *
  * Both lists are viewer-scoped: the backend resolves the viewer from the stored
- * OAuth token (which never crosses the socket) and defaults `userId` to that
+ * OAuth token (which never reaches the renderer) and defaults `userId` to that
  * viewer when omitted — so the hook never passes an id and only fetches while
  * connected. It clears any stale data when the connection drops.
  *

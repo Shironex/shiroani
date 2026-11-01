@@ -129,10 +129,10 @@ export class LibraryService {
 
   /**
    * Remove many entries in ONE transaction. Returns the ids actually deleted
-   * (rows that existed) so the gateway can broadcast a precise removal set.
+   * (rows that existed) so the backend can broadcast a precise removal set.
    *
    * A single call replaces the N individual {@link removeEntry} round-trips the
-   * batch action bar used to fire — those tripped the WS throttler on a large
+   * batch action bar used to fire: those tripped the old rate limiter on a large
    * selection. Atomic: a failure mid-batch rolls the whole delete back, so the
    * client's optimistic removal and the DB never disagree on a partial set.
    */
@@ -158,14 +158,14 @@ export class LibraryService {
    * updated entries (only rows that still existed). The bulk twin of
    * {@link updateEntry}: same `buildUpdate` SET clauses (incl. the `updated_at`
    * bump that marks the rows as fresh local edits for the next sync), coalesced
-   * into a single statement re-run per id so a large selection is one socket
-   * emit instead of N. Atomic — a mid-batch failure rolls the whole update back.
+   * into a single statement re-run per id so a large selection is one call
+   * instead of N. Atomic: a mid-batch failure rolls the whole update back.
    */
   updateMany(ids: number[], updates: LibraryUpdates): AnimeEntry[] {
     const db = this.databaseService.db;
 
     // Build the dynamic UPDATE once (the SET clauses are identical for every
-    // id); a null result means no updatable field was supplied — the gateway
+    // id); a null result means no updatable field was supplied: the backend
     // schema already rejects that, but guard so an empty update can't run.
     const built = buildUpdate(TABLE, updates, UPDATE_FIELD_MAP, 0);
     if (!built) return [];

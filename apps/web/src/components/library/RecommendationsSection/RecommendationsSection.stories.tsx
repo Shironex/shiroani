@@ -58,7 +58,7 @@ export const Default: Story = {
     });
     await expect(addCard).toBeEnabled();
     await userEvent.click(addCard);
-    // The add-flow is fire-and-forget against the dormant socket; the card persists.
+    // The add-flow is fire-and-forget against the parked bridge; the card persists.
     await expect(
       canvas.getByRole('button', { name: 'Add "Made in Abyss" to library' })
     ).toBeInTheDocument();

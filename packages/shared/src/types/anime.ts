@@ -24,7 +24,7 @@ export interface AnimeEntry {
    * it has never been synced. Derived from the main-side `anilist_synced_at`
    * baseline (a SQLite datetime string) — the raw baseline columns the
    * reconciler uses stay main-side; only this renderer-friendly timestamp
-   * crosses the socket.
+   * reaches the renderer.
    */
   anilistSyncedAt?: number | null;
   /** Convenience flag: whether this entry has ever been synced with AniList. */
@@ -285,7 +285,7 @@ export interface LibraryUpdatePayload {
  * across many rows — `status`, `score`, `currentEpisode`. Per-entry identity /
  * content fields (`anilistId`, `notes`, `resumeUrl`) stay on the single-row
  * {@link LibraryUpdatePayload}. Sent by the library batch action bar so a large
- * selection is one socket emit instead of N.
+ * selection is one backend call instead of N.
  */
 export interface LibraryUpdateManyPayload {
   ids: number[];
@@ -342,13 +342,7 @@ export interface NotificationSettings {
 // ============================================
 
 export type DiscordActivityType =
-  | 'watching'
-  | 'browsing'
-  | 'library'
-  | 'diary'
-  | 'schedule'
-  | 'settings'
-  | 'idle';
+  'watching' | 'browsing' | 'library' | 'diary' | 'schedule' | 'settings' | 'idle';
 
 export interface DiscordPresenceTemplate {
   details: string;
@@ -693,7 +687,7 @@ export interface MarkNotificationsReadResult {
 // ============================================
 
 /**
- * AniList media shape returned by the discover gateway handlers
+ * AniList media shape returned by the discover handlers
  * (`anime:get-trending` / `-popular` / `-seasonal` / `-random`) and consumed by
  * the web discover store and grid. Cross-app contract — kept here so the store
  * and its consumers share one definition.
@@ -732,12 +726,7 @@ export interface DiscoverMedia {
  * from the desktop types) so the shared contract stays self-contained.
  */
 export type AniListListStatus =
-  | 'CURRENT'
-  | 'PLANNING'
-  | 'COMPLETED'
-  | 'DROPPED'
-  | 'PAUSED'
-  | 'REPEATING';
+  'CURRENT' | 'PLANNING' | 'COMPLETED' | 'DROPPED' | 'PAUSED' | 'REPEATING';
 
 /**
  * Request for {@link AnimeEvents.SAVE_MEDIA_LIST_ENTRY}. Create or update the

@@ -8,8 +8,7 @@ import SocialView from './SocialView';
  * Top-level Community screen (Społeczność) — the activity feed of the people the
  * connected AniList viewer follows, with a header refresh action. Gates on
  * connection: a disconnected viewer gets a "connect AniList" prompt rather than
- * an empty list. The feed hook fetches on mount only when connected (which opens
- * a socket), so the story exercises the socket-free disconnected state; the
+ * an empty list. The feed hook fetches on mount only when connected, so the story exercises the backend-free disconnected state; the
  * loading / error / populated states are covered in SocialView.test.tsx where
  * the data hook is mocked.
  */
@@ -29,7 +28,7 @@ export default meta;
 type Story = StoryObj<typeof SocialView>;
 
 /**
- * Disconnected is the only fully socket-free state: the feed hook gates on
+ * Disconnected is the only fully backend-free state: the feed hook gates on
  * `connected` and never emits, so the connect prompt renders without a backend.
  * The refresh action is hidden until an account is connected.
  */

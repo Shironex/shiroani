@@ -2,7 +2,7 @@
  * Unit tests for FeedSchedulerService.
  *
  * Uses fake timers and a minimal in-memory DB/FeedService double so we can
- * drive the polling loop deterministically without booting Nest.
+ * drive the polling loop deterministically without booting the backend.
  */
 
 import type { DatabaseService } from '../../database';
