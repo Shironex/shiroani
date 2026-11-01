@@ -21,6 +21,14 @@ describe('BrowserWebview', () => {
     expect(webview).toHaveAttribute('partition', 'persist:browser');
   });
 
+  it('passes allowpopups as a real DOM attribute', () => {
+    const { container } = render(
+      <BrowserWebview paneId="pane-1" initialUrl="https://example.com" isActive />
+    );
+
+    expect(container.querySelector('webview')).toHaveAttribute('allowpopups');
+  });
+
   it('gives the active webview a white default canvas', () => {
     const { container } = render(
       <BrowserWebview paneId="pane-1" initialUrl="https://example.com" isActive />
