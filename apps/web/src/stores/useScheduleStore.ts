@@ -1,11 +1,11 @@
 import { create } from 'zustand';
 import { maybeDevtools } from '@/stores/utils/maybeDevtools';
 import {
-  type SocketStoreSlice,
-  initialSocketState,
-  createSocketActions,
-  createSocketListeners,
-} from '@/stores/utils/createSocketStore';
+  type BackendStoreSlice,
+  initialBackendState,
+  createBackendActions,
+  createBackendListeners,
+} from '@/stores/utils/createBackendStore';
 import {
   type AiringAnime,
   ScheduleEvents,
@@ -56,7 +56,7 @@ const prefsStorage = createLocalStorageAccessor<SchedulePrefs>(PREFS_STORAGE_KEY
 /**
  * Schedule store state
  */
-interface ScheduleState extends SocketStoreSlice {
+interface ScheduleState extends BackendStoreSlice {
   /** Airing schedule grouped by ISO date string */
   schedule: Record<string, AiringAnime[]>;
   /** Currently selected day (ISO date string YYYY-MM-DD) */
@@ -77,6 +77,8 @@ interface ScheduleActions {
   setViewMode: (mode: 'daily' | 'weekly' | 'timetable') => void;
   toggleLibraryFilter: () => void;
   setSort: (sort: ScheduleSort) => void;
+  /** First load at startup, and again after the system resumes. */
+  loadInitialData: () => void;
   fetchDaily: (date: string) => void;
   fetchWeekly: (startDate: string) => void;
   getEntriesForDay: (day: string) => AiringAnime[];
@@ -101,23 +103,14 @@ function getWeekStartStr(dateStr: string): string {
 export const useScheduleStore = create<ScheduleStore>()(
   maybeDevtools(
     (set, get) => {
-      const socketActions = createSocketActions<ScheduleStore>(set, 'schedule');
+      const backendActions = createBackendActions<ScheduleStore>(set, 'schedule');
 
-      const { initListeners, cleanupListeners } = createSocketListeners<ScheduleStore>(
+      const { initListeners, cleanupListeners } = createBackendListeners<ScheduleStore>(
         get,
         set,
         'schedule',
         {
           listeners: [],
-          onConnect: () => {
-            const { selectedDay, viewMode } = get();
-            if (viewMode === 'daily') {
-              get().fetchDaily(selectedDay);
-            } else {
-              // Both 'weekly' and 'timetable' use weekly data
-              get().fetchWeekly(getWeekStartStr(selectedDay));
-            }
-          },
         }
       );
 
@@ -127,15 +120,15 @@ export const useScheduleStore = create<ScheduleStore>()(
 
       return {
         // State
-        ...initialSocketState,
+        ...initialBackendState,
         schedule: {},
         selectedDay: toLocalDate(new Date()),
         viewMode: 'daily',
         onlyInLibrary: initialPrefs.onlyInLibrary,
         sort: initialPrefs.sort,
 
-        // Socket actions
-        ...socketActions,
+        // Backend actions
+        ...backendActions,
 
         // Actions
         selectDay: (day: string) => {
@@ -167,6 +160,16 @@ export const useScheduleStore = create<ScheduleStore>()(
         setSort: (sort: ScheduleSort) => {
           set({ sort }, undefined, 'schedule/setSort');
           prefsStorage.set({ onlyInLibrary: get().onlyInLibrary, sort });
+        },
+
+        loadInitialData: () => {
+          const { selectedDay, viewMode } = get();
+          if (viewMode === 'daily') {
+            get().fetchDaily(selectedDay);
+          } else {
+            // Both 'weekly' and 'timetable' use weekly data
+            get().fetchWeekly(getWeekStartStr(selectedDay));
+          }
         },
 
         fetchDaily: (date: string) => {

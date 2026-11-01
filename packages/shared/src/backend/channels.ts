@@ -76,6 +76,7 @@ export const BACKEND_REQUEST_CHANNELS = [
 ] as const;
 
 export const BACKEND_EVENT_CHANNELS = [
+  BackendEvents.RESUMED,
   DiaryEvents.UPDATED,
   LibraryEvents.UPDATED,
   FeedEvents.NEW_ITEMS,

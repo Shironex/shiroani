@@ -130,8 +130,7 @@ export const useAniListSyncStore = create<AniListSyncStore>()(
             'anilistSync/start'
           );
 
-          // `onBackendEvent` throws if the socket singleton isn't initialized; keep it
-          // (and the listener wiring) inside the try so any failure surfaces through
+          // Keep the listener wiring inside the try so any failure surfaces through
           // the catch instead of escaping as an unhandled rejection.
           let detach: (() => void) | null = null;
           try {

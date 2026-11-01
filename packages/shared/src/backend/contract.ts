@@ -274,6 +274,7 @@ export interface BackendRoutes {
 
 /** Payload of every event channel. */
 export interface BackendEventMap {
+  [BackendEvents.RESUMED]: undefined;
   [DiaryEvents.UPDATED]:
     | { entry: DiaryEntry; action: typeof CrudActions.CREATED | typeof CrudActions.UPDATED }
     | { id: number; action: typeof CrudActions.REMOVED }

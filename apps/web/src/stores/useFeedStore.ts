@@ -1,11 +1,11 @@
 import { create } from 'zustand';
 import { maybeDevtools } from '@/stores/utils/maybeDevtools';
 import {
-  type SocketStoreSlice,
-  initialSocketState,
-  createSocketActions,
-  createSocketListeners,
-} from '@/stores/utils/createSocketStore';
+  type BackendStoreSlice,
+  initialBackendState,
+  createBackendActions,
+  createBackendListeners,
+} from '@/stores/utils/createBackendStore';
 import { createFilteredListSelector } from '@/stores/utils/createFilteredListSelector';
 import {
   type FeedItem,
@@ -49,7 +49,7 @@ async function isStartupRefreshEnabled(): Promise<boolean> {
 /**
  * Feed store state
  */
-interface FeedState extends SocketStoreSlice {
+interface FeedState extends BackendStoreSlice {
   items: FeedItem[];
   sources: FeedSource[];
   total: number;
@@ -79,6 +79,8 @@ interface FeedState extends SocketStoreSlice {
  */
 interface FeedActions {
   fetchItems: (loadMore?: boolean, options?: { bootstrapIfEmpty?: boolean }) => void;
+  /** First load at startup, and again after the system resumes. */
+  loadInitialData: () => void;
   fetchSources: () => void;
   refreshFeeds: (options?: { isBootstrap?: boolean }) => void;
   setCategoryFilter: (category: FeedCategory | 'all') => void;
@@ -91,7 +93,7 @@ interface FeedActions {
   markRead: (id: number) => void;
   /**
    * Pull the durable read-id set from the feed DB and merge it into local state.
-   * Called on socket connect so read indicators survive a reinstall (the DB
+   * Called on first load so read indicators survive a reinstall (the DB
    * outlives the renderer's localStorage cache).
    */
   rehydrateReadIds: () => void;
@@ -181,7 +183,7 @@ type FeedStore = FeedState & FeedActions;
 export const useFeedStore = create<FeedStore>()(
   maybeDevtools(
     (set, get) => {
-      const socketActions = createSocketActions<FeedStore>(set, 'feed');
+      const backendActions = createBackendActions<FeedStore>(set, 'feed');
       let refreshFallbackTimer: ReturnType<typeof setTimeout> | null = null;
 
       const clearRefreshFallback = () => {
@@ -202,8 +204,8 @@ export const useFeedStore = create<FeedStore>()(
         }, REFRESH_FALLBACK_MS);
       };
 
-      const { initListeners, cleanupListeners: cleanupSocketListeners } =
-        createSocketListeners<FeedStore>(get, set, 'feed', {
+      const { initListeners, cleanupListeners: cleanupBackendListeners } =
+        createBackendListeners<FeedStore>(get, set, 'feed', {
           listeners: [
             {
               // Broadcast after a source is toggled (in this or another window).
@@ -235,23 +237,16 @@ export const useFeedStore = create<FeedStore>()(
               },
             },
           ],
-          onConnect: () => {
-            get().fetchSources();
-            get().rehydrateReadIds();
-            void isStartupRefreshEnabled().then(enabled => {
-              get().fetchItems(false, { bootstrapIfEmpty: enabled });
-            });
-          },
         });
 
       const cleanupListeners = () => {
         clearRefreshFallback();
-        cleanupSocketListeners();
+        cleanupBackendListeners();
       };
 
       return {
         // State
-        ...initialSocketState,
+        ...initialBackendState,
         items: [],
         sources: [],
         total: 0,
@@ -267,8 +262,8 @@ export const useFeedStore = create<FeedStore>()(
         articleContent: {},
         articleStatus: {},
 
-        // Socket actions
-        ...socketActions,
+        // Backend actions
+        ...backendActions,
 
         // Actions
         fetchItems: (loadMore?: boolean, options?: { bootstrapIfEmpty?: boolean }) => {
@@ -342,6 +337,14 @@ export const useFeedStore = create<FeedStore>()(
                 'feed/fetchError'
               );
             });
+        },
+
+        loadInitialData: () => {
+          get().fetchSources();
+          get().rehydrateReadIds();
+          void isStartupRefreshEnabled().then(enabled => {
+            get().fetchItems(false, { bootstrapIfEmpty: enabled });
+          });
         },
 
         fetchSources: () => {

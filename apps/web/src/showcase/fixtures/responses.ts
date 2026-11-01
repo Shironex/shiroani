@@ -1,7 +1,7 @@
 /**
- * What the fixture backend answers to each socket request. Event names come
+ * What the fixture backend answers to each request. Event names come
  * from the shared constants, so a rename there cannot silently break the
- * showcase. Anything not listed here is logged by the fake socket and never
+ * showcase. Anything not listed here is logged by the fake bridge and never
  * answered.
  */
 import {

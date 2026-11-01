@@ -5,22 +5,13 @@ import ExportDialog from './ExportDialog';
 /**
  * Export dialog (Radix `Dialog`, portalled to `document.body`). On open it
  * auto-requests the export and walks a small state machine: loading, then
- * success (with a "Save as…" button), saving and saved, or error. Without a bridge
- * the request rejects at once, so the stories install one that never answers and
- * the dialog parks on its loading state. The other branches are in the unit suite.
+ * success (with a "Save as…" button), saving and saved, or error. Storybook's
+ * bridge never answers, so the dialog parks on its loading state. The other
+ * branches are in the unit suite.
  */
 const meta = {
   title: 'shared/ExportDialog',
   component: ExportDialog,
-  beforeEach: () => {
-    const previous = window.electronAPI;
-    window.electronAPI = {
-      backend: { invoke: () => new Promise(() => {}), on: () => () => {} },
-    } as never;
-    return () => {
-      window.electronAPI = previous;
-    };
-  },
   parameters: {
     // Portals to document.body — render its Docs preview in an iframe so the overlay + scroll-lock stay inside the preview block.
     docs: { story: { inline: false, iframeHeight: 560 } },

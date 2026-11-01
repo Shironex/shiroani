@@ -1,11 +1,11 @@
 import { create } from 'zustand';
 import { maybeDevtools } from '@/stores/utils/maybeDevtools';
 import {
-  type SocketStoreSlice,
-  initialSocketState,
-  createSocketActions,
-  createSocketListeners,
-} from '@/stores/utils/createSocketStore';
+  type BackendStoreSlice,
+  initialBackendState,
+  createBackendActions,
+  createBackendListeners,
+} from '@/stores/utils/createBackendStore';
 import { createFilteredListSelector } from '@/stores/utils/createFilteredListSelector';
 import { createCrudResource } from '@/stores/utils/createCrudResource';
 import {
@@ -39,7 +39,7 @@ function applyLibraryUpdate(existing: AnimeEntry, payload: LibraryUpdatePayload)
 /**
  * Library store state
  */
-interface LibraryState extends SocketStoreSlice {
+interface LibraryState extends BackendStoreSlice {
   entries: AnimeEntry[];
   activeFilter: AnimeStatus | 'all';
   searchQuery: string;
@@ -60,6 +60,8 @@ interface LibraryState extends SocketStoreSlice {
 interface LibraryActions {
   fetchLibrary: () => void;
   /** Resolves `true` when the entry was added, `false` on failure (caller surfaces UX). */
+  /** First load at startup. */
+  loadInitialData: () => void;
   addToLibrary: (payload: LibraryAddPayload) => Promise<boolean>;
   updateEntry: (payload: LibraryUpdatePayload) => void;
   removeFromLibrary: (id: number) => void;
@@ -97,7 +99,7 @@ type LibraryStore = LibraryState & LibraryActions;
 export const useLibraryStore = create<LibraryStore>()(
   maybeDevtools(
     (set, get) => {
-      const socketActions = createSocketActions<LibraryStore>(set, 'library');
+      const backendActions = createBackendActions<LibraryStore>(set, 'library');
 
       const crud = createCrudResource<AnimeEntry, LibraryStore>({
         set,
@@ -145,7 +147,7 @@ export const useLibraryStore = create<LibraryStore>()(
         },
       });
 
-      const { initListeners, cleanupListeners } = createSocketListeners<LibraryStore>(
+      const { initListeners, cleanupListeners } = createBackendListeners<LibraryStore>(
         get,
         set,
         'library',
@@ -156,15 +158,12 @@ export const useLibraryStore = create<LibraryStore>()(
               handler: onLibraryUpdated,
             },
           ],
-          onConnect: () => {
-            get().fetchLibrary();
-          },
         }
       );
 
       return {
         // State
-        ...initialSocketState,
+        ...initialBackendState,
         entries: [],
         activeFilter: 'all',
         searchQuery: '',
@@ -176,12 +175,16 @@ export const useLibraryStore = create<LibraryStore>()(
         selectionMode: false,
         selectedIds: new Set<number>(),
 
-        // Socket actions
-        ...socketActions,
+        // Backend actions
+        ...backendActions,
 
         // Actions
         fetchLibrary: () => {
           crud.fetchAll();
+        },
+
+        loadInitialData: () => {
+          get().fetchLibrary();
         },
 
         addToLibrary: (payload: LibraryAddPayload) => {

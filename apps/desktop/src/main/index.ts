@@ -16,7 +16,7 @@ import { initializeAutoUpdater } from './updater';
 import { initializeAdblock, shutdownAdblock } from './adblock';
 import { corsOriginCallback } from '../modules/kernel/cors.config';
 import { NestLoggerAdapter } from '../modules/kernel/nest-logger';
-import { LOCALHOST, setLoggerContext, makeCorrelationId } from '@shiroani/shared';
+import { BackendEvents, LOCALHOST, setLoggerContext, makeCorrelationId } from '@shiroani/shared';
 import { setBackendPort } from './backend-port';
 import { BrowserManager } from './browser/browser-manager';
 import { stripEmbedderTokens } from './user-agent';
@@ -141,7 +141,10 @@ const appStatsPowerHandlers = {
     appStatsTracker.flush();
     appStatsTracker.pause('suspend');
   },
-  resume: () => appStatsTracker.resume('resume'),
+  resume: () => {
+    appStatsTracker.resume('resume');
+    backend?.events.emit(BackendEvents.RESUMED, undefined);
+  },
   lockScreen: () => {
     appStatsTracker.flush();
     appStatsTracker.pause('lock-screen');
@@ -166,7 +169,7 @@ function unregisterAppStatsPowerListeners(): void {
 async function bootstrapNestApp(): Promise<void> {
   try {
     logger.info('Creating NestJS application...');
-    nestApp = await NestFactory.create(AppModule.forRoot(), {
+    nestApp = await NestFactory.create(AppModule, {
       logger: new NestLoggerAdapter(fileTransport),
       bufferLogs: true,
     });

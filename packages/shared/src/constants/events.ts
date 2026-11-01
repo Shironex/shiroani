@@ -137,8 +137,7 @@ export const LibraryEvents = {
   REMOVE: 'library:remove',
   /**
    * Apply the SAME field update to many entries in ONE request. Replaces the N
-   * individual UPDATE emits the batch action bar used to fire — those tripped
-   * the {@link SystemEvents.THROTTLED} guard on a large selection. Payload:
+   * individual UPDATE requests the batch action bar used to send. Payload:
    * `LibraryUpdateManyPayload { ids; ...updates }`. Resolves with the updated
    * `{ entries }`.
    */
@@ -274,20 +273,13 @@ export const FeedEvents = {
 } as const;
 
 // ============================================
-// System Events
-// ============================================
-export const SystemEvents = {
-  CONNECTED: 'system:connected',
-  ERROR: 'system:error',
-  THROTTLED: 'system:throttled',
-} as const;
-
-// ============================================
 // Backend IPC Events
 // ============================================
 export const BackendEvents = {
   /** Round-trip check for the backend IPC path. No payload. */
   PING: 'backend:ping',
+  /** The system woke from sleep, so time-sensitive views should refetch. No payload. */
+  RESUMED: 'system:resumed',
 } as const;
 
 // ============================================

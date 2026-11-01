@@ -1,12 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { LibraryEvents, type AnimeEntry, type AnimeStatus } from '@shiroani/shared';
 
-const { invokeBackend, getSocket } = vi.hoisted(() => ({
+const { invokeBackend } = vi.hoisted(() => ({
   invokeBackend: vi.fn(),
-  getSocket: vi.fn(() => ({ on: vi.fn(), off: vi.fn(), recovered: false })),
 }));
 
-vi.mock('@/lib/socket', () => ({ getSocket }));
 vi.mock('@/lib/backend', () => ({ invokeBackend, onBackendEvent: vi.fn(() => () => {}) }));
 
 import { useLibraryStore } from '../useLibraryStore';

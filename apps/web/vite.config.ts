@@ -22,9 +22,8 @@ function themeInjectionPlugin(): Plugin {
 
 /**
  * `vite build --mode showcase` only: boots the renderer through
- * `src/showcase/entry.ts`, which installs a fake `window.electronAPI`, swaps
- * `socket.io-client` for an in-memory fixture socket and replaces the built-in
- * new-tab shortcuts with invented ones. Every other mode (dev, production,
+ * `src/showcase/entry.ts`, which installs a fake `window.electronAPI` answering
+ * from fixtures, and replaces the built-in new-tab shortcuts with invented ones. Every other mode (dev, production,
  * Storybook, Vitest) is untouched, so the packaged app never contains any of
  * `src/showcase`.
  */
@@ -43,10 +42,6 @@ function showcaseFixturePlugin(): Plugin {
       config.resolve = {
         ...config.resolve,
         alias: [
-          {
-            find: /^socket\.io-client$/,
-            replacement: resolve(__dirname, './src/showcase/fake-socket.ts'),
-          },
           {
             find: /^@\/lib\/quick-access-defaults$/,
             replacement: resolve(__dirname, './src/showcase/fixtures/quick-access-defaults.ts'),

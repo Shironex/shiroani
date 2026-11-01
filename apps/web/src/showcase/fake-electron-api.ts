@@ -61,9 +61,16 @@ const malStatus: MalAuthStatus = { connected: false };
 
 const noop = () => {};
 const unsubscribe = () => noop;
+declare global {
+  interface Window {
+    /** Backend requests the fixtures did not answer, for the capture to report. */
+    __showcaseUnhandled?: string[];
+  }
+}
+
 const resolved = <T>(value: T) => Promise.resolve(value);
 
-/** Answers migrated backend channels from the same fixtures as the fake socket. */
+/** Answers backend channels from the fixtures. */
 function createFakeBackend(): BackendBridge {
   const invoke = (channel: string, payload: unknown): Promise<unknown> => {
     const reply = respond(channel, payload);

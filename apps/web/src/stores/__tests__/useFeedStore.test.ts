@@ -1,16 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { FeedEvents } from '@shiroani/shared';
 
-const { invokeBackend, getSocket } = vi.hoisted(() => ({
+const { invokeBackend } = vi.hoisted(() => ({
   invokeBackend: vi.fn(),
-  getSocket: vi.fn(() => ({
-    on: vi.fn(),
-    off: vi.fn(),
-    recovered: false,
-  })),
 }));
 
-vi.mock('@/lib/socket', () => ({ getSocket }));
 vi.mock('@/lib/backend', () => ({
   invokeBackend,
   onBackendEvent: vi.fn(() => () => {}),
