@@ -126,10 +126,69 @@ export function localizeReleases(locale: Locale): ResolvedRelease[] {
 
 export const RELEASES: readonly Release[] = [
   {
+    version: '1.5.2',
+    shortDate: '01.11.2026',
+    type: 'minor',
+    latest: true,
+    pl: {
+      date: '1 listopada 2026',
+      title: 'Strony działają w przeglądarce lepiej',
+      description:
+        'Mała aktualizacja bez nowych funkcji. Wbudowana przeglądarka zachowuje się teraz bardziej jak zwykła przeglądarka, więc strony rzadziej się w niej psują. Poprawiliśmy też logowanie i połączenie z AniList.',
+      categories: [
+        {
+          kind: 'fix',
+          label: 'Poprawki',
+          entries: [
+            'Strony bez własnego tła wyświetlają się poprawnie, a nie na ciemnym tle aplikacji',
+            'Strony mogą znowu otwierać wyskakujące okna, na przykład do logowania',
+            'Strony Google, na przykład Google One, wyświetlają się poprawnie',
+            'Połączenie z AniList nie rozłącza się, gdy w profilu brakuje części danych',
+            'Odliczanie do odcinka od razu pokazuje aktualny czas',
+          ],
+        },
+        {
+          kind: 'security',
+          label: 'Bezpieczeństwo',
+          entries: [
+            'Przeglądarka nie pozwala już stronom HTTPS ładować niezabezpieczonych treści',
+            'Załatane luki bezpieczeństwa w bibliotekach używanych przez aplikację',
+          ],
+        },
+      ],
+    },
+    en: {
+      date: 'November 1, 2026',
+      title: 'Websites work better in the browser',
+      description:
+        'A small update with no new features. The built-in browser now behaves more like a regular browser, so sites break in it less often. Signing in and the AniList connection are improved too.',
+      categories: [
+        {
+          kind: 'fix',
+          label: 'Fixes',
+          entries: [
+            'Pages without their own background display correctly instead of on the app’s dark background',
+            'Sites can open popup windows again, for example to sign in',
+            'Google pages such as Google One display correctly',
+            'The AniList connection no longer drops when part of your profile data is missing',
+            'The episode countdown shows the current time right away',
+          ],
+        },
+        {
+          kind: 'security',
+          label: 'Security',
+          entries: [
+            'The browser no longer lets HTTPS pages load insecure content',
+            'Patched security vulnerabilities in libraries the app uses',
+          ],
+        },
+      ],
+    },
+  },
+  {
     version: '1.5.1',
     shortDate: '16.10.2026',
     type: 'minor',
-    latest: true,
     pl: {
       date: '16 października 2026',
       title: 'Poprawki bezpieczeństwa i aktualizacje',

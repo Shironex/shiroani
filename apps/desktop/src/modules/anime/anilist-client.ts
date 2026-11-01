@@ -32,8 +32,8 @@ interface ViewerResponse {
   Viewer: {
     id: number;
     name: string;
-    avatar?: { large?: string };
-    bannerImage?: string;
+    avatar?: { large?: string | null } | null;
+    bannerImage?: string | null;
   };
 }
 
@@ -99,8 +99,8 @@ export class AniListClient {
     return {
       id: viewer.id,
       name: viewer.name,
-      avatar: viewer.avatar?.large,
-      bannerImage: viewer.bannerImage,
+      avatar: viewer.avatar?.large ?? undefined,
+      bannerImage: viewer.bannerImage ?? undefined,
     };
   }
 

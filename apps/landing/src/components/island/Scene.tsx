@@ -143,7 +143,7 @@ const sakuraGlow: OnModel = (model, actions) => {
         /* glsl */ `#include <emissivemap_fragment>
         {
           float pink = smoothstep(0.08, 0.25, diffuseColor.r - diffuseColor.g);
-          float edge = 1.0 - abs(dot(normal, normalize(vViewPosition)));
+          float edge = 1.0 - saturate(abs(dot(normal, normalize(vViewPosition))));
           totalEmissiveRadiance += diffuseColor.rgb * pink * pow(edge, 2.5) * ${SAKURA_RIM.toFixed(2)};
         }`
       );

@@ -39,7 +39,7 @@ class GradeEffect extends Effect {
           c += shadowTint * (1.0 - smoothstep(0.0, 0.3, l));
           c *= mix(vec3(1.0), lightTint, smoothstep(0.3, 0.85, l));
           c *= lift * mix(vec3(1.0), warm, smoothstep(0.04, 0.6, l));
-          outputColor = vec4(c, inputColor.a);
+          outputColor = vec4(max(c, 0.0), inputColor.a);
         }
       `,
       {

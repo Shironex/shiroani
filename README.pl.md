@@ -46,6 +46,10 @@
 
 ShiroAni to aplikacja desktopowa, która zbiera wszystko co anime w jednym miejscu — przeglądaj i oglądaj z wbudowaną przeglądarką bez reklam, śledź co oglądasz, sprawdzaj harmonogramy emisji, pisz w pamiętniku i spędzaj czas z chibi towarzyszką na pulpicie. Wszystko w przytulnym, konfigurowalnym interfejsie, który czuje się jak dom.
 
+<p align="center">
+  <a href="https://shiroani.app"><img src="assets/showcase/island-flythrough.webp" alt="Przelot nad stroną ShiroAni z wyspą na księżycu" width="100%" /></a>
+</p>
+
 ## Zrzuty ekranu
 
 <table>

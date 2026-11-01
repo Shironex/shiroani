@@ -17,7 +17,7 @@ import { NestLoggerAdapter } from '../modules/kernel/nest-logger';
 import { LOCALHOST, setLoggerContext, makeCorrelationId } from '@shiroani/shared';
 import { setBackendPort } from './backend-port';
 import { BrowserManager } from './browser/browser-manager';
-import { buildChromeUserAgent } from './user-agent';
+import { stripEmbedderTokens } from './user-agent';
 import { registerBackgroundProtocol } from './ipc/background';
 import { registerMascotSpriteProtocol } from './ipc/sprite';
 import {
@@ -57,12 +57,10 @@ import { createTray, destroyTray } from './tray';
 import { safeCleanup, isHardCrashReason } from './cleanup-utils';
 import { appStatsTracker } from './stats/app-stats-tracker';
 
-// Override Electron's default User-Agent so "Electron/<version>" and the app
-// name never leak in request headers — some subframe/worker requests bypass
-// session.setUserAgent and fall back to this default, which Cloudflare's
-// Turnstile fingerprinting catches. Must run before any webContents is
-// created (top-level module load is the right spot).
-app.userAgentFallback = buildChromeUserAgent();
+// Remove "Electron/<version>" and the app name from the default User-Agent,
+// which Cloudflare's Turnstile fingerprinting catches. Must run before any
+// webContents is created (top-level module load is the right spot).
+app.userAgentFallback = stripEmbedderTokens(app.userAgentFallback);
 
 // Register custom protocol schemes for serving user-supplied assets from
 // `userData`. Both schemes share the same privilege envelope so the renderer

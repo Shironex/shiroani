@@ -17,6 +17,12 @@ const logger = createLogger('AniListTokenStore');
  */
 const SESSION_KEY = 'anilist-session';
 
+/** AniList returns null for unset fields, and older sessions stored that null as is. */
+const optionalViewerField = z
+  .string()
+  .nullish()
+  .transform(value => value ?? undefined);
+
 /**
  * Persisted-session shape, validated at the electron-store boundary — the
  * store file is user-editable on disk, so a bare `as` cast would let a
@@ -35,8 +41,8 @@ const persistedSessionSchema = z.object({
   viewer: z.object({
     id: z.number(),
     name: z.string(),
-    avatar: z.string().optional(),
-    bannerImage: z.string().optional(),
+    avatar: optionalViewerField,
+    bannerImage: optionalViewerField,
   }),
 });
 
@@ -73,7 +79,12 @@ export function saveSession(token: string, expiresIn: number, viewer: AniListVie
     encrypted = false;
   }
 
-  const session: PersistedSession = { token: stored, encrypted, expiresAt, viewer };
+  const session: z.input<typeof persistedSessionSchema> = {
+    token: stored,
+    encrypted,
+    expiresAt,
+    viewer,
+  };
   store.set(SESSION_KEY, session);
   // Never log the token itself.
   logger.info('AniList session saved');

@@ -7,6 +7,9 @@ const ACTIVE_STYLE: React.CSSProperties = {
   width: '100%',
   height: '100%',
   border: 'none',
+  // Guest pages render transparent. Pages without their own background expect the
+  // browser's default white canvas, not the app's dark window showing through.
+  background: '#fff',
 };
 const HIDDEN_STYLE: React.CSSProperties = {
   display: 'none',
@@ -23,7 +26,7 @@ function BrowserWebview({ paneId, initialUrl, isActive }: IBrowserWebviewProps) 
       ref={webviewRef as React.Ref<HTMLElement>}
       src={initialUrl}
       partition="persist:browser"
-      allowpopups
+      allowpopups="true"
       style={isActive ? ACTIVE_STYLE : HIDDEN_STYLE}
     />
   );

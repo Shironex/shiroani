@@ -212,7 +212,6 @@ export async function createMainWindow(browserManager: BrowserManager): Promise<
     webPreferences.nodeIntegrationInSubFrames = false;
     webPreferences.nodeIntegrationInWorker = false;
     webPreferences.contextIsolation = true;
-    webPreferences.allowRunningInsecureContent = true; // needed for anime sites with mixed content
 
     // Strip any preload scripts the renderer might inject
     delete webPreferences.preload;

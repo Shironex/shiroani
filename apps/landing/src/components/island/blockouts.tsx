@@ -135,12 +135,12 @@ export function BoxSetBlockout() {
 }
 
 /**
- * A seated stand-in for Shiro-chan hugging a box set, in her own units (the
- * placement scales her by 1.45). Origin at her root, the seat 0.13 above it.
+ * A seated stand-in for Shiro-chan hugging a box set, in metres. Origin at her
+ * root, the seat 0.304 above it; the parts are drawn at 1/1.45 and scaled up.
  */
 export function CharacterBlockout() {
   return (
-    <group position={[0, 0.13, 0]}>
+    <group position={[0, 0.304, 0]} scale={1.45}>
       <mesh position={[0, 0.27, 0]} material={mat.sweater}>
         <capsuleGeometry args={[0.13, 0.2, 4, 12]} />
       </mesh>

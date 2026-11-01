@@ -2,7 +2,7 @@ import { session, webContents } from 'electron';
 import { createMainLogger } from '../logging/logger';
 import { getBlocker, enableCosmeticFiltering, disableCosmeticFiltering } from '../adblock';
 import { fromElectronDetails } from '@ghostery/adblocker-electron';
-import { buildChromeUserAgent, getOsSlug } from '../user-agent';
+import { buildFirefoxUserAgent } from '../user-agent';
 
 const logger = createMainLogger('BrowserManager');
 
@@ -20,8 +20,8 @@ function normalizeHost(host: string | undefined | null): string {
  * Manages the shared browser session for <webview> tags.
  *
  * Responsibilities:
- * - Initialize the `persist:browser` session (user agent, permissions)
- * - Register composite webRequest handlers (iframe unblocking + adblock)
+ * - Initialize the `persist:browser` session (permissions)
+ * - Register composite webRequest handlers (Permissions-Policy + adblock)
  * - Toggle adblock on/off (network + cosmetic filtering)
  *
  * Tab lifecycle is entirely handled by the renderer process via <webview> DOM elements.
@@ -62,32 +62,6 @@ export class BrowserManager {
       return normalizeHost(new URL(currentUrl).hostname);
     } catch {
       return '';
-    }
-  }
-
-  /**
-   * Whether the top-frame for this request is an http/https page — i.e. the
-   * in-app browser tab is showing a real web site, not a local/app page
-   * (`file://`, `app://`, `shiroani-bg://`, `chrome://`, etc.).
-   *
-   * Used to scope iframe-unblocking: stripping `X-Frame-Options` and
-   * `frame-ancestors` only makes sense when the top-frame is a streaming-style
-   * site that wants to embed external video players. For any other top-frame
-   * (including the app's own renderer) we leave upstream framing protections
-   * intact, so a local/privileged page can't be silently framed by a subframe
-   * response.
-   */
-  private isWebTopFrame(webContentsId: number | undefined): boolean {
-    if (typeof webContentsId !== 'number' || webContentsId < 0) return false;
-    try {
-      const contents = webContents.fromId(webContentsId);
-      if (!contents || contents.isDestroyed()) return false;
-      const currentUrl = contents.getURL();
-      if (!currentUrl) return false;
-      const parsed = new URL(currentUrl);
-      return parsed.protocol === 'http:' || parsed.protocol === 'https:';
-    } catch {
-      return false;
     }
   }
 
@@ -133,21 +107,13 @@ export class BrowserManager {
     // Create isolated session for browser tabs (separate from app session)
     this.browserSession = session.fromPartition('persist:browser');
 
-    // Set platform-aware Chrome user agent to avoid Electron detection
-    const osString = getOsSlug();
-    this.browserSession.setUserAgent(buildChromeUserAgent());
-
-    // Send Firefox UA for Google auth domains so sign-in isn't blocked.
-    // Google detects embedded Chromium browsers via Client Hints + navigator.userAgentData
-    // and rejects sign-in. Firefox doesn't support Client Hints at all, so using a
-    // Firefox UA sidesteps all Chromium-specific detection (proven by qutebrowser, nativefier).
-    // YouTube is excluded — it serves a worse player to Firefox.
-    // Cloudflare Turnstile is intentionally NOT in this list: cleanly matching
-    // Chrome (via session.setUserAgent + app.userAgentFallback) is more reliable
-    // than pretending to be Firefox, because the JS-level navigator.userAgentData
-    // still reports Chromium and the header/runtime mismatch is itself a red flag.
-    const firefoxUA = `Mozilla/5.0 (${osString.replace('Intel Mac OS X 10_15_7', 'Intel Mac OS X 10.15; rv:137.0')}) Gecko/20100101 Firefox/137.0`;
-
+    // Google rejects sign-in from embedded Chromium ("this browser or app may not
+    // be secure"), even with a clean Chrome UA (retested on Electron 44). Presenting
+    // Firefox and dropping the client hints on its sign-in hosts gets past that; both
+    // are required. Keep this to those hosts: sending it to shared hosts like
+    // *.googleapis.com also affects YouTube and Google One pages, whose JS still
+    // reports Chromium.
+    const firefoxUserAgent = buildFirefoxUserAgent();
     this.browserSession.webRequest.onBeforeSendHeaders(
       {
         urls: [
@@ -155,19 +121,14 @@ export class BrowserManager {
           '*://*.accounts.google.com/*',
           '*://myaccount.google.com/*',
           '*://gds.google.com/*',
-          '*://*.googleapis.com/*',
-          '*://*.gstatic.com/*',
         ],
       },
       (details, callback) => {
-        const headers = { ...details.requestHeaders };
-        headers['User-Agent'] = firefoxUA;
-        // Remove Chromium-only headers — Firefox never sends these
-        delete headers['Sec-CH-UA'];
-        delete headers['Sec-CH-UA-Mobile'];
-        delete headers['Sec-CH-UA-Platform'];
-        delete headers['Sec-CH-UA-Full-Version-List'];
-        callback({ requestHeaders: headers });
+        const headers: Record<string, string> = { ...details.requestHeaders };
+        for (const name of Object.keys(headers)) {
+          if (name.toLowerCase().startsWith('sec-ch-ua')) delete headers[name];
+        }
+        callback({ requestHeaders: { ...headers, 'User-Agent': firefoxUserAgent } });
       }
     );
 
@@ -224,39 +185,15 @@ export class BrowserManager {
 
   /**
    * Register composite webRequest handlers on the browser session.
-   * Always strips iframe-blocking headers and injects permissive Permissions-Policy.
+   * Always injects a permissive Permissions-Policy.
    * When adblock is enabled, also runs adblocker network filtering.
    */
   private registerCompositeWebRequestHandlers(): void {
     const sess = this.getSession();
 
-    // Composite onHeadersReceived: strip iframe restrictions + optional adblocker CSP
+    // Composite onHeadersReceived: Permissions-Policy + optional adblocker CSP
     sess.webRequest.onHeadersReceived({ urls: ['<all_urls>'] }, (details, callback) => {
       const responseHeaders = { ...details.responseHeaders } as Record<string, string[]>;
-
-      // Only strip framing restrictions for subframe responses whose top-frame
-      // is a real http/https web page. This scopes the iframe-unblocking to
-      // streaming sites (the reason the override exists) and avoids weakening
-      // clickjacking protection for local/app pages (`file://`, `app://`, etc.)
-      // that could otherwise be silently framed by a subframe response.
-      const scopeFramingOverride =
-        details.resourceType === 'subFrame' && this.isWebTopFrame(details.webContentsId);
-
-      if (scopeFramingOverride) {
-        for (const key of Object.keys(responseHeaders)) {
-          const lower = key.toLowerCase();
-          if (lower === 'x-frame-options') {
-            delete responseHeaders[key];
-          } else if (lower === 'content-security-policy') {
-            responseHeaders[key] = responseHeaders[key].map(policy =>
-              policy
-                .split(';')
-                .filter(directive => !directive.trim().toLowerCase().startsWith('frame-ancestors'))
-                .join(';')
-            );
-          }
-        }
-      }
 
       // Permissions-Policy override — fullscreen=* is required because the
       // HTTP-level Permissions-Policy header takes precedence over iframe
