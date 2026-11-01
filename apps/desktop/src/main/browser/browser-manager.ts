@@ -2,6 +2,7 @@ import { session, webContents } from 'electron';
 import { createMainLogger } from '../logging/logger';
 import { getBlocker, enableCosmeticFiltering, disableCosmeticFiltering } from '../adblock';
 import { fromElectronDetails } from '@ghostery/adblocker-electron';
+import { buildFirefoxUserAgent } from '../user-agent';
 
 const logger = createMainLogger('BrowserManager');
 
@@ -106,24 +107,13 @@ export class BrowserManager {
     // Create isolated session for browser tabs (separate from app session)
     this.browserSession = session.fromPartition('persist:browser');
 
-    const osString =
-      process.platform === 'darwin'
-        ? 'Macintosh; Intel Mac OS X 10_15_7'
-        : process.platform === 'linux'
-          ? 'X11; Linux x86_64'
-          : 'Windows NT 10.0; Win64; x64';
-
-    // Send Firefox UA for Google auth domains so sign-in isn't blocked.
-    // Google detects embedded Chromium browsers via Client Hints + navigator.userAgentData
-    // and rejects sign-in. Firefox doesn't support Client Hints at all, so using a
-    // Firefox UA sidesteps all Chromium-specific detection (proven by qutebrowser, nativefier).
-    // YouTube is excluded — it serves a worse player to Firefox.
-    // Cloudflare Turnstile is intentionally NOT in this list: cleanly matching
-    // Chrome (via session.setUserAgent + app.userAgentFallback) is more reliable
-    // than pretending to be Firefox, because the JS-level navigator.userAgentData
-    // still reports Chromium and the header/runtime mismatch is itself a red flag.
-    const firefoxUA = `Mozilla/5.0 (${osString.replace('Intel Mac OS X 10_15_7', 'Intel Mac OS X 10.15; rv:137.0')}) Gecko/20100101 Firefox/137.0`;
-
+    // Google rejects sign-in from embedded Chromium ("this browser or app may not
+    // be secure"), even with a clean Chrome UA (retested on Electron 44). Presenting
+    // Firefox and dropping the client hints on its sign-in hosts gets past that; both
+    // are required. Keep this to those hosts: sending it to shared hosts like
+    // *.googleapis.com also affects YouTube and Google One pages, whose JS still
+    // reports Chromium.
+    const firefoxUserAgent = buildFirefoxUserAgent();
     this.browserSession.webRequest.onBeforeSendHeaders(
       {
         urls: [
@@ -131,19 +121,14 @@ export class BrowserManager {
           '*://*.accounts.google.com/*',
           '*://myaccount.google.com/*',
           '*://gds.google.com/*',
-          '*://*.googleapis.com/*',
-          '*://*.gstatic.com/*',
         ],
       },
       (details, callback) => {
-        const headers = { ...details.requestHeaders };
-        headers['User-Agent'] = firefoxUA;
-        // Remove Chromium-only headers — Firefox never sends these
-        delete headers['Sec-CH-UA'];
-        delete headers['Sec-CH-UA-Mobile'];
-        delete headers['Sec-CH-UA-Platform'];
-        delete headers['Sec-CH-UA-Full-Version-List'];
-        callback({ requestHeaders: headers });
+        const headers: Record<string, string> = { ...details.requestHeaders };
+        for (const name of Object.keys(headers)) {
+          if (name.toLowerCase().startsWith('sec-ch-ua')) delete headers[name];
+        }
+        callback({ requestHeaders: { ...headers, 'User-Agent': firefoxUserAgent } });
       }
     );
 
