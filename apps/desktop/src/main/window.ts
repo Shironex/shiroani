@@ -94,6 +94,13 @@ export function saveMainWindowState(): void {
   mainWindowStateSaver?.saveNow();
 }
 
+/** The URL the main window loads: the Vite dev server in dev, built files otherwise. */
+export function getRendererUrl(): string {
+  return process.env.NODE_ENV === 'development'
+    ? `http://localhost:${VITE_DEV_PORT}`
+    : pathToFileURL(path.join(__dirname, '../renderer/index.html')).href;
+}
+
 export async function createMainWindow(browserManager: BrowserManager): Promise<BrowserWindow> {
   const isDev = process.env.NODE_ENV === 'development';
 
@@ -249,9 +256,7 @@ export async function createMainWindow(browserManager: BrowserManager): Promise<
   });
 
   // Block external URL navigation in renderer, open in system browser instead
-  const rendererFileUrl = isDev
-    ? null
-    : pathToFileURL(path.join(__dirname, '../renderer/index.html')).href;
+  const rendererFileUrl = isDev ? null : getRendererUrl();
 
   mainWindow.webContents.on('will-navigate', (event, url) => {
     let isAllowed: boolean;

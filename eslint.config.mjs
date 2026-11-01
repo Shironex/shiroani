@@ -89,7 +89,11 @@ export default defineConfig(
       'noctcore-async-safety/no-concurrent-shared-mutation': 'error',
       'noctcore-observability/no-sensitive-fields-in-logs': 'error',
       'noctcore-observability/no-error-detail-loss': 'error',
-      'noctcore-monorepo/no-deep-package-imports': ['error', { scopes: ['@shiroani'] }],
+      'noctcore-monorepo/no-deep-package-imports': [
+        'error',
+        // backend-channels is the zod-free entry the sandboxed preload must use.
+        { scopes: ['@shiroani'], allowedSubpaths: ['backend-channels'] },
+      ],
       'noctcore-monorepo/no-unexported-subpath-import': ['error', { scopes: ['@shiroani'] }],
     },
   },

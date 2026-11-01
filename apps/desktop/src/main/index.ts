@@ -8,7 +8,8 @@ import { type INestApplication } from '@nestjs/common';
 import { CustomIoAdapter } from '../modules/kernel/custom-io-adapter';
 import { AppModule } from '../modules/app.module';
 import { createBackend, type Backend } from './backend';
-import { createMainWindow, saveMainWindowState } from './window';
+import { createMainWindow, getRendererUrl, saveMainWindowState } from './window';
+import { createIpcEventPublisher, registerBackendIpc } from './ipc/backend';
 import { cleanupIpcHandlers } from './ipc/register';
 import { logger, getLogPath, flushLogs, flushLogsSync, fileTransport } from './logging/logger';
 import { initializeAutoUpdater } from './updater';
@@ -280,7 +281,12 @@ async function bootstrap(): Promise<void> {
   registerBackgroundProtocol();
   registerMascotSpriteProtocol();
 
-  backend = createBackend({ dbPath: join(app.getPath('userData'), 'shiroani.db') });
+  const getMainWindow = (): BrowserWindow | null => mainWindow;
+  backend = createBackend({
+    dbPath: join(app.getPath('userData'), 'shiroani.db'),
+    events: createIpcEventPublisher(getMainWindow),
+  });
+  registerBackendIpc(backend, { getMainWindow, rendererUrl: getRendererUrl() });
   bindNotificationService(backend.notifications, backend.notificationHost);
 
   await bootstrapNestApp(backend);

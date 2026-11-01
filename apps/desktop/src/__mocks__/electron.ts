@@ -19,6 +19,9 @@ export const ipcMain = {
     onListeners.delete(channel);
   }),
   __invoke: (channel: string, ...args: unknown[]) => handlers.get(channel)?.({}, ...args),
+  /** Like `__invoke`, with a caller-supplied event for sender guard tests. */
+  __invokeWithEvent: (channel: string, event: unknown, ...args: unknown[]) =>
+    handlers.get(channel)?.(event, ...args),
   __send: (channel: string, ...args: unknown[]) =>
     onListeners.get(channel)?.forEach(l => l({}, ...args)),
   __reset: () => {

@@ -1,4 +1,4 @@
-import { createLogger } from '@shiroani/shared';
+import { createLogger, type BackendEventPublisher } from '@shiroani/shared';
 import { safeCleanup } from './cleanup-utils';
 import { ElectronAniListTokenAdapter } from './auth/anilist-token.adapter';
 import { ElectronMalTokenAdapter } from './auth/mal-token.adapter';
@@ -23,12 +23,18 @@ import { LibraryService } from '../modules/library/library.service';
 import { MalSyncService } from '../modules/mal-sync/mal-sync.service';
 import { NotificationsService } from '../modules/notifications/notifications.service';
 import { ScheduleService } from '../modules/schedule/schedule.service';
+import { createSystemHandlers, type BackendHandlers } from '../modules/kernel/backend-handlers';
+import { InflightTracker } from '../modules/kernel/inflight-tracker';
 import type { GatewayServices } from '../modules/app.module';
 
 const logger = createLogger('Backend');
 
+/** How long shutdown waits for running calls before closing the database. */
+const SHUTDOWN_DRAIN_MS = 2_000;
+
 export interface CreateBackendOptions {
   dbPath: string;
+  events: BackendEventPublisher;
   /** Replaces the real database in tests, where the native module does not load. */
   createDatabase?: (dbPath: string) => DatabaseService;
 }
@@ -37,6 +43,9 @@ export interface Backend extends GatewayServices {
   database: DatabaseService;
   notifications: NotificationsService;
   notificationHost: ElectronNotificationHost;
+  events: BackendEventPublisher;
+  handlers: BackendHandlers;
+  inflight: InflightTracker;
   /** Register teardown work. Disposers run last-registered first. */
   addDisposer(name: string, dispose: () => void | Promise<void>): void;
   /** Run the disposers once. Later calls return the same promise. */
@@ -51,6 +60,7 @@ export interface Backend extends GatewayServices {
  */
 export function createBackend({
   dbPath,
+  events,
   createDatabase = path => new DatabaseService(path),
 }: CreateBackendOptions): Backend {
   const disposers: Array<{ name: string; dispose: () => void | Promise<void> }> = [];
@@ -73,6 +83,9 @@ export function createBackend({
     const database = createDatabase(dbPath);
     database.init();
     addDisposer('database', () => database.dispose());
+
+    const inflight = new InflightTracker();
+    addDisposer('in-flight calls', () => inflight.drain(SHUTDOWN_DRAIN_MS));
 
     // One adapter per provider. The MAL one in particular must stay single: its
     // single-flight refresh guards against rotating the refresh token twice.
@@ -137,6 +150,9 @@ export function createBackend({
       malSync,
       notifications,
       notificationHost,
+      events,
+      handlers: { ...createSystemHandlers() },
+      inflight,
       addDisposer,
       shutdown,
     };

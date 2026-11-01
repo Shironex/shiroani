@@ -227,6 +227,10 @@ export function createFakeElectronApi(): ElectronAPI {
         cancel: noop,
       }),
     },
+    backend: {
+      invoke: () => resolved({ ok: true }),
+      on: () => () => {},
+    },
     platform: 'win32',
   };
 }

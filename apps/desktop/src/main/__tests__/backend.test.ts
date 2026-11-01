@@ -1,3 +1,4 @@
+import { BACKEND_REQUEST_CHANNELS } from '@shiroani/shared';
 import { AniListClient } from '../../modules/anime/anilist-client';
 import { MalClient } from '../../modules/anime/mal-client';
 import { DatabaseService } from '../../modules/database/database.service';
@@ -12,6 +13,8 @@ jest.mock('../../modules/anime/anilist-client');
 jest.mock('../../modules/anime/mal-client');
 jest.mock('../auth/mal-token.adapter');
 jest.mock('../auth/anilist-token.adapter');
+
+const events = { emit: jest.fn() };
 
 /** Records call order across the stub database and the spies below. */
 function buildBackend(calls: string[] = []) {
@@ -31,7 +34,7 @@ function buildBackend(calls: string[] = []) {
   const dispose = jest.spyOn(FeedSchedulerService.prototype, 'dispose').mockImplementation(() => {
     calls.push('scheduler.dispose');
   });
-  const backend = createBackend({ dbPath: '/tmp/test.db', createDatabase: () => database });
+  const backend = createBackend({ dbPath: '/tmp/test.db', events, createDatabase: () => database });
   return { backend, database, seed, start, dispose };
 }
 
@@ -115,6 +118,32 @@ describe('createBackend', () => {
     expect(calls).toEqual(['failing', 'first', 'scheduler.dispose', 'db.dispose']);
   });
 
+  it('removes handlers, stops the scheduler, drains, then closes the database', async () => {
+    const calls: string[] = [];
+    const { backend } = buildBackend(calls);
+    calls.length = 0;
+    backend.addDisposer('backend ipc', () => {
+      calls.push('ipc.remove');
+    });
+    jest.spyOn(backend.inflight, 'drain').mockImplementation(async () => {
+      calls.push('drain');
+    });
+
+    await backend.shutdown();
+
+    expect(calls).toEqual(['ipc.remove', 'scheduler.dispose', 'drain', 'db.dispose']);
+  });
+
+  it('has a handler for exactly the allow-listed request channels', () => {
+    const { backend } = buildBackend();
+    expect(Object.keys(backend.handlers).sort()).toEqual([...BACKEND_REQUEST_CHANNELS].sort());
+  });
+
+  it('answers the ping channel', async () => {
+    const { backend } = buildBackend();
+    await expect(backend.handlers['backend:ping'](undefined)).resolves.toEqual({ ok: true });
+  });
+
   it('shuts down only once', async () => {
     const { backend, database } = buildBackend();
 
@@ -131,7 +160,7 @@ describe('createBackend', () => {
       throw new Error('seed failed');
     });
 
-    expect(() => createBackend({ dbPath: 'x', createDatabase: () => database })).toThrow(
+    expect(() => createBackend({ dbPath: 'x', events, createDatabase: () => database })).toThrow(
       'seed failed'
     );
     await Promise.resolve();
