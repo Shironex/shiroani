@@ -6,6 +6,7 @@ import { ElectronNotificationHost } from './notifications/notification-host.adap
 import { ElectronNotificationStore } from './notifications/notification-store.adapter';
 import { AniListClient } from '../modules/anime/anilist-client';
 import { MalClient } from '../modules/anime/mal-client';
+import { createAnimeHandlers } from '../modules/anime/anime.handlers';
 import { AnimeService } from '../modules/anime/anime.service';
 import { AnimeProfileService } from '../modules/anime/anime-profile.service';
 import { AnimeSocialService } from '../modules/anime/anime-social.service';
@@ -45,6 +46,10 @@ export interface CreateBackendOptions {
 
 export interface Backend extends GatewayServices {
   database: DatabaseService;
+  anime: AnimeService;
+  animeProfile: AnimeProfileService;
+  animeSocial: AnimeSocialService;
+  animeRecommendations: AnimeRecommendationsService;
   diary: DiaryService;
   feed: FeedService;
   library: LibraryService;
@@ -161,6 +166,7 @@ export function createBackend({
       events,
       handlers: {
         ...createSystemHandlers(),
+        ...createAnimeHandlers(anime, animeProfile, animeSocial, animeRecommendations),
         ...createDiaryHandlers(diary, events),
         ...createFeedHandlers(feed, events, inflight),
         ...createLibraryHandlers(library, events),

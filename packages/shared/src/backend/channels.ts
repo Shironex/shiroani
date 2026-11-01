@@ -10,10 +10,12 @@
  * over IPC in the renderer, and anything else stays on the socket.
  */
 import {
+  AnimeEvents,
   BackendEvents,
   DiaryEvents,
   FeedEvents,
   LibraryEvents,
+  MalEvents,
   ScheduleEvents,
 } from '../constants/events';
 
@@ -41,6 +43,26 @@ export const BACKEND_REQUEST_CHANNELS = [
   FeedEvents.SET_LAST_VISITED,
   FeedEvents.GET_LAST_VISITED,
   FeedEvents.REFRESH,
+  AnimeEvents.SEARCH,
+  AnimeEvents.GET_DETAILS,
+  AnimeEvents.GET_AIRING,
+  AnimeEvents.GET_TRENDING,
+  AnimeEvents.GET_POPULAR,
+  AnimeEvents.GET_SEASONAL,
+  AnimeEvents.GET_RANDOM,
+  AnimeEvents.GET_USER_PROFILE,
+  AnimeEvents.GET_VIEWER_PROFILE,
+  MalEvents.GET_VIEWER_PROFILE,
+  AnimeEvents.GET_VIEWER_ACTIVITY,
+  AnimeEvents.SAVE_MEDIA_LIST_ENTRY,
+  AnimeEvents.GET_RECOMMENDATIONS,
+  AnimeEvents.SAVE_RECOMMENDATION,
+  AnimeEvents.GET_FOLLOWING,
+  AnimeEvents.GET_FOLLOWERS,
+  AnimeEvents.TOGGLE_FOLLOW,
+  AnimeEvents.GET_SOCIAL_FEED,
+  AnimeEvents.GET_NOTIFICATIONS,
+  AnimeEvents.MARK_NOTIFICATIONS_READ,
 ] as const;
 
 export const BACKEND_EVENT_CHANNELS = [

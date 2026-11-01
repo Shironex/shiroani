@@ -1,10 +1,5 @@
 import { Module, type DynamicModule } from '@nestjs/common';
 import { ThrottlerModule } from '@nestjs/throttler';
-import { AnimeGateway } from './anime/anime.gateway';
-import { AnimeService } from './anime/anime.service';
-import { AnimeProfileService } from './anime/anime-profile.service';
-import { AnimeSocialService } from './anime/anime-social.service';
-import { AnimeRecommendationsService } from './anime/anime-recommendations.service';
 import { AniListSyncGateway } from './anilist-sync/anilist-sync.gateway';
 import { AniListSyncService } from './anilist-sync/anilist-sync.service';
 import { ImportExportGateway } from './import-export/import-export.gateway';
@@ -14,10 +9,6 @@ import { MalSyncService } from './mal-sync/mal-sync.service';
 
 /** The services the socket gateways call. Built by the composition root, never by Nest. */
 export interface GatewayServices {
-  anime: AnimeService;
-  animeProfile: AnimeProfileService;
-  animeSocial: AnimeSocialService;
-  animeRecommendations: AnimeRecommendationsService;
   importExport: ImportExportService;
   aniListSync: AniListSyncService;
   malSync: MalSyncService;
@@ -49,14 +40,9 @@ export class AppModule {
         ]),
       ],
       providers: [
-        { provide: AnimeService, useValue: services.anime },
-        { provide: AnimeProfileService, useValue: services.animeProfile },
-        { provide: AnimeSocialService, useValue: services.animeSocial },
-        { provide: AnimeRecommendationsService, useValue: services.animeRecommendations },
         { provide: ImportExportService, useValue: services.importExport },
         { provide: AniListSyncService, useValue: services.aniListSync },
         { provide: MalSyncService, useValue: services.malSync },
-        AnimeGateway,
         AniListSyncGateway,
         ImportExportGateway,
         MalSyncGateway,

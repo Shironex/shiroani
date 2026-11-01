@@ -4,11 +4,13 @@
  */
 import type { z } from 'zod';
 import type {
+  AnimeEvents,
   BackendEvents,
   CrudActions,
   DiaryEvents,
   FeedEvents,
   LibraryEvents,
+  MalEvents,
   ScheduleEvents,
 } from '../constants/events';
 import type {
@@ -19,6 +21,19 @@ import type {
   feedToggleSourcePayloadSchema,
 } from '../schemas/feed';
 import type {
+  animeGetAiringPayloadSchema,
+  animeGetDetailsPayloadSchema,
+  animeGetFollowPayloadSchema,
+  animeGetPopularPayloadSchema,
+  animeGetRandomPayloadSchema,
+  animeGetRecommendationsPayloadSchema,
+  animeGetSeasonalPayloadSchema,
+  animeGetTrendingPayloadSchema,
+  animeGetUserProfilePayloadSchema,
+  animeSaveMediaListEntryPayloadSchema,
+  animeSaveRecommendationPayloadSchema,
+  animeSearchPayloadSchema,
+  animeToggleFollowPayloadSchema,
   libraryAddPayloadSchema,
   libraryGetAllPayloadSchema,
   libraryRemoveManyPayloadSchema,
@@ -35,8 +50,21 @@ import type {
   scheduleGetDailyPayloadSchema,
   scheduleGetWeeklyPayloadSchema,
 } from '../schemas/schedule';
-import type { AiringAnime, AnimeEntry, LibraryStatsResult } from '../types/anime';
+import type {
+  AiringAnime,
+  AniListActivity,
+  AniListCommunityRecommendation,
+  AniListUser,
+  AnimeDetail,
+  AnimeEntry,
+  DiscoverMedia,
+  GetNotificationsResult,
+  LibraryStatsResult,
+  RecommendationRating,
+  UserProfile,
+} from '../types/anime';
 import type { DiaryEntry } from '../types/diary';
+import type { MalUserStats } from '../types/mal-auth';
 import type {
   FeedGetArticleResult,
   FeedGetItemsResult,
@@ -51,6 +79,12 @@ export type BackendEventChannel = (typeof BACKEND_EVENT_CHANNELS)[number];
 
 /** A request with nothing to send. The renderer's list fetches pass an empty object. */
 type NoPayload = Record<string, never> | undefined;
+
+/** One page of a media browse, as the discover views consume it. */
+interface MediaPageResponse {
+  results: DiscoverMedia[];
+  pageInfo: { total: number; currentPage: number; lastPage: number; hasNextPage: boolean };
+}
 
 /** Request and response shape of every request channel. */
 export interface BackendRoutes {
@@ -129,6 +163,69 @@ export interface BackendRoutes {
   };
   [FeedEvents.GET_LAST_VISITED]: { req: NoPayload; res: FeedGetLastVisitedResult };
   [FeedEvents.REFRESH]: { req: NoPayload; res: { started: boolean } };
+
+  [AnimeEvents.SEARCH]: {
+    req: z.infer<typeof animeSearchPayloadSchema>;
+    res: MediaPageResponse;
+  };
+  [AnimeEvents.GET_DETAILS]: {
+    req: z.infer<typeof animeGetDetailsPayloadSchema>;
+    res: { anime: AnimeDetail | null };
+  };
+  [AnimeEvents.GET_AIRING]: {
+    req: z.infer<typeof animeGetAiringPayloadSchema>;
+    res: { airingSchedules: AiringAnime[]; pageInfo: MediaPageResponse['pageInfo'] };
+  };
+  [AnimeEvents.GET_TRENDING]: {
+    req: z.infer<typeof animeGetTrendingPayloadSchema>;
+    res: MediaPageResponse;
+  };
+  [AnimeEvents.GET_POPULAR]: {
+    req: z.infer<typeof animeGetPopularPayloadSchema>;
+    res: MediaPageResponse;
+  };
+  [AnimeEvents.GET_SEASONAL]: {
+    req: z.infer<typeof animeGetSeasonalPayloadSchema>;
+    res: MediaPageResponse;
+  };
+  [AnimeEvents.GET_RANDOM]: {
+    req: z.infer<typeof animeGetRandomPayloadSchema>;
+    res: MediaPageResponse;
+  };
+  [AnimeEvents.GET_USER_PROFILE]: {
+    req: z.infer<typeof animeGetUserProfilePayloadSchema>;
+    res: { profile: UserProfile | null };
+  };
+  [AnimeEvents.GET_VIEWER_PROFILE]: { req: NoPayload; res: { profile: UserProfile | null } };
+  [MalEvents.GET_VIEWER_PROFILE]: { req: NoPayload; res: { profile: MalUserStats | null } };
+  [AnimeEvents.GET_VIEWER_ACTIVITY]: { req: NoPayload; res: { activities: AniListActivity[] } };
+  [AnimeEvents.SAVE_MEDIA_LIST_ENTRY]: {
+    req: z.infer<typeof animeSaveMediaListEntryPayloadSchema>;
+    res: { updatedAt: number | null };
+  };
+  [AnimeEvents.GET_RECOMMENDATIONS]: {
+    req: z.infer<typeof animeGetRecommendationsPayloadSchema>;
+    res: { recommendations: AniListCommunityRecommendation[] };
+  };
+  [AnimeEvents.SAVE_RECOMMENDATION]: {
+    req: z.infer<typeof animeSaveRecommendationPayloadSchema>;
+    res: { userRating: RecommendationRating | null };
+  };
+  [AnimeEvents.GET_FOLLOWING]: {
+    req: z.infer<typeof animeGetFollowPayloadSchema>;
+    res: { users: AniListUser[] };
+  };
+  [AnimeEvents.GET_FOLLOWERS]: {
+    req: z.infer<typeof animeGetFollowPayloadSchema>;
+    res: { users: AniListUser[] };
+  };
+  [AnimeEvents.TOGGLE_FOLLOW]: {
+    req: z.infer<typeof animeToggleFollowPayloadSchema>;
+    res: { isFollowing: boolean | null };
+  };
+  [AnimeEvents.GET_SOCIAL_FEED]: { req: NoPayload; res: { activities: AniListActivity[] } };
+  [AnimeEvents.GET_NOTIFICATIONS]: { req: NoPayload; res: GetNotificationsResult };
+  [AnimeEvents.MARK_NOTIFICATIONS_READ]: { req: NoPayload; res: { unreadCount: number } };
 }
 
 /** Payload of every event channel. */
