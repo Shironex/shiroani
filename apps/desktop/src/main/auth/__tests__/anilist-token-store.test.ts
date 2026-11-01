@@ -56,6 +56,20 @@ describe('anilist-token-store', () => {
     expect(safeStorage.decryptString).not.toHaveBeenCalled();
   });
 
+  it('stays connected when AniList returned null for the banner and avatar', () => {
+    mockStore.get.mockReturnValue({
+      token: Buffer.from('enc:secret-token').toString('base64'),
+      encrypted: true,
+      expiresAt: Date.now() + 1000,
+      viewer: { id: 1, name: 'Tester', avatar: null, bannerImage: null },
+    });
+
+    expect(getStatus()).toEqual(
+      expect.objectContaining({ connected: true, viewer: { id: 1, name: 'Tester' } })
+    );
+    expect(getToken()).toBe('secret-token');
+  });
+
   it('getToken returns null when expired', () => {
     mockStore.get.mockReturnValue({
       token: Buffer.from('enc:t').toString('base64'),

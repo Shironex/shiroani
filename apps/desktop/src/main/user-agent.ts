@@ -1,29 +1,29 @@
 /**
- * Shared Chrome User-Agent construction for the main process.
+ * User-Agent cleanup for the main process.
  *
- * Used both for Electron's global `app.userAgentFallback` (so "Electron/<v>"
- * and the app name never leak in subframe/worker requests) and for the
- * browser tab session's `setUserAgent`, so embedded Chromium is presented as
- * plain Chrome and isn't caught by Electron-detection / Cloudflare Turnstile
- * fingerprinting.
+ * Electron's default UA is Chrome's plus an app-name token and `Electron/<v>`.
+ * Cloudflare Turnstile fails on those tokens, so they are removed from
+ * `app.userAgentFallback`, which also covers subframe and worker requests.
+ * Everything else stays as Chromium reports it, so the string cannot drift from
+ * the real OS or engine version.
  */
 
-/** Pinned Chromium version, falling back to a recent default if unavailable. */
-function chromeVersion(): string {
-  return process.versions.chrome || '134.0.0.0';
+const CHROME_UA_PARTS =
+  /^(Mozilla\/5\.0 \([^)]*\) AppleWebKit\/\S+ \(KHTML, like Gecko\)).*?( Chrome\/\S+).*?( Safari\/\S+)/;
+
+/** Reduce a Chromium-based UA to the tokens plain Chrome sends. */
+export function stripEmbedderTokens(userAgent: string): string {
+  const parts = CHROME_UA_PARTS.exec(userAgent);
+  if (!parts) return userAgent.replace(/ Electron\/\S+/, '');
+  return `${parts[1]}${parts[2]}${parts[3]}`;
 }
 
-/**
- * Platform-specific OS token for a desktop Chrome UA string. macOS and Linux
- * are reported faithfully; everything else is presented as Windows 10 x64.
- */
-export function getOsSlug(platform: NodeJS.Platform = process.platform): string {
-  if (platform === 'darwin') return 'Macintosh; Intel Mac OS X 10_15_7';
-  if (platform === 'linux') return 'X11; Linux x86_64';
-  return 'Windows NT 10.0; Win64; x64';
-}
+const FIREFOX_VERSION = '137.0';
 
-/** Build the full desktop Chrome User-Agent string for the given platform. */
-export function buildChromeUserAgent(platform: NodeJS.Platform = process.platform): string {
-  return `Mozilla/5.0 (${getOsSlug(platform)}) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/${chromeVersion()} Safari/537.36`;
+/** Firefox's UA for the given platform, used only where Google blocks embedded Chromium. */
+export function buildFirefoxUserAgent(platform: NodeJS.Platform = process.platform): string {
+  let os = 'Windows NT 10.0; Win64; x64';
+  if (platform === 'darwin') os = 'Macintosh; Intel Mac OS X 10.15';
+  else if (platform === 'linux') os = 'X11; Linux x86_64';
+  return `Mozilla/5.0 (${os}; rv:${FIREFOX_VERSION}) Gecko/20100101 Firefox/${FIREFOX_VERSION}`;
 }
