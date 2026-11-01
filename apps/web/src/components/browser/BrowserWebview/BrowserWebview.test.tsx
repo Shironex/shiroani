@@ -20,4 +20,14 @@ describe('BrowserWebview', () => {
     expect(webview).toHaveAttribute('src', 'https://example.com');
     expect(webview).toHaveAttribute('partition', 'persist:browser');
   });
+
+  it('gives the active webview a white default canvas', () => {
+    const { container } = render(
+      <BrowserWebview paneId="pane-1" initialUrl="https://example.com" isActive />
+    );
+
+    expect((container.querySelector('webview') as HTMLElement).style.background).toBe(
+      'rgb(255, 255, 255)'
+    );
+  });
 });

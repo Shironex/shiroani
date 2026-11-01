@@ -7,6 +7,9 @@ const ACTIVE_STYLE: React.CSSProperties = {
   width: '100%',
   height: '100%',
   border: 'none',
+  // Guest pages render transparent. Pages without their own background expect the
+  // browser's default white canvas, not the app's dark window showing through.
+  background: '#fff',
 };
 const HIDDEN_STYLE: React.CSSProperties = {
   display: 'none',
