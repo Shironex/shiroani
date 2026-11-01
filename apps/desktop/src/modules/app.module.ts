@@ -2,14 +2,11 @@ import { Module, type DynamicModule } from '@nestjs/common';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { AniListSyncGateway } from './anilist-sync/anilist-sync.gateway';
 import { AniListSyncService } from './anilist-sync/anilist-sync.service';
-import { ImportExportGateway } from './import-export/import-export.gateway';
-import { ImportExportService } from './import-export/import-export.service';
 import { MalSyncGateway } from './mal-sync/mal-sync.gateway';
 import { MalSyncService } from './mal-sync/mal-sync.service';
 
 /** The services the socket gateways call. Built by the composition root, never by Nest. */
 export interface GatewayServices {
-  importExport: ImportExportService;
   aniListSync: AniListSyncService;
   malSync: MalSyncService;
 }
@@ -40,11 +37,9 @@ export class AppModule {
         ]),
       ],
       providers: [
-        { provide: ImportExportService, useValue: services.importExport },
         { provide: AniListSyncService, useValue: services.aniListSync },
         { provide: MalSyncService, useValue: services.malSync },
         AniListSyncGateway,
-        ImportExportGateway,
         MalSyncGateway,
       ],
     };

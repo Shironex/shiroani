@@ -4,14 +4,23 @@ import ExportDialog from './ExportDialog';
 
 /**
  * Export dialog (Radix `Dialog`, portalled to `document.body`). On open it
- * auto-emits the export over the socket and walks a small state machine —
- * loading → success (with a "Save as…" button) → saving → saved, or error.
- * In Storybook the socket request never resolves, so the dialog parks on its
- * loading state; the saved/error branches are covered by the unit suite.
+ * auto-requests the export and walks a small state machine: loading, then
+ * success (with a "Save as…" button), saving and saved, or error. Without a bridge
+ * the request rejects at once, so the stories install one that never answers and
+ * the dialog parks on its loading state. The other branches are in the unit suite.
  */
 const meta = {
   title: 'shared/ExportDialog',
   component: ExportDialog,
+  beforeEach: () => {
+    const previous = window.electronAPI;
+    window.electronAPI = {
+      backend: { invoke: () => new Promise(() => {}), on: () => () => {} },
+    } as never;
+    return () => {
+      window.electronAPI = previous;
+    };
+  },
   parameters: {
     // Portals to document.body — render its Docs preview in an iframe so the overlay + scroll-lock stay inside the preview block.
     docs: { story: { inline: false, iframeHeight: 560 } },
@@ -34,8 +43,8 @@ export default meta;
 type Story = StoryObj<typeof ExportDialog>;
 
 /**
- * Opened export dialog. The export flow emits over the socket; in Storybook the
- * request never resolves, so the dialog parks on its loading state.
+ * Opened export dialog, parked on its loading state because the request never
+ * answers here.
  */
 export const Open: Story = {
   args: { open: true, onOpenChange: fn(), type: 'library' },

@@ -9,10 +9,12 @@ import type {
   CrudActions,
   DiaryEvents,
   FeedEvents,
+  ImportExportEvents,
   LibraryEvents,
   MalEvents,
   ScheduleEvents,
 } from '../constants/events';
+import type { exportRequestSchema, importRequestSchema } from '../schemas/import-export';
 import type {
   feedGetArticlePayloadSchema,
   feedGetItemsPayloadSchema,
@@ -64,6 +66,11 @@ import type {
   UserProfile,
 } from '../types/anime';
 import type { DiaryEntry } from '../types/diary';
+import type {
+  ImportItemResult,
+  ImportResponse,
+  ShiroaniExportFormat,
+} from '../types/import-export';
 import type { MalUserStats } from '../types/mal-auth';
 import type {
   FeedGetArticleResult,
@@ -226,6 +233,16 @@ export interface BackendRoutes {
   [AnimeEvents.GET_SOCIAL_FEED]: { req: NoPayload; res: { activities: AniListActivity[] } };
   [AnimeEvents.GET_NOTIFICATIONS]: { req: NoPayload; res: GetNotificationsResult };
   [AnimeEvents.MARK_NOTIFICATIONS_READ]: { req: NoPayload; res: { unreadCount: number } };
+
+  [ImportExportEvents.EXPORT]: {
+    req: z.infer<typeof exportRequestSchema>;
+    res: { data: ShiroaniExportFormat | null; totalExported: number };
+  };
+  [ImportExportEvents.IMPORT]: {
+    req: z.infer<typeof importRequestSchema>;
+    res: ImportResponse;
+  };
+  [ImportExportEvents.CLEAR_ALL]: { req: NoPayload; res: { success: boolean } };
 }
 
 /** Payload of every event channel. */
@@ -242,6 +259,7 @@ export interface BackendEventMap {
     | { action: typeof CrudActions.IMPORTED };
   [FeedEvents.NEW_ITEMS]: { newItemsCount: number };
   [FeedEvents.SOURCES_RESULT]: FeedGetSourcesResult;
+  [ImportExportEvents.IMPORT_PROGRESS]: ImportItemResult;
 }
 
 export type BackendReq<C extends BackendRequestChannel> = BackendRoutes[C]['req'];

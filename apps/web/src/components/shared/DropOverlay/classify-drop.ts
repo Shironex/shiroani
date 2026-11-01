@@ -36,8 +36,9 @@ export type DropClassification<F extends IDroppedFileLike = IDroppedFileLike> =
 export type DragPreview = 'link' | 'json' | 'image' | 'unknown' | 'unsupported';
 
 /**
- * Largest `.json` file read from a drop. Checked before `file.text()` so a
- * huge file is never pulled into memory; far above a large real export.
+ * Largest import file. A drop checks it before `file.text()` so a huge file is
+ * never pulled into memory. A 100 MB import over IPC worked without stalling the
+ * main process, so this margin is deliberate; it is far above a large real export.
  */
 export const MAX_IMPORT_JSON_BYTES = 50 * 1024 * 1024;
 

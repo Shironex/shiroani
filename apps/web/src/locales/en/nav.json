@@ -87,6 +87,7 @@
       "invalidJson": "This is not a valid JSON file",
       "notShiroaniExport": "This is not a ShiroAni export file.",
       "importFailed": "Error during import",
+      "tooLarge": "This file is too big to import (max {{maxMb}} MB).",
       "unknown": "Failed to read the file"
     }
   },

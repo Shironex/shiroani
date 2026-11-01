@@ -21,6 +21,7 @@ import { FeedParserService } from '../modules/feed/feed-parser.service';
 import { FeedSchedulerService } from '../modules/feed/feed-scheduler.service';
 import { createFeedHandlers } from '../modules/feed/feed.handlers';
 import { FeedService } from '../modules/feed/feed.service';
+import { createImportExportHandlers } from '../modules/import-export/import-export.handlers';
 import { ImportExportService } from '../modules/import-export/import-export.service';
 import { createLibraryHandlers } from '../modules/library/library.handlers';
 import { LibraryService } from '../modules/library/library.service';
@@ -52,6 +53,7 @@ export interface Backend extends GatewayServices {
   animeRecommendations: AnimeRecommendationsService;
   diary: DiaryService;
   feed: FeedService;
+  importExport: ImportExportService;
   library: LibraryService;
   schedule: ScheduleService;
   notifications: NotificationsService;
@@ -169,6 +171,7 @@ export function createBackend({
         ...createAnimeHandlers(anime, animeProfile, animeSocial, animeRecommendations),
         ...createDiaryHandlers(diary, events),
         ...createFeedHandlers(feed, events, inflight),
+        ...createImportExportHandlers(importExport, events),
         ...createLibraryHandlers(library, events),
         ...createScheduleHandlers(schedule),
       },

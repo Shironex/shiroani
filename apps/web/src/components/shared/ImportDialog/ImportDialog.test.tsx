@@ -119,6 +119,27 @@ describe('ImportDialog', () => {
     expect(await screen.findByText('This is not a valid JSON file')).toBeInTheDocument();
   });
 
+  it('refuses a picked file over the size cap before parsing it', async () => {
+    stubFileBridge('x'.repeat(50 * 1024 * 1024 + 1));
+    render(<ImportDialog open onOpenChange={() => {}} type="all" />);
+
+    expect(
+      await screen.findByText('This file is too big to import (max 50 MB).')
+    ).toBeInTheDocument();
+  });
+
+  it('waits at least five minutes, and longer when the row count needs it', async () => {
+    const rows = Array.from({ length: 20_000 }, (_, i) => ({ title: `Row ${i}` }));
+    stubFileBridge(JSON.stringify({ ...VALID_EXPORT, data: { library: rows } }));
+    const { user } = render(<ImportDialog open onOpenChange={() => {}} type="all" />);
+
+    await screen.findByText(/found/i);
+    await user.click(screen.getByRole('button', { name: /^import$/i }));
+
+    await waitFor(() => expect(invokeBackend).toHaveBeenCalled());
+    expect(invokeBackend.mock.calls[0][2]).toEqual({ timeout: 1_200_000 });
+  });
+
   it('shows a read error when the file content is empty', async () => {
     stubFileBridge(null);
     render(<ImportDialog open onOpenChange={() => {}} type="all" />);

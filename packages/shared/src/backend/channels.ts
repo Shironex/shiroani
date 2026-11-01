@@ -14,6 +14,7 @@ import {
   BackendEvents,
   DiaryEvents,
   FeedEvents,
+  ImportExportEvents,
   LibraryEvents,
   MalEvents,
   ScheduleEvents,
@@ -63,6 +64,9 @@ export const BACKEND_REQUEST_CHANNELS = [
   AnimeEvents.GET_SOCIAL_FEED,
   AnimeEvents.GET_NOTIFICATIONS,
   AnimeEvents.MARK_NOTIFICATIONS_READ,
+  ImportExportEvents.EXPORT,
+  ImportExportEvents.IMPORT,
+  ImportExportEvents.CLEAR_ALL,
 ] as const;
 
 export const BACKEND_EVENT_CHANNELS = [
@@ -70,4 +74,5 @@ export const BACKEND_EVENT_CHANNELS = [
   LibraryEvents.UPDATED,
   FeedEvents.NEW_ITEMS,
   FeedEvents.SOURCES_RESULT,
+  ImportExportEvents.IMPORT_PROGRESS,
 ] as const;
