@@ -46,7 +46,9 @@ describe('preload channel allow-list', () => {
     });
 
     it('refuses to subscribe to an event that is not allow-listed', () => {
-      expect(() => electronAPI.backend.on('library:updated', () => {})).toThrow(/not allowed/i);
+      expect(() => electronAPI.backend.on('data:import-progress' as never, () => {})).toThrow(
+        /not allowed/i
+      );
       expect(ipcRenderer.on).not.toHaveBeenCalled();
     });
   });

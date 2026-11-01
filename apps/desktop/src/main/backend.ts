@@ -20,6 +20,7 @@ import { FeedParserService } from '../modules/feed/feed-parser.service';
 import { FeedSchedulerService } from '../modules/feed/feed-scheduler.service';
 import { FeedService } from '../modules/feed/feed.service';
 import { ImportExportService } from '../modules/import-export/import-export.service';
+import { createLibraryHandlers } from '../modules/library/library.handlers';
 import { LibraryService } from '../modules/library/library.service';
 import { MalSyncService } from '../modules/mal-sync/mal-sync.service';
 import { NotificationsService } from '../modules/notifications/notifications.service';
@@ -44,6 +45,7 @@ export interface CreateBackendOptions {
 export interface Backend extends GatewayServices {
   database: DatabaseService;
   diary: DiaryService;
+  library: LibraryService;
   schedule: ScheduleService;
   notifications: NotificationsService;
   notificationHost: ElectronNotificationHost;
@@ -158,6 +160,7 @@ export function createBackend({
       handlers: {
         ...createSystemHandlers(),
         ...createDiaryHandlers(diary, events),
+        ...createLibraryHandlers(library, events),
         ...createScheduleHandlers(schedule),
       },
       inflight,

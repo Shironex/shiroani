@@ -3,7 +3,21 @@
  * lists live in `./channels` so the sandboxed preload can import them.
  */
 import type { z } from 'zod';
-import type { BackendEvents, CrudActions, DiaryEvents, ScheduleEvents } from '../constants/events';
+import type {
+  BackendEvents,
+  CrudActions,
+  DiaryEvents,
+  LibraryEvents,
+  ScheduleEvents,
+} from '../constants/events';
+import type {
+  libraryAddPayloadSchema,
+  libraryGetAllPayloadSchema,
+  libraryRemoveManyPayloadSchema,
+  libraryRemovePayloadSchema,
+  libraryUpdateManyPayloadSchema,
+  libraryUpdatePayloadSchema,
+} from '../schemas/anime';
 import type {
   diaryCreatePayloadSchema,
   diaryRemovePayloadSchema,
@@ -13,7 +27,7 @@ import type {
   scheduleGetDailyPayloadSchema,
   scheduleGetWeeklyPayloadSchema,
 } from '../schemas/schedule';
-import type { AiringAnime } from '../types/anime';
+import type { AiringAnime, AnimeEntry, LibraryStatsResult } from '../types/anime';
 import type { DiaryEntry } from '../types/diary';
 import type { BACKEND_EVENT_CHANNELS, BACKEND_REQUEST_CHANNELS } from './channels';
 
@@ -49,13 +63,46 @@ export interface BackendRoutes {
     req: z.infer<typeof scheduleGetWeeklyPayloadSchema>;
     res: { schedule: Record<string, AiringAnime[]> };
   };
+
+  [LibraryEvents.GET_ALL]: {
+    req: z.infer<typeof libraryGetAllPayloadSchema>;
+    res: { entries: AnimeEntry[] };
+  };
+  [LibraryEvents.ADD]: {
+    req: z.infer<typeof libraryAddPayloadSchema>;
+    res: { entry: AnimeEntry | null };
+  };
+  [LibraryEvents.UPDATE]: {
+    req: z.infer<typeof libraryUpdatePayloadSchema>;
+    res: { entry: AnimeEntry | null };
+  };
+  [LibraryEvents.UPDATE_MANY]: {
+    req: z.infer<typeof libraryUpdateManyPayloadSchema>;
+    res: { entries: AnimeEntry[] };
+  };
+  [LibraryEvents.GET_STATS]: { req: NoPayload; res: { stats: LibraryStatsResult | null } };
+  [LibraryEvents.REMOVE]: {
+    req: z.infer<typeof libraryRemovePayloadSchema>;
+    res: { success: boolean };
+  };
+  [LibraryEvents.REMOVE_MANY]: {
+    req: z.infer<typeof libraryRemoveManyPayloadSchema>;
+    res: { ids: number[] };
+  };
 }
 
 /** Payload of every event channel. */
 export interface BackendEventMap {
   [DiaryEvents.UPDATED]:
     | { entry: DiaryEntry; action: typeof CrudActions.CREATED | typeof CrudActions.UPDATED }
-    | { id: number; action: typeof CrudActions.REMOVED };
+    | { id: number; action: typeof CrudActions.REMOVED }
+    | { action: typeof CrudActions.IMPORTED };
+  [LibraryEvents.UPDATED]:
+    | { entry: AnimeEntry; action: typeof CrudActions.ADDED | typeof CrudActions.UPDATED }
+    | { id: number; action: typeof CrudActions.REMOVED }
+    | { entries: AnimeEntry[]; action: typeof CrudActions.UPDATED_MANY }
+    | { ids: number[]; action: typeof CrudActions.REMOVED_MANY }
+    | { action: typeof CrudActions.IMPORTED };
 }
 
 export type BackendReq<C extends BackendRequestChannel> = BackendRoutes[C]['req'];
