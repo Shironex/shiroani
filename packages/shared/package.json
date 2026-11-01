@@ -11,6 +11,11 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.js"
+    },
+    "./backend-channels": {
+      "types": "./dist/backend-channels.d.ts",
+      "import": "./dist/backend-channels.js",
+      "require": "./dist/backend-channels.js"
     }
   },
   "scripts": {

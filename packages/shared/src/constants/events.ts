@@ -285,6 +285,14 @@ export const SystemEvents = {
 } as const;
 
 // ============================================
+// Backend IPC Events
+// ============================================
+export const BackendEvents = {
+  /** Round-trip check for the backend IPC path. No payload. */
+  PING: 'backend:ping',
+} as const;
+
+// ============================================
 // CRUD broadcast actions
 // ============================================
 /**
