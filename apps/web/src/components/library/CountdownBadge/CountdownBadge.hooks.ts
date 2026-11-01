@@ -3,11 +3,9 @@ import { useTranslation } from 'react-i18next';
 import { formatTimeUntilAiring } from '@/lib/anime-utils';
 import type { ICountdownBadgeProps, ICountdownBadgeView } from './CountdownBadge.types';
 
-// Shared timer: all CountdownBadge instances share a single setInterval
-let currentTimestamp = Math.floor(Date.now() / 1000);
+// Shared timer: all CountdownBadge instances re-render from a single setInterval
 const listeners = new Set<() => void>();
 setInterval(() => {
-  currentTimestamp = Math.floor(Date.now() / 1000);
   listeners.forEach(fn => fn());
 }, 60_000);
 
@@ -20,7 +18,7 @@ function useSharedTimestamp() {
       listeners.delete(listener);
     };
   }, []);
-  return currentTimestamp;
+  return Math.floor(Date.now() / 1000);
 }
 
 export function useCountdownBadge({
