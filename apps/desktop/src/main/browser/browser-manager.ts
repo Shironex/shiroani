@@ -2,7 +2,6 @@ import { session, webContents } from 'electron';
 import { createMainLogger } from '../logging/logger';
 import { getBlocker, enableCosmeticFiltering, disableCosmeticFiltering } from '../adblock';
 import { fromElectronDetails } from '@ghostery/adblocker-electron';
-import { buildChromeUserAgent, getOsSlug } from '../user-agent';
 
 const logger = createMainLogger('BrowserManager');
 
@@ -20,7 +19,7 @@ function normalizeHost(host: string | undefined | null): string {
  * Manages the shared browser session for <webview> tags.
  *
  * Responsibilities:
- * - Initialize the `persist:browser` session (user agent, permissions)
+ * - Initialize the `persist:browser` session (permissions)
  * - Register composite webRequest handlers (Permissions-Policy + adblock)
  * - Toggle adblock on/off (network + cosmetic filtering)
  *
@@ -107,9 +106,12 @@ export class BrowserManager {
     // Create isolated session for browser tabs (separate from app session)
     this.browserSession = session.fromPartition('persist:browser');
 
-    // Set platform-aware Chrome user agent to avoid Electron detection
-    const osString = getOsSlug();
-    this.browserSession.setUserAgent(buildChromeUserAgent());
+    const osString =
+      process.platform === 'darwin'
+        ? 'Macintosh; Intel Mac OS X 10_15_7'
+        : process.platform === 'linux'
+          ? 'X11; Linux x86_64'
+          : 'Windows NT 10.0; Win64; x64';
 
     // Send Firefox UA for Google auth domains so sign-in isn't blocked.
     // Google detects embedded Chromium browsers via Client Hints + navigator.userAgentData
