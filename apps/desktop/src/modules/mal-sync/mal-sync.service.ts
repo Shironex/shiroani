@@ -1,4 +1,3 @@
-import { Injectable, Optional } from '@nestjs/common';
 import {
   createLogger,
   extractErrorMessage,
@@ -25,7 +24,6 @@ export const MAL_SYNC_NOT_CONNECTED_ERROR = 'MAL account is not connected';
 /** Thrown when a single-entry MAL sync targets a local row that does not exist. */
 export const MAL_SYNC_ENTRY_NOT_FOUND_ERROR = 'Library entry not found';
 
-@Injectable()
 export class MalSyncService {
   /**
    * Single-flight guard, INDEPENDENT of AniList's. A MAL sync and an AniList sync
@@ -50,7 +48,7 @@ export class MalSyncService {
     private readonly tokenPort: MalTokenPort,
     // Optional so the unit tests can construct the service with the 3 core deps.
     // Used ONLY for the idMal link pre-pass; absent → the pre-pass is a no-op.
-    @Optional() private readonly aniListClient?: AniListClient
+    private readonly aniListClient?: AniListClient
   ) {
     this.adapter = new MalSyncProviderAdapter(this.malClient, this.libraryService);
     this.engine = new ProviderSyncEngine(this.adapter, this.libraryService);

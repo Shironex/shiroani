@@ -1,4 +1,3 @@
-import { Injectable } from '@nestjs/common';
 import {
   createLogger,
   type AnimeEntry,
@@ -38,7 +37,6 @@ const UPDATE_FIELD_MAP: FieldMap<LibraryUpdates> = {
   resumeUrl: { column: 'resume_url' },
 };
 
-@Injectable()
 export class LibraryService {
   constructor(private readonly databaseService: DatabaseService) {
     logger.info('LibraryService initialized');
@@ -67,8 +65,7 @@ export class LibraryService {
   getEntryByAnilistId(anilistId: number): AnimeEntry | undefined {
     const db = this.databaseService.db;
     const row = db.prepare('SELECT * FROM anime_library WHERE anilist_id = ?').get(anilistId) as
-      | AnimeLibraryRow
-      | undefined;
+      AnimeLibraryRow | undefined;
     return row ? rowToEntry(row) : undefined;
   }
 

@@ -1,4 +1,3 @@
-import { Injectable } from '@nestjs/common';
 import { createLogger, extractErrorMessage, toLocalDate } from '@shiroani/shared';
 import type { AiringAnime } from '@shiroani/shared';
 import { AnimeService } from '../anime/anime.service';
@@ -6,7 +5,6 @@ import type { AniListAiringSchedule } from '../anime/types';
 
 const logger = createLogger('ScheduleService');
 
-@Injectable()
 export class ScheduleService {
   constructor(private readonly animeService: AnimeService) {
     logger.info('ScheduleService initialized');

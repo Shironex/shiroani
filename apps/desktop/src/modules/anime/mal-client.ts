@@ -1,4 +1,3 @@
-import { Injectable, Optional } from '@nestjs/common';
 import type { AnimeStatus, MalViewer } from '@shiroani/shared';
 import {
   DEFAULT_MAL_CLIENT_ID,
@@ -195,13 +194,12 @@ function coverOf(node: {
  * distinct from a real network/rate-limit failure (`getViewer → null`,
  * `getAnimeList → []`).
  */
-@Injectable()
 export class MalClient {
   private readonly maxRetries = 3;
   private readonly defaultRetryDelayMs = 2000;
   private readonly requestTimeoutMs = 15_000;
 
-  constructor(@Optional() private readonly tokenPort?: MalTokenPort) {
+  constructor(private readonly tokenPort?: MalTokenPort) {
     logger.info('MalClient initialized');
   }
 

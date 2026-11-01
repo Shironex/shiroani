@@ -1,4 +1,3 @@
-import { Injectable } from '@nestjs/common';
 import type { MalViewer } from '@shiroani/shared';
 import { DEFAULT_MAL_CLIENT_ID, createLogger } from '@shiroani/shared';
 import { MalTokenPort } from '../../modules/anime/mal-token.port';
@@ -19,8 +18,8 @@ function resolveClientId(): string {
 }
 
 /**
- * Concrete {@link MalTokenPort} wired into the Nest container at bootstrap (see
- * `main/index.ts` `malTokenProvider`). Reads the safeStorage-backed tokens from
+ * Concrete {@link MalTokenPort} built once by the composition root (see
+ * `main/backend.ts`). Reads the safeStorage-backed tokens from
  * the main-process token store and LAZILY refreshes the access token when it is
  * expired/near-expiry, rotating BOTH tokens.
  *
@@ -32,7 +31,6 @@ function resolveClientId(): string {
  * refresh token on every refresh, so a double-refresh would rotate (and thereby
  * invalidate) the refresh token twice and wedge the session.
  */
-@Injectable()
 export class ElectronMalTokenAdapter extends MalTokenPort {
   /**
    * The shared in-flight refresh, or null when no refresh is running. Cleared in

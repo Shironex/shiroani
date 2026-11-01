@@ -1,4 +1,3 @@
-import { Injectable } from '@nestjs/common';
 import {
   createLogger,
   type DiaryEntry,
@@ -34,7 +33,6 @@ const UPDATE_FIELD_MAP: FieldMap<DiaryUpdates> = {
   isPinned: { column: 'is_pinned', transform: pinned => (pinned ? 1 : 0) },
 };
 
-@Injectable()
 export class DiaryService {
   constructor(private readonly databaseService: DatabaseService) {
     logger.info('DiaryService initialized');

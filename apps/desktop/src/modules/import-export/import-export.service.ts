@@ -1,4 +1,3 @@
-import { Injectable } from '@nestjs/common';
 import {
   createLogger,
   extractErrorMessage,
@@ -34,7 +33,6 @@ export interface ImportBatchResult {
   hasDiary: boolean;
 }
 
-@Injectable()
 export class ImportExportService {
   constructor(
     private readonly libraryService: LibraryService,

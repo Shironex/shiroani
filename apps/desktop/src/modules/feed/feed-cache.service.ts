@@ -1,4 +1,3 @@
-import { Injectable } from '@nestjs/common';
 import { createLogger } from '@shiroani/shared';
 import { FeedParserService, type ParsedFeedItem } from './feed-parser.service';
 import { LruTtlCache } from '../kernel/lru-ttl-cache';
@@ -12,7 +11,6 @@ const logger = createLogger('FeedCacheService');
  * refreshes of the same feed within the TTL window avoid a second HTTP round
  * trip. Bounded to 50 entries via LRU eviction.
  */
-@Injectable()
 export class FeedCacheService {
   private readonly cache = new LruTtlCache<string, ParsedFeedItem[]>(50, 60_000);
 

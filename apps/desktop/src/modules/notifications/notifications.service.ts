@@ -1,4 +1,3 @@
-import { Injectable, OnModuleDestroy } from '@nestjs/common';
 import { getWeekStart, toLocalDate, createLogger } from '@shiroani/shared';
 import type { AiringAnime, NotificationSettings, NotificationSubscription } from '@shiroani/shared';
 import { ScheduleService } from '../schedule/schedule.service';
@@ -24,8 +23,7 @@ const logger = createLogger('NotificationsService');
  * CRUD, settings persistence, and dispatch to the platform host. All I/O goes
  * through injected ports so this module stays Electron-free.
  */
-@Injectable()
-export class NotificationsService implements OnModuleDestroy {
+export class NotificationsService {
   private checkInterval: ReturnType<typeof setInterval> | null = null;
   private initialTimeout: ReturnType<typeof setTimeout> | null = null;
   /** In-flight guard: prevents a slow check (awaiting the schedule fetch) from
@@ -168,6 +166,15 @@ export class NotificationsService implements OnModuleDestroy {
    * Electron host during `before-quit`.
    */
   async shutdown(): Promise<void> {
+    // Before initialize() nothing was loaded: `sentNotifications` is empty, so
+    // saving it would wipe the persisted keys and scheduling toasts would repeat
+    // ones already sent. The same check makes a second call a no-op.
+    if (!this.initialized) {
+      this.stopChecking();
+      return;
+    }
+    this.initialized = false;
+
     const settings = this.getSettings();
     if (settings.enabled && this.host.supportsNativeNotifications()) {
       try {
@@ -182,13 +189,7 @@ export class NotificationsService implements OnModuleDestroy {
     this.stopChecking();
     this.saveSentNotifications();
     this.cachedSchedule = null;
-    this.initialized = false;
     logger.info('NotificationsService cleaned up');
-  }
-
-  onModuleDestroy(): void {
-    this.stopChecking();
-    this.saveSentNotifications();
   }
 
   // ========================================

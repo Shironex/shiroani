@@ -1,4 +1,3 @@
-import { Injectable } from '@nestjs/common';
 import type { AiringAnime, NotificationSettings } from '@shiroani/shared';
 import { NotificationStorePort } from '../../modules/notifications/notification-store.port';
 import { store } from '../store';
@@ -8,7 +7,6 @@ const SENT_STORE_KEY = 'notification-sent';
 const SCHEDULE_CACHE_STORE_KEY = 'notification-cached-schedule';
 
 /** electron-store implementation of `NotificationStorePort`. */
-@Injectable()
 export class ElectronNotificationStore extends NotificationStorePort {
   loadSettings(): Partial<NotificationSettings> | undefined {
     return store.get(STORE_KEY) as Partial<NotificationSettings> | undefined;

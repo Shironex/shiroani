@@ -7,6 +7,7 @@ import { NestFactory } from '@nestjs/core';
 import { type INestApplication } from '@nestjs/common';
 import { CustomIoAdapter } from '../modules/kernel/custom-io-adapter';
 import { AppModule } from '../modules/app.module';
+import { createBackend, type Backend } from './backend';
 import { createMainWindow, saveMainWindowState } from './window';
 import { cleanupIpcHandlers } from './ipc/register';
 import { logger, getLogPath, flushLogs, flushLogsSync, fileTransport } from './logging/logger';
@@ -21,15 +22,10 @@ import { stripEmbedderTokens } from './user-agent';
 import { registerBackgroundProtocol } from './ipc/background';
 import { registerMascotSpriteProtocol } from './ipc/sprite';
 import {
-  initializeNotificationService,
+  attachNotificationWindow,
+  bindNotificationService,
   cleanupNotificationService,
 } from './notifications/notification-service';
-import { ElectronNotificationHost } from './notifications/notification-host.adapter';
-import { ElectronNotificationStore } from './notifications/notification-store.adapter';
-import { NotificationHostPort, NotificationStorePort } from '../modules/notifications';
-import { AniListTokenPort, MalTokenPort } from '../modules/anime';
-import { ElectronAniListTokenAdapter } from './auth/anilist-token.adapter';
-import { ElectronMalTokenAdapter } from './auth/mal-token.adapter';
 import { APP_ID as WINDOWS_APP_ID } from './notifications/win-scheduled-notifications';
 import {
   initializeDiscordRpc,
@@ -102,7 +98,7 @@ if (process.platform === 'win32') {
 }
 
 // Single-instance lock. Runs before any heavy setup so a second launch
-// quits immediately instead of spinning up Nest, browser manager, and
+// quits immediately instead of opening the database, browser manager, and
 // IPC handlers only to tear them down. Gated on `app.isPackaged` so dev
 // builds can coexist with an installed production copy. The
 // 'second-instance' listener is registered immediately after acquiring
@@ -123,7 +119,9 @@ if (app.isPackaged) {
 }
 
 export let mainWindow: BrowserWindow | null = null;
+let backend: Backend | null = null;
 let nestApp: INestApplication | null = null;
+let bootstrapped = false;
 let isShuttingDown = false;
 let cleanupDone = false;
 const browserManager = new BrowserManager();
@@ -164,41 +162,13 @@ function unregisterAppStatsPowerListeners(): void {
   powerMonitor.off('unlock-screen', appStatsPowerHandlers.unlockScreen);
 }
 
-async function bootstrapNestApp(): Promise<void> {
+async function bootstrapNestApp(services: Backend): Promise<void> {
   try {
     logger.info('Creating NestJS application...');
-    const dbPath = join(app.getPath('userData'), 'shiroani.db');
-    nestApp = await NestFactory.create(
-      AppModule.forRoot({
-        dbPath,
-        notificationHostProvider: {
-          provide: NotificationHostPort,
-          useClass: ElectronNotificationHost,
-        },
-        notificationStoreProvider: {
-          provide: NotificationStorePort,
-          useClass: ElectronNotificationStore,
-        },
-        // safeStorage-backed AniList token provider — reads the persisted
-        // access token from the main-process token store so AniListClient can
-        // authenticate. The token never crosses IPC.
-        anilistTokenProvider: {
-          provide: AniListTokenPort,
-          useClass: ElectronAniListTokenAdapter,
-        },
-        // safeStorage-backed MAL token provider — reads the persisted access
-        // token (lazily refreshing + rotating both tokens when near expiry) from
-        // the main-process token store. Neither token crosses IPC.
-        malTokenProvider: {
-          provide: MalTokenPort,
-          useClass: ElectronMalTokenAdapter,
-        },
-      }),
-      {
-        logger: new NestLoggerAdapter(fileTransport),
-        bufferLogs: true,
-      }
-    );
+    nestApp = await NestFactory.create(AppModule.forRoot(services), {
+      logger: new NestLoggerAdapter(fileTransport),
+      bufferLogs: true,
+    });
     nestApp.flushLogs();
     logger.info('NestJS application created');
 
@@ -250,9 +220,7 @@ function setupWindowDependentServices(win: BrowserWindow): void {
   };
 
   initializeAutoUpdater(win, process.env.NODE_ENV === 'development');
-  if (nestApp) {
-    initializeNotificationService(win, nestApp);
-  }
+  attachNotificationWindow(win);
 
   // Set up mascot overlay with main window reference
   setMascotMainWindow(win);
@@ -312,7 +280,10 @@ async function bootstrap(): Promise<void> {
   registerBackgroundProtocol();
   registerMascotSpriteProtocol();
 
-  await bootstrapNestApp();
+  backend = createBackend({ dbPath: join(app.getPath('userData'), 'shiroani.db') });
+  bindNotificationService(backend.notifications, backend.notificationHost);
+
+  await bootstrapNestApp(backend);
   browserManager.init();
   mainWindow = await createMainWindow(browserManager);
   setMascotMainWindow(mainWindow);
@@ -412,6 +383,8 @@ async function bootstrap(): Promise<void> {
   } catch (error) {
     logger.warn('Failed to create system tray:', error);
   }
+
+  bootstrapped = true;
 }
 
 // Global error handling
@@ -483,7 +456,7 @@ app.on('certificate-error', (event, _webContents, url, error, _certificate, call
 });
 
 // Handle SIGINT/SIGTERM (e.g. Ctrl+C in dev) by triggering graceful shutdown
-// so that before-quit fires and onModuleDestroy can save state.
+// so that before-quit fires and the backend can save state.
 // Guard against duplicate signals (concurrently sends SIGTERM after SIGINT).
 for (const signal of ['SIGINT', 'SIGTERM'] as const) {
   process.on(signal, () => {
@@ -519,6 +492,11 @@ app.on('window-all-closed', () => {
 
 app.on('activate', async () => {
   logger.info('App activated');
+  // Before bootstrap finishes there is nothing to show yet, and bootstrap creates
+  // the window itself. During shutdown `mainWindow` is already null, and a new
+  // window would register handlers against a backend that is closing.
+  if (!bootstrapped || isShuttingDown) return;
+
   if (mainWindow && !mainWindow.isDestroyed()) {
     showMainWindow(mainWindow);
     return;
@@ -561,11 +539,12 @@ app.on('before-quit', event => {
     await safeCleanup('context menu', () => destroyContextMenu(), logger);
     await safeCleanup('mascot overlay', () => destroyMascotOverlay(), logger);
     await safeCleanup('discord rpc', () => cleanupDiscordRpc(), logger);
+    // Must precede the backend: quit-time toasts read library data from the DB.
     await safeCleanup('notification service', () => cleanupNotificationService(), logger);
+    await safeCleanup('nest server', () => shutdownNestApp(), logger);
+    await safeCleanup('backend', () => backend?.shutdown(), logger);
+    // Last, so every line logged by the steps above reaches the file.
     await safeCleanup('log flush', () => flushLogs(), logger);
-    if (nestApp) {
-      await shutdownNestApp();
-    }
   })().finally(() => {
     cleanupDone = true;
     app.quit();

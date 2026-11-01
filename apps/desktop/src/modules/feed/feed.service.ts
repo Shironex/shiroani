@@ -1,4 +1,3 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
 import {
   createLogger,
   extractErrorMessage,
@@ -19,8 +18,7 @@ const logger = createLogger('FeedService');
 export { rowToItem, rowToSource };
 export type { FeedItemRow, FeedSourceRow };
 
-@Injectable()
-export class FeedService implements OnModuleInit {
+export class FeedService {
   private refreshAllPromise: Promise<number> | null = null;
 
   constructor(
@@ -29,10 +27,6 @@ export class FeedService implements OnModuleInit {
     private readonly articleExtractor: ArticleExtractorService
   ) {
     logger.info('FeedService initialized');
-  }
-
-  onModuleInit(): void {
-    this.seedDefaultSources();
   }
 
   /** Seed default feed sources if the table is empty. */

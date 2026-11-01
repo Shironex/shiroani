@@ -1,4 +1,3 @@
-import { Injectable } from '@nestjs/common';
 import {
   createLogger,
   type AniListSyncProgress,
@@ -23,7 +22,6 @@ export const SYNC_NOT_CONNECTED_ERROR = 'AniList account is not connected';
 /** Thrown when a single-entry sync targets a local row that does not exist. */
 export const SYNC_ENTRY_NOT_FOUND_ERROR = 'Library entry not found';
 
-@Injectable()
 export class AniListSyncService {
   /** Single-flight guard: only one sync may run at a time per process. */
   private running = false;

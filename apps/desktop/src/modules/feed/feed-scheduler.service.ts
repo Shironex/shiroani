@@ -1,4 +1,3 @@
-import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { createLogger } from '@shiroani/shared';
 import { DatabaseService } from '../database';
 import { FeedService } from './feed.service';
@@ -16,8 +15,7 @@ const DEFAULT_POLL_INTERVAL_MS = 60_000;
  * to {@link FeedService.isFullRefreshInProgress} so a manual "refresh all"
  * never overlaps with the due-poll.
  */
-@Injectable()
-export class FeedSchedulerService implements OnModuleInit, OnModuleDestroy {
+export class FeedSchedulerService {
   private pollingTimer: ReturnType<typeof setInterval> | null = null;
   private isPolling = false;
 
@@ -28,11 +26,8 @@ export class FeedSchedulerService implements OnModuleInit, OnModuleDestroy {
     logger.info('FeedSchedulerService initialized');
   }
 
-  onModuleInit(): void {
-    this.startPolling();
-  }
-
-  onModuleDestroy(): void {
+  /** Stop polling for good during shutdown. */
+  dispose(): void {
     this.stopPolling();
     logger.info('Feed polling fully torn down');
   }
