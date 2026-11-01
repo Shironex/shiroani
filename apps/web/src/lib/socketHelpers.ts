@@ -6,7 +6,7 @@ const logger = createLogger('SocketHelper');
 /**
  * Default timeout for socket operations (in milliseconds)
  */
-const DEFAULT_TIMEOUT = 10_000;
+export const DEFAULT_TIMEOUT = 10_000;
 
 /**
  * Options for emit operations

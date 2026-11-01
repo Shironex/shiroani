@@ -10,7 +10,7 @@ import {
   type ToggleFollowRequest,
   type ToggleFollowResult,
 } from '@shiroani/shared';
-import { emitWithErrorHandling } from '@/lib/socket';
+import { invokeBackend } from '@/lib/backend';
 import { useAniListAuthStore } from '@/stores/useAniListAuthStore';
 import { useMountedRef } from './useMountedRef';
 
@@ -89,8 +89,8 @@ export function useSocialGraph(): SocialGraphState {
 
     // Omit `userId` — the backend defaults it to the connected viewer.
     Promise.all([
-      emitWithErrorHandling<GetFollowingRequest, GetFollowingResult>(AnimeEvents.GET_FOLLOWING, {}),
-      emitWithErrorHandling<GetFollowersRequest, GetFollowersResult>(AnimeEvents.GET_FOLLOWERS, {}),
+      invokeBackend<GetFollowingRequest, GetFollowingResult>(AnimeEvents.GET_FOLLOWING, {}),
+      invokeBackend<GetFollowersRequest, GetFollowersResult>(AnimeEvents.GET_FOLLOWERS, {}),
     ])
       .then(([followingRes, followersRes]) => {
         if (!isMounted() || sessionRef.current !== requestSession) return;
@@ -148,7 +148,7 @@ export function useSocialGraph(): SocialGraphState {
         });
       };
 
-      emitWithErrorHandling<ToggleFollowRequest, ToggleFollowResult>(AnimeEvents.TOGGLE_FOLLOW, {
+      invokeBackend<ToggleFollowRequest, ToggleFollowResult>(AnimeEvents.TOGGLE_FOLLOW, {
         userId,
       })
         .then(data => {

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { emitWithErrorHandling } from '@/lib/socket';
+import { invokeBackend } from '@/lib/backend';
 import { ImportExportEvents, type ExportRequest, type ExportResponse } from '@shiroani/shared';
 import { useDialogStateMachine } from '@/hooks/useDialogStateMachine';
 import type { IExportDialogProps, IExportDialogView, ExportState } from './ExportDialog.types';
@@ -31,7 +31,7 @@ export function useExportDialog({
   const handleExport = useCallback(async () => {
     transition({ step: 'loading' });
     try {
-      const response = await emitWithErrorHandling<ExportRequest, ExportResponse>(
+      const response = await invokeBackend<ExportRequest, ExportResponse>(
         ImportExportEvents.EXPORT,
         { type, ids: selectedIds }
       );

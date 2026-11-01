@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { maybeDevtools } from '@/stores/utils/maybeDevtools';
 import { AnimeEvents, createLogger } from '@shiroani/shared';
 import type { UserProfile } from '@shiroani/shared';
-import { emitWithErrorHandling } from '@/lib/socket';
+import { invokeBackend } from '@/lib/backend';
 import { electronStoreGet, electronStoreSet } from '@/lib/electron-store';
 import i18n from '@/lib/i18n';
 
@@ -73,7 +73,7 @@ export const useProfileStore = create<ProfileStore>()(
         logger.info(`Fetching AniList profile for "${username}"`);
         set({ isLoading: true, mode: 'public', error: null }, undefined, 'profile/fetching');
 
-        emitWithErrorHandling<{ username: string }, { profile: UserProfile | null }>(
+        invokeBackend<{ username: string }, { profile: UserProfile | null }>(
           AnimeEvents.GET_USER_PROFILE,
           { username }
         )
@@ -120,7 +120,7 @@ export const useProfileStore = create<ProfileStore>()(
 
         // The access token never crosses the socket — the handler resolves the
         // viewer entirely main-side and returns only the mapped profile.
-        emitWithErrorHandling<Record<string, never>, { profile: UserProfile | null }>(
+        invokeBackend<Record<string, never>, { profile: UserProfile | null }>(
           AnimeEvents.GET_VIEWER_PROFILE,
           {}
         )

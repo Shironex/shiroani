@@ -2,22 +2,20 @@ import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, waitFor } from '@/test/test-utils';
 import type { ShiroaniExportFormat, ImportItemResult, ImportResponse } from '@shiroani/shared';
 
-// Control both the socket transport and the (off-fork) socket listener so the
+// Control both the backend call and the progress listener so the
 // dialog's state machine can be driven deterministically through its branches.
-const emitWithErrorHandling = vi.fn();
+const invokeBackend = vi.fn();
 const socketOn = vi.fn();
 const socketOff = vi.fn();
 let progressHandler: ((p: ImportItemResult) => void) | undefined;
 
-vi.mock('@/lib/socket', () => ({
-  emitWithErrorHandling: (...args: unknown[]) => emitWithErrorHandling(...args),
-  getSocket: () => ({
-    on: (event: string, handler: (p: ImportItemResult) => void) => {
-      socketOn(event, handler);
-      progressHandler = handler;
-    },
-    off: (event: string, handler: unknown) => socketOff(event, handler),
-  }),
+vi.mock('@/lib/backend', () => ({
+  invokeBackend: (...args: unknown[]) => invokeBackend(...args),
+  onBackendEvent: (event: string, handler: (p: ImportItemResult) => void) => {
+    socketOn(event, handler);
+    progressHandler = handler;
+    return () => socketOff(event, handler);
+  },
 }));
 
 import { ImportDialog } from '@/components/shared/ImportDialog';
@@ -49,12 +47,12 @@ function stubFileBridge(raw: string | null = JSON.stringify(VALID_EXPORT)) {
 
 describe('ImportDialog', () => {
   beforeEach(() => {
-    emitWithErrorHandling.mockReset();
+    invokeBackend.mockReset();
     socketOn.mockReset();
     socketOff.mockReset();
     progressHandler = undefined;
     // Default: the import emit never resolves, parking the dialog on importing.
-    emitWithErrorHandling.mockImplementation(() => new Promise(() => {}));
+    invokeBackend.mockImplementation(() => new Promise(() => {}));
   });
 
   afterEach(() => {
@@ -135,8 +133,8 @@ describe('ImportDialog', () => {
     await screen.findByText(/found/i);
     await user.click(screen.getByRole('button', { name: /^import$/i }));
 
-    expect(emitWithErrorHandling).toHaveBeenCalledTimes(1);
-    const [, payload] = emitWithErrorHandling.mock.calls[0];
+    expect(invokeBackend).toHaveBeenCalledTimes(1);
+    const [, payload] = invokeBackend.mock.calls[0];
     expect(payload).toMatchObject({ type: 'all', strategy: 'skip' });
     // The importing panel shows while the request is in flight.
     expect(await screen.findByText('Importing data...')).toBeInTheDocument();
@@ -156,7 +154,7 @@ describe('ImportDialog', () => {
   });
 
   it('shows the done summary with imported/skipped counts when the import resolves', async () => {
-    emitWithErrorHandling.mockResolvedValueOnce(IMPORT_RESULT);
+    invokeBackend.mockResolvedValueOnce(IMPORT_RESULT);
     stubFileBridge();
     const { user } = render(<ImportDialog open onOpenChange={() => {}} type="all" />);
 
@@ -170,7 +168,7 @@ describe('ImportDialog', () => {
   });
 
   it('surfaces an import failure as a file error', async () => {
-    emitWithErrorHandling.mockRejectedValueOnce(new Error('Server exploded'));
+    invokeBackend.mockRejectedValueOnce(new Error('Server exploded'));
     stubFileBridge();
     const { user } = render(<ImportDialog open onOpenChange={() => {}} type="all" />);
 
@@ -219,11 +217,11 @@ describe('ImportDialog', () => {
       );
 
       await screen.findByText(/found/i);
-      expect(emitWithErrorHandling).not.toHaveBeenCalled();
+      expect(invokeBackend).not.toHaveBeenCalled();
 
       await user.click(screen.getByRole('radio', { name: /overwrite/i }));
       await user.click(screen.getByRole('button', { name: /^import$/i }));
-      const [, payload] = emitWithErrorHandling.mock.calls[0];
+      const [, payload] = invokeBackend.mock.calls[0];
       expect(payload).toMatchObject({ type: 'all', strategy: 'overwrite', data: VALID_EXPORT });
     });
 

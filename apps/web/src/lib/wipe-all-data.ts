@@ -1,5 +1,5 @@
 import { createLogger, ImportExportEvents } from '@shiroani/shared';
-import { emitWithErrorHandling } from '@/lib/socket';
+import { invokeBackend } from '@/lib/backend';
 import { IS_ELECTRON } from '@/lib/platform';
 
 const logger = createLogger('WipeAllData');
@@ -49,13 +49,13 @@ export async function wipeAllData(): Promise<void> {
     return;
   }
 
-  // 1. Backend database — abort the whole wipe if this fails. emitWithErrorHandling
+  // 1. Backend database: abort the whole wipe if this fails. invokeBackend
   // rejects on transport/timeout errors, but the gateway *resolves* with
   // { success: false } on a handler exception (handleGatewayRequest catches and
   // returns the default result — it never throws), so the resolved flag must be
   // enforced too. Without this, a failed DB wipe would still clear local state
   // and relaunch, breaking the abort-critical contract.
-  const dbWipe = await emitWithErrorHandling<Record<string, never>, ClearAllResponse>(
+  const dbWipe = await invokeBackend<Record<string, never>, ClearAllResponse>(
     ImportExportEvents.CLEAR_ALL,
     {},
     { timeout: CLEAR_ALL_TIMEOUT_MS }

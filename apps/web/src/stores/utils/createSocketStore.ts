@@ -1,5 +1,6 @@
 import type { NamedSet } from 'zustand/middleware';
 import { getSocket } from '@/lib/socket';
+import { onBackendEvent } from '@/lib/backend';
 import { createLogger } from '@shiroani/shared';
 
 const logger = createLogger('SocketStore');
@@ -99,7 +100,7 @@ export function createSocketListeners<T extends SocketStoreSlice>(
   // This prevents the memory leak where listeners accumulate on re-mount
   let connectHandler: (() => void) | null = null;
   let connectErrorHandler: ((err: Error) => void) | null = null;
-  const customHandlers: Map<string, (data: unknown) => void> = new Map();
+  const unsubscribers: Array<() => void> = [];
 
   const initListeners = () => {
     const state = get();
@@ -114,11 +115,11 @@ export function createSocketListeners<T extends SocketStoreSlice>(
     // Register custom listeners (store refs for cleanup)
     for (const config of listeners) {
       logger.debug('Registering listener:', config.event);
-      const handler = (data: unknown) => {
-        config.handler(data, get);
-      };
-      customHandlers.set(config.event, handler);
-      getSocket().on(config.event, handler);
+      unsubscribers.push(
+        onBackendEvent<unknown>(config.event, data => {
+          config.handler(data, get);
+        })
+      );
     }
 
     // Handle connection error (store ref for cleanup)
@@ -149,11 +150,9 @@ export function createSocketListeners<T extends SocketStoreSlice>(
 
   const cleanupListeners = () => {
     logger.debug('Cleaning up listeners');
-    // Remove custom listeners using stored references
-    for (const [event, handler] of customHandlers) {
-      getSocket().off(event, handler);
+    for (const unsubscribe of unsubscribers.splice(0)) {
+      unsubscribe();
     }
-    customHandlers.clear();
 
     // Remove connection listeners using stored references
     if (connectHandler) {

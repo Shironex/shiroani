@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { maybeDevtools } from '@/stores/utils/maybeDevtools';
-import { getSocket, emitWithErrorHandling } from '@/lib/socket';
+import { invokeBackend, onBackendEvent } from '@/lib/backend';
 import {
   AniListSyncEvents,
   createLogger,
@@ -130,19 +130,17 @@ export const useAniListSyncStore = create<AniListSyncStore>()(
             'anilistSync/start'
           );
 
-          // `getSocket()` throws if the socket singleton isn't initialized; keep it
+          // `onBackendEvent` throws if the socket singleton isn't initialized; keep it
           // (and the listener wiring) inside the try so any failure surfaces through
           // the catch instead of escaping as an unhandled rejection.
           let detach: (() => void) | null = null;
           try {
-            const socket = getSocket();
             const handleProgress = (progress: AniListSyncProgress) => {
               set({ progress }, undefined, 'anilistSync/progress');
             };
-            socket.on(AniListSyncEvents.PROGRESS, handleProgress);
-            detach = () => socket.off(AniListSyncEvents.PROGRESS, handleProgress);
+            detach = onBackendEvent(AniListSyncEvents.PROGRESS, handleProgress);
 
-            const result = await emitWithErrorHandling<FullSyncRequest, AniListSyncResult>(
+            const result = await invokeBackend<FullSyncRequest, AniListSyncResult>(
               AniListSyncEvents.SYNC,
               payload,
               { timeout: SYNC_TIMEOUT_MS }
@@ -184,10 +182,10 @@ export const useAniListSyncStore = create<AniListSyncStore>()(
 
           set({ entrySyncingId: localId }, undefined, 'anilistSync/entryStart');
           try {
-            const result = await emitWithErrorHandling<
-              AniListSyncEntryRequest,
-              AniListSyncEntryResult
-            >(AniListSyncEvents.SYNC_ENTRY, { localId, direction });
+            const result = await invokeBackend<AniListSyncEntryRequest, AniListSyncEntryResult>(
+              AniListSyncEvents.SYNC_ENTRY,
+              { localId, direction }
+            );
             return result.action;
           } catch (error) {
             logger.error('AniList entry sync failed:', error);

@@ -17,7 +17,7 @@ import {
   CrudActions,
   createLogger,
 } from '@shiroani/shared';
-import { emitWithErrorHandling } from '@/lib/socket';
+import { invokeBackend } from '@/lib/backend';
 
 const logger = createLogger('LibraryStore');
 
@@ -188,7 +188,7 @@ export const useLibraryStore = create<LibraryStore>()(
           // Returns the outcome so the caller (dialog / discover hook) can gate
           // its success toast + dialog-close on the real result instead of
           // assuming success on a fire-and-forget emit.
-          return emitWithErrorHandling(LibraryEvents.ADD, payload)
+          return invokeBackend(LibraryEvents.ADD, payload)
             .then(() => {
               // Refetch library to include the new entry
               get().fetchLibrary();

@@ -17,7 +17,7 @@ import {
   CrudActions,
   createLogger,
 } from '@shiroani/shared';
-import { emitWithErrorHandling } from '@/lib/socket';
+import { invokeBackend } from '@/lib/backend';
 import i18n from '@/lib/i18n';
 
 const logger = createLogger('DiaryStore');
@@ -120,7 +120,7 @@ export const useDiaryStore = create<DiaryStore>()(
         createEntry: (payload: DiaryCreatePayload) => {
           // Returns the outcome so the editor keeps the user's content visible
           // and stays open on failure instead of closing over lost input.
-          return emitWithErrorHandling(DiaryEvents.CREATE, payload)
+          return invokeBackend(DiaryEvents.CREATE, payload)
             .then(() => {
               get().fetchEntries();
               return true;

@@ -1,6 +1,6 @@
 import { useEffect, useCallback, useRef, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { getSocket, emitWithErrorHandling } from '@/lib/socket';
+import { invokeBackend, onBackendEvent } from '@/lib/backend';
 import {
   ImportExportEvents,
   type ShiroaniExportFormat,
@@ -158,7 +158,6 @@ export function useImportDialog({
     transition({ step: 'importing', items: [...initialItems], totalCount });
 
     // Listen for progress updates
-    const socket = getSocket();
     const handleProgress = (progress: ImportItemResult) => {
       updateState(prev => {
         if (prev.step !== 'importing') return prev;
@@ -169,13 +168,11 @@ export function useImportDialog({
       });
     };
 
-    socket.on(ImportExportEvents.IMPORT_PROGRESS, handleProgress);
-    listenerCleanupRef.current = () => {
-      socket.off(ImportExportEvents.IMPORT_PROGRESS, handleProgress);
-    };
+    const unsubscribeProgress = onBackendEvent(ImportExportEvents.IMPORT_PROGRESS, handleProgress);
+    listenerCleanupRef.current = unsubscribeProgress;
 
     try {
-      const response = await emitWithErrorHandling<ImportRequest, ImportResponse>(
+      const response = await invokeBackend<ImportRequest, ImportResponse>(
         ImportExportEvents.IMPORT,
         { type, data, strategy },
         { timeout: 300000 }
@@ -196,7 +193,7 @@ export function useImportDialog({
         message: err instanceof Error ? err.message : t('importDialog.errorMessages.importFailed'),
       });
     } finally {
-      socket.off(ImportExportEvents.IMPORT_PROGRESS, handleProgress);
+      unsubscribeProgress();
       listenerCleanupRef.current = null;
     }
   }, [state, type, strategy, transition, updateState, t]);

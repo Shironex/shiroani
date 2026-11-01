@@ -1,12 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { LibraryEvents, type AnimeEntry, type AnimeStatus } from '@shiroani/shared';
 
-const { emitWithErrorHandling, getSocket } = vi.hoisted(() => ({
-  emitWithErrorHandling: vi.fn(),
+const { invokeBackend, getSocket } = vi.hoisted(() => ({
+  invokeBackend: vi.fn(),
   getSocket: vi.fn(() => ({ on: vi.fn(), off: vi.fn(), recovered: false })),
 }));
 
-vi.mock('@/lib/socket', () => ({ emitWithErrorHandling, getSocket }));
+vi.mock('@/lib/socket', () => ({ getSocket }));
+vi.mock('@/lib/backend', () => ({ invokeBackend, onBackendEvent: vi.fn(() => () => {}) }));
 
 import { useLibraryStore } from '../useLibraryStore';
 
@@ -33,8 +34,8 @@ describe('useLibraryStore — bulk actions fire a single batched emit', () => {
   const SELECTION_SIZE = 150;
 
   beforeEach(() => {
-    emitWithErrorHandling.mockReset();
-    emitWithErrorHandling.mockResolvedValue({});
+    invokeBackend.mockReset();
+    invokeBackend.mockResolvedValue({});
     const entries = Array.from({ length: SELECTION_SIZE }, (_, i) => makeEntry(i + 1));
     useLibraryStore.setState({
       entries,
@@ -48,8 +49,8 @@ describe('useLibraryStore — bulk actions fire a single batched emit', () => {
   it('batchRemove emits REMOVE_MANY exactly once with every selected id', () => {
     useLibraryStore.getState().batchRemove();
 
-    expect(emitWithErrorHandling).toHaveBeenCalledTimes(1);
-    const [event, payload] = emitWithErrorHandling.mock.calls[0];
+    expect(invokeBackend).toHaveBeenCalledTimes(1);
+    const [event, payload] = invokeBackend.mock.calls[0];
     expect(event).toBe(LibraryEvents.REMOVE_MANY);
     expect((payload as { ids: number[] }).ids).toHaveLength(SELECTION_SIZE);
     // Optimistically removed + selection cleared.
@@ -61,8 +62,8 @@ describe('useLibraryStore — bulk actions fire a single batched emit', () => {
   it('batchUpdateStatus emits UPDATE_MANY exactly once carrying the status', () => {
     useLibraryStore.getState().batchUpdateStatus('completed');
 
-    expect(emitWithErrorHandling).toHaveBeenCalledTimes(1);
-    const [event, payload] = emitWithErrorHandling.mock.calls[0];
+    expect(invokeBackend).toHaveBeenCalledTimes(1);
+    const [event, payload] = invokeBackend.mock.calls[0];
     expect(event).toBe(LibraryEvents.UPDATE_MANY);
     expect(payload).toMatchObject({ status: 'completed' });
     expect((payload as { ids: number[] }).ids).toHaveLength(SELECTION_SIZE);
@@ -73,8 +74,8 @@ describe('useLibraryStore — bulk actions fire a single batched emit', () => {
   it('batchUpdateScore emits UPDATE_MANY exactly once (score 0 = clear sent through)', () => {
     useLibraryStore.getState().batchUpdateScore(0);
 
-    expect(emitWithErrorHandling).toHaveBeenCalledTimes(1);
-    const [event, payload] = emitWithErrorHandling.mock.calls[0];
+    expect(invokeBackend).toHaveBeenCalledTimes(1);
+    const [event, payload] = invokeBackend.mock.calls[0];
     expect(event).toBe(LibraryEvents.UPDATE_MANY);
     // 0 is sent explicitly (not stripped to undefined) so SQLite clears the score.
     expect(payload).toMatchObject({ score: 0 });

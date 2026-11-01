@@ -13,7 +13,7 @@ import {
   getWeekStart,
   createLogger,
 } from '@shiroani/shared';
-import { emitWithErrorHandling } from '@/lib/socket';
+import { invokeBackend } from '@/lib/backend';
 import { createLocalStorageAccessor } from '@/lib/persisted-storage';
 
 const logger = createLogger('ScheduleStore');
@@ -200,7 +200,7 @@ export const useScheduleStore = create<ScheduleStore>()(
 
         fetchDaily: (date: string) => {
           set({ isLoading: true }, undefined, 'schedule/fetchingDaily');
-          emitWithErrorHandling(ScheduleEvents.GET_DAILY, { date }).catch((err: Error) => {
+          invokeBackend(ScheduleEvents.GET_DAILY, { date }).catch((err: Error) => {
             logger.error('Failed to fetch daily schedule:', err.message);
             set({ isLoading: false, error: err.message }, undefined, 'schedule/fetchDailyError');
           });
@@ -208,7 +208,7 @@ export const useScheduleStore = create<ScheduleStore>()(
 
         fetchWeekly: (startDate: string) => {
           set({ isLoading: true }, undefined, 'schedule/fetchingWeekly');
-          emitWithErrorHandling(ScheduleEvents.GET_WEEKLY, { startDate }).catch((err: Error) => {
+          invokeBackend(ScheduleEvents.GET_WEEKLY, { startDate }).catch((err: Error) => {
             logger.error('Failed to fetch weekly schedule:', err.message);
             set({ isLoading: false, error: err.message }, undefined, 'schedule/fetchWeeklyError');
           });

@@ -9,9 +9,9 @@ vi.mock('@/hooks/useNavigateToBrowser', () => ({
   useNavigateToBrowser: () => navigateToBrowser,
 }));
 
-vi.mock('@/lib/socket', () => ({
-  emitWithErrorHandling: vi.fn(() => new Promise(() => {})),
-  getSocket: () => ({ on: vi.fn(), off: vi.fn() }),
+vi.mock('@/lib/backend', () => ({
+  invokeBackend: vi.fn(() => new Promise(() => {})),
+  onBackendEvent: vi.fn(() => () => {}),
 }));
 
 const EXPORT_JSON = JSON.stringify({

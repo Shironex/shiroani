@@ -25,7 +25,7 @@ import {
   FEED_STARTUP_REFRESH_SETTING_KEY,
 } from '@shiroani/shared';
 import { toast } from 'sonner';
-import { emitWithErrorHandling } from '@/lib/socket';
+import { invokeBackend } from '@/lib/backend';
 import { createLocalStorageAccessor } from '@/lib/persisted-storage';
 import i18n from '@/lib/i18n';
 import { createLogger } from '@shiroani/shared';
@@ -145,10 +145,9 @@ function getPersistedLastVisitedAt(): number {
 function persistLastVisitedAt(ts: number) {
   // Local cache for instant startup; the durable copy lives in the feed DB.
   lastVisitedStorage.set(ts);
-  void emitWithErrorHandling<FeedSetLastVisitedPayload, { ok: boolean }>(
-    FeedEvents.SET_LAST_VISITED,
-    { lastVisitedAt: ts }
-  ).catch((err: Error) => {
+  void invokeBackend<FeedSetLastVisitedPayload, { ok: boolean }>(FeedEvents.SET_LAST_VISITED, {
+    lastVisitedAt: ts,
+  }).catch((err: Error) => {
     logger.warn('Failed to persist feed last-visited to DB:', err.message);
   });
 }
@@ -170,7 +169,7 @@ function cacheReadIdsLocally(ids: Set<number>) {
 /** Persist newly-read ids to the feed DB (durable across reinstall). */
 function persistReadIdsToDb(ids: number[]) {
   if (ids.length === 0) return;
-  void emitWithErrorHandling<FeedMarkReadPayload, { ok: boolean }>(FeedEvents.MARK_READ, {
+  void invokeBackend<FeedMarkReadPayload, { ok: boolean }>(FeedEvents.MARK_READ, {
     ids,
   }).catch((err: Error) => {
     logger.warn('Failed to persist feed read-state to DB:', err.message);
@@ -290,10 +289,7 @@ export const useFeedStore = create<FeedStore>()(
             offset,
           };
 
-          emitWithErrorHandling<FeedGetItemsPayload, FeedGetItemsResult>(
-            FeedEvents.GET_ITEMS,
-            payload
-          )
+          invokeBackend<FeedGetItemsPayload, FeedGetItemsResult>(FeedEvents.GET_ITEMS, payload)
             .then(data => {
               if (loadMore) {
                 set(
@@ -349,10 +345,7 @@ export const useFeedStore = create<FeedStore>()(
         },
 
         fetchSources: () => {
-          emitWithErrorHandling<Record<string, never>, FeedGetSourcesResult>(
-            FeedEvents.GET_SOURCES,
-            {}
-          )
+          invokeBackend<Record<string, never>, FeedGetSourcesResult>(FeedEvents.GET_SOURCES, {})
             .then(data => {
               set({ sources: data.sources ?? [] }, undefined, 'feed/sourcesResult');
             })
@@ -378,7 +371,7 @@ export const useFeedStore = create<FeedStore>()(
           );
           // The backend returns immediately (fire-and-forget) and broadcasts
           // FeedEvents.NEW_ITEMS when done, which the listener above handles.
-          emitWithErrorHandling<Record<string, never>, { started: boolean }>(FeedEvents.REFRESH, {})
+          invokeBackend<Record<string, never>, { started: boolean }>(FeedEvents.REFRESH, {})
             .then(() => {
               scheduleRefreshFallback();
             })
@@ -455,7 +448,7 @@ export const useFeedStore = create<FeedStore>()(
         rehydrateReadIds: () => {
           // Restore the durable last-visited stamp (newtab unread baseline). The
           // DB copy survives a reinstall where the localStorage cache wouldn't.
-          emitWithErrorHandling<Record<string, never>, FeedGetLastVisitedResult>(
+          invokeBackend<Record<string, never>, FeedGetLastVisitedResult>(
             FeedEvents.GET_LAST_VISITED,
             {}
           )
@@ -472,10 +465,7 @@ export const useFeedStore = create<FeedStore>()(
               logger.warn('Failed to rehydrate feed last-visited from DB:', err.message);
             });
 
-          emitWithErrorHandling<Record<string, never>, FeedGetReadIdsResult>(
-            FeedEvents.GET_READ_IDS,
-            {}
-          )
+          invokeBackend<Record<string, never>, FeedGetReadIdsResult>(FeedEvents.GET_READ_IDS, {})
             .then(result => {
               const dbIds = result.ids ?? [];
               if (dbIds.length === 0) return;
@@ -516,10 +506,9 @@ export const useFeedStore = create<FeedStore>()(
             'feed/articleLoading'
           );
 
-          emitWithErrorHandling<FeedGetArticlePayload, FeedGetArticleResult>(
-            FeedEvents.GET_ARTICLE,
-            { url: item.url }
-          )
+          invokeBackend<FeedGetArticlePayload, FeedGetArticleResult>(FeedEvents.GET_ARTICLE, {
+            url: item.url,
+          })
             .then(result => {
               if (result.contentHtml) {
                 set(
@@ -589,7 +578,7 @@ export const useFeedStore = create<FeedStore>()(
             'feed/toggleSourceOptimistic'
           );
 
-          emitWithErrorHandling(FeedEvents.TOGGLE_SOURCE, { id, enabled }).catch((err: Error) => {
+          invokeBackend(FeedEvents.TOGGLE_SOURCE, { id, enabled }).catch((err: Error) => {
             logger.error('Failed to toggle source:', err.message);
             // Revert on error
             get().fetchSources();

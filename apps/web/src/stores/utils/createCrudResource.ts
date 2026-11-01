@@ -1,6 +1,6 @@
 import type { NamedSet } from 'zustand/middleware';
 import { toast } from 'sonner';
-import { emitWithErrorHandling } from '@/lib/socket';
+import { invokeBackend } from '@/lib/backend';
 import i18n from '@/lib/i18n';
 import { CrudActions, type CrudAction, type Logger } from '@shiroani/shared';
 
@@ -184,7 +184,7 @@ export function createCrudResource<
     const myFetch = (fetchSeq += 1);
     const mutationAtStart = mutationSeq;
     set({ isLoading: true } as Partial<TState>, undefined, `${storeName}/fetching`);
-    return emitWithErrorHandling<Record<string, never>, { entries: TItem[] }>(events.getAll, {})
+    return invokeBackend<Record<string, never>, { entries: TItem[] }>(events.getAll, {})
       .then(data => {
         if (myFetch !== fetchSeq) return; // a newer fetch owns loading + data now
         if (mutationSeq !== mutationAtStart) {
@@ -234,7 +234,7 @@ export function createCrudResource<
       undefined,
       `${storeName}/${label}`
     );
-    return emitWithErrorHandling(event, payload)
+    return invokeBackend(event, payload)
       .then(() => true)
       .catch((err: Error) => {
         logger.error(`Failed to update ${storeName} entry:`, err.message);
@@ -262,7 +262,7 @@ export function createCrudResource<
       undefined,
       `${storeName}/${label}`
     );
-    return emitWithErrorHandling(event, { id })
+    return invokeBackend(event, { id })
       .then(() => true)
       .catch((err: Error) => {
         logger.error(`Failed to remove ${storeName} entry:`, err.message);
@@ -299,7 +299,7 @@ export function createCrudResource<
       undefined,
       `${storeName}/${label}`
     );
-    return emitWithErrorHandling(event, payload)
+    return invokeBackend(event, payload)
       .then(() => true)
       .catch((err: Error) => {
         logger.error(`Failed to bulk-update ${storeName} entries:`, err.message);
@@ -330,7 +330,7 @@ export function createCrudResource<
       undefined,
       `${storeName}/${label}`
     );
-    return emitWithErrorHandling(event, { ids })
+    return invokeBackend(event, { ids })
       .then(() => true)
       .catch((err: Error) => {
         logger.error(`Failed to bulk-remove ${storeName} entries:`, err.message);

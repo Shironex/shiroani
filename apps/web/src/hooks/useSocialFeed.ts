@@ -5,7 +5,7 @@ import {
   type AniListActivity,
   type GetSocialFeedResult,
 } from '@shiroani/shared';
-import { emitWithErrorHandling } from '@/lib/socket';
+import { invokeBackend } from '@/lib/backend';
 import { useAniListAuthStore } from '@/stores/useAniListAuthStore';
 import { useMountedRef } from './useMountedRef';
 
@@ -60,10 +60,7 @@ export function useSocialFeed(): SocialFeedState {
     setIsLoading(true);
     setError(null);
 
-    emitWithErrorHandling<Record<string, never>, GetSocialFeedResult>(
-      AnimeEvents.GET_SOCIAL_FEED,
-      {}
-    )
+    invokeBackend<Record<string, never>, GetSocialFeedResult>(AnimeEvents.GET_SOCIAL_FEED, {})
       .then(data => {
         if (!isMounted()) return;
         setActivities(data.activities ?? []);

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { AnimeEvents, createLogger, type AniListActivity } from '@shiroani/shared';
-import { emitWithErrorHandling } from '@/lib/socket';
+import { invokeBackend } from '@/lib/backend';
 import { useAniListAuthStore } from '@/stores/useAniListAuthStore';
 import { useMountedRef } from './useMountedRef';
 
@@ -52,7 +52,7 @@ export function useViewerActivity(): ViewerActivityState {
     setIsLoading(true);
     setError(null);
 
-    emitWithErrorHandling<Record<string, never>, { activities: AniListActivity[] }>(
+    invokeBackend<Record<string, never>, { activities: AniListActivity[] }>(
       AnimeEvents.GET_VIEWER_ACTIVITY,
       {}
     )

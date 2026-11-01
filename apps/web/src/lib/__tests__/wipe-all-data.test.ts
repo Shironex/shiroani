@@ -3,7 +3,7 @@ import { ImportExportEvents } from '@shiroani/shared';
 
 const mocks = vi.hoisted(() => ({
   isElectron: true,
-  emitWithErrorHandling: vi.fn(),
+  invokeBackend: vi.fn(),
 }));
 
 vi.mock('@/lib/platform', () => ({
@@ -12,8 +12,8 @@ vi.mock('@/lib/platform', () => ({
   },
 }));
 
-vi.mock('@/lib/socket', () => ({
-  emitWithErrorHandling: mocks.emitWithErrorHandling,
+vi.mock('@/lib/backend', () => ({
+  invokeBackend: mocks.invokeBackend,
 }));
 
 import { wipeAllData } from '@/lib/wipe-all-data';
@@ -40,7 +40,7 @@ describe('wipeAllData', () => {
 
   beforeEach(() => {
     mocks.isElectron = true;
-    mocks.emitWithErrorHandling.mockReset().mockResolvedValue({ success: true });
+    mocks.invokeBackend.mockReset().mockResolvedValue({ success: true });
     reload = vi.fn();
     vi.stubGlobal('location', { reload });
     vi.spyOn(Storage.prototype, 'clear');
@@ -60,7 +60,7 @@ describe('wipeAllData', () => {
       await wipeAllData();
 
       // 1. DB wipe with a generous (non-default) timeout
-      expect(mocks.emitWithErrorHandling).toHaveBeenCalledWith(
+      expect(mocks.invokeBackend).toHaveBeenCalledWith(
         ImportExportEvents.CLEAR_ALL,
         {},
         { timeout: 120_000 }
@@ -78,7 +78,7 @@ describe('wipeAllData', () => {
     it('aborts before touching local state if the DB wipe fails', async () => {
       const api = makeElectronApi();
       (window as unknown as { electronAPI: ElectronApiMock }).electronAPI = api;
-      mocks.emitWithErrorHandling.mockRejectedValue(new Error('db boom'));
+      mocks.invokeBackend.mockRejectedValue(new Error('db boom'));
 
       await expect(wipeAllData()).rejects.toThrow('db boom');
 
@@ -93,7 +93,7 @@ describe('wipeAllData', () => {
       // returns the default result rather than throwing).
       const api = makeElectronApi();
       (window as unknown as { electronAPI: ElectronApiMock }).electronAPI = api;
-      mocks.emitWithErrorHandling.mockResolvedValue({ success: false });
+      mocks.invokeBackend.mockResolvedValue({ success: false });
 
       await expect(wipeAllData()).rejects.toThrow(/did not complete successfully/);
 
@@ -137,7 +137,7 @@ describe('wipeAllData', () => {
     it('clears web storage and reloads without touching the backend', async () => {
       await wipeAllData();
 
-      expect(mocks.emitWithErrorHandling).not.toHaveBeenCalled();
+      expect(mocks.invokeBackend).not.toHaveBeenCalled();
       expect(Storage.prototype.clear).toHaveBeenCalled();
       expect(reload).toHaveBeenCalledOnce();
     });

@@ -7,7 +7,7 @@ import {
   type GetNotificationsResult,
   type MarkNotificationsReadResult,
 } from '@shiroani/shared';
-import { emitWithErrorHandling } from '@/lib/socket';
+import { invokeBackend } from '@/lib/backend';
 import { useAniListAuthStore } from '@/stores/useAniListAuthStore';
 
 const logger = createLogger('AniListNotificationsStore');
@@ -78,7 +78,7 @@ export const useAniListNotificationsStore = create<AniListNotificationsStore>()(
           return;
         }
         try {
-          const data = await emitWithErrorHandling<Record<string, never>, GetNotificationsResult>(
+          const data = await invokeBackend<Record<string, never>, GetNotificationsResult>(
             AnimeEvents.GET_NOTIFICATIONS,
             {}
           );
@@ -103,7 +103,7 @@ export const useAniListNotificationsStore = create<AniListNotificationsStore>()(
         }
         set({ isLoading: true, error: null }, undefined, 'anilistNotif/fetch');
         try {
-          const data = await emitWithErrorHandling<Record<string, never>, GetNotificationsResult>(
+          const data = await invokeBackend<Record<string, never>, GetNotificationsResult>(
             AnimeEvents.GET_NOTIFICATIONS,
             {}
           );
@@ -148,10 +148,10 @@ export const useAniListNotificationsStore = create<AniListNotificationsStore>()(
         // Optimistically clear the badge — the server call only confirms it.
         set({ unreadCount: 0 }, undefined, 'anilistNotif/markOptimistic');
         try {
-          const data = await emitWithErrorHandling<
-            Record<string, never>,
-            MarkNotificationsReadResult
-          >(AnimeEvents.MARK_NOTIFICATIONS_READ, {});
+          const data = await invokeBackend<Record<string, never>, MarkNotificationsReadResult>(
+            AnimeEvents.MARK_NOTIFICATIONS_READ,
+            {}
+          );
           if (!isConnected()) return;
           set({ unreadCount: data.unreadCount ?? 0 }, undefined, 'anilistNotif/marked');
         } catch (err) {

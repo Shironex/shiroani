@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { maybeDevtools } from '@/stores/utils/maybeDevtools';
-import { getSocket, emitWithErrorHandling } from '@/lib/socket';
+import { invokeBackend, onBackendEvent } from '@/lib/backend';
 import {
   MalSyncEvents,
   createLogger,
@@ -135,19 +135,17 @@ export const useMalSyncStore = create<MalSyncStore>()(
             'malSync/start'
           );
 
-          // `getSocket()` throws if the socket singleton isn't initialized; keep it
+          // `onBackendEvent` throws if the socket singleton isn't initialized; keep it
           // (and the listener wiring) inside the try so any failure surfaces through
           // the catch instead of escaping as an unhandled rejection.
           let detach: (() => void) | null = null;
           try {
-            const socket = getSocket();
             const handleProgress = (progress: SyncProgress) => {
               set({ progress }, undefined, 'malSync/progress');
             };
-            socket.on(MalSyncEvents.PROGRESS, handleProgress);
-            detach = () => socket.off(MalSyncEvents.PROGRESS, handleProgress);
+            detach = onBackendEvent(MalSyncEvents.PROGRESS, handleProgress);
 
-            const result = await emitWithErrorHandling<FullSyncRequest, SyncResult>(
+            const result = await invokeBackend<FullSyncRequest, SyncResult>(
               MalSyncEvents.SYNC,
               payload,
               { timeout: SYNC_TIMEOUT_MS }
@@ -190,7 +188,7 @@ export const useMalSyncStore = create<MalSyncStore>()(
 
           set({ entrySyncingId: localId }, undefined, 'malSync/entryStart');
           try {
-            const result = await emitWithErrorHandling<SyncEntryRequest, SyncEntryResult>(
+            const result = await invokeBackend<SyncEntryRequest, SyncEntryResult>(
               MalSyncEvents.SYNC_ENTRY,
               { localId, direction }
             );
