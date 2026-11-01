@@ -65,8 +65,6 @@ const resolved = <T>(value: T) => Promise.resolve(value);
 
 /** Answers migrated backend channels from the same fixtures as the fake socket. */
 function createFakeBackend(): BackendBridge {
-  const listeners = new Map<string, Set<(data: never) => void>>();
-
   const invoke = (channel: string, payload: unknown): Promise<unknown> => {
     const reply = respond(channel, payload);
     if (!reply) {
@@ -75,25 +73,10 @@ function createFakeBackend(): BackendBridge {
       console.warn(`[showcase] no fixture for backend channel "${channel}"`);
       return new Promise(() => {});
     }
-    return new Promise(resolve => {
-      setTimeout(() => {
-        resolve(reply.ack);
-        for (const [event, data] of reply.broadcasts ?? []) {
-          listeners.get(event)?.forEach(listener => listener(data as never));
-        }
-      }, 0);
-    });
+    return new Promise(resolve => setTimeout(() => resolve(reply.ack), 0));
   };
 
-  return {
-    invoke: invoke as BackendBridge['invoke'],
-    on: (event, callback) => {
-      const set = listeners.get(event) ?? new Set();
-      listeners.set(event, set);
-      set.add(callback as (data: never) => void);
-      return () => set.delete(callback as (data: never) => void);
-    },
-  };
+  return { invoke: invoke as BackendBridge['invoke'], on: () => () => {} };
 }
 
 export function createFakeElectronApi(): ElectronAPI {

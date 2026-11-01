@@ -164,8 +164,6 @@ export const ScheduleEvents = {
   GET_WEEKLY: 'schedule:get-weekly',
 
   // Server -> Client (broadcasts)
-  DAILY_RESULT: 'schedule:daily-result',
-  WEEKLY_RESULT: 'schedule:weekly-result',
 } as const;
 
 // ============================================

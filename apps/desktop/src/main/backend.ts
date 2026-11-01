@@ -23,6 +23,7 @@ import { ImportExportService } from '../modules/import-export/import-export.serv
 import { LibraryService } from '../modules/library/library.service';
 import { MalSyncService } from '../modules/mal-sync/mal-sync.service';
 import { NotificationsService } from '../modules/notifications/notifications.service';
+import { createScheduleHandlers } from '../modules/schedule/schedule.handlers';
 import { ScheduleService } from '../modules/schedule/schedule.service';
 import { createSystemHandlers, type BackendHandlers } from '../modules/kernel/backend-handlers';
 import { InflightTracker } from '../modules/kernel/inflight-tracker';
@@ -43,6 +44,7 @@ export interface CreateBackendOptions {
 export interface Backend extends GatewayServices {
   database: DatabaseService;
   diary: DiaryService;
+  schedule: ScheduleService;
   notifications: NotificationsService;
   notificationHost: ElectronNotificationHost;
   events: BackendEventPublisher;
@@ -156,6 +158,7 @@ export function createBackend({
       handlers: {
         ...createSystemHandlers(),
         ...createDiaryHandlers(diary, events),
+        ...createScheduleHandlers(schedule),
       },
       inflight,
       addDisposer,

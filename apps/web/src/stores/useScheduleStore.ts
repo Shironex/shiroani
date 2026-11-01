@@ -87,6 +87,12 @@ interface ScheduleActions {
 
 type ScheduleStore = ScheduleState & ScheduleActions;
 
+/**
+ * The response is the only delivery path, so a timeout loses the data. One AniList
+ * request can take about 74 s with retries and backoff.
+ */
+const SCHEDULE_TIMEOUT_MS = 90_000;
+
 function getWeekStartStr(dateStr: string): string {
   const [year, month, day] = dateStr.split('-').map(Number);
   return toLocalDate(getWeekStart(new Date(year, month - 1, day)));
@@ -102,42 +108,7 @@ export const useScheduleStore = create<ScheduleStore>()(
         set,
         'schedule',
         {
-          listeners: [
-            {
-              event: ScheduleEvents.DAILY_RESULT,
-              handler: data => {
-                const result = data as { date: string; entries: AiringAnime[] };
-                set(
-                  state => ({
-                    schedule: {
-                      ...state.schedule,
-                      [result.date]: result.entries,
-                    },
-                    isLoading: false,
-                  }),
-                  undefined,
-                  'schedule/dailyResult'
-                );
-              },
-            },
-            {
-              event: ScheduleEvents.WEEKLY_RESULT,
-              handler: data => {
-                const result = data as { schedule: Record<string, AiringAnime[]> };
-                set(
-                  state => ({
-                    schedule: {
-                      ...state.schedule,
-                      ...result.schedule,
-                    },
-                    isLoading: false,
-                  }),
-                  undefined,
-                  'schedule/weeklyResult'
-                );
-              },
-            },
-          ],
+          listeners: [],
           onConnect: () => {
             const { selectedDay, viewMode } = get();
             if (viewMode === 'daily') {
@@ -200,18 +171,50 @@ export const useScheduleStore = create<ScheduleStore>()(
 
         fetchDaily: (date: string) => {
           set({ isLoading: true }, undefined, 'schedule/fetchingDaily');
-          invokeBackend(ScheduleEvents.GET_DAILY, { date }).catch((err: Error) => {
-            logger.error('Failed to fetch daily schedule:', err.message);
-            set({ isLoading: false, error: err.message }, undefined, 'schedule/fetchDailyError');
-          });
+          invokeBackend<{ date: string }, { date: string; entries: AiringAnime[] }>(
+            ScheduleEvents.GET_DAILY,
+            { date },
+            { timeout: SCHEDULE_TIMEOUT_MS }
+          )
+            .then(result => {
+              set(
+                state => ({
+                  schedule: { ...state.schedule, [result.date]: result.entries },
+                  isLoading: false,
+                  error: null,
+                }),
+                undefined,
+                'schedule/dailyResult'
+              );
+            })
+            .catch((err: Error) => {
+              logger.error('Failed to fetch daily schedule:', err.message);
+              set({ isLoading: false, error: err.message }, undefined, 'schedule/fetchDailyError');
+            });
         },
 
         fetchWeekly: (startDate: string) => {
           set({ isLoading: true }, undefined, 'schedule/fetchingWeekly');
-          invokeBackend(ScheduleEvents.GET_WEEKLY, { startDate }).catch((err: Error) => {
-            logger.error('Failed to fetch weekly schedule:', err.message);
-            set({ isLoading: false, error: err.message }, undefined, 'schedule/fetchWeeklyError');
-          });
+          invokeBackend<{ startDate: string }, { schedule: Record<string, AiringAnime[]> }>(
+            ScheduleEvents.GET_WEEKLY,
+            { startDate },
+            { timeout: SCHEDULE_TIMEOUT_MS }
+          )
+            .then(result => {
+              set(
+                state => ({
+                  schedule: { ...state.schedule, ...result.schedule },
+                  isLoading: false,
+                  error: null,
+                }),
+                undefined,
+                'schedule/weeklyResult'
+              );
+            })
+            .catch((err: Error) => {
+              logger.error('Failed to fetch weekly schedule:', err.message);
+              set({ isLoading: false, error: err.message }, undefined, 'schedule/fetchWeeklyError');
+            });
         },
 
         getEntriesForDay: (day: string) => {

@@ -81,10 +81,7 @@ export class Socket extends Emitter {
       console.warn(`[showcase] no fixture for socket event "${event}"`);
       return this;
     }
-    setTimeout(() => {
-      ack?.(reply.ack);
-      for (const [name, data] of reply.broadcasts ?? []) this.dispatch(name, data);
-    }, 0);
+    setTimeout(() => ack?.(reply.ack), 0);
     return this;
   }
 }

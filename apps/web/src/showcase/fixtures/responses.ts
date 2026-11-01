@@ -24,8 +24,6 @@ import { isoAt } from './context';
 
 export interface IFixtureReply {
   ack: unknown;
-  /** Server-to-client events the real gateway sends alongside the ack. */
-  broadcasts?: Array<[event: string, data: unknown]>;
 }
 
 type Responder = (payload: unknown) => IFixtureReply;
@@ -42,14 +40,10 @@ const RESPONDERS: Record<string, Responder> = {
   [LibraryEvents.GET_ALL]: () => ({ ack: { entries: libraryEntries() } }),
   [DiaryEvents.GET_ALL]: () => ({ ack: { entries: diaryEntries() } }),
 
-  [ScheduleEvents.GET_DAILY]: payload => {
-    const result = dailySchedule(field(payload, 'date', ''));
-    return { ack: result, broadcasts: [[ScheduleEvents.DAILY_RESULT, result]] };
-  },
-  [ScheduleEvents.GET_WEEKLY]: payload => {
-    const result = weeklySchedule(field(payload, 'startDate', ''));
-    return { ack: result, broadcasts: [[ScheduleEvents.WEEKLY_RESULT, result]] };
-  },
+  [ScheduleEvents.GET_DAILY]: payload => ({ ack: dailySchedule(field(payload, 'date', '')) }),
+  [ScheduleEvents.GET_WEEKLY]: payload => ({
+    ack: weeklySchedule(field(payload, 'startDate', '')),
+  }),
 
   [FeedEvents.GET_SOURCES]: () => ({ ack: { sources: feedSources() } }),
   [FeedEvents.GET_ITEMS]: payload => ({ ack: feedPage(payload as FeedGetItemsPayload) }),

@@ -3,12 +3,17 @@
  * lists live in `./channels` so the sandboxed preload can import them.
  */
 import type { z } from 'zod';
-import type { BackendEvents, CrudActions, DiaryEvents } from '../constants/events';
+import type { BackendEvents, CrudActions, DiaryEvents, ScheduleEvents } from '../constants/events';
 import type {
   diaryCreatePayloadSchema,
   diaryRemovePayloadSchema,
   diaryUpdatePayloadSchema,
 } from '../schemas/diary';
+import type {
+  scheduleGetDailyPayloadSchema,
+  scheduleGetWeeklyPayloadSchema,
+} from '../schemas/schedule';
+import type { AiringAnime } from '../types/anime';
 import type { DiaryEntry } from '../types/diary';
 import type { BACKEND_EVENT_CHANNELS, BACKEND_REQUEST_CHANNELS } from './channels';
 
@@ -34,6 +39,15 @@ export interface BackendRoutes {
   [DiaryEvents.REMOVE]: {
     req: z.infer<typeof diaryRemovePayloadSchema>;
     res: { success: boolean };
+  };
+
+  [ScheduleEvents.GET_DAILY]: {
+    req: z.infer<typeof scheduleGetDailyPayloadSchema>;
+    res: { date: string; entries: AiringAnime[] };
+  };
+  [ScheduleEvents.GET_WEEKLY]: {
+    req: z.infer<typeof scheduleGetWeeklyPayloadSchema>;
+    res: { schedule: Record<string, AiringAnime[]> };
   };
 }
 
