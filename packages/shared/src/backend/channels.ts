@@ -10,6 +10,7 @@
  * over IPC in the renderer, and anything else stays on the socket.
  */
 import {
+  AniListSyncEvents,
   AnimeEvents,
   BackendEvents,
   DiaryEvents,
@@ -17,6 +18,7 @@ import {
   ImportExportEvents,
   LibraryEvents,
   MalEvents,
+  MalSyncEvents,
   ScheduleEvents,
 } from '../constants/events';
 
@@ -67,6 +69,10 @@ export const BACKEND_REQUEST_CHANNELS = [
   ImportExportEvents.EXPORT,
   ImportExportEvents.IMPORT,
   ImportExportEvents.CLEAR_ALL,
+  AniListSyncEvents.SYNC,
+  AniListSyncEvents.SYNC_ENTRY,
+  MalSyncEvents.SYNC,
+  MalSyncEvents.SYNC_ENTRY,
 ] as const;
 
 export const BACKEND_EVENT_CHANNELS = [
@@ -75,4 +81,6 @@ export const BACKEND_EVENT_CHANNELS = [
   FeedEvents.NEW_ITEMS,
   FeedEvents.SOURCES_RESULT,
   ImportExportEvents.IMPORT_PROGRESS,
+  AniListSyncEvents.PROGRESS,
+  MalSyncEvents.PROGRESS,
 ] as const;

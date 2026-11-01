@@ -163,10 +163,10 @@ function unregisterAppStatsPowerListeners(): void {
   powerMonitor.off('unlock-screen', appStatsPowerHandlers.unlockScreen);
 }
 
-async function bootstrapNestApp(services: Backend): Promise<void> {
+async function bootstrapNestApp(): Promise<void> {
   try {
     logger.info('Creating NestJS application...');
-    nestApp = await NestFactory.create(AppModule.forRoot(services), {
+    nestApp = await NestFactory.create(AppModule.forRoot(), {
       logger: new NestLoggerAdapter(fileTransport),
       bufferLogs: true,
     });
@@ -289,7 +289,7 @@ async function bootstrap(): Promise<void> {
   registerBackendIpc(backend, { getMainWindow, rendererUrl: getRendererUrl() });
   bindNotificationService(backend.notifications, backend.notificationHost);
 
-  await bootstrapNestApp(backend);
+  await bootstrapNestApp();
   browserManager.init();
   mainWindow = await createMainWindow(browserManager);
   setMascotMainWindow(mainWindow);

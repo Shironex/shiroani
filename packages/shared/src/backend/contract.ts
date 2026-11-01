@@ -4,6 +4,7 @@
  */
 import type { z } from 'zod';
 import type {
+  AniListSyncEvents,
   AnimeEvents,
   BackendEvents,
   CrudActions,
@@ -12,6 +13,7 @@ import type {
   ImportExportEvents,
   LibraryEvents,
   MalEvents,
+  MalSyncEvents,
   ScheduleEvents,
 } from '../constants/events';
 import type { exportRequestSchema, importRequestSchema } from '../schemas/import-export';
@@ -36,6 +38,9 @@ import type {
   animeSaveRecommendationPayloadSchema,
   animeSearchPayloadSchema,
   animeToggleFollowPayloadSchema,
+  anilistSyncEntryPayloadSchema,
+  fullSyncPayloadSchema,
+  malSyncEntryPayloadSchema,
   libraryAddPayloadSchema,
   libraryGetAllPayloadSchema,
   libraryRemoveManyPayloadSchema,
@@ -65,6 +70,11 @@ import type {
   RecommendationRating,
   UserProfile,
 } from '../types/anime';
+import type {
+  AniListSyncEntryResult,
+  AniListSyncProgress,
+  AniListSyncResult,
+} from '../types/anilist-sync';
 import type { DiaryEntry } from '../types/diary';
 import type {
   ImportItemResult,
@@ -243,6 +253,23 @@ export interface BackendRoutes {
     res: ImportResponse;
   };
   [ImportExportEvents.CLEAR_ALL]: { req: NoPayload; res: { success: boolean } };
+
+  [AniListSyncEvents.SYNC]: {
+    req: z.input<typeof fullSyncPayloadSchema>;
+    res: AniListSyncResult;
+  };
+  [AniListSyncEvents.SYNC_ENTRY]: {
+    req: z.infer<typeof anilistSyncEntryPayloadSchema>;
+    res: AniListSyncEntryResult;
+  };
+  [MalSyncEvents.SYNC]: {
+    req: z.input<typeof fullSyncPayloadSchema>;
+    res: AniListSyncResult;
+  };
+  [MalSyncEvents.SYNC_ENTRY]: {
+    req: z.infer<typeof malSyncEntryPayloadSchema>;
+    res: AniListSyncEntryResult;
+  };
 }
 
 /** Payload of every event channel. */
@@ -260,6 +287,8 @@ export interface BackendEventMap {
   [FeedEvents.NEW_ITEMS]: { newItemsCount: number };
   [FeedEvents.SOURCES_RESULT]: FeedGetSourcesResult;
   [ImportExportEvents.IMPORT_PROGRESS]: ImportItemResult;
+  [AniListSyncEvents.PROGRESS]: AniListSyncProgress;
+  [MalSyncEvents.PROGRESS]: AniListSyncProgress;
 }
 
 export type BackendReq<C extends BackendRequestChannel> = BackendRoutes[C]['req'];

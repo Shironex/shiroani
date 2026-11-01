@@ -11,6 +11,7 @@ import { AnimeService } from '../modules/anime/anime.service';
 import { AnimeProfileService } from '../modules/anime/anime-profile.service';
 import { AnimeSocialService } from '../modules/anime/anime-social.service';
 import { AnimeRecommendationsService } from '../modules/anime/anime-recommendations.service';
+import { createAniListSyncHandlers } from '../modules/anilist-sync/anilist-sync.handlers';
 import { AniListSyncService } from '../modules/anilist-sync/anilist-sync.service';
 import { DatabaseService } from '../modules/database/database.service';
 import { createDiaryHandlers } from '../modules/diary/diary.handlers';
@@ -25,13 +26,13 @@ import { createImportExportHandlers } from '../modules/import-export/import-expo
 import { ImportExportService } from '../modules/import-export/import-export.service';
 import { createLibraryHandlers } from '../modules/library/library.handlers';
 import { LibraryService } from '../modules/library/library.service';
+import { createMalSyncHandlers } from '../modules/mal-sync/mal-sync.handlers';
 import { MalSyncService } from '../modules/mal-sync/mal-sync.service';
 import { NotificationsService } from '../modules/notifications/notifications.service';
 import { createScheduleHandlers } from '../modules/schedule/schedule.handlers';
 import { ScheduleService } from '../modules/schedule/schedule.service';
 import { createSystemHandlers, type BackendHandlers } from '../modules/kernel/backend-handlers';
 import { InflightTracker } from '../modules/kernel/inflight-tracker';
-import type { GatewayServices } from '../modules/app.module';
 
 const logger = createLogger('Backend');
 
@@ -45,8 +46,9 @@ export interface CreateBackendOptions {
   createDatabase?: (dbPath: string) => DatabaseService;
 }
 
-export interface Backend extends GatewayServices {
+export interface Backend {
   database: DatabaseService;
+  aniListSync: AniListSyncService;
   anime: AnimeService;
   animeProfile: AnimeProfileService;
   animeSocial: AnimeSocialService;
@@ -55,6 +57,7 @@ export interface Backend extends GatewayServices {
   feed: FeedService;
   importExport: ImportExportService;
   library: LibraryService;
+  malSync: MalSyncService;
   schedule: ScheduleService;
   notifications: NotificationsService;
   notificationHost: ElectronNotificationHost;
@@ -168,11 +171,13 @@ export function createBackend({
       events,
       handlers: {
         ...createSystemHandlers(),
+        ...createAniListSyncHandlers(aniListSync, events),
         ...createAnimeHandlers(anime, animeProfile, animeSocial, animeRecommendations),
         ...createDiaryHandlers(diary, events),
         ...createFeedHandlers(feed, events, inflight),
         ...createImportExportHandlers(importExport, events),
         ...createLibraryHandlers(library, events),
+        ...createMalSyncHandlers(malSync, events),
         ...createScheduleHandlers(schedule),
       },
       inflight,
