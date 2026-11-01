@@ -97,7 +97,7 @@ describe('AnimeDetailModal', () => {
     const dialog = await screen.findByRole('alertdialog');
     await user.click(within(dialog).getByRole('button', { name: 'Delete' }));
     // Confirming runs handleRemove → removeFromLibrary + onOpenChange(false).
-    // (The optimistic prune itself rolls back when the socket emit fails with no
+    // (The optimistic prune itself rolls back when the backend call fails with no
     // backend, so the close callback is the reliable observable signal here.)
     expect(onOpenChange).toHaveBeenCalledWith(false);
   });

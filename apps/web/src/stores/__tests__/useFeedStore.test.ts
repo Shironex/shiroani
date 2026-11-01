@@ -1,18 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { FeedEvents } from '@shiroani/shared';
 
-const { emitWithErrorHandling, getSocket } = vi.hoisted(() => ({
-  emitWithErrorHandling: vi.fn(),
-  getSocket: vi.fn(() => ({
-    on: vi.fn(),
-    off: vi.fn(),
-    recovered: false,
-  })),
+const { invokeBackend } = vi.hoisted(() => ({
+  invokeBackend: vi.fn(),
 }));
 
-vi.mock('@/lib/socket', () => ({
-  emitWithErrorHandling,
-  getSocket,
+vi.mock('@/lib/backend', () => ({
+  invokeBackend,
+  onBackendEvent: vi.fn(() => () => {}),
 }));
 
 import { useFeedStore } from '../useFeedStore';
@@ -37,7 +32,7 @@ function resetFeedState() {
 describe('useFeedStore', () => {
   beforeEach(() => {
     resetFeedState();
-    emitWithErrorHandling.mockReset();
+    invokeBackend.mockReset();
   });
 
   afterEach(() => {
@@ -47,7 +42,7 @@ describe('useFeedStore', () => {
   it('falls back to a direct fetch when refresh completion is never broadcast', async () => {
     vi.useFakeTimers();
 
-    emitWithErrorHandling.mockImplementation((event: string) => {
+    invokeBackend.mockImplementation((event: string) => {
       if (event === FeedEvents.REFRESH) {
         return Promise.resolve({ started: true });
       }
@@ -72,7 +67,7 @@ describe('useFeedStore', () => {
 
     expect(useFeedStore.getState().isRefreshing).toBe(false);
     expect(useFeedStore.getState().isBootstrapping).toBe(false);
-    expect(emitWithErrorHandling).toHaveBeenCalledWith(
+    expect(invokeBackend).toHaveBeenCalledWith(
       FeedEvents.GET_ITEMS,
       expect.objectContaining({
         category: 'all',

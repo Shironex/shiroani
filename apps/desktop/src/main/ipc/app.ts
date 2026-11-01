@@ -3,7 +3,6 @@ import { resolve, sep, join } from 'path';
 import { writeFile, rm } from 'fs/promises';
 import { release as osRelease } from 'os';
 import { getLogsDir, createMainLogger } from '../logging/logger';
-import { getBackendPort } from '../backend-port';
 import { BACKGROUNDS_DIR_NAME } from './background';
 import { MASCOT_SPRITES_DIR_NAME } from '../mascot/overlay-state';
 import { handle, handleWithFallback } from './with-ipc-handler';
@@ -16,7 +15,6 @@ import {
   appSaveFileBinarySchema,
   appGetAutoLaunchSchema,
   appSetAutoLaunchSchema,
-  appGetBackendPortSchema,
   appRelaunchSchema,
   appClearUserFilesSchema,
 } from './schemas';
@@ -166,15 +164,6 @@ export function registerAppHandlers(): void {
     { schema: appSetAutoLaunchSchema }
   );
 
-  handle(
-    'app:get-backend-port',
-    () => {
-      logger.debug('app:get-backend-port invoked');
-      return getBackendPort();
-    },
-    { schema: appGetBackendPortSchema }
-  );
-
   // Delete user-uploaded asset directories under userData (custom backgrounds,
   // mascot sprites) for the "delete all data" factory reset. The DB +
   // electron-store wipes don't touch these on-disk files, so without this they
@@ -231,7 +220,6 @@ export function cleanupAppHandlers(): void {
   ipcMain.removeHandler('app:save-file-binary');
   ipcMain.removeHandler('app:get-auto-launch');
   ipcMain.removeHandler('app:set-auto-launch');
-  ipcMain.removeHandler('app:get-backend-port');
   ipcMain.removeHandler('app:clear-user-files');
   ipcMain.removeHandler('app:relaunch');
 

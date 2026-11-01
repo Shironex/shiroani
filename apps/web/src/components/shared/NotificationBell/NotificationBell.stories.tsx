@@ -28,10 +28,8 @@ const notifications: AniListNotification[] = [
 
 /**
  * Stub the store's async actions to no-ops. The mount effect starts background
- * unread-count polling and opening the panel fetches + marks-read — all emit
- * over the socket, which would reconnect forever against the dead test backend
- * and hang the headless Chromium page. No-op actions keep every story
- * deterministically socket-free.
+ * unread-count polling and opening the panel fetches + marks-read: all call
+ * the backend. No-op actions keep every story deterministic.
  */
 function stubActions() {
   useAniListNotificationsStore.setState({
@@ -45,8 +43,7 @@ function stubActions() {
  * Global AniList notifications bell that lives in the TitleBar chrome: an icon
  * button with an unread badge that opens a click-away dropdown panel (a
  * `role="dialog"`). Renders nothing when disconnected. The store is seeded per
- * story; its socket-touching actions are stubbed so the bell never opens a
- * connection.
+ * story; its backend-calling actions are stubbed.
  */
 const meta = {
   title: 'shared/NotificationBell',

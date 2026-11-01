@@ -16,7 +16,7 @@ function makeSettings(overrides?: Partial<DiscordRpcSettings>): DiscordRpcSettin
 
 /**
  * Installs a fake Electron bridge on `window` so the section's mount effects
- * hydrate RPC settings + status over IPC (no socket involved) and render. The
+ * hydrate RPC settings + status over IPC (no backend involved) and render. The
  * `updateSettings` action is a `fn()` spy stories assert against; this is a real
  * browser global (not a Vitest mock), so it works in the addon-vitest run.
  */

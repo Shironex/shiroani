@@ -10,22 +10,25 @@ import {
   SUPPORTED_LANGUAGES,
 } from '@shiroani/shared';
 import { TooltipProvider } from '@/components/ui/tooltip';
-import { initializeSocket } from '@/lib/socket';
 import i18n from '@/lib/i18n';
 import { shiroaniTheme } from './shiroani-theme';
 import './preview.css';
 
 /**
- * Stories seed Zustand stores directly and never reach the backend, but view
- * hooks still attach socket listeners on mount (initListeners → getSocket),
- * which throws if no socket singleton exists. Initialize a dormant socket
- * (autoConnect is false, so it never opens a connection) so getSocket() resolves
- * cleanly in both the Storybook UI and the addon-vitest browser run.
+ * Stories seed Zustand stores directly and do not expect an answer from the
+ * backend, but outside Electron there is no bridge, so a view's fetch on mount
+ * would reject at once and overwrite the seeded state with its error state. This
+ * stand-in leaves every call pending and delivers no events. A story that needs a
+ * real answer installs its own `window.electronAPI` in its `beforeEach`.
  */
-try {
-  initializeSocket(0);
-} catch {
-  // Already initialized (HMR re-eval / repeated renders) — safe to ignore.
+function installParkedBridge(): () => void {
+  if (window.electronAPI) return () => {};
+  window.electronAPI = {
+    backend: { invoke: () => new Promise(() => {}), on: () => () => {} },
+  } as unknown as NonNullable<typeof window.electronAPI>;
+  return () => {
+    window.electronAPI = undefined;
+  };
 }
 
 /**
@@ -72,6 +75,7 @@ const withTooltip: Decorator = Story => (
 );
 
 const preview: Preview = {
+  beforeEach: () => installParkedBridge(),
   // Generate a Docs page for every component from its args/argTypes + JSDoc.
   tags: ['autodocs'],
   initialGlobals: {

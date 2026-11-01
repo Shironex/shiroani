@@ -1,5 +1,5 @@
 /**
- * Zod schemas for diary gateway payloads.
+ * Zod schemas for diary backend payloads.
  *
  * Mirrors the TypeScript types in `../types/diary.ts`.
  */

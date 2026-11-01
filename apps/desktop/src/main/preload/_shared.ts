@@ -17,7 +17,6 @@ export const ALLOWED_IPC_CHANNELS: ReadonlySet<string> = new Set([
   // app / diagnostics
   'app:get-version',
   'app:get-system-info',
-  'app:get-backend-port',
   'app:get-path',
   'app:clipboard-write',
   'app:clipboard-write-image',

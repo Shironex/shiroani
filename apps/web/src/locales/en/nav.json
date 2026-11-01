@@ -29,14 +29,6 @@
     "maximize": "Maximize",
     "close": "Close"
   },
-  "connection": {
-    "reconnecting": "Reconnecting…",
-    "offline": "No connection",
-    "retry": "Try again",
-    "toast": {
-      "throttled": "Too many requests — give it a moment"
-    }
-  },
   "supportBanner": {
     "message": "I build ShiroAni solo in my free time. If you enjoy it, you can buy me a coffee 💛",
     "action": "Buy me a coffee",
@@ -59,6 +51,7 @@
     "saving": "Saving file...",
     "saved": "File saved",
     "saveAs": "Save as...",
+    "tooLargeToImport": "This export is over {{maxMb}} MB, so the app will not be able to import it back. Export less data at once to keep a file you can restore.",
     "close": "Close",
     "errors": {
       "unknown": "Unknown error",
@@ -87,6 +80,7 @@
       "invalidJson": "This is not a valid JSON file",
       "notShiroaniExport": "This is not a ShiroAni export file.",
       "importFailed": "Error during import",
+      "tooLarge": "This file is too big to import (max {{maxMb}} MB).",
       "unknown": "Failed to read the file"
     }
   },

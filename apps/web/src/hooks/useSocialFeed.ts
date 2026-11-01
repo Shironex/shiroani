@@ -5,7 +5,7 @@ import {
   type AniListActivity,
   type GetSocialFeedResult,
 } from '@shiroani/shared';
-import { emitWithErrorHandling } from '@/lib/socket';
+import { invokeBackend } from '@/lib/backend';
 import { useAniListAuthStore } from '@/stores/useAniListAuthStore';
 import { useMountedRef } from './useMountedRef';
 
@@ -24,7 +24,7 @@ interface SocialFeedState {
  * via {@link AnimeEvents.GET_SOCIAL_FEED}.
  *
  * Like {@link useViewerActivity}, this feed is token-relative: the backend
- * resolves it from the stored OAuth token (which never crosses the socket), so
+ * resolves it from the stored OAuth token (which never reaches the renderer), so
  * it only makes sense when an AniList account is connected. The hook gates on
  * `status.connected` — it never emits while disconnected and clears any stale
  * data when the connection drops. Consumers should surface a distinct "connect
@@ -60,10 +60,7 @@ export function useSocialFeed(): SocialFeedState {
     setIsLoading(true);
     setError(null);
 
-    emitWithErrorHandling<Record<string, never>, GetSocialFeedResult>(
-      AnimeEvents.GET_SOCIAL_FEED,
-      {}
-    )
+    invokeBackend<Record<string, never>, GetSocialFeedResult>(AnimeEvents.GET_SOCIAL_FEED, {})
       .then(data => {
         if (!isMounted()) return;
         setActivities(data.activities ?? []);

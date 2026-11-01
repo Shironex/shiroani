@@ -1,4 +1,3 @@
-import { Injectable } from '@nestjs/common';
 import {
   createLogger,
   extractErrorMessage,
@@ -52,7 +51,6 @@ export interface PaginatedAiringResult {
  * ({@link AnimeProfileService}, {@link AnimeSocialService},
  * {@link AnimeRecommendationsService}).
  */
-@Injectable()
 export class AnimeService {
   constructor(private readonly anilistClient: AniListClient) {
     logger.info('AnimeService initialized');

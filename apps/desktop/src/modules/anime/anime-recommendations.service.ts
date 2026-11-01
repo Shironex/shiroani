@@ -1,4 +1,3 @@
-import { Injectable } from '@nestjs/common';
 import { createLogger, extractErrorMessage } from '@shiroani/shared';
 import type {
   AniListCommunityRecommendation,
@@ -21,7 +20,6 @@ const logger = createLogger('AnimeRecommendationsService');
  * clearing the connected viewer's vote. Extracted from AnimeService so the
  * discover/browse core stays focused on media browsing.
  */
-@Injectable()
 export class AnimeRecommendationsService {
   constructor(private readonly anilistClient: AniListClient) {
     logger.info('AnimeRecommendationsService initialized');

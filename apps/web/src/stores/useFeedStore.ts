@@ -1,11 +1,11 @@
 import { create } from 'zustand';
 import { maybeDevtools } from '@/stores/utils/maybeDevtools';
 import {
-  type SocketStoreSlice,
-  initialSocketState,
-  createSocketActions,
-  createSocketListeners,
-} from '@/stores/utils/createSocketStore';
+  type BackendStoreSlice,
+  initialBackendState,
+  createBackendActions,
+  createBackendListeners,
+} from '@/stores/utils/createBackendStore';
 import { createFilteredListSelector } from '@/stores/utils/createFilteredListSelector';
 import {
   type FeedItem,
@@ -25,7 +25,7 @@ import {
   FEED_STARTUP_REFRESH_SETTING_KEY,
 } from '@shiroani/shared';
 import { toast } from 'sonner';
-import { emitWithErrorHandling } from '@/lib/socket';
+import { invokeBackend } from '@/lib/backend';
 import { createLocalStorageAccessor } from '@/lib/persisted-storage';
 import i18n from '@/lib/i18n';
 import { createLogger } from '@shiroani/shared';
@@ -49,7 +49,7 @@ async function isStartupRefreshEnabled(): Promise<boolean> {
 /**
  * Feed store state
  */
-interface FeedState extends SocketStoreSlice {
+interface FeedState extends BackendStoreSlice {
   items: FeedItem[];
   sources: FeedSource[];
   total: number;
@@ -79,6 +79,8 @@ interface FeedState extends SocketStoreSlice {
  */
 interface FeedActions {
   fetchItems: (loadMore?: boolean, options?: { bootstrapIfEmpty?: boolean }) => void;
+  /** First load at startup, and again after the system resumes. */
+  loadInitialData: () => void;
   fetchSources: () => void;
   refreshFeeds: (options?: { isBootstrap?: boolean }) => void;
   setCategoryFilter: (category: FeedCategory | 'all') => void;
@@ -91,7 +93,7 @@ interface FeedActions {
   markRead: (id: number) => void;
   /**
    * Pull the durable read-id set from the feed DB and merge it into local state.
-   * Called on socket connect so read indicators survive a reinstall (the DB
+   * Called on first load so read indicators survive a reinstall (the DB
    * outlives the renderer's localStorage cache).
    */
   rehydrateReadIds: () => void;
@@ -145,10 +147,9 @@ function getPersistedLastVisitedAt(): number {
 function persistLastVisitedAt(ts: number) {
   // Local cache for instant startup; the durable copy lives in the feed DB.
   lastVisitedStorage.set(ts);
-  void emitWithErrorHandling<FeedSetLastVisitedPayload, { ok: boolean }>(
-    FeedEvents.SET_LAST_VISITED,
-    { lastVisitedAt: ts }
-  ).catch((err: Error) => {
+  void invokeBackend<FeedSetLastVisitedPayload, { ok: boolean }>(FeedEvents.SET_LAST_VISITED, {
+    lastVisitedAt: ts,
+  }).catch((err: Error) => {
     logger.warn('Failed to persist feed last-visited to DB:', err.message);
   });
 }
@@ -170,7 +171,7 @@ function cacheReadIdsLocally(ids: Set<number>) {
 /** Persist newly-read ids to the feed DB (durable across reinstall). */
 function persistReadIdsToDb(ids: number[]) {
   if (ids.length === 0) return;
-  void emitWithErrorHandling<FeedMarkReadPayload, { ok: boolean }>(FeedEvents.MARK_READ, {
+  void invokeBackend<FeedMarkReadPayload, { ok: boolean }>(FeedEvents.MARK_READ, {
     ids,
   }).catch((err: Error) => {
     logger.warn('Failed to persist feed read-state to DB:', err.message);
@@ -182,7 +183,7 @@ type FeedStore = FeedState & FeedActions;
 export const useFeedStore = create<FeedStore>()(
   maybeDevtools(
     (set, get) => {
-      const socketActions = createSocketActions<FeedStore>(set, 'feed');
+      const backendActions = createBackendActions<FeedStore>(set, 'feed');
       let refreshFallbackTimer: ReturnType<typeof setTimeout> | null = null;
 
       const clearRefreshFallback = () => {
@@ -203,12 +204,12 @@ export const useFeedStore = create<FeedStore>()(
         }, REFRESH_FALLBACK_MS);
       };
 
-      const { initListeners, cleanupListeners: cleanupSocketListeners } =
-        createSocketListeners<FeedStore>(get, set, 'feed', {
+      const { initListeners, cleanupListeners: cleanupBackendListeners } =
+        createBackendListeners<FeedStore>(get, set, 'feed', {
           listeners: [
             {
               // Broadcast after a source is toggled (in this or another window).
-              // Previously emitted by the gateway but consumed by nobody, so a
+              // Previously emitted by the backend but consumed by nobody, so a
               // toggle wouldn't propagate; wire it to keep source state in sync.
               event: FeedEvents.SOURCES_RESULT,
               handler: data => {
@@ -236,23 +237,16 @@ export const useFeedStore = create<FeedStore>()(
               },
             },
           ],
-          onConnect: () => {
-            get().fetchSources();
-            get().rehydrateReadIds();
-            void isStartupRefreshEnabled().then(enabled => {
-              get().fetchItems(false, { bootstrapIfEmpty: enabled });
-            });
-          },
         });
 
       const cleanupListeners = () => {
         clearRefreshFallback();
-        cleanupSocketListeners();
+        cleanupBackendListeners();
       };
 
       return {
         // State
-        ...initialSocketState,
+        ...initialBackendState,
         items: [],
         sources: [],
         total: 0,
@@ -268,8 +262,8 @@ export const useFeedStore = create<FeedStore>()(
         articleContent: {},
         articleStatus: {},
 
-        // Socket actions
-        ...socketActions,
+        // Backend actions
+        ...backendActions,
 
         // Actions
         fetchItems: (loadMore?: boolean, options?: { bootstrapIfEmpty?: boolean }) => {
@@ -290,10 +284,7 @@ export const useFeedStore = create<FeedStore>()(
             offset,
           };
 
-          emitWithErrorHandling<FeedGetItemsPayload, FeedGetItemsResult>(
-            FeedEvents.GET_ITEMS,
-            payload
-          )
+          invokeBackend<FeedGetItemsPayload, FeedGetItemsResult>(FeedEvents.GET_ITEMS, payload)
             .then(data => {
               if (loadMore) {
                 set(
@@ -348,11 +339,16 @@ export const useFeedStore = create<FeedStore>()(
             });
         },
 
+        loadInitialData: () => {
+          get().fetchSources();
+          get().rehydrateReadIds();
+          void isStartupRefreshEnabled().then(enabled => {
+            get().fetchItems(false, { bootstrapIfEmpty: enabled });
+          });
+        },
+
         fetchSources: () => {
-          emitWithErrorHandling<Record<string, never>, FeedGetSourcesResult>(
-            FeedEvents.GET_SOURCES,
-            {}
-          )
+          invokeBackend<Record<string, never>, FeedGetSourcesResult>(FeedEvents.GET_SOURCES, {})
             .then(data => {
               set({ sources: data.sources ?? [] }, undefined, 'feed/sourcesResult');
             })
@@ -378,7 +374,7 @@ export const useFeedStore = create<FeedStore>()(
           );
           // The backend returns immediately (fire-and-forget) and broadcasts
           // FeedEvents.NEW_ITEMS when done, which the listener above handles.
-          emitWithErrorHandling<Record<string, never>, { started: boolean }>(FeedEvents.REFRESH, {})
+          invokeBackend<Record<string, never>, { started: boolean }>(FeedEvents.REFRESH, {})
             .then(() => {
               scheduleRefreshFallback();
             })
@@ -455,7 +451,7 @@ export const useFeedStore = create<FeedStore>()(
         rehydrateReadIds: () => {
           // Restore the durable last-visited stamp (newtab unread baseline). The
           // DB copy survives a reinstall where the localStorage cache wouldn't.
-          emitWithErrorHandling<Record<string, never>, FeedGetLastVisitedResult>(
+          invokeBackend<Record<string, never>, FeedGetLastVisitedResult>(
             FeedEvents.GET_LAST_VISITED,
             {}
           )
@@ -472,10 +468,7 @@ export const useFeedStore = create<FeedStore>()(
               logger.warn('Failed to rehydrate feed last-visited from DB:', err.message);
             });
 
-          emitWithErrorHandling<Record<string, never>, FeedGetReadIdsResult>(
-            FeedEvents.GET_READ_IDS,
-            {}
-          )
+          invokeBackend<Record<string, never>, FeedGetReadIdsResult>(FeedEvents.GET_READ_IDS, {})
             .then(result => {
               const dbIds = result.ids ?? [];
               if (dbIds.length === 0) return;
@@ -516,10 +509,9 @@ export const useFeedStore = create<FeedStore>()(
             'feed/articleLoading'
           );
 
-          emitWithErrorHandling<FeedGetArticlePayload, FeedGetArticleResult>(
-            FeedEvents.GET_ARTICLE,
-            { url: item.url }
-          )
+          invokeBackend<FeedGetArticlePayload, FeedGetArticleResult>(FeedEvents.GET_ARTICLE, {
+            url: item.url,
+          })
             .then(result => {
               if (result.contentHtml) {
                 set(
@@ -589,7 +581,7 @@ export const useFeedStore = create<FeedStore>()(
             'feed/toggleSourceOptimistic'
           );
 
-          emitWithErrorHandling(FeedEvents.TOGGLE_SOURCE, { id, enabled }).catch((err: Error) => {
+          invokeBackend(FeedEvents.TOGGLE_SOURCE, { id, enabled }).catch((err: Error) => {
             logger.error('Failed to toggle source:', err.message);
             // Revert on error
             get().fetchSources();

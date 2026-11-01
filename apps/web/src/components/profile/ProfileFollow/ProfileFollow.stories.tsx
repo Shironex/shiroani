@@ -27,7 +27,7 @@ const users: AniListUser[] = [
  * renders nothing without a connected account — that data isn't store-seedable,
  * so the connected/interactive states are exercised through its `FollowGroup`
  * part below (and in unit tests) rather than at the `ProfileFollow` level, which
- * would open a socket on mount.
+ * would call the backend on mount.
  */
 const meta = {
   title: 'profile/ProfileFollow',
@@ -58,7 +58,7 @@ export const NotConnected: Story = {
 };
 
 /**
- * The collapsible follow group in isolation — fully prop-driven (no socket).
+ * The collapsible follow group in isolation: fully prop-driven (no backend).
  * Expanding reveals the user rows; toggling a row fires `onToggle(user.id)`.
  */
 export const GroupExpandAndToggle: StoryObj<typeof FollowGroup> = {

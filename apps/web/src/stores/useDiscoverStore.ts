@@ -17,7 +17,7 @@ import {
   type SaveRecommendationRequest,
   type SaveRecommendationResult,
 } from '@shiroani/shared';
-import { emitWithErrorHandling } from '@/lib/socket';
+import { invokeBackend } from '@/lib/backend';
 import i18n from '@/lib/i18n';
 
 const logger = createLogger('DiscoverStore');
@@ -210,7 +210,7 @@ export const useDiscoverStore = create<DiscoverStore>()(
             'discover/searching'
           );
 
-          emitWithErrorHandling<
+          invokeBackend<
             { query: string; page?: number; sort?: DiscoverSort; filters?: DiscoverFilters },
             PaginatedResponse
           >(AnimeEvents.SEARCH, {
@@ -247,7 +247,7 @@ export const useDiscoverStore = create<DiscoverStore>()(
           logger.info('Fetching trending (page 1)');
           set({ isLoading: true, error: null }, undefined, 'discover/fetchingTrending');
 
-          emitWithErrorHandling<
+          invokeBackend<
             { page?: number; sort?: DiscoverSort; filters?: DiscoverFilters },
             PaginatedResponse
           >(AnimeEvents.GET_TRENDING, {
@@ -284,7 +284,7 @@ export const useDiscoverStore = create<DiscoverStore>()(
           logger.info('Fetching popular (page 1)');
           set({ isLoading: true, error: null }, undefined, 'discover/fetchingPopular');
 
-          emitWithErrorHandling<
+          invokeBackend<
             { page?: number; sort?: DiscoverSort; filters?: DiscoverFilters },
             PaginatedResponse
           >(AnimeEvents.GET_POPULAR, {
@@ -322,7 +322,7 @@ export const useDiscoverStore = create<DiscoverStore>()(
           logger.info(`Fetching seasonal: ${season} ${year} (page 1)`);
           set({ isLoading: true, error: null }, undefined, 'discover/fetchingSeasonal');
 
-          emitWithErrorHandling<
+          invokeBackend<
             {
               year: number;
               season: string;
@@ -365,7 +365,7 @@ export const useDiscoverStore = create<DiscoverStore>()(
           );
           set({ isRandomLoading: true, error: null }, undefined, 'discover/fetchingRandom');
 
-          emitWithErrorHandling<
+          invokeBackend<
             { includedGenres?: string[]; excludedGenres?: string[]; perPage?: number },
             PaginatedResponse
           >(AnimeEvents.GET_RANDOM, {
@@ -435,7 +435,7 @@ export const useDiscoverStore = create<DiscoverStore>()(
             'discover/fetchingRecs'
           );
 
-          emitWithErrorHandling<GetRecommendationsRequest, GetRecommendationsResult>(
+          invokeBackend<GetRecommendationsRequest, GetRecommendationsResult>(
             AnimeEvents.GET_RECOMMENDATIONS,
             {}
           )
@@ -498,14 +498,14 @@ export const useDiscoverStore = create<DiscoverStore>()(
           setVoting(true);
 
           try {
-            const res = await emitWithErrorHandling<
-              SaveRecommendationRequest,
-              SaveRecommendationResult
-            >(AnimeEvents.SAVE_RECOMMENDATION, {
-              mediaId: pair.media.id,
-              mediaRecommendationId: pair.mediaRecommendation.id,
-              rating: next,
-            });
+            const res = await invokeBackend<SaveRecommendationRequest, SaveRecommendationResult>(
+              AnimeEvents.SAVE_RECOMMENDATION,
+              {
+                mediaId: pair.media.id,
+                mediaRecommendationId: pair.mediaRecommendation.id,
+                rating: next,
+              }
+            );
             // Reconcile with the server's resulting vote; null = not connected.
             applyRating(res.userRating ?? previous);
           } catch (err) {
@@ -584,7 +584,7 @@ export const useDiscoverStore = create<DiscoverStore>()(
             logger.info(`Search load more: "${state.searchQuery.trim()}" (page ${nextPage})`);
             set({ isLoading: true, error: null }, undefined, 'discover/loadMoreSearch');
 
-            emitWithErrorHandling<
+            invokeBackend<
               { query: string; page?: number; sort?: DiscoverSort; filters?: DiscoverFilters },
               PaginatedResponse
             >(AnimeEvents.SEARCH, {
@@ -656,7 +656,7 @@ export const useDiscoverStore = create<DiscoverStore>()(
           }
 
           const tabKey = activeTab as 'trending' | 'popular' | 'seasonal';
-          emitWithErrorHandling<Record<string, unknown>, PaginatedResponse>(event, payload)
+          invokeBackend<Record<string, unknown>, PaginatedResponse>(event, payload)
             .then(data => {
               set(
                 s => ({

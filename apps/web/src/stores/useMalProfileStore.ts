@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { maybeDevtools } from '@/stores/utils/maybeDevtools';
 import { MalEvents, createLogger } from '@shiroani/shared';
 import type { MalUserStats } from '@shiroani/shared';
-import { emitWithErrorHandling } from '@/lib/socket';
+import { invokeBackend } from '@/lib/backend';
 import i18n from '@/lib/i18n';
 
 const logger = createLogger('MalProfileStore');
@@ -24,7 +24,7 @@ interface MalProfileState {
 interface MalProfileActions {
   /**
    * Fetch the connected MAL viewer's THIN profile via {@link MalEvents.GET_VIEWER_PROFILE}.
-   * The access token never crosses the socket — the handler resolves the viewer
+   * The access token never reaches the renderer: the handler resolves the viewer
    * entirely main-side and returns only the mapped stats. Resolves with `null`
    * when no MAL account is connected (cleared quietly, NOT surfaced as an error).
    */
@@ -51,7 +51,7 @@ export const useMalProfileStore = create<MalProfileStore>()(
           'mal-profile/fetching'
         );
 
-        emitWithErrorHandling<Record<string, never>, { profile: MalUserStats | null }>(
+        invokeBackend<Record<string, never>, { profile: MalUserStats | null }>(
           MalEvents.GET_VIEWER_PROFILE,
           {}
         )

@@ -6,7 +6,7 @@ import ActivityFeed from './ActivityFeed';
 import { ActivityEmpty, ActivityError, ActivityList, ActivityLoading } from './ActivityFeed.parts';
 
 beforeEach(() => {
-  // Disconnected: the feed short-circuits before any socket call.
+  // Disconnected: the feed short-circuits before any backend call.
   useAniListAuthStore.setState(s => ({ status: { ...s.status, connected: false } }));
 });
 

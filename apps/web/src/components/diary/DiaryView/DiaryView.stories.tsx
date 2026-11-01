@@ -30,11 +30,9 @@ function makeEntry(overrides: Partial<DiaryEntry> = {}): DiaryEntry {
  *
  * The view's mount effect calls `initListeners() + fetchEntries()`, and
  * `fetchEntries` ALWAYS emits the `diary:get-all` request (seeding entries does
- * not gate it). That emit opens the dormant preview socket, which then
- * reconnects forever against the dead test backend and pegs the headless
- * Chromium page until it crashes. Every story therefore stubs the three
- * socket-lifecycle actions to no-ops in `beforeEach` (the hook reads them from
- * the store, so `setState` swaps them) — no connection is ever attempted.
+ * not gate it). Every story therefore stubs the three
+ * lifecycle actions to no-ops in `beforeEach` (the hook reads them from the
+ * store, so `setState` swaps them), so no request is made.
  */
 const meta = {
   title: 'diary/DiaryView',
@@ -60,8 +58,7 @@ const meta = {
       isEditorOpen: false,
       isLoading: false,
       error: null,
-      // Socket-free: the mount effect's fetch/listener calls become no-ops, so
-      // the preview socket never connects.
+      // The mount effect's fetch and listener calls become no-ops.
       initListeners: fn(),
       fetchEntries: fn(),
       cleanupListeners: fn(),

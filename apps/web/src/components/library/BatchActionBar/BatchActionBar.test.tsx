@@ -57,7 +57,7 @@ describe('BatchActionBar', () => {
     // selection-clearing effect it owns directly (cleared ids + exited mode),
     // rather than spying — the hook captured the action reference at module
     // load, so a post-hoc getState() spy would not be intercepted. The
-    // optimistic entry prune itself rolls back when the socket emit fails with
+    // optimistic entry prune itself rolls back when the backend call fails with
     // no backend, so it is not a reliable signal in jsdom.
     useLibraryStore.setState({ selectedIds: new Set([1, 2]) });
     const { user } = render(<BatchActionBar />);

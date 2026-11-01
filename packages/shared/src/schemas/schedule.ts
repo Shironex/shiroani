@@ -1,5 +1,5 @@
 /**
- * Zod schemas for schedule gateway payloads.
+ * Zod schemas for schedule backend payloads.
  *
  * Dates are expected in `YYYY-MM-DD` format (what the renderer sends).
  */

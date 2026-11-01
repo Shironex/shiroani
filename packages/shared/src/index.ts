@@ -51,11 +51,12 @@ export * from './types/updater';
 // Feed types
 export * from './types/feed';
 
-// System types
-export * from './types/system';
-
 // Local app stats types
 export * from './types/stats';
+
+// Backend IPC contract and channel allow-lists
+export * from './backend/channels';
+export type * from './backend/contract';
 
 // Electron API types (preload contract)
 export * from './types/electron-api';
@@ -75,7 +76,7 @@ export * from './constants';
 // Logger
 export * from './logger';
 
-// Zod schemas (runtime validation for gateway payloads)
+// Zod schemas (runtime validation for backend payloads)
 export * from './schemas';
 
 // AniList error classification

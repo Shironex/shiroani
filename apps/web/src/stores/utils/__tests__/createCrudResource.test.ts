@@ -1,10 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-const { emitWithErrorHandling } = vi.hoisted(() => ({
-  emitWithErrorHandling: vi.fn(),
+const { invokeBackend } = vi.hoisted(() => ({
+  invokeBackend: vi.fn(),
 }));
 
-vi.mock('@/lib/socket', () => ({ emitWithErrorHandling }));
+vi.mock('@/lib/backend', () => ({ invokeBackend }));
 
 import { createCrudResource } from '../createCrudResource';
 import type { Logger } from '@shiroani/shared';
@@ -66,7 +66,7 @@ const silentLogger: Logger = {
 
 describe('createCrudResource — optimisticRemove rollback', () => {
   beforeEach(() => {
-    emitWithErrorHandling.mockReset();
+    invokeBackend.mockReset();
   });
 
   it('on success: removes the entry and applies extra state', async () => {
@@ -85,7 +85,7 @@ describe('createCrudResource — optimisticRemove rollback', () => {
       events: { getAll: 'test/getAll' },
     });
 
-    emitWithErrorHandling.mockResolvedValue({});
+    invokeBackend.mockResolvedValue({});
 
     crud.optimisticRemove({
       event: 'test/remove',
@@ -116,7 +116,7 @@ describe('createCrudResource — optimisticRemove rollback', () => {
       events: { getAll: 'test/getAll' },
     });
 
-    emitWithErrorHandling.mockRejectedValue(new Error('network error'));
+    invokeBackend.mockRejectedValue(new Error('network error'));
 
     crud.optimisticRemove({
       event: 'test/remove',
@@ -154,7 +154,7 @@ describe('createCrudResource — optimisticRemove rollback', () => {
       events: { getAll: 'test/getAll' },
     });
 
-    emitWithErrorHandling.mockRejectedValue(new Error('timeout'));
+    invokeBackend.mockRejectedValue(new Error('timeout'));
 
     crud.optimisticRemove({ event: 'test/remove', id: 3 });
 
@@ -183,7 +183,7 @@ describe('createCrudResource — optimisticRemove rollback', () => {
       events: { getAll: 'test/getAll' },
     });
 
-    emitWithErrorHandling.mockRejectedValue(new Error('server error'));
+    invokeBackend.mockRejectedValue(new Error('server error'));
 
     crud.optimisticRemove({
       event: 'test/remove',
@@ -216,12 +216,12 @@ function makeCrud(initial: Partial<TestState> = {}) {
 }
 
 // The regression these guard: the library batch action bar used to fire ONE
-// socket emit per selected id (batchRemove/batchUpdateStatus/batchUpdateScore),
-// tripping the WS throttler on a large selection. The bulk primitives coalesce
+// backend call per selected id (batchRemove/batchUpdateStatus/batchUpdateScore),
+// tripping the old rate limiter on a large selection. The bulk primitives coalesce
 // the whole selection into a single emit.
 describe('createCrudResource — optimisticRemoveMany (bulk delete)', () => {
   beforeEach(() => {
-    emitWithErrorHandling.mockReset();
+    invokeBackend.mockReset();
   });
 
   it('removes every targeted id with a SINGLE emit and applies extra', async () => {
@@ -234,7 +234,7 @@ describe('createCrudResource — optimisticRemoveMany (bulk delete)', () => {
       isDetailOpen: true,
       selectedEntry: { id: 2, name: 'b' },
     });
-    emitWithErrorHandling.mockResolvedValue({});
+    invokeBackend.mockResolvedValue({});
 
     crud.optimisticRemoveMany({
       event: 'test/removeMany',
@@ -248,8 +248,8 @@ describe('createCrudResource — optimisticRemoveMany (bulk delete)', () => {
 
     expect(state.entries.map(e => e.id)).toEqual([2]);
     // One emit for the whole batch — NOT one per id.
-    expect(emitWithErrorHandling).toHaveBeenCalledTimes(1);
-    expect(emitWithErrorHandling).toHaveBeenCalledWith('test/removeMany', { ids: [1, 3] });
+    expect(invokeBackend).toHaveBeenCalledTimes(1);
+    expect(invokeBackend).toHaveBeenCalledWith('test/removeMany', { ids: [1, 3] });
     // Open entry (id 2) survived → detail stays open.
     expect(state.isDetailOpen).toBe(true);
   });
@@ -261,7 +261,7 @@ describe('createCrudResource — optimisticRemoveMany (bulk delete)', () => {
       isDetailOpen: true,
       selectedEntry: open,
     });
-    emitWithErrorHandling.mockRejectedValue(new Error('network error'));
+    invokeBackend.mockRejectedValue(new Error('network error'));
 
     crud.optimisticRemoveMany({
       event: 'test/removeMany',
@@ -284,18 +284,18 @@ describe('createCrudResource — optimisticRemoveMany (bulk delete)', () => {
 
   it('no-ops on an empty id list (no emit)', async () => {
     const { crud } = makeCrud({ entries: [{ id: 1, name: 'a' }] });
-    emitWithErrorHandling.mockResolvedValue({});
+    invokeBackend.mockResolvedValue({});
 
     const result = await crud.optimisticRemoveMany({ event: 'test/removeMany', ids: [] });
 
     expect(result).toBe(true);
-    expect(emitWithErrorHandling).not.toHaveBeenCalled();
+    expect(invokeBackend).not.toHaveBeenCalled();
   });
 });
 
 describe('createCrudResource — optimisticUpdateMany (bulk update)', () => {
   beforeEach(() => {
-    emitWithErrorHandling.mockReset();
+    invokeBackend.mockReset();
   });
 
   it('patches matched rows via apply with a SINGLE emit, leaving others untouched', async () => {
@@ -306,7 +306,7 @@ describe('createCrudResource — optimisticUpdateMany (bulk update)', () => {
         { id: 3, name: 'c' },
       ],
     });
-    emitWithErrorHandling.mockResolvedValue({});
+    invokeBackend.mockResolvedValue({});
 
     crud.optimisticUpdateMany({
       event: 'test/updateMany',
@@ -319,8 +319,8 @@ describe('createCrudResource — optimisticUpdateMany (bulk update)', () => {
     expect(state.entries.find(e => e.id === 1)?.name).toBe('X');
     expect(state.entries.find(e => e.id === 2)?.name).toBe('b');
     expect(state.entries.find(e => e.id === 3)?.name).toBe('X');
-    expect(emitWithErrorHandling).toHaveBeenCalledTimes(1);
-    expect(emitWithErrorHandling).toHaveBeenCalledWith('test/updateMany', {
+    expect(invokeBackend).toHaveBeenCalledTimes(1);
+    expect(invokeBackend).toHaveBeenCalledWith('test/updateMany', {
       ids: [1, 3],
       name: 'X',
     });
@@ -328,7 +328,7 @@ describe('createCrudResource — optimisticUpdateMany (bulk update)', () => {
 
   it('on failure: re-fetches authoritative state', async () => {
     const { state, crud } = makeCrud({ entries: [{ id: 1, name: 'a' }] });
-    emitWithErrorHandling
+    invokeBackend
       .mockRejectedValueOnce(new Error('boom'))
       .mockResolvedValueOnce({ entries: [{ id: 1, name: 'server' }] });
 
@@ -343,12 +343,12 @@ describe('createCrudResource — optimisticUpdateMany (bulk update)', () => {
     expect(state.entries[0].name).toBe('X');
 
     await vi.waitFor(() => expect(state.entries[0].name).toBe('server'));
-    expect(emitWithErrorHandling).toHaveBeenCalledWith('test/getAll', {});
+    expect(invokeBackend).toHaveBeenCalledWith('test/getAll', {});
   });
 
   it('no-ops on an empty id list (no emit)', async () => {
     const { crud } = makeCrud({ entries: [{ id: 1, name: 'a' }] });
-    emitWithErrorHandling.mockResolvedValue({});
+    invokeBackend.mockResolvedValue({});
 
     const result = await crud.optimisticUpdateMany({
       event: 'test/updateMany',
@@ -358,11 +358,11 @@ describe('createCrudResource — optimisticUpdateMany (bulk update)', () => {
     });
 
     expect(result).toBe(true);
-    expect(emitWithErrorHandling).not.toHaveBeenCalled();
+    expect(invokeBackend).not.toHaveBeenCalled();
   });
 });
 
-// The producer/consumer contract: the gateway broadcasts `removed-many` /
+// The producer/consumer contract: the backend broadcasts `removed-many` /
 // `updated-many` and OTHER clients must reconcile their lists — or silently
 // desync after a bulk op.
 describe('createCrudResource — createUpdatedListener bulk broadcasts', () => {
@@ -376,7 +376,7 @@ describe('createCrudResource — createUpdatedListener bulk broadcasts', () => {
   };
 
   beforeEach(() => {
-    emitWithErrorHandling.mockReset();
+    invokeBackend.mockReset();
   });
 
   it('REMOVED_MANY with onRemovedMany prunes in place (no re-fetch)', () => {
@@ -398,17 +398,17 @@ describe('createCrudResource — createUpdatedListener bulk broadcasts', () => {
     listener({ action: 'removed-many', ids: [1, 3] });
 
     expect(state.entries.map(e => e.id)).toEqual([2]);
-    expect(emitWithErrorHandling).not.toHaveBeenCalled();
+    expect(invokeBackend).not.toHaveBeenCalled();
   });
 
   it('REMOVED_MANY without onRemovedMany falls back to a full re-fetch', () => {
     const { crud } = makeCrud({ entries: [{ id: 1, name: 'a' }] });
-    emitWithErrorHandling.mockResolvedValue({ entries: [] });
+    invokeBackend.mockResolvedValue({ entries: [] });
     const listener = crud.createUpdatedListener({ ...baseConfig });
 
     listener({ action: 'removed-many', ids: [1] });
 
-    expect(emitWithErrorHandling).toHaveBeenCalledWith('test/getAll', {});
+    expect(invokeBackend).toHaveBeenCalledWith('test/getAll', {});
   });
 
   it('UPDATED_MANY with onUpdatedMany patches the authoritative rows', () => {
@@ -434,11 +434,11 @@ describe('createCrudResource — createUpdatedListener bulk broadcasts', () => {
 
   it('UPDATED_MANY without onUpdatedMany falls back to a full re-fetch', () => {
     const { crud } = makeCrud({ entries: [{ id: 1, name: 'a' }] });
-    emitWithErrorHandling.mockResolvedValue({ entries: [] });
+    invokeBackend.mockResolvedValue({ entries: [] });
     const listener = crud.createUpdatedListener({ ...baseConfig });
 
     listener({ action: 'updated-many', entries: [{ id: 1, name: 'Z' }] });
 
-    expect(emitWithErrorHandling).toHaveBeenCalledWith('test/getAll', {});
+    expect(invokeBackend).toHaveBeenCalledWith('test/getAll', {});
   });
 });

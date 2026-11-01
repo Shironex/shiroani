@@ -1,11 +1,11 @@
 import { create } from 'zustand';
 import { maybeDevtools } from '@/stores/utils/maybeDevtools';
 import {
-  type SocketStoreSlice,
-  initialSocketState,
-  createSocketActions,
-  createSocketListeners,
-} from '@/stores/utils/createSocketStore';
+  type BackendStoreSlice,
+  initialBackendState,
+  createBackendActions,
+  createBackendListeners,
+} from '@/stores/utils/createBackendStore';
 import { createFilteredListSelector } from '@/stores/utils/createFilteredListSelector';
 import { createCrudResource } from '@/stores/utils/createCrudResource';
 import { toast } from 'sonner';
@@ -17,7 +17,7 @@ import {
   CrudActions,
   createLogger,
 } from '@shiroani/shared';
-import { emitWithErrorHandling } from '@/lib/socket';
+import { invokeBackend } from '@/lib/backend';
 import i18n from '@/lib/i18n';
 
 const logger = createLogger('DiaryStore');
@@ -25,7 +25,7 @@ const logger = createLogger('DiaryStore');
 export type DiaryFilter = 'all' | 'pinned' | 'with_anime';
 export type DiarySortBy = 'createdAt' | 'updatedAt' | 'title';
 
-interface DiaryState extends SocketStoreSlice {
+interface DiaryState extends BackendStoreSlice {
   entries: DiaryEntry[];
   activeFilter: DiaryFilter;
   searchQuery: string;
@@ -58,7 +58,7 @@ type DiaryStore = DiaryState & DiaryActions;
 export const useDiaryStore = create<DiaryStore>()(
   maybeDevtools(
     (set, get) => {
-      const socketActions = createSocketActions<DiaryStore>(set, 'diary');
+      const backendActions = createBackendActions<DiaryStore>(set, 'diary');
 
       const crud = createCrudResource<DiaryEntry, DiaryStore>({
         set,
@@ -83,7 +83,7 @@ export const useDiaryStore = create<DiaryStore>()(
         }),
       });
 
-      const { initListeners, cleanupListeners } = createSocketListeners<DiaryStore>(
+      const { initListeners, cleanupListeners } = createBackendListeners<DiaryStore>(
         get,
         set,
         'diary',
@@ -94,14 +94,11 @@ export const useDiaryStore = create<DiaryStore>()(
               handler: onDiaryUpdated,
             },
           ],
-          onConnect: () => {
-            get().fetchEntries();
-          },
         }
       );
 
       return {
-        ...initialSocketState,
+        ...initialBackendState,
         entries: [],
         activeFilter: 'all',
         searchQuery: '',
@@ -111,7 +108,7 @@ export const useDiaryStore = create<DiaryStore>()(
         selectedEntry: null,
         isEditorOpen: false,
 
-        ...socketActions,
+        ...backendActions,
 
         fetchEntries: () => {
           crud.fetchAll();
@@ -120,7 +117,7 @@ export const useDiaryStore = create<DiaryStore>()(
         createEntry: (payload: DiaryCreatePayload) => {
           // Returns the outcome so the editor keeps the user's content visible
           // and stays open on failure instead of closing over lost input.
-          return emitWithErrorHandling(DiaryEvents.CREATE, payload)
+          return invokeBackend(DiaryEvents.CREATE, payload)
             .then(() => {
               get().fetchEntries();
               return true;

@@ -2,7 +2,7 @@
  * Unit tests for FeedSchedulerService.
  *
  * Uses fake timers and a minimal in-memory DB/FeedService double so we can
- * drive the polling loop deterministically without booting Nest.
+ * drive the polling loop deterministically without booting the backend.
  */
 
 import type { DatabaseService } from '../../database';
@@ -183,16 +183,10 @@ describe('FeedSchedulerService', () => {
   });
 
   describe('lifecycle hooks', () => {
-    it('onModuleInit starts polling', () => {
-      const startSpy = jest.spyOn(service, 'startPolling');
-      service.onModuleInit();
-      expect(startSpy).toHaveBeenCalled();
-    });
-
-    it('onModuleDestroy stops polling', () => {
+    it('dispose stops polling', () => {
       service.startPolling();
       const stopSpy = jest.spyOn(service, 'stopPolling');
-      service.onModuleDestroy();
+      service.dispose();
       expect(stopSpy).toHaveBeenCalled();
     });
   });

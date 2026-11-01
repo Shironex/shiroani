@@ -124,7 +124,7 @@ describe('rowToEntry', () => {
 // Bulk mutations — removeMany / updateMany
 //
 // These replace the N individual REMOVE/UPDATE emits the batch action bar used
-// to fire (which tripped the WS throttler). The invariants under test: each
+// to fire (which tripped the old rate limiter). The invariants under test: each
 // runs inside ONE transaction, removeMany reports only the rows that existed,
 // and updateMany builds its UPDATE once and reuses it per id.
 // ---------------------------------------------------------------------------
@@ -217,7 +217,7 @@ describe('LibraryService.removeMany', () => {
     expect(deletes[0].runArgs).toHaveLength(4);
   });
 
-  it('returns an empty list when no row existed (so the gateway skips the broadcast)', () => {
+  it('returns an empty list when no row existed (so the backend skips the broadcast)', () => {
     const { service } = makeBulkService([]);
     expect(service.removeMany([5, 6])).toEqual([]);
   });

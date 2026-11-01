@@ -6,7 +6,7 @@ import DevLogsDialog from './DevLogsDialog';
 /**
  * The dev-logs viewer dialog: a header summary, the filter/action toolbar, and
  * a scrollable, tail-following list of log rows. Reads the in-memory log ring
- * buffer from `@shiroani/shared` (not a socket), so stories seed it by emitting
+ * buffer from `@shiroani/shared` (not the backend), so stories seed it by emitting
  * a few lines through a logger. The dialog is the story root, so it stays open
  * with no aria-hidden siblings; its `DialogTitle` provides the accessible name.
  */

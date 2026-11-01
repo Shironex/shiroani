@@ -1,4 +1,4 @@
-// Barrel for all gateway payload schemas.
+// Barrel for all backend payload schemas.
 //
 // The raw building-block enum schemas (diaryGradientSchema / diaryMoodSchema /
 // feedCategorySchema / feedLanguageSchema) compose the payload schemas but have

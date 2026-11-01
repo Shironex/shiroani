@@ -48,7 +48,7 @@ export default meta;
 type Story = StoryObj<typeof AnimeDetailModal>;
 
 // Entry without an anilistId so the self-fetching relations/extras sections stay
-// gated off — keeps the story socket-free.
+// gated off: keeps the story backend-free.
 export const Default: Story = {
   args: { entry },
   play: async ({ canvasElement, args }) => {

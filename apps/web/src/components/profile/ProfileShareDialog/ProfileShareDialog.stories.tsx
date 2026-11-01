@@ -6,7 +6,7 @@ import ProfileShareDialog from './ProfileShareDialog';
 /**
  * Share-profile dialog — renders the profile share card on a real `<canvas>`
  * when opened, with Copy-to-clipboard and Save-as-PNG actions. The card render
- * is canvas-only (no socket); in a real browser the preview image resolves, in
+ * is canvas-only (no backend); in a real browser the preview image resolves, in
  * jsdom the effect early-returns while closed.
  */
 const meta = {

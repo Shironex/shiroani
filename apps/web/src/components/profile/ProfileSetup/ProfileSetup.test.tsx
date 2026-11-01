@@ -4,7 +4,7 @@ import { useProfileStore } from '@/stores/useProfileStore';
 import ProfileSetup from './ProfileSetup';
 
 beforeEach(() => {
-  // Stub setUsername so a submit never triggers the socket-backed fetch.
+  // Stub setUsername so a submit never triggers the backend fetch.
   useProfileStore.setState({ username: '', isLoading: false, error: null, setUsername: vi.fn() });
 });
 

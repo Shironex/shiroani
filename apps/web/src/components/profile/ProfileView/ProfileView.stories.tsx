@@ -15,8 +15,8 @@ import ProfileView from './ProfileView';
  * Outside Electron the auth + MAL bridges are absent, so bootstrap resolves to
  * the DISCONNECTED state and the body falls through to the AniList connect form;
  * the AniList sync, profile-refresh interval and bridges are all bridge-gated
- * (never the socket), and the In-app tab's poll no-ops, so stories stay
- * socket-free. The MAL tab only appears with a connected MAL account, so the
+ * (never the backend), and the In-app tab's poll no-ops, so stories stay
+ * backend-free. The MAL tab only appears with a connected MAL account, so the
  * tablist shows AniList + In app here.
  */
 const meta = {

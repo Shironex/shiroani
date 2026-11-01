@@ -1,9 +1,9 @@
 import type { AiringAnime, NotificationSettings } from '@shiroani/shared';
 
 /**
- * Port that the NestJS notifications module uses to talk to the Electron host.
+ * Port that the notifications module uses to talk to the Electron host.
  *
- * The Electron main process registers a concrete implementation at bootstrap
+ * The Electron main process passes a concrete implementation to the service at bootstrap
  * (see `main/notifications/notification-host.adapter.ts`). This inverts the
  * dependency so `modules/notifications` does not import from `main/`.
  */

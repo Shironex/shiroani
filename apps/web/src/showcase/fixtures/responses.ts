@@ -1,11 +1,12 @@
 /**
- * What the fixture backend answers to each socket request. Event names come
+ * What the fixture backend answers to each request. Event names come
  * from the shared constants, so a rename there cannot silently break the
- * showcase. Anything not listed here is logged by the fake socket and never
+ * showcase. Anything not listed here is logged by the fake bridge and never
  * answered.
  */
 import {
   AnimeEvents,
+  BackendEvents,
   DiaryEvents,
   FeedEvents,
   LibraryEvents,
@@ -23,8 +24,6 @@ import { isoAt } from './context';
 
 export interface IFixtureReply {
   ack: unknown;
-  /** Server-to-client events the real gateway sends alongside the ack. */
-  broadcasts?: Array<[event: string, data: unknown]>;
 }
 
 type Responder = (payload: unknown) => IFixtureReply;
@@ -37,17 +36,14 @@ function field<T>(payload: unknown, key: string, fallback: T): T {
 }
 
 const RESPONDERS: Record<string, Responder> = {
+  [BackendEvents.PING]: () => ({ ack: { ok: true } }),
   [LibraryEvents.GET_ALL]: () => ({ ack: { entries: libraryEntries() } }),
   [DiaryEvents.GET_ALL]: () => ({ ack: { entries: diaryEntries() } }),
 
-  [ScheduleEvents.GET_DAILY]: payload => {
-    const result = dailySchedule(field(payload, 'date', ''));
-    return { ack: result, broadcasts: [[ScheduleEvents.DAILY_RESULT, result]] };
-  },
-  [ScheduleEvents.GET_WEEKLY]: payload => {
-    const result = weeklySchedule(field(payload, 'startDate', ''));
-    return { ack: result, broadcasts: [[ScheduleEvents.WEEKLY_RESULT, result]] };
-  },
+  [ScheduleEvents.GET_DAILY]: payload => ({ ack: dailySchedule(field(payload, 'date', '')) }),
+  [ScheduleEvents.GET_WEEKLY]: payload => ({
+    ack: weeklySchedule(field(payload, 'startDate', '')),
+  }),
 
   [FeedEvents.GET_SOURCES]: () => ({ ack: { sources: feedSources() } }),
   [FeedEvents.GET_ITEMS]: payload => ({ ack: feedPage(payload as FeedGetItemsPayload) }),

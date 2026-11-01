@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { emitWithErrorHandling } from '@/lib/socket';
+import { invokeBackend } from '@/lib/backend';
 import { ImportExportEvents, type ExportRequest, type ExportResponse } from '@shiroani/shared';
+import { MAX_IMPORT_JSON_BYTES } from '@/components/shared/DropOverlay/classify-drop';
 import { useDialogStateMachine } from '@/hooks/useDialogStateMachine';
 import type { IExportDialogProps, IExportDialogView, ExportState } from './ExportDialog.types';
 
@@ -15,6 +16,16 @@ type IUseExportDialogArgs = Pick<
   IExportDialogProps,
   'open' | 'onOpenChange' | 'type' | 'selectedIds'
 >;
+
+/** The exact text written to the file, so its size can be judged before saving. */
+function serializeExport(response: ExportResponse): string {
+  return JSON.stringify(response.data, null, 2);
+}
+
+/** Whether a file of this export could be imported back. */
+function exceedsImportCap(response: ExportResponse): boolean {
+  return new Blob([serializeExport(response)]).size > MAX_IMPORT_JSON_BYTES;
+}
 
 export function useExportDialog({
   open,
@@ -31,7 +42,7 @@ export function useExportDialog({
   const handleExport = useCallback(async () => {
     transition({ step: 'loading' });
     try {
-      const response = await emitWithErrorHandling<ExportRequest, ExportResponse>(
+      const response = await invokeBackend<ExportRequest, ExportResponse>(
         ImportExportEvents.EXPORT,
         { type, ids: selectedIds }
       );
@@ -63,7 +74,7 @@ export function useExportDialog({
         return;
       }
 
-      await window.electronAPI?.file?.writeJson(filePath, JSON.stringify(data.data, null, 2));
+      await window.electronAPI?.file?.writeJson(filePath, serializeExport(data));
       transition({ step: 'saved' });
     } catch (err) {
       transition({
@@ -72,6 +83,12 @@ export function useExportDialog({
       });
     }
   }, [state, transition, t, type]);
+
+  const exportData = state.step === 'success' ? state.data : null;
+  const exportTooLarge = useMemo(
+    () => exportData !== null && exceedsImportCap(exportData),
+    [exportData]
+  );
 
   const handleOpenChange = useCallback(
     (value: boolean) => {
@@ -98,5 +115,11 @@ export function useExportDialog({
     }
   }, [open, state.step, handleExport]);
 
-  return { state, handleSave, handleOpenChange };
+  return {
+    exportTooLarge,
+    importCapMb: MAX_IMPORT_JSON_BYTES / 1024 / 1024,
+    state,
+    handleSave,
+    handleOpenChange,
+  };
 }

@@ -8,6 +8,7 @@ import {
   DEFAULT_UPDATE_CHANNEL,
   LANGUAGE_STORAGE_KEY,
   UI_LANGUAGE_SETTING_KEY,
+  type BackendBridge,
   type DiscordRpcSettings,
   type ElectronAPI,
   type MalAuthStatus,
@@ -16,8 +17,7 @@ import {
 import { version as APP_VERSION } from '../../package.json';
 import { frequentSites } from './fixtures/browser';
 import { aniListStatus, appStatsSnapshot } from './fixtures/profile';
-
-const FAKE_PORT = 58090;
+import { respond } from './fixtures/responses';
 
 /** localStorage flags the app mirrors into electron-store; mirrored here too. */
 const MIRRORED_FLAGS = ['onboarding-completed', 'support-banner-seen'];
@@ -59,7 +59,30 @@ const malStatus: MalAuthStatus = { connected: false };
 
 const noop = () => {};
 const unsubscribe = () => noop;
+declare global {
+  interface Window {
+    /** Backend requests the fixtures did not answer, for the capture to report. */
+    __showcaseUnhandled?: string[];
+  }
+}
+
 const resolved = <T>(value: T) => Promise.resolve(value);
+
+/** Answers backend channels from the fixtures. */
+function createFakeBackend(): BackendBridge {
+  const invoke = (channel: string, payload: unknown): Promise<unknown> => {
+    const reply = respond(channel, payload);
+    if (!reply) {
+      const unhandled = (window.__showcaseUnhandled ??= []);
+      if (!unhandled.includes(channel)) unhandled.push(channel);
+      console.warn(`[showcase] no fixture for backend channel "${channel}"`);
+      return new Promise(() => {});
+    }
+    return new Promise(resolve => setTimeout(() => resolve(reply.ack), 0));
+  };
+
+  return { invoke: invoke as BackendBridge['invoke'], on: () => () => {} };
+}
 
 export function createFakeElectronApi(): ElectronAPI {
   const store = seedStore();
@@ -121,7 +144,6 @@ export function createFakeElectronApi(): ElectronAPI {
           logsPath: 'C:\\showcase\\logs',
           gpuFeatureStatus: {},
         }),
-      getBackendPort: () => resolved(FAKE_PORT),
       clipboardWrite: () => resolved(undefined),
       clipboardWriteImage: () => resolved(undefined),
       saveFileBinary: () => resolved({ success: false }),
@@ -227,6 +249,7 @@ export function createFakeElectronApi(): ElectronAPI {
         cancel: noop,
       }),
     },
+    backend: createFakeBackend(),
     platform: 'win32',
   };
 }

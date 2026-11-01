@@ -21,12 +21,25 @@ function themeInjectionPlugin(): Plugin {
 }
 
 /**
+ * The meta CSP needs localhost in `connect-src` for Vite's dev server and HMR, and
+ * is enforced in dev too, so the sources live in index.html and builds remove them.
+ */
+function stripDevConnectSources(): Plugin {
+  return {
+    name: 'shiroani-strip-dev-connect-sources',
+    apply: 'build',
+    transformIndexHtml(html) {
+      return html.replace(/ (?:http|ws):\/\/(?:localhost|127\.0\.0\.1):\*/g, '');
+    },
+  };
+}
+
+/**
  * `vite build --mode showcase` only: boots the renderer through
- * `src/showcase/entry.ts`, which installs a fake `window.electronAPI`, swaps
- * `socket.io-client` for an in-memory fixture socket and replaces the built-in
- * new-tab shortcuts with invented ones. Every other mode (dev, production,
- * Storybook, Vitest) is untouched, so the packaged app never contains any of
- * `src/showcase`.
+ * `src/showcase/entry.ts`, which installs a fake `window.electronAPI` answering
+ * from fixtures, and replaces the built-in new-tab shortcuts with invented ones.
+ * Every other mode (dev, production, Storybook, Vitest) is untouched, so the
+ * packaged app never contains any of `src/showcase`.
  */
 function showcaseFixturePlugin(): Plugin {
   let enabled = false;
@@ -43,10 +56,6 @@ function showcaseFixturePlugin(): Plugin {
       config.resolve = {
         ...config.resolve,
         alias: [
-          {
-            find: /^socket\.io-client$/,
-            replacement: resolve(__dirname, './src/showcase/fake-socket.ts'),
-          },
           {
             find: /^@\/lib\/quick-access-defaults$/,
             replacement: resolve(__dirname, './src/showcase/fixtures/quick-access-defaults.ts'),
@@ -66,7 +75,13 @@ function showcaseFixturePlugin(): Plugin {
 }
 
 export default defineConfig({
-  plugins: [tailwindcss(), react(), themeInjectionPlugin(), showcaseFixturePlugin()],
+  plugins: [
+    tailwindcss(),
+    react(),
+    themeInjectionPlugin(),
+    stripDevConnectSources(),
+    showcaseFixturePlugin(),
+  ],
   base: './', // Use relative paths for Electron compatibility
   resolve: {
     alias: {
@@ -101,8 +116,6 @@ export default defineConfig({
           if (id.includes('/@radix-ui/')) return 'vendor-radix';
           // Drag-and-drop toolkit
           if (id.includes('/@dnd-kit/')) return 'vendor-dndkit';
-          // WebSocket client (socket.io-client + related parsers)
-          if (id.includes('/socket.io')) return 'vendor-socket';
           // Icon library
           if (id.includes('/lucide-react/')) return 'vendor-icons';
         },

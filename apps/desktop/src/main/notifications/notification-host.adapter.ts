@@ -1,4 +1,3 @@
-import { Injectable } from '@nestjs/common';
 import { Notification, BrowserWindow, nativeImage } from 'electron';
 import https from 'https';
 import {
@@ -22,7 +21,6 @@ const logger = createMainLogger('NotificationHostAdapter');
  * is injected at bootstrap via `setTargetWindow` so the adapter can route
  * notification clicks back to the renderer.
  */
-@Injectable()
 export class ElectronNotificationHost extends NotificationHostPort {
   private targetWindow: BrowserWindow | null = null;
 

@@ -7,7 +7,7 @@ import DevLogsToolbar from './DevLogsToolbar';
  * All controls above the dev-logs list: the source selector (Buffer / Today /
  * Archive), the level + free-text filters, the runtime log-level select, and
  * the pause / copy / export / clear actions. Fully driven by its `logs`
- * (`ILogSource`) prop, so stories hand-roll a minimal store/socket-free stub.
+ * (`ILogSource`) prop, so stories hand-roll a minimal store/backend-free stub.
  */
 function makeLogs(overrides: Partial<ILogSource> = {}): ILogSource {
   return {
