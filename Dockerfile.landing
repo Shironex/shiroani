@@ -31,6 +31,7 @@ RUN npm install -g serve@14 \
  && addgroup -S -g 10001 app && adduser -S -u 10001 -G app app
 COPY --from=build /app/apps/landing/dist /app
 # Static files stay root-owned and read-only; serve needs no writable paths.
+RUN chmod -R a+rX /app
 USER 10001:10001
 EXPOSE 3000
 CMD ["serve", "/app", "-l", "3000"]

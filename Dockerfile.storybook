@@ -38,6 +38,7 @@ COPY --from=build /app/apps/web/storybook-static /app
 # serve drops its index fallback, so the root would otherwise show a dir listing.
 COPY apps/web/.storybook/serve.json /app/serve.json
 # Static files stay root-owned and read-only; serve needs no writable paths.
+RUN chmod -R a+rX /app
 USER 10001:10001
 EXPOSE 3000
 CMD ["serve", "/app", "-l", "3000"]
