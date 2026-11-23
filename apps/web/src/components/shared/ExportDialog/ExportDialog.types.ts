@@ -17,6 +17,10 @@ export type ExportState =
   | { step: 'save-error'; message: string };
 
 export interface IExportDialogView {
+  /** A file of this export would be over the import cap. */
+  readonly exportTooLarge: boolean;
+  /** The import cap, for the warning text. */
+  readonly importCapMb: number;
   readonly state: ExportState;
   readonly handleSave: () => void;
   readonly handleOpenChange: (value: boolean) => void;

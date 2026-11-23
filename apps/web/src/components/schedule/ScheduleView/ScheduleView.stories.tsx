@@ -31,10 +31,8 @@ function makeAnime(id: number, day: string, title: string): AiringAnime {
  * status legend, and the active Daily / Weekly / Timetable body.
  *
  * Every story seeds `useScheduleStore` NON-EMPTY (`schedule` keyed by date) so
- * the view never tries an initial fetch — that fetch opens a socket that
- * reconnects forever against the dead test backend and hangs the headless
- * Chromium page. The library + notification stores are seeded so the tracked /
- * subscribed derivations are stable and socket-free.
+ * the view never tries an initial fetch, which stays pending on Storybook's parked bridge and would time out into an error state. The library + notification stores are seeded so the tracked /
+ * subscribed derivations are stable and backend-free.
  *
  * Play tests exercise only the filter and sort toggles, which mutate the store
  * in place; the date-nav and view-mode controls intentionally trigger a

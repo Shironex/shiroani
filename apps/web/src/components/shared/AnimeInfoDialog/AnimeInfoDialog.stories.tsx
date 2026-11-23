@@ -22,15 +22,15 @@ const anime = {
 
 /**
  * Modal detail sheet opened from an airing entry. It fetches full AniList
- * detail over the socket on open and falls back to the schedule-entry basics
+ * detail from the backend on open and falls back to the schedule-entry basics
  * (title, format, episode count) while that request is pending or fails — which
- * is exactly what happens against the dead test backend, so the dialog renders
+ * is exactly what happens on Storybook's parked bridge, so the dialog renders
  * its fallback content deterministically.
  *
  * `useScheduleStore` is seeded non-empty so any schedule view mounted alongside
- * it short-circuits its fetch effect and never opens a reconnecting socket.
+ * it short-circuits its fetch effect.
  * The notification + library stores are seeded so the bell and recommendations
- * read stable, socket-free state.
+ * read stable state.
  */
 const meta = {
   title: 'shared/AnimeInfoDialog',

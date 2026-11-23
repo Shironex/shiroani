@@ -333,7 +333,7 @@ export function runMigrations(db: Database.Database, migrations: Migration[] = M
       applyMigration();
     } catch (error) {
       // Name the failing version explicitly — the transaction rolls back, but
-      // without this the only trace is the generic onModuleInit/uncaught handler.
+      // without this the only trace is the generic init/uncaught handler.
       logger.error(
         `Migration v${migration.version} (${migration.description}) failed; rolled back`,
         error

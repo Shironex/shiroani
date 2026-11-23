@@ -11,8 +11,8 @@ const item: FeedItem = {
   sourceColor: '#1d4999',
   sourceCategory: 'news',
   sourceLanguage: 'en',
-  // Keep extraction off: a teaser-extractable item would emit GET_ARTICLE on
-  // open, which auto-connects the socket. The teaser path is the socket-free one.
+  // Keep extraction off: a teaser-extractable item would request GET_ARTICLE on
+  // open. The teaser path is the backend-free one.
   sourceSupportsFullContent: false,
   guid: 'guid-1',
   title: 'A long-awaited sequel finally has a premiere date',

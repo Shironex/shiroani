@@ -1,18 +1,17 @@
 import type { BrowserWindow } from 'electron';
-import type { INestApplication } from '@nestjs/common';
 import type { NotificationSettings, NotificationSubscription } from '@shiroani/shared';
-import { NotificationsService, NotificationHostPort } from '../../modules/notifications';
-import { ElectronNotificationHost } from './notification-host.adapter';
+import type { NotificationsService } from '../../modules/notifications';
+import type { ElectronNotificationHost } from './notification-host.adapter';
 import { createMainLogger } from '../logging/logger';
 
 const logger = createMainLogger('NotificationService');
 
 /**
- * Thin host-side wrapper around the NestJS `NotificationsService`.
+ * Thin host-side wrapper around `NotificationsService`.
  *
- * All scheduling, persistence, and dispatch logic lives inside the NestJS
- * module; this file exists only to bind the Electron-owned main window to the
- * adapter and to provide a stable import surface for the IPC handlers.
+ * All scheduling, persistence, and dispatch logic lives inside the service; this
+ * file exists only to bind the Electron-owned main window to the adapter and to
+ * provide a stable import surface for the IPC handlers.
  */
 let notificationsService: NotificationsService | null = null;
 let electronHost: ElectronNotificationHost | null = null;
@@ -24,36 +23,29 @@ function requireService(): NotificationsService {
   return notificationsService;
 }
 
-export function initializeNotificationService(
-  mainWindow: BrowserWindow,
-  nestApp: INestApplication
+/**
+ * Make the service reachable from the IPC handlers. Called right after the
+ * backend is built, so `notifications:*` calls work from the first page load.
+ */
+export function bindNotificationService(
+  service: NotificationsService,
+  host: ElectronNotificationHost
 ): void {
-  let service: NotificationsService;
+  notificationsService = service;
+  electronHost = host;
+}
+
+/**
+ * Point click routing at the current main window and start the service. Runs for
+ * every window; `initialize()` only does its work the first time.
+ */
+export function attachNotificationWindow(mainWindow: BrowserWindow): void {
+  if (!notificationsService) return;
+  electronHost?.setTargetWindow(mainWindow);
   try {
-    service = nestApp.get(NotificationsService);
-  } catch (error) {
-    logger.error('Failed to resolve NotificationsService from Nest container:', error);
-    return;
-  }
-
-  try {
-    const host = nestApp.get(NotificationHostPort);
-    let resolvedHost: ElectronNotificationHost | null = null;
-    if (host instanceof ElectronNotificationHost) {
-      resolvedHost = host;
-      resolvedHost.setTargetWindow(mainWindow);
-    } else {
-      logger.warn('NotificationHostPort is not the Electron adapter; window binding skipped');
-    }
-
-    service.initialize();
-
-    notificationsService = service;
-    electronHost = resolvedHost;
+    notificationsService.initialize();
   } catch (error) {
     logger.error('Failed to initialize NotificationsService:', error);
-    notificationsService = null;
-    electronHost = null;
   }
 }
 

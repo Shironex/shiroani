@@ -7,7 +7,7 @@ import SettingsView from './SettingsView';
  * The settings shell: a grouped tab sidebar (`role="tablist"`) plus the active
  * section panel (`role="tabpanel"`). Selecting a tab swaps the panel. Outside
  * Electron the default tab is Appearance → Themes; these stories navigate
- * between socket-free sections only, keeping the canvas deterministic.
+ * between backend-free sections only, keeping the canvas deterministic.
  */
 const meta = {
   title: 'settings/SettingsView',

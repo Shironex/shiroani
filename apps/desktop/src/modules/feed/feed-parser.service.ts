@@ -1,4 +1,3 @@
-import { Injectable } from '@nestjs/common';
 import { createHash } from 'crypto';
 import Parser from 'rss-parser';
 import { createLogger, truncate, isPrivateHostLiteral } from '@shiroani/shared';
@@ -33,8 +32,7 @@ export interface CustomItem {
   mediaThumbnail?: { $?: { url?: string } };
   mediaContent?: Array<{ $?: { url?: string; medium?: string } }>;
   enclosure?:
-    | Array<{ $?: { url?: string; type?: string } }>
-    | { $?: { url?: string; type?: string } };
+    Array<{ $?: { url?: string; type?: string } }> | { $?: { url?: string; type?: string } };
   /** `<content:encoded>` — the full post HTML many WordPress/CMS feeds ship. */
   contentEncoded?: string;
   [key: string]: unknown;
@@ -71,7 +69,6 @@ export interface ParsedFeedItem {
  * and exposes the small utility helpers used along the way so they can be
  * unit-tested in isolation.
  */
-@Injectable()
 export class FeedParserService {
   private readonly parser = new Parser<Record<string, unknown>, CustomItem>({
     customFields: {

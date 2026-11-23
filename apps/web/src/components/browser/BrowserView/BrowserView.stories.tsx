@@ -13,10 +13,8 @@ import BrowserView from './BrowserView';
  * its quick-access / airing / resume panels.
  *
  * NewTabPage's airing panel calls `fetchDaily` for today when the schedule slot
- * is empty, and that emit would open the socket and reconnect forever against
- * the dead test backend — pegging the headless Chromium page. Seeding a
- * non-empty schedule slot for today short-circuits that effect, so no socket is
- * attempted. The `<webview>` tags are inert Electron-only elements here; the
+ * is empty. Seeding a non-empty schedule slot for today short-circuits that
+ * effect, so no request is made. The `<webview>` tags are inert Electron-only elements here; the
  * stories assert the surrounding chrome (tabs + toolbar) only.
  */
 const meta = {
@@ -32,7 +30,7 @@ const meta = {
   decorators: [withFullHeight],
   beforeEach: () => {
     // Non-empty schedule slot for today → AiringTodaySection's effect
-    // short-circuits → no socket.
+    // short-circuits, so no request.
     useScheduleStore.setState({ schedule: { [toLocalDate(new Date())]: [] }, isLoading: false });
   },
 } satisfies Meta<typeof BrowserView>;

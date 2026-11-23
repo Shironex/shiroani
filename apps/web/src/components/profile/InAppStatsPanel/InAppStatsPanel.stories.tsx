@@ -18,7 +18,7 @@ const EMPTY_SNAPSHOT = {
  * "In app" tab body — local time-spent stats: a hero line, three counter cards,
  * the activity heatmap, a streak strip and a clear-stats action that opens a
  * confirm dialog. Fed by the local app-stats tracker; the mount effect's poll
- * no-ops outside Electron, so stories stay socket-free once the store is seeded.
+ * no-ops outside Electron, so stories stay backend-free once the store is seeded.
  */
 const meta = {
   title: 'profile/InAppStatsPanel',

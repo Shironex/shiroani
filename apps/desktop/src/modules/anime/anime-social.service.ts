@@ -1,4 +1,3 @@
-import { Injectable } from '@nestjs/common';
 import { createLogger, extractErrorMessage } from '@shiroani/shared';
 import type {
   AniListActivity,
@@ -42,7 +41,6 @@ const logger = createLogger('AnimeSocialService');
  * Extracted from AnimeService so the discover/browse core doesn't carry the
  * activity/notification mapping surface.
  */
-@Injectable()
 export class AnimeSocialService {
   constructor(private readonly anilistClient: AniListClient) {
     logger.info('AnimeSocialService initialized');

@@ -33,6 +33,26 @@ describe('preload channel allow-list', () => {
     expect(electronAPI).toBeDefined();
   });
 
+  describe('backend bridge', () => {
+    it('forwards allow-listed requests with their payload', async () => {
+      ipcRenderer.invoke.mockResolvedValueOnce({ ok: true });
+      await expect(electronAPI.backend.invoke('backend:ping')).resolves.toEqual({ ok: true });
+      expect(ipcRenderer.invoke).toHaveBeenCalledWith('backend:ping');
+    });
+
+    it('rejects a request channel that is not allow-listed without calling main', async () => {
+      await expect(electronAPI.backend.invoke('store:clear')).rejects.toThrow(/not allowed/i);
+      expect(ipcRenderer.invoke).not.toHaveBeenCalled();
+    });
+
+    it('refuses to subscribe to an event that is not allow-listed', () => {
+      expect(() => electronAPI.backend.on('not:an-event' as never, () => {})).toThrow(
+        /not allowed/i
+      );
+      expect(ipcRenderer.on).not.toHaveBeenCalled();
+    });
+  });
+
   describe('ipc.invokeWithTimeout', () => {
     it('throws on unlisted channels (assertAllowedChannel runs synchronously)', () => {
       expect(() => electronAPI.ipc.invokeWithTimeout('unlisted:channel', 5000)).toThrow(

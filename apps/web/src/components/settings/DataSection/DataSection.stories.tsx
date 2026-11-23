@@ -9,8 +9,8 @@ import DataSection from './DataSection';
  * live stores (empty in Storybook).
  *
  * Only the danger-zone dialog is exercised in a play test — the export/import
- * dialogs prepare their payload over the socket on open, which would hang the
- * headless page against the dead test backend, so those triggers are only
+ * dialogs prepare their payload over IPC on open, which would stay pending
+ * on Storybook's parked bridge, so those triggers are only
  * asserted present here.
  */
 const meta = {

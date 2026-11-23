@@ -1,10 +1,10 @@
 // README, portfolio and hero images for ShiroAni, captured with
 // @noctcore/showcase-kit. Regenerate everything with `pnpm showcase`.
 //
-// The capture runs the web renderer alone, without Electron or the NestJS
-// backend: `vite build --mode showcase` boots through
-// apps/web/src/showcase/entry.ts, which installs a fake window.electronAPI and
-// swaps socket.io-client for an in-memory fixture socket. All data shown
+// The capture runs the web renderer alone, without Electron or the backend:
+// `vite build --mode showcase` boots through
+// apps/web/src/showcase/entry.ts, which installs a fake window.electronAPI that
+// answers from fixtures. All data shown
 // (titles, covers, the profile, diary, feed and shortcuts) is invented in
 // apps/web/src/showcase/fixtures. No other build mode includes any of it.
 //

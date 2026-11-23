@@ -1,4 +1,3 @@
-import { Injectable } from '@nestjs/common';
 import { Readability } from '@mozilla/readability';
 import type { JSDOM as JSDOMType } from 'jsdom';
 import createDOMPurify from 'dompurify';
@@ -139,7 +138,6 @@ function buildAllowedHosts(): ReadonlySet<string> {
  * linkedom DOM, sanitizes the result with DOMPurify, and caches it. Returns
  * `null` whenever anything fails so the reader falls back to the teaser + CTA.
  */
-@Injectable()
 export class ArticleExtractorService {
   private readonly allowedHosts = buildAllowedHosts();
   private readonly cache = new LruTtlCache<string, FeedGetArticleResult>(

@@ -22,15 +22,14 @@ const trending: DiscoverMedia[] = Array.from({ length: 8 }, (_, i) => ({
  * sort/filters/exclude controls, the virtualized result grid, and the random /
  * recommendations panels and detail dialog.
  *
- * Every story is seeded socket-free. On mount the view runs two effects that
- * would otherwise emit over the socket and reconnect forever against the dead
- * test backend, hanging the headless Chromium page: a trending fetch (only when
+ * Every story is seeded backend-free. On mount the view runs two effects that
+ * would otherwise call the backend: a trending fetch (only when
  * `trending` is empty) and an unconditional `fetchStatus()` to hydrate the
  * AniList connection. `beforeEach` seeds `useDiscoverStore` non-empty (so the
  * trending effect short-circuits), stubs `fetchTrending`, and stubs the auth
- * store's `fetchStatus` to a no-op so no connection is ever attempted.
+ * store's `fetchStatus` to a no-op so no request is made.
  */
-function seedSocketFree(overrides: Partial<ReturnType<typeof useDiscoverStore.getState>> = {}) {
+function seedBackendFree(overrides: Partial<ReturnType<typeof useDiscoverStore.getState>> = {}) {
   useDiscoverStore.setState({
     activeTab: 'trending',
     searchQuery: '',
@@ -71,7 +70,7 @@ type Story = StoryObj<typeof DiscoverView>;
  * any single component here.
  */
 export const Empty: Story = {
-  beforeEach: () => seedSocketFree({ trending: [] }),
+  beforeEach: () => seedBackendFree({ trending: [] }),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await expect(canvas.getByRole('heading', { name: 'Discover' })).toBeInTheDocument();
@@ -81,7 +80,7 @@ export const Empty: Story = {
 
 /** Loading — the skeleton grid shows while the initial fetch is in flight. */
 export const Loading: Story = {
-  beforeEach: () => seedSocketFree({ trending: [], isLoading: true }),
+  beforeEach: () => seedBackendFree({ trending: [], isLoading: true }),
   play: async ({ canvasElement }) => {
     await expect(canvasElement.querySelector('[aria-busy="true"]')).toBeInTheDocument();
   },
@@ -91,7 +90,7 @@ export const Loading: Story = {
 export const LoadError: Story = {
   // AniListErrorState's title is an <h2>, so it follows the view's <h1> cleanly —
   // heading-order passes and this state inherits the meta's a11y 'error'.
-  beforeEach: () => seedSocketFree({ trending: [], error: 'network down' }),
+  beforeEach: () => seedBackendFree({ trending: [], error: 'network down' }),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await expect(canvas.getByRole('button', { name: /try again/i })).toBeInTheDocument();
@@ -101,7 +100,7 @@ export const LoadError: Story = {
 /** Search with no matches — the "no results" empty state, distinct from no-anime. */
 export const NoSearchResults: Story = {
   beforeEach: () =>
-    seedSocketFree({ searchQuery: 'zzz-no-such-title', isSearching: false, searchResults: [] }),
+    seedBackendFree({ searchQuery: 'zzz-no-such-title', isSearching: false, searchResults: [] }),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await waitFor(() => expect(canvas.getByText('No results')).toBeInTheDocument());
@@ -110,11 +109,11 @@ export const NoSearchResults: Story = {
 
 /**
  * Typing in the search box drives the store's query immediately; the debounced
- * `search` action is stubbed so the lingering 400ms timer never emits over the
- * socket once the story settles.
+ * `search` action is stubbed so the lingering 400ms timer never calls the
+ * backend once the story settles.
  */
 export const SearchInput: Story = {
-  beforeEach: () => seedSocketFree({ trending: [], search: fn() }),
+  beforeEach: () => seedBackendFree({ trending: [], search: fn() }),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     const search = canvas.getByRole('textbox', { name: 'Search anime...' });

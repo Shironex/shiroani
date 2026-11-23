@@ -6,9 +6,9 @@ import { useAniListNotificationsStore } from '@/stores/useAniListNotificationsSt
 import NotificationBell from './NotificationBell';
 
 // The bell's mount effect starts background polling, and opening the panel
-// fetches + marks-read — all of which emit over the socket. Stub the store's
-// async actions to no-ops so the unit tests never touch the (uninitialized)
-// socket and stay deterministic.
+// fetches + marks-read: all of which emit over IPC. Stub the store's
+// async actions to no-ops so the unit tests never touch the
+// backend and stay deterministic.
 function stubActions() {
   useAniListNotificationsStore.setState({
     refreshUnreadCount: vi.fn().mockResolvedValue(undefined),

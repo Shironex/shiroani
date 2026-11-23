@@ -1,7 +1,7 @@
 // Preview provider for design-sync — mirrors apps/web/.storybook/preview.tsx.
 //
 // The Storybook decorators (TooltipProvider + I18nextProvider + theme class +
-// dormant socket) can't be bundled by the converter because preview.css pulls
+// parked backend bridge) can't be bundled by the converter because preview.css pulls
 // in Tailwind v4 via a CSS `@import`. This component reproduces the same
 // runtime context so every design-sync preview renders exactly as the
 // reference Storybook does. Wired via cfg.provider in .design-sync/config.json.
@@ -9,15 +9,14 @@ import { useLayoutEffect } from 'react';
 import { I18nextProvider } from 'react-i18next';
 import { DEFAULT_BUILT_IN_THEME, DARK_THEMES } from '@shiroani/shared';
 import { TooltipProvider } from '@/components/ui/tooltip';
-import { initializeSocket } from '@/lib/socket';
 import i18n from '@/lib/i18n';
 
-// View hooks attach socket listeners on mount (getSocket throws without a
-// singleton). A dormant socket (autoConnect false) never opens a connection.
-try {
-  initializeSocket(0);
-} catch {
-  // already initialized — safe to ignore.
+// Views fetch on mount, and with no bridge that call would reject and replace
+// seeded state with an error. This one leaves every call pending.
+if (!window.electronAPI) {
+  window.electronAPI = {
+    backend: { invoke: () => new Promise(() => {}), on: () => () => {} },
+  } as unknown as NonNullable<typeof window.electronAPI>;
 }
 
 // Theme tokens are scoped to `:root.<theme>` (and dark themes need the bare

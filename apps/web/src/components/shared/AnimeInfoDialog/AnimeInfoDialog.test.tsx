@@ -3,10 +3,10 @@ import type { AiringAnime } from '@shiroani/shared';
 import { render, screen } from '@/test/test-utils';
 import AnimeInfoDialog from './AnimeInfoDialog';
 
-// The dialog fetches details over the socket on open — reject so the test is
+// The dialog fetches details over IPC on open: reject so the test is
 // deterministic and the component falls back to the schedule-entry basic info.
-vi.mock('@/lib/socketHelpers', () => ({
-  emitAsync: vi.fn().mockRejectedValue(new Error('no socket')),
+vi.mock('@/lib/backend', () => ({
+  invokeBackend: vi.fn().mockRejectedValue(new Error('no backend')),
 }));
 
 vi.mock('@/hooks/useNotificationToggle', () => ({

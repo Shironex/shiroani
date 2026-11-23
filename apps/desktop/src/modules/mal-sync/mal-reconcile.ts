@@ -9,7 +9,7 @@
  * called out in the engine handoff: "reconcile stays unchanged" means the
  * AniList one is not modified, NOT that MAL reuses it.
  *
- * No I/O, no Nest, no DB, no network — every function here is deterministic so
+ * No I/O, no DB, no network: every function here is deterministic so
  * the conflict matrix can be unit-tested exhaustively. The adapter layer
  * (`mal-sync.adapter.ts`) wraps these with the actual reads/writes.
  *

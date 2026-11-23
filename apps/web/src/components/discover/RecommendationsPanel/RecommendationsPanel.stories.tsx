@@ -23,8 +23,8 @@ const recommendations: AniListCommunityRecommendation[] = Array.from({ length: 6
  * loading, error and per-pair voting state, owning its own loading/empty/error
  * rendering like the Random panel. The panel runs no fetch on mount (the parent
  * view triggers fetches on tab change), so seeding the store in `beforeEach`
- * keeps stories socket-free; the voting story additionally stubs
- * `voteRecommendation` so a vote never emits over the socket.
+ * keeps stories backend-free; the voting story additionally stubs
+ * `voteRecommendation` so a vote never emits over IPC.
  */
 const meta = {
   title: 'discover/RecommendationsPanel',
@@ -42,7 +42,7 @@ export default meta;
 
 type Story = StoryObj<typeof RecommendationsPanel>;
 
-/** Populated — voting is stubbed so pressing recommend stays socket-free. */
+/** Populated: voting is stubbed so pressing recommend stays backend-free. */
 export const Default: Story = {
   beforeEach: () => {
     useDiscoverStore.setState({
@@ -57,7 +57,7 @@ export const Default: Story = {
     const canvas = within(canvasElement);
     await expect(canvas.getByRole('button', { name: 'Recommended 1' })).toBeInTheDocument();
 
-    // Voting goes through the stubbed store action — no socket emit.
+    // Voting goes through the stubbed store action: no backend call.
     const recommendButtons = canvas.getAllByRole('button', { name: 'Recommend' });
     await userEvent.click(recommendButtons[0]);
     await waitFor(() => expect(useDiscoverStore.getState().voteRecommendation).toHaveBeenCalled());

@@ -6,7 +6,7 @@ import UpdatesSection from './UpdatesSection';
 /**
  * The full updates panel: the current version hero, the update-status pill, the
  * Stable/Beta channel toggle, and the check / download / install actions. Reads
- * `useUpdateStore` (electron-store/IPC-backed, not socket-based); each story
+ * `useUpdateStore` (electron-store/IPC-backed, not on the backend bridge); each story
  * seeds the store and stubs its async actions to no-ops so nothing reaches the
  * absent desktop bridge.
  */

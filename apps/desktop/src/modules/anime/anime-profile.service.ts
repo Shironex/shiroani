@@ -1,4 +1,3 @@
-import { Injectable, Optional } from '@nestjs/common';
 import { createLogger, extractErrorMessage } from '@shiroani/shared';
 import type { UserProfile, MalUserStats } from '@shiroani/shared';
 import { AniListClient } from './anilist-client';
@@ -17,14 +16,13 @@ const PROFILE_CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutes
  * AnimeService so the discover/browse core doesn't carry the ~400-line profile
  * mapping surface.
  */
-@Injectable()
 export class AnimeProfileService {
   constructor(
     private readonly anilistClient: AniListClient,
     // Optional so the unit tests can construct the service with just the AniList
-    // client; DI provides the real MalClient (same AnimeModule). Absent → the
+    // client; the composition root passes the real MalClient. Absent → the
     // MAL viewer-profile path resolves null (treated as "not connected").
-    @Optional() private readonly malClient?: MalClient
+    private readonly malClient?: MalClient
   ) {
     logger.info('AnimeProfileService initialized');
   }

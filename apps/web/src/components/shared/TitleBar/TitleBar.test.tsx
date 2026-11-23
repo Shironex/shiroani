@@ -4,7 +4,7 @@ import { render, screen } from '@/test/test-utils';
 // Force the non-mac branch so the real window-control buttons render.
 vi.mock('@/lib/platform', () => ({ IS_ELECTRON: true, IS_MAC: false }));
 
-// NotificationBell pulls in social stores/sockets — stub it to an inert marker
+// NotificationBell pulls in social stores: stub it to an inert marker
 // so this suite stays focused on the title bar's own window controls.
 vi.mock('@/components/shared/NotificationBell', () => ({
   NotificationBell: () => <div data-testid="notification-bell" />,

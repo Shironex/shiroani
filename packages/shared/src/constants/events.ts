@@ -1,7 +1,7 @@
 /**
- * WebSocket Socket.io Event Constants
+ * Backend channel and event names
  *
- * Single source of truth for all socket event names used between
+ * Single source of truth for the channel names used over IPC between
  * the frontend (apps/web) and backend (apps/desktop).
  *
  * Naming convention: 'domain:action' (colon separator)
@@ -137,15 +137,14 @@ export const LibraryEvents = {
   REMOVE: 'library:remove',
   /**
    * Apply the SAME field update to many entries in ONE request. Replaces the N
-   * individual UPDATE emits the batch action bar used to fire — those tripped
-   * the {@link SystemEvents.THROTTLED} guard on a large selection. Payload:
+   * individual UPDATE requests the batch action bar used to send. Payload:
    * `LibraryUpdateManyPayload { ids; ...updates }`. Resolves with the updated
    * `{ entries }`.
    */
   UPDATE_MANY: 'library:update-many',
   /**
    * Remove many entries in ONE request (one DB transaction). The bulk twin of
-   * {@link LibraryEvents.REMOVE}; same throttler-avoidance rationale as
+   * {@link LibraryEvents.REMOVE}; same one-call-per-selection rationale as
    * {@link LibraryEvents.UPDATE_MANY}. Payload: `LibraryRemoveManyPayload { ids }`.
    * Resolves with `{ ids }` — the ids actually deleted (rows that existed).
    */
@@ -164,8 +163,6 @@ export const ScheduleEvents = {
   GET_WEEKLY: 'schedule:get-weekly',
 
   // Server -> Client (broadcasts)
-  DAILY_RESULT: 'schedule:daily-result',
-  WEEKLY_RESULT: 'schedule:weekly-result',
 } as const;
 
 // ============================================
@@ -276,12 +273,13 @@ export const FeedEvents = {
 } as const;
 
 // ============================================
-// System Events
+// Backend IPC Events
 // ============================================
-export const SystemEvents = {
-  CONNECTED: 'system:connected',
-  ERROR: 'system:error',
-  THROTTLED: 'system:throttled',
+export const BackendEvents = {
+  /** Round-trip check for the backend IPC path. No payload. */
+  PING: 'backend:ping',
+  /** The system woke from sleep, so time-sensitive views should refetch. No payload. */
+  RESUMED: 'system:resumed',
 } as const;
 
 // ============================================
@@ -290,7 +288,7 @@ export const SystemEvents = {
 /**
  * The `action` discriminator carried by `*:updated` broadcasts so the client
  * knows how to reconcile its list. Single source of truth shared by the
- * library/diary gateways (producers) and {@link createCrudResource} (consumer)
+ * library/diary handlers (producers) and {@link createCrudResource} (consumer)
  * to prevent the `'added'` vs `'created'` drift from re-appearing.
  */
 export const CrudActions = {

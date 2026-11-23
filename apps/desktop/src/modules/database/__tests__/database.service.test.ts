@@ -54,7 +54,7 @@ function buildService(tableNames: string[], hasSequence = true) {
   const stub = makeWipeDbStub(tableNames, hasSequence);
   const service = new DatabaseService(':memory:');
   // Inject the stub in place of the real better-sqlite3 handle normally opened
-  // in onModuleInit (which we skip — no native module under jest).
+  // in init() (skipped: no native module under jest).
   (service as unknown as { _db: Database.Database })._db = stub.db;
   return { service, ...stub };
 }

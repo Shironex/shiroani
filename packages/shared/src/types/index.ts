@@ -13,8 +13,5 @@ export * from './diary';
 // Import/Export types
 export * from './import-export';
 
-// System types
-export * from './system';
-
 // Electron API types (preload contract)
 export * from './electron-api';

@@ -16,7 +16,7 @@ import {
  * {@link ProfileDashboard} layout — a fixed sidebar (avatar + summary stats +
  * sync status + open-profile action) beside a scrollable main column — so the
  * two profile tabs read as one design. Fed by the desktop main process via
- * {@link MalEvents.GET_VIEWER_PROFILE} (token never crosses the socket).
+ * {@link MalEvents.GET_VIEWER_PROFILE} (token never reaches the renderer).
  *
  * The stat set is deliberately lighter than AniList's: MAL's v2 API only exposes
  * ~15 scalars for `@me`, so there are no genre / voice-actor / score-distribution

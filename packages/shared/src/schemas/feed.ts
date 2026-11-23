@@ -1,5 +1,5 @@
 /**
- * Zod schemas for feed gateway payloads.
+ * Zod schemas for feed backend payloads.
  *
  * Mirrors the TypeScript types in `../types/feed.ts`. Note that the payload
  * `category` and `language` can include `'all'` (a filter value that isn't

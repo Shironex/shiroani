@@ -145,7 +145,6 @@ export const appClipboardWriteImageSchema = z.tuple([z.string()]);
 export const appSaveFileBinarySchema = z.tuple([z.string().min(1), z.string()]);
 export const appGetAutoLaunchSchema = z.tuple([]);
 export const appSetAutoLaunchSchema = z.tuple([z.boolean()]);
-export const appGetBackendPortSchema = z.tuple([]);
 export const appListLogFilesSchema = z.tuple([]);
 export const appLogWriteSchema = z.tuple([
   z.object({

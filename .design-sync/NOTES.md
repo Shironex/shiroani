@@ -13,7 +13,7 @@ Target project: `7176d6a1-b9b3-4e0f-bc28-276bbfa842a5` (ShiroAni Design System).
 
 - `TooltipProvider` (Radix) wraps every story.
 - `I18nextProvider` with the real `@/lib/i18n` instance (18 namespaces); language driven by toolbar global, default `DEFAULT_LANGUAGE`.
-- A dormant socket is initialized (`initializeSocket(0)`, autoConnect false) so view hooks' socket listeners don't throw.
+- A parked backend bridge is installed (every call stays pending, no events) so a view's fetch on mount does not reject and replace seeded state with an error.
 - Theme classes applied to `:root` (dark themes also get bare `dark` class for Tailwind `dark:`).
 - Stories seed Zustand stores directly; never hit the backend.
 

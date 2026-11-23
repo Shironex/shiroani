@@ -1,8 +1,8 @@
 /**
- * Zod schemas for anime and library gateway payloads.
+ * Zod schemas for anime and library backend payloads.
  *
  * These mirror the TypeScript types in `../types/anime.ts` and provide runtime
- * validation at the Socket.IO gateway boundary.
+ * validation at the IPC boundary.
  */
 
 import { z } from 'zod';
@@ -58,7 +58,7 @@ export const animeStatusSchema = z.enum([
 ]);
 
 // ============================================
-// Anime gateway payloads
+// Anime backend payloads
 // ============================================
 
 export const animeSearchPayloadSchema = z.object({
@@ -148,7 +148,7 @@ export const animeToggleFollowPayloadSchema = z.object({
 });
 
 // ============================================
-// Library gateway payloads
+// Library backend payloads
 // ============================================
 
 export const libraryGetAllPayloadSchema = z
@@ -192,7 +192,7 @@ export const libraryRemovePayloadSchema = z.object({
 
 /**
  * Upper bound on a single bulk operation. A "select all" batch on a large
- * library is one socket emit; the cap keeps a single message from carrying an
+ * library is one backend call; the cap keeps a single message from carrying an
  * unbounded id list (and the DB transaction from running unbounded), while
  * sitting far above any realistic library size.
  */
@@ -234,7 +234,7 @@ export const libraryUpdateManyPayloadSchema = z
   });
 
 // ============================================
-// AniList sync gateway payloads
+// AniList sync backend payloads
 // ============================================
 
 /** Request payload for a single-entry AniList sync (AniListSyncEvents.SYNC_ENTRY). */
@@ -248,7 +248,7 @@ export const anilistSyncEntryPayloadSchema = z.object({
  *
  * Identical shape to {@link anilistSyncEntryPayloadSchema} (the
  * provider-neutral {@link AniListSyncEntryRequest}) — declared separately so the
- * MAL gateway validates against its own named schema rather than borrowing the
+ * MAL handler validates against its own named schema rather than borrowing the
  * AniList one, keeping the two sync surfaces decoupled.
  */
 export const malSyncEntryPayloadSchema = z.object({
@@ -265,7 +265,7 @@ export const malSyncEntryPayloadSchema = z.object({
  *
  * `preprocess` substitutes the two-way default for a missing/undefined payload,
  * so an older renderer that emits no payload still runs the original behaviour
- * (and the gateway never has to special-case `undefined`). Shared by both
+ * (and the backend never has to special-case `undefined`). Shared by both
  * providers — the full-sync wire is identical for AniList and MAL.
  */
 const pushModeSchema = z.enum(['create-missing', 'overwrite']);

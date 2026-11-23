@@ -25,7 +25,7 @@ const activities: AniListActivity[] = [
  * Recent AniList activity feed for the authenticated viewer. The feed is
  * viewer-scoped (resolved from the OAuth token via `useViewerActivity`), so it
  * short-circuits to the "connect" prompt without a connected account — the
- * populated / loading / error states are socket-backed there, so they're shown
+ * populated / loading / error states need the backend there, so they're shown
  * through the feed's render parts below rather than at the `ActivityFeed` level.
  */
 const meta = {
@@ -42,7 +42,7 @@ type Story = StoryObj<typeof ActivityFeed>;
 
 /**
  * Disconnected — with no connected AniList account the feed short-circuits before
- * any socket call and renders the "connect" prompt.
+ * any backend call and renders the "connect" prompt.
  */
 export const NotConnected: Story = {
   play: async ({ canvasElement }) => {

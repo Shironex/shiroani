@@ -4,7 +4,6 @@
 // but are kept out of the cross-app `@shiroani/shared` surface.
 export {
   APP_NAME,
-  LOCALHOST,
   VITE_DEV_PORT,
   GITHUB_RELEASES_URL,
   GITHUB_RELEASES_API_URL,

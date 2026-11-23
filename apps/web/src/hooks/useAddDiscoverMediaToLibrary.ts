@@ -8,7 +8,7 @@ import {
   type SaveMediaListEntryResult,
 } from '@shiroani/shared';
 import { isAlreadyInLibrary } from '@/lib/anime-utils';
-import { emitWithErrorHandling } from '@/lib/socket';
+import { invokeBackend } from '@/lib/backend';
 import type { DiscoverMedia } from '@/stores/useDiscoverStore';
 import { useLibraryStore } from '@/stores/useLibraryStore';
 import { useAniListAuthStore } from '@/stores/useAniListAuthStore';
@@ -62,7 +62,7 @@ export function useAddDiscoverMediaToLibrary(): (media: DiscoverMedia) => Promis
       // leaves the remote values untouched (a literal score:0 would unrate it).
       if (useAniListAuthStore.getState().status.connected) {
         try {
-          await emitWithErrorHandling<SaveMediaListEntryRequest, SaveMediaListEntryResult>(
+          await invokeBackend<SaveMediaListEntryRequest, SaveMediaListEntryResult>(
             AnimeEvents.SAVE_MEDIA_LIST_ENTRY,
             { mediaId: media.id, status: 'PLANNING' }
           );

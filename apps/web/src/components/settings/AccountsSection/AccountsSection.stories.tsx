@@ -13,10 +13,10 @@ const malViewer = { id: 9, name: 'Loid' };
  * Both account cards call `fetchStatus()` on mount, and the connect/disconnect
  * buttons drive the auth stores. In Storybook there is no `window.electronAPI`
  * bridge, so seed both auth stores to a deterministic state and stub their
- * async actions to no-op `fn()`s — that keeps every story socket-free and lets
- * play tests assert the stubbed actions fired without touching the dead test
+ * async actions to no-op `fn()`s: that keeps every story backend-free and lets
+ * play tests assert the stubbed actions fired without touching the
  * backend. When a card is shown connected the matching sync store is seeded and
- * its socket-touching `sync`/`pushLibrary` are stubbed too, so the inline sync
+ * its backend-calling `sync`/`pushLibrary` are stubbed too, so the inline sync
  * card never opens a connection.
  */
 function stubAuthStores() {
@@ -54,7 +54,7 @@ function stubSyncStores() {
  * connected cards show the viewer name, an expiry hint, a Disconnect button and
  * the inline two-way sync card. Tokens are held main-side and never cross IPC.
  * Every story seeds the auth (and, when connected, sync) stores in `beforeEach`
- * and stubs their async actions so nothing reaches the socket.
+ * and stubs their async actions so nothing reaches the backend.
  */
 const meta = {
   title: 'settings/AccountsSection',

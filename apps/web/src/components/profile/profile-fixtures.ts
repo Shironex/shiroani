@@ -2,7 +2,7 @@ import type { AppStatsSnapshot, MalUserStats, UserProfile } from '@shiroani/shar
 
 /**
  * Minimal-but-complete {@link UserProfile} fixture for profile stories and
- * tests. Store/socket-free — every field is a literal so stories stay
+ * tests. Store-free and backend-free: every field is a literal so stories stay
  * deterministic and render the full dashboard surface without a backend.
  */
 export const mockUserProfile: UserProfile = {

@@ -1,4 +1,3 @@
-import { Injectable } from '@nestjs/common';
 import {
   createLogger,
   extractErrorMessage,
@@ -34,7 +33,6 @@ export interface ImportBatchResult {
   hasDiary: boolean;
 }
 
-@Injectable()
 export class ImportExportService {
   constructor(
     private readonly libraryService: LibraryService,
@@ -47,7 +45,7 @@ export class ImportExportService {
   /**
    * Factory reset: erase every user table (library, diary, feed, bookmarks,
    * watch history, …). Delegates to {@link DatabaseService.clearAllData}, which
-   * owns the wipe — this method lives in the `data:` domain so the gateway has a
+   * owns the wipe: this method lives in the `data:` domain so the backend has a
    * single service to call alongside export/import. (Minor: the service is
    * named for import/export but also fronts the full-data wipe.)
    */

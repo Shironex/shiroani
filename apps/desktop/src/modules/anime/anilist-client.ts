@@ -1,4 +1,3 @@
-import { Injectable, Optional } from '@nestjs/common';
 import type { AniListViewer } from '@shiroani/shared';
 import { createLogger, extractErrorMessage } from '@shiroani/shared';
 import { LruTtlCache } from '../kernel/lru-ttl-cache';
@@ -47,7 +46,6 @@ interface ViewerResponse {
  * - Uses Node.js built-in fetch (Node 22+)
  * - In-memory TTL cache for reducing redundant API calls
  */
-@Injectable()
 export class AniListClient {
   private readonly endpoint = 'https://graphql.anilist.co';
   private readonly maxRetries = 3;
@@ -55,7 +53,7 @@ export class AniListClient {
   private readonly requestTimeoutMs = 15_000;
   private readonly cache = new LruTtlCache<string, unknown>(200, DEFAULT_CACHE_TTL_MS);
 
-  constructor(@Optional() private readonly tokenPort?: AniListTokenPort) {
+  constructor(private readonly tokenPort?: AniListTokenPort) {
     logger.info('AniListClient initialized');
   }
 

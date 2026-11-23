@@ -29,7 +29,7 @@ export interface AnimeLibraryRow {
  * Library entry projected for AniList reconciliation — carries the sync
  * baselines (`anilistSyncedAt` / `anilistRemoteUpdatedAt`) that the shared
  * {@link AnimeEntry} deliberately omits (they are main-side sync internals and
- * must never cross the socket). Produced by `LibraryService.getEntriesForSync`.
+ * must never reach the renderer). Produced by `LibraryService.getEntriesForSync`.
  */
 export interface AniListSyncRow {
   id: number;

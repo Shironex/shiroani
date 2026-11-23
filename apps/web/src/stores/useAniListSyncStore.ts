@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { maybeDevtools } from '@/stores/utils/maybeDevtools';
-import { getSocket, emitWithErrorHandling } from '@/lib/socket';
+import { invokeBackend, onBackendEvent } from '@/lib/backend';
 import {
   AniListSyncEvents,
   createLogger,
@@ -28,7 +28,7 @@ const logger = createLogger('AniListSyncStore');
 function requestForMode(mode: FullSyncDirection): FullSyncRequest {
   // `mode` is rehydrated from localStorage, so a stale/corrupted value could
   // reach here — default anything unrecognised to two-way rather than emit an
-  // invalid `direction` the gateway schema would reject.
+  // invalid `direction` the backend schema would reject.
   if (mode === 'push') return { direction: 'push', pushMode: 'overwrite' };
   if (mode === 'pull') return { direction: 'pull' };
   return { direction: 'two-way' };
@@ -94,7 +94,7 @@ interface AniListSyncActions {
    * Reconcile a SINGLE library entry against AniList in a forced direction
    * (`push`/`pull`) or `auto`. Resolves with the outcome action (or `'error'`
    * on failure) so the caller can surface a result toast — this thunk stays
-   * i18n-agnostic, mirroring {@link sync}. The desktop gateway broadcasts
+   * i18n-agnostic, mirroring {@link sync}. The desktop backend broadcasts
    * `LibraryEvents.UPDATED` on success, so the library store re-fetches and the
    * per-entry sync badge refreshes automatically (no manual refetch here).
    */
@@ -130,19 +130,16 @@ export const useAniListSyncStore = create<AniListSyncStore>()(
             'anilistSync/start'
           );
 
-          // `getSocket()` throws if the socket singleton isn't initialized; keep it
-          // (and the listener wiring) inside the try so any failure surfaces through
+          // Keep the listener wiring inside the try so any failure surfaces through
           // the catch instead of escaping as an unhandled rejection.
           let detach: (() => void) | null = null;
           try {
-            const socket = getSocket();
             const handleProgress = (progress: AniListSyncProgress) => {
               set({ progress }, undefined, 'anilistSync/progress');
             };
-            socket.on(AniListSyncEvents.PROGRESS, handleProgress);
-            detach = () => socket.off(AniListSyncEvents.PROGRESS, handleProgress);
+            detach = onBackendEvent(AniListSyncEvents.PROGRESS, handleProgress);
 
-            const result = await emitWithErrorHandling<FullSyncRequest, AniListSyncResult>(
+            const result = await invokeBackend<FullSyncRequest, AniListSyncResult>(
               AniListSyncEvents.SYNC,
               payload,
               { timeout: SYNC_TIMEOUT_MS }
@@ -184,10 +181,10 @@ export const useAniListSyncStore = create<AniListSyncStore>()(
 
           set({ entrySyncingId: localId }, undefined, 'anilistSync/entryStart');
           try {
-            const result = await emitWithErrorHandling<
-              AniListSyncEntryRequest,
-              AniListSyncEntryResult
-            >(AniListSyncEvents.SYNC_ENTRY, { localId, direction });
+            const result = await invokeBackend<AniListSyncEntryRequest, AniListSyncEntryResult>(
+              AniListSyncEvents.SYNC_ENTRY,
+              { localId, direction }
+            );
             return result.action;
           } catch (error) {
             logger.error('AniList entry sync failed:', error);

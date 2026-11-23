@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { stripHtmlSimple } from '@/lib/html-text';
 import { getAnimeTitle } from '@/lib/anime-utils';
-import { emitAsync } from '@/lib/socketHelpers';
+import { invokeBackend } from '@/lib/backend';
 import { useNavigateToBrowser } from '@/hooks/useNavigateToBrowser';
 import type { AiringAnime, AnimeDetail } from '@shiroani/shared';
 import { AnimeEvents } from '@shiroani/shared';
@@ -30,7 +30,7 @@ export function useAnimeInfoDialog(
     setDetails(null);
     setDescExpanded(false);
     try {
-      const response = await emitAsync<{ anilistId: number }, { anime: AnimeDetail }>(
+      const response = await invokeBackend<{ anilistId: number }, { anime: AnimeDetail }>(
         AnimeEvents.GET_DETAILS,
         { anilistId }
       );

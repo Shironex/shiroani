@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { maybeDevtools } from '@/stores/utils/maybeDevtools';
 import { AnimeEvents, createLogger, type AnimeDetail } from '@shiroani/shared';
-import { emitWithErrorHandling } from '@/lib/socket';
+import { invokeBackend } from '@/lib/backend';
 
 const logger = createLogger('AnimeDetailStore');
 
@@ -17,7 +17,7 @@ interface AnimeDetailState {
 interface AnimeDetailActions {
   /**
    * Kick off fetches for any ids that aren't already cached, in-flight, or
-   * known-failed. Fires in parallel — no batching required since the socket
+   * known-failed. Fires in parallel: no batching required since the
    * backend handles concurrent calls.
    */
   ensureDetails: (ids: readonly number[]) => void;
@@ -34,10 +34,10 @@ export const useAnimeDetailStore = create<AnimeDetailStore>()(
     (set, get) => {
       const fetchOne = async (id: number) => {
         try {
-          const response = await emitWithErrorHandling<
-            { anilistId: number },
-            { anime: AnimeDetail }
-          >(AnimeEvents.GET_DETAILS, { anilistId: id });
+          const response = await invokeBackend<{ anilistId: number }, { anime: AnimeDetail }>(
+            AnimeEvents.GET_DETAILS,
+            { anilistId: id }
+          );
           set(
             state => {
               const nextDetails = new Map(state.details);

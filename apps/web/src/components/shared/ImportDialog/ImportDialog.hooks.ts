@@ -1,6 +1,6 @@
 import { useEffect, useCallback, useRef, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { getSocket, emitWithErrorHandling } from '@/lib/socket';
+import { invokeBackend, onBackendEvent } from '@/lib/backend';
 import {
   ImportExportEvents,
   type ShiroaniExportFormat,
@@ -8,6 +8,7 @@ import {
   type ImportResponse,
   type ImportItemResult,
 } from '@shiroani/shared';
+import { MAX_IMPORT_JSON_BYTES } from '@/components/shared/DropOverlay/classify-drop';
 import { useDialogStateMachine } from '@/hooks/useDialogStateMachine';
 import type {
   IImportDialogProps,
@@ -22,7 +23,12 @@ type IUseImportDialogArgs = Pick<
 >;
 
 /** Error keys under `importDialog.errorMessages` that {@link parseImportContent} can return. */
-type ImportParseError = 'invalidJson' | 'notShiroaniExport';
+type ImportParseError = 'invalidJson' | 'notShiroaniExport' | 'tooLarge';
+
+/** The wait for a small import. Only stops the wait: the backend carries on. */
+const IMPORT_MIN_TIMEOUT_MS = 300_000;
+/** The backend spends about 27 ms per row (measured), mostly its progress throttle. */
+const IMPORT_TIMEOUT_PER_ROW_MS = 60;
 
 /**
  * The single validation path for import files, shared by the native picker
@@ -34,6 +40,10 @@ export function parseImportContent(
 ):
   | { ok: true; data: ShiroaniExportFormat; libraryCount: number; diaryCount: number }
   | { ok: false; error: ImportParseError } {
+  if (raw.length > MAX_IMPORT_JSON_BYTES) {
+    return { ok: false, error: 'tooLarge' };
+  }
+
   let data: ShiroaniExportFormat;
   try {
     data = JSON.parse(raw);
@@ -70,7 +80,7 @@ export function useImportDialog({
   // a chance to settle. Reset when the dialog closes.
   const autoTriggeredRef = useRef(false);
 
-  // Clean up socket listener on unmount
+  // Clean up the event listener on unmount
   useEffect(() => {
     return () => {
       listenerCleanupRef.current?.();
@@ -83,7 +93,9 @@ export function useImportDialog({
       if (!parsed.ok) {
         transition({
           step: 'file-error',
-          message: t(`importDialog.errorMessages.${parsed.error}`),
+          message: t(`importDialog.errorMessages.${parsed.error}`, {
+            maxMb: MAX_IMPORT_JSON_BYTES / 1024 / 1024,
+          }),
         });
         return;
       }
@@ -158,7 +170,6 @@ export function useImportDialog({
     transition({ step: 'importing', items: [...initialItems], totalCount });
 
     // Listen for progress updates
-    const socket = getSocket();
     const handleProgress = (progress: ImportItemResult) => {
       updateState(prev => {
         if (prev.step !== 'importing') return prev;
@@ -169,16 +180,14 @@ export function useImportDialog({
       });
     };
 
-    socket.on(ImportExportEvents.IMPORT_PROGRESS, handleProgress);
-    listenerCleanupRef.current = () => {
-      socket.off(ImportExportEvents.IMPORT_PROGRESS, handleProgress);
-    };
+    const unsubscribeProgress = onBackendEvent(ImportExportEvents.IMPORT_PROGRESS, handleProgress);
+    listenerCleanupRef.current = unsubscribeProgress;
 
     try {
-      const response = await emitWithErrorHandling<ImportRequest, ImportResponse>(
+      const response = await invokeBackend<ImportRequest, ImportResponse>(
         ImportExportEvents.IMPORT,
         { type, data, strategy },
-        { timeout: 300000 }
+        { timeout: Math.max(IMPORT_MIN_TIMEOUT_MS, totalCount * IMPORT_TIMEOUT_PER_ROW_MS) }
       );
 
       // Minimum-duration pattern: keep the progress UI visible for at least
@@ -196,7 +205,7 @@ export function useImportDialog({
         message: err instanceof Error ? err.message : t('importDialog.errorMessages.importFailed'),
       });
     } finally {
-      socket.off(ImportExportEvents.IMPORT_PROGRESS, handleProgress);
+      unsubscribeProgress();
       listenerCleanupRef.current = null;
     }
   }, [state, type, strategy, transition, updateState, t]);

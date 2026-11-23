@@ -12,7 +12,7 @@ import ChangelogView from './ChangelogView';
  *
  * Release data is the static, bilingual `@shiroani/changelog` package (read via
  * `@/lib/changelog-entries`), localized to the active i18next language — so the
- * view is fully self-contained: no backend, no store seeding, no socket.
+ * view is fully self-contained: no backend, no store seeding.
  * Stories render against DEFAULT_LANGUAGE (`en`).
  */
 const meta = {

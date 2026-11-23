@@ -10,9 +10,9 @@
       (apps/desktop/src/main/window.ts) via `webRequest.onHeadersReceived`. This
       meta tag is a defence-in-depth fallback in case the header filter ever misses
       a packaged URL form (e.g. file:///C:/... on Windows) or the renderer is loaded
-      in a context that doesn't match the filter. `connect-src` is intentionally
-      permissive here (localhost + https:) because the exact backend port is only
-      known at runtime — the header-based CSP has the precise allowlist.
+      in a context that doesn't match the filter. `connect-src` allows localhost for
+      the Vite dev server only: production builds strip those sources, see
+      `stripDevConnectSources` in vite.config.ts.
     -->
     <meta
       http-equiv="Content-Security-Policy"

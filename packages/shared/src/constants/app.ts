@@ -16,9 +16,6 @@ export const APP_NAME = 'ShiroAni';
 // Network
 // =============================================================================
 
-/** Localhost address */
-export const LOCALHOST = '127.0.0.1';
-
 /** Vite dev server port */
 export const VITE_DEV_PORT = 15174;
 

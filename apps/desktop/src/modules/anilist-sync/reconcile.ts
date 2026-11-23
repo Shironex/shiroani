@@ -1,7 +1,7 @@
 /**
  * Pure reconciliation logic for two-way AniList sync.
  *
- * No I/O, no Nest, no DB, no network — every function here is deterministic so
+ * No I/O, no DB, no network: every function here is deterministic so
  * the conflict matrix can be unit-tested exhaustively. The service layer
  * (`anilist-sync.service.ts`) wraps these with the actual reads/writes.
  *

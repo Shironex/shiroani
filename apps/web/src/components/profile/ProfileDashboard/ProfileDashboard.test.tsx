@@ -22,7 +22,7 @@ function renderDashboard(profile: UserProfile = mockUserProfile) {
 
 beforeEach(() => {
   // Disconnected so the viewer-scoped child surfaces (activity / social) don't
-  // touch the socket — they render their not-connected branches instead.
+  // call the backend: they render their not-connected branches instead.
   useAniListAuthStore.setState(s => ({ status: { ...s.status, connected: false } }));
 });
 

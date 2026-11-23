@@ -8,6 +8,7 @@
  * bundle may also load in a plain-browser context during tests).
  */
 
+import type { BackendBridge } from '../backend/contract';
 import type {
   UpdateInfo,
   UpdateDownloadProgress,
@@ -50,16 +51,11 @@ export type MascotSpriteScaleMode = 'contain' | 'cover' | 'stretch';
  * `ipcRenderer.invoke`.
  */
 export type ImageBytesRejection =
-  | 'too-large'
-  | 'not-an-image'
-  | 'dimensions-too-large'
-  | 'invalid-dimensions'
-  | 'storage-full';
+  'too-large' | 'not-an-image' | 'dimensions-too-large' | 'invalid-dimensions' | 'storage-full';
 
 /** Result of storing renderer-supplied image bytes as a background or sprite. */
 export type ImageBytesUploadResult =
-  | { ok: true; fileName: string; url: string }
-  | { ok: false; reason: ImageBytesRejection };
+  { ok: true; fileName: string; url: string } | { ok: false; reason: ImageBytesRejection };
 
 /**
  * Snapshot of host/runtime info gathered by the main process for diagnostics.
@@ -124,7 +120,6 @@ export interface ElectronAPI {
     getPath: (name: string) => Promise<string>;
     getVersion: () => Promise<string>;
     getSystemInfo: () => Promise<SystemInfoSnapshot>;
-    getBackendPort: () => Promise<number>;
     clipboardWrite: (text: string) => Promise<void>;
     clipboardWriteImage: (pngBase64: string) => Promise<void>;
     saveFileBinary: (filePath: string, base64Data: string) => Promise<{ success: boolean }>;
@@ -307,5 +302,7 @@ export interface ElectronAPI {
       ...args: unknown[]
     ) => { promise: Promise<T>; cancel: () => void };
   };
+  /** Typed, allow-listed bridge to the backend services. */
+  backend: BackendBridge;
   platform: NodeJS.Platform;
 }

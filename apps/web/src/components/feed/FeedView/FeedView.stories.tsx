@@ -55,9 +55,8 @@ const items: FeedItem[] = [1, 2, 3, 4].map(n => ({
 
 /**
  * The contentful base store snapshot. Seeding non-empty `items` plus settled
- * loading flags is what keeps the view socket-free: `useFeedView`'s bootstrap
- * effect only emits `GET_ITEMS` (which auto-connects the socket and then
- * reconnects forever against the dead test backend) while the feed is empty and
+ * loading flags is what keeps the view backend-free: `useFeedView`'s bootstrap
+ * effect only requests `GET_ITEMS` while the feed is empty and
  * idle. A populated, non-loading store short-circuits that effect entirely.
  */
 const CONTENT_STATE = {
@@ -82,10 +81,9 @@ const CONTENT_STATE = {
  * plus the reader modal.
  *
  * Every story seeds `useFeedStore` in `beforeEach` and stubs `markAllSeen` with
- * `fn()`. Both matter for staying socket-free: a non-empty `items` array skips
- * the bootstrap fetch, and the stub replaces the real `markAllSeen` (which fires
- * a `SET_LAST_VISITED` emit on mount, auto-connecting the socket). With both in
- * place no story ever opens a connection.
+ * `fn()`. Both matter for staying backend-free: a non-empty `items` array skips
+ * the bootstrap fetch, and the stub replaces the real `markAllSeen` (which sends
+ * `SET_LAST_VISITED` on mount). With both in place no story calls the backend.
  */
 const meta = {
   title: 'feed/FeedView',
@@ -99,10 +97,9 @@ const meta = {
   beforeEach: () => {
     // The view's mount effects resolve `markAllSeen` and the bootstrap
     // `fetchItems` from the store at call time, so stubbing them here keeps
-    // every story socket-free: the real implementations emit (SET_LAST_VISITED /
-    // GET_ITEMS), which auto-connects the socket and reconnects forever against
-    // the dead test backend. `markRead` is stubbed for the same reason — opening
-    // the reader persists the read id over the socket.
+    // every story backend-free: the real implementations send SET_LAST_VISITED and
+    // GET_ITEMS. `markRead` is stubbed for the same reason: opening the reader
+    // persists the read id.
     useFeedStore.setState({ markAllSeen: fn(), fetchItems: fn(), markRead: fn() });
     useFeedBookmarksStore.setState({ bookmarks: new Map(), loaded: true });
   },
@@ -169,7 +166,7 @@ export const LoadError: Story = {
 /**
  * Empty feed — settled with no items and no error. Shows the "No news" empty
  * state with a refresh CTA. The store is seeded with a stub `refreshFeeds` so the
- * CTA never opens a socket if exercised.
+ * CTA never calls the backend if exercised.
  */
 export const Empty: Story = {
   beforeEach: () => {
@@ -177,7 +174,7 @@ export const Empty: Story = {
       ...CONTENT_STATE,
       items: [],
       total: 0,
-      // The empty-state refresh CTA emits — stub it so a click stays socket-free.
+      // The empty-state refresh CTA calls the backend, so stub it.
       refreshFeeds: fn(),
     });
   },

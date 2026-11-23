@@ -11,9 +11,8 @@ import ProfileDashboard from './ProfileDashboard';
  * the activity feed, the social graph and favourites.
  *
  * Stories seed `useAniListAuthStore` DISCONNECTED so the viewer-scoped children
- * (ActivityFeed, ProfileFollow) short-circuit before any socket emit — they only
- * fetch while connected, which would otherwise reconnect forever against the
- * dead test backend and hang the headless Chromium page.
+ * (ActivityFeed, ProfileFollow) short-circuit before any backend call: they only
+ * fetch while connected.
  */
 const meta = {
   title: 'profile/ProfileDashboard',
@@ -36,7 +35,7 @@ const meta = {
   },
   beforeEach: () => {
     // Disconnected → viewer-scoped children render their not-connected branches
-    // and never touch the socket.
+    // and never call the backend.
     useAniListAuthStore.setState(s => ({ status: { ...s.status, connected: false } }));
   },
 } satisfies Meta<typeof ProfileDashboard>;

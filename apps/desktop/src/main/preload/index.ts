@@ -16,6 +16,7 @@ import { ipcApi } from './ipc';
 import { appStatsApi } from './app-stats';
 import { anilistAuthApi } from './anilist-auth';
 import { malAuthApi } from './mal-auth';
+import { backendApi } from './backend';
 
 /**
  * The single object passed to `contextBridge.exposeInMainWorld('electronAPI')`.
@@ -40,5 +41,6 @@ export const electronAPI: ElectronAPI = {
   appStats: appStatsApi,
   anilistAuth: anilistAuthApi,
   malAuth: malAuthApi,
+  backend: backendApi,
   platform: process.platform,
 };

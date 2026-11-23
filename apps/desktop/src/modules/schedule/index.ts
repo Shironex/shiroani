@@ -1,3 +1,2 @@
-export { ScheduleModule } from './schedule.module';
 export { ScheduleService } from './schedule.service';
-export { ScheduleGateway } from './schedule.gateway';
+export { createScheduleHandlers } from './schedule.handlers';

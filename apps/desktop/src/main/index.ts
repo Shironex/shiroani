@@ -3,33 +3,23 @@
 import './user-data-override';
 import { app, BrowserWindow, powerMonitor, protocol } from 'electron';
 import { join } from 'path';
-import { NestFactory } from '@nestjs/core';
-import { type INestApplication } from '@nestjs/common';
-import { CustomIoAdapter } from '../modules/kernel/custom-io-adapter';
-import { AppModule } from '../modules/app.module';
-import { createMainWindow, saveMainWindowState } from './window';
+import { createBackend, type Backend } from './backend';
+import { createMainWindow, getRendererUrl, saveMainWindowState } from './window';
+import { createIpcEventPublisher, registerBackendIpc } from './ipc/backend';
 import { cleanupIpcHandlers } from './ipc/register';
-import { logger, getLogPath, flushLogs, flushLogsSync, fileTransport } from './logging/logger';
+import { logger, getLogPath, flushLogs, flushLogsSync } from './logging/logger';
 import { initializeAutoUpdater } from './updater';
 import { initializeAdblock, shutdownAdblock } from './adblock';
-import { corsOriginCallback } from '../modules/kernel/cors.config';
-import { NestLoggerAdapter } from '../modules/kernel/nest-logger';
-import { LOCALHOST, setLoggerContext, makeCorrelationId } from '@shiroani/shared';
-import { setBackendPort } from './backend-port';
+import { BackendEvents, setLoggerContext, makeCorrelationId } from '@shiroani/shared';
 import { BrowserManager } from './browser/browser-manager';
 import { stripEmbedderTokens } from './user-agent';
 import { registerBackgroundProtocol } from './ipc/background';
 import { registerMascotSpriteProtocol } from './ipc/sprite';
 import {
-  initializeNotificationService,
+  attachNotificationWindow,
+  bindNotificationService,
   cleanupNotificationService,
 } from './notifications/notification-service';
-import { ElectronNotificationHost } from './notifications/notification-host.adapter';
-import { ElectronNotificationStore } from './notifications/notification-store.adapter';
-import { NotificationHostPort, NotificationStorePort } from '../modules/notifications';
-import { AniListTokenPort, MalTokenPort } from '../modules/anime';
-import { ElectronAniListTokenAdapter } from './auth/anilist-token.adapter';
-import { ElectronMalTokenAdapter } from './auth/mal-token.adapter';
 import { APP_ID as WINDOWS_APP_ID } from './notifications/win-scheduled-notifications';
 import {
   initializeDiscordRpc,
@@ -102,7 +92,7 @@ if (process.platform === 'win32') {
 }
 
 // Single-instance lock. Runs before any heavy setup so a second launch
-// quits immediately instead of spinning up Nest, browser manager, and
+// quits immediately instead of opening the database, browser manager, and
 // IPC handlers only to tear them down. Gated on `app.isPackaged` so dev
 // builds can coexist with an installed production copy. The
 // 'second-instance' listener is registered immediately after acquiring
@@ -123,7 +113,8 @@ if (app.isPackaged) {
 }
 
 export let mainWindow: BrowserWindow | null = null;
-let nestApp: INestApplication | null = null;
+let backend: Backend | null = null;
+let bootstrapped = false;
 let isShuttingDown = false;
 let cleanupDone = false;
 const browserManager = new BrowserManager();
@@ -142,7 +133,10 @@ const appStatsPowerHandlers = {
     appStatsTracker.flush();
     appStatsTracker.pause('suspend');
   },
-  resume: () => appStatsTracker.resume('resume'),
+  resume: () => {
+    appStatsTracker.resume('resume');
+    backend?.events.emit(BackendEvents.RESUMED, undefined);
+  },
   lockScreen: () => {
     appStatsTracker.flush();
     appStatsTracker.pause('lock-screen');
@@ -164,79 +158,6 @@ function unregisterAppStatsPowerListeners(): void {
   powerMonitor.off('unlock-screen', appStatsPowerHandlers.unlockScreen);
 }
 
-async function bootstrapNestApp(): Promise<void> {
-  try {
-    logger.info('Creating NestJS application...');
-    const dbPath = join(app.getPath('userData'), 'shiroani.db');
-    nestApp = await NestFactory.create(
-      AppModule.forRoot({
-        dbPath,
-        notificationHostProvider: {
-          provide: NotificationHostPort,
-          useClass: ElectronNotificationHost,
-        },
-        notificationStoreProvider: {
-          provide: NotificationStorePort,
-          useClass: ElectronNotificationStore,
-        },
-        // safeStorage-backed AniList token provider — reads the persisted
-        // access token from the main-process token store so AniListClient can
-        // authenticate. The token never crosses IPC.
-        anilistTokenProvider: {
-          provide: AniListTokenPort,
-          useClass: ElectronAniListTokenAdapter,
-        },
-        // safeStorage-backed MAL token provider — reads the persisted access
-        // token (lazily refreshing + rotating both tokens when near expiry) from
-        // the main-process token store. Neither token crosses IPC.
-        malTokenProvider: {
-          provide: MalTokenPort,
-          useClass: ElectronMalTokenAdapter,
-        },
-      }),
-      {
-        logger: new NestLoggerAdapter(fileTransport),
-        bufferLogs: true,
-      }
-    );
-    nestApp.flushLogs();
-    logger.info('NestJS application created');
-
-    nestApp.useWebSocketAdapter(new CustomIoAdapter(nestApp));
-
-    nestApp.enableCors({
-      origin: corsOriginCallback,
-      credentials: true,
-    });
-
-    logger.info('Starting to listen on dynamic port...');
-    await nestApp.listen(0, LOCALHOST);
-    const addr = nestApp.getHttpServer().address();
-    if (!addr || typeof addr === 'string') {
-      throw new Error(`Failed to get server port: address() returned ${JSON.stringify(addr)}`);
-    }
-    const port = addr.port;
-    if (!port || port === 0) {
-      throw new Error('OS assigned port 0 — server did not bind successfully');
-    }
-    setBackendPort(port);
-    logger.info(`NestJS server running on port ${port}`);
-    logger.info('Log file location:', getLogPath());
-  } catch (error) {
-    logger.error('Failed to bootstrap NestJS:', error);
-    throw error;
-  }
-}
-
-async function shutdownNestApp(): Promise<void> {
-  if (nestApp) {
-    logger.info('Shutting down NestJS...');
-    await nestApp.close();
-    nestApp = null;
-    logger.info('NestJS shutdown complete');
-  }
-}
-
 /** Set up services and event listeners that depend on the main window */
 function setupWindowDependentServices(win: BrowserWindow): void {
   const getMascotWindowState = (): MascotWindowState => {
@@ -250,9 +171,7 @@ function setupWindowDependentServices(win: BrowserWindow): void {
   };
 
   initializeAutoUpdater(win, process.env.NODE_ENV === 'development');
-  if (nestApp) {
-    initializeNotificationService(win, nestApp);
-  }
+  attachNotificationWindow(win);
 
   // Set up mascot overlay with main window reference
   setMascotMainWindow(win);
@@ -312,7 +231,15 @@ async function bootstrap(): Promise<void> {
   registerBackgroundProtocol();
   registerMascotSpriteProtocol();
 
-  await bootstrapNestApp();
+  const getMainWindow = (): BrowserWindow | null => mainWindow;
+  backend = createBackend({
+    dbPath: join(app.getPath('userData'), 'shiroani.db'),
+    events: createIpcEventPublisher(getMainWindow),
+  });
+  registerBackendIpc(backend, { getMainWindow, rendererUrl: getRendererUrl() });
+  bindNotificationService(backend.notifications, backend.notificationHost);
+
+  logger.info('Log file location:', getLogPath());
   browserManager.init();
   mainWindow = await createMainWindow(browserManager);
   setMascotMainWindow(mainWindow);
@@ -412,6 +339,8 @@ async function bootstrap(): Promise<void> {
   } catch (error) {
     logger.warn('Failed to create system tray:', error);
   }
+
+  bootstrapped = true;
 }
 
 // Global error handling
@@ -483,7 +412,7 @@ app.on('certificate-error', (event, _webContents, url, error, _certificate, call
 });
 
 // Handle SIGINT/SIGTERM (e.g. Ctrl+C in dev) by triggering graceful shutdown
-// so that before-quit fires and onModuleDestroy can save state.
+// so that before-quit fires and the backend can save state.
 // Guard against duplicate signals (concurrently sends SIGTERM after SIGINT).
 for (const signal of ['SIGINT', 'SIGTERM'] as const) {
   process.on(signal, () => {
@@ -519,6 +448,11 @@ app.on('window-all-closed', () => {
 
 app.on('activate', async () => {
   logger.info('App activated');
+  // Before bootstrap finishes there is nothing to show yet, and bootstrap creates
+  // the window itself. During shutdown `mainWindow` is already null, and a new
+  // window would register handlers against a backend that is closing.
+  if (!bootstrapped || isShuttingDown) return;
+
   if (mainWindow && !mainWindow.isDestroyed()) {
     showMainWindow(mainWindow);
     return;
@@ -561,11 +495,11 @@ app.on('before-quit', event => {
     await safeCleanup('context menu', () => destroyContextMenu(), logger);
     await safeCleanup('mascot overlay', () => destroyMascotOverlay(), logger);
     await safeCleanup('discord rpc', () => cleanupDiscordRpc(), logger);
+    // Must precede the backend: quit-time toasts read library data from the DB.
     await safeCleanup('notification service', () => cleanupNotificationService(), logger);
+    await safeCleanup('backend', () => backend?.shutdown(), logger);
+    // Last, so every line logged by the steps above reaches the file.
     await safeCleanup('log flush', () => flushLogs(), logger);
-    if (nestApp) {
-      await shutdownNestApp();
-    }
   })().finally(() => {
     cleanupDone = true;
     app.quit();

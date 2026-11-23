@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { AnimeEvents, createLogger, type AniListActivity } from '@shiroani/shared';
-import { emitWithErrorHandling } from '@/lib/socket';
+import { invokeBackend } from '@/lib/backend';
 import { useAniListAuthStore } from '@/stores/useAniListAuthStore';
 import { useMountedRef } from './useMountedRef';
 
@@ -19,7 +19,7 @@ interface ViewerActivityState {
  * {@link AnimeEvents.GET_VIEWER_ACTIVITY}.
  *
  * The activity feed is viewer-scoped: the backend resolves it from the stored
- * OAuth token (which never crosses the socket), so it only makes sense when an
+ * OAuth token (which never reaches the renderer), so it only makes sense when an
  * AniList account is connected. The hook therefore gates on
  * `status.connected` — it never emits while disconnected and clears any stale
  * data when the connection drops. Consumers should surface a distinct
@@ -52,7 +52,7 @@ export function useViewerActivity(): ViewerActivityState {
     setIsLoading(true);
     setError(null);
 
-    emitWithErrorHandling<Record<string, never>, { activities: AniListActivity[] }>(
+    invokeBackend<Record<string, never>, { activities: AniListActivity[] }>(
       AnimeEvents.GET_VIEWER_ACTIVITY,
       {}
     )

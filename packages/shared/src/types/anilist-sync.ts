@@ -1,6 +1,6 @@
 /**
  * Two-way AniList sync contract shared between the desktop main process (the
- * sync gateway) and the web renderer (the sync store + settings UI).
+ * sync handlers) and the web renderer (the sync store + settings UI).
  *
  * Only progress + result summaries cross this boundary — the AniList access
  * token and the raw MediaList entries stay in the main process. Reconciliation
@@ -19,12 +19,7 @@
  * - `error`     — the entry failed to sync (e.g. a write rejected)
  */
 export type AniListSyncAction =
-  | 'imported'
-  | 'pushed'
-  | 'updated'
-  | 'unchanged'
-  | 'skipped'
-  | 'error';
+  'imported' | 'pushed' | 'updated' | 'unchanged' | 'skipped' | 'error';
 
 /** Incremental progress emitted once per processed entry during a run. */
 export interface AniListSyncProgress {
@@ -68,7 +63,7 @@ export interface AniListSyncEntryResult {
 // The two-way sync contract is provider-agnostic: the MAL sync emits the SAME
 // progress/result/action shapes as AniList (the desktop ProviderSyncEngine is
 // parameterized over a provider adapter, not over a wire format). Rather than
-// duplicate the interfaces, the MAL surface (events, gateway, store) references
+// duplicate the interfaces, the MAL surface (events, handlers, store) references
 // these aliases so a future neutral rename is a one-line change here.
 
 /** Per-entry outcome for a sync pass — provider-neutral alias of {@link AniListSyncAction}. */

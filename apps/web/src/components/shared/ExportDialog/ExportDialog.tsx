@@ -19,7 +19,7 @@ export default function ExportDialog({
   selectedIds,
 }: IExportDialogProps) {
   const { t } = useTranslation('nav');
-  const { state, handleSave, handleOpenChange } = useExportDialog({
+  const { state, exportTooLarge, importCapMb, handleSave, handleOpenChange } = useExportDialog({
     open,
     onOpenChange,
     type,
@@ -66,6 +66,11 @@ export default function ExportDialog({
                   components={{ 1: <span className="font-semibold" /> }}
                 />
               </p>
+              {exportTooLarge && (
+                <p role="alert" className="text-sm text-status-warning text-center">
+                  {t('exportDialog.tooLargeToImport', { maxMb: importCapMb })}
+                </p>
+              )}
             </div>
           )}
 

@@ -1,7 +1,7 @@
 import { build } from 'esbuild';
 import { existsSync, readFileSync, rmSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
-import { esbuildDecorators } from '@anatine/esbuild-decorators';
+import { assertPreloadImports } from './scripts/assert-preload-imports.mjs';
 
 const pkg = JSON.parse(readFileSync('./package.json', 'utf-8'));
 
@@ -30,7 +30,7 @@ const external = [
   ...Object.keys(pkg.dependencies ?? {}).filter(d => !d.startsWith('@shiroani/')),
 ];
 
-await build({
+const result = await build({
   entryPoints: ['src/main/index.ts', 'src/main/preload.ts', 'src/main/menu-preload.ts'],
   bundle: true,
   platform: 'node',
@@ -53,10 +53,8 @@ await build({
     'process.env.ANILIST_CLIENT_ID': JSON.stringify(process.env.ANILIST_CLIENT_ID ?? ''),
     'process.env.MAL_CLIENT_ID': JSON.stringify(process.env.MAL_CLIENT_ID ?? ''),
   },
-  plugins: [
-    esbuildDecorators({
-      tsconfig: './tsconfig.build.json',
-    }),
-  ],
   logLevel: 'info',
+  metafile: true,
 });
+
+assertPreloadImports(result.metafile, ['dist/main/preload.js', 'dist/main/menu-preload.js']);

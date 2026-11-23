@@ -29,7 +29,6 @@ import { useSettingsStore } from '@/stores/useSettingsStore';
 import { useAniListAuthStore } from '@/stores/useAniListAuthStore';
 import { AppBackground } from '@/components/shared/AppBackground';
 import { BackgroundOverlay } from '@/components/shared/BackgroundOverlay';
-import { ConnectionBanner } from '@/components/shared/ConnectionBanner';
 import { SupportBanner } from '@/components/shared/SupportBanner';
 import { DropOverlay } from '@/components/shared/DropOverlay';
 
@@ -135,9 +134,6 @@ function App() {
               only persistent top chrome, and the bell — gated on a connected
               AniList account — can only ever appear in Electron anyway). */}
           {IS_ELECTRON && !isFullScreen && <TitleBar />}
-
-          {/* Connection status banner */}
-          <ConnectionBanner />
 
           {/* Support launch banner — shown once ever, only after onboarding is complete */}
           <SupportBanner />

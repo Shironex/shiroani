@@ -1,23 +1,21 @@
-import { Inject, Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import Database from 'better-sqlite3';
 import { createLogger } from '@shiroani/shared';
 import { runMigrations } from './migrations';
-import { DATABASE_PATH } from './database.tokens';
 
 const logger = createLogger('DatabaseService');
 
-@Injectable()
-export class DatabaseService implements OnModuleInit, OnModuleDestroy {
+export class DatabaseService {
   private _db!: Database.Database;
 
-  constructor(@Inject(DATABASE_PATH) private readonly dbPath: string) {}
+  constructor(private readonly dbPath: string) {}
 
   /** Expose the raw better-sqlite3 instance for other services. */
   get db(): Database.Database {
     return this._db;
   }
 
-  onModuleInit(): void {
+  /** Open the database and run migrations. Synchronous: better-sqlite3 has no async API. */
+  init(): void {
     logger.info('Opening database');
 
     this._db = new Database(this.dbPath);
@@ -33,8 +31,9 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
     logger.info('Database initialized successfully');
   }
 
-  onModuleDestroy(): void {
-    if (this._db) {
+  /** Close the database. Idempotent. */
+  dispose(): void {
+    if (this._db?.open) {
       this._db.close();
       logger.info('Database connection closed');
     }

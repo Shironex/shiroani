@@ -3,13 +3,13 @@ import type { Logger } from '@shiroani/shared';
 import { extractErrorMessage } from '@shiroani/shared';
 
 /**
- * Shared utility for gateway request handlers that follow the common pattern:
+ * Shared utility for backend request handlers that follow the common pattern:
  *   1. Log the action
  *   2. (Optional) Validate the incoming payload against a Zod schema
  *   3. Execute the handler logic
  *   4. Return a default result with error on validation failure or caught exception
  *
- * Eliminates boilerplate per handler across gateways.
+ * Eliminates boilerplate per handler across domains.
  *
  * `TDefault` is the type of the fallback result (returned on error with an
  * error message). `TResult` is the type the handler returns on success (may

@@ -6,7 +6,7 @@ import { mockMalStats } from '../profile-fixtures';
 import MalStatsPanel from './MalStatsPanel';
 
 beforeEach(() => {
-  // Seed a connected profile and stub the mount fetch so no socket call runs.
+  // Seed a connected profile and stub the mount fetch so no backend call runs.
   useMalProfileStore.setState({
     profile: mockMalStats,
     isLoading: false,
@@ -14,7 +14,7 @@ beforeEach(() => {
     notConnected: false,
     fetchProfile: vi.fn(),
   });
-  // The not-connected effect re-resolves auth status; keep it socket-free.
+  // The not-connected effect re-resolves auth status; keep it backend-free.
   useMalAuthStore.setState({ fetchStatus: vi.fn().mockResolvedValue(undefined) });
 });
 
